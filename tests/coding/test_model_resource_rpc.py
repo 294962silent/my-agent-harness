@@ -52,7 +52,7 @@ async def test_model_switch_rpc(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
     assert resp["result"]["status"] == "ok"
     assert resp["result"]["model"] == "deepseek-chat"
     assert resp["result"]["provider"] == "deepseek"
-    assert server.agent.agent.model == "deepseek-chat"
+    assert server.agent.model == "deepseek-chat"
 
     # 验证 session 写入了 ModelChangeEntry
     last_entry = list(server.agent.session.tree.entries.values())[-1]
@@ -76,7 +76,7 @@ async def test_model_switch_rpc(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
     assert resp2["result"]["status"] == "ok"
     assert resp2["result"]["model"] == "gpt-4o"
     assert resp2["result"]["provider"] == "openai"
-    assert server.agent.agent.model == "gpt-4o"
+    assert server.agent.model == "gpt-4o"
 
     # 验证 settings.json 持久化成功
     assert paths.settings_path.exists()
@@ -194,7 +194,7 @@ async def test_resource_reload_rpc(tmp_path: Path, monkeypatch: pytest.MonkeyPat
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"workspace": str(workspace)}}
     )
     assert server.agent is not None
-    assert "Principle 1" in server.agent.agent.messages[0].content
+    assert "Principle 1" in server.agent.messages[0].content
 
     # 修改 AGENTS.md
     agents_md.write_text("# Updated Guidelines\nPrinciple 2: Verified", encoding="utf-8")
@@ -205,7 +205,7 @@ async def test_resource_reload_rpc(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     assert "summary" in reload_resp["result"]
 
     # 验证上下文已被热重载刷新
-    assert "Principle 2: Verified" in server.agent.agent.messages[0].content
+    assert "Principle 2: Verified" in server.agent.messages[0].content
 
 
 @pytest.mark.anyio
@@ -228,7 +228,7 @@ async def test_resource_reload_refreshes_llm_api_key(tmp_path: Path, monkeypatch
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"workspace": str(workspace)}}
     )
     assert server.agent is not None
-    assert server.agent.agent.llm.config.api_key == "initial-key-1234"
+    assert server.agent.llm.config.api_key == "initial-key-1234"
 
     # 用户在外部更换了新 key
     auth_mgr.set_api_key(provider="deepseek", key="new-refreshed-key-5678")
@@ -237,7 +237,7 @@ async def test_resource_reload_refreshes_llm_api_key(tmp_path: Path, monkeypatch
     await server.handle_request({"jsonrpc": "2.0", "id": 2, "method": "resource_reload", "params": {}})
 
     # 验证 LLM 实例已被热更新为最新 key
-    assert server.agent.agent.llm.config.api_key == "new-refreshed-key-5678"
+    assert server.agent.llm.config.api_key == "new-refreshed-key-5678"
 
 
 @pytest.mark.anyio
@@ -258,7 +258,7 @@ async def test_login_hot_refreshes_active_llm(tmp_path: Path, monkeypatch: pytes
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"workspace": str(workspace)}}
     )
     assert server.agent is not None
-    assert server.agent.agent.llm.config.api_key == "old-key"
+    assert server.agent.llm.config.api_key == "old-key"
 
     # 执行 login
     await server.handle_request(
@@ -266,7 +266,7 @@ async def test_login_hot_refreshes_active_llm(tmp_path: Path, monkeypatch: pytes
     )
 
     # 验证活跃模型实例已被原地热更新
-    assert server.agent.agent.llm.config.api_key == "brand-new-key"
+    assert server.agent.llm.config.api_key == "brand-new-key"
 
 
 @pytest.mark.anyio
@@ -455,7 +455,7 @@ async def test_models_list_and_switch_deepseek_credential(tmp_path: Path, monkey
 
     real_llm = LLM(config=Config(provider="deepseek", model="deepseek-chat", api_key="sk-initial"))
     assert server.agent is not None
-    server.agent.agent.llm = real_llm
+    server.agent.llm = real_llm
 
     switch_resp = await server.handle_request(
         {
@@ -471,8 +471,8 @@ async def test_models_list_and_switch_deepseek_credential(tmp_path: Path, monkey
     assert switch_resp["result"]["contextWindow"] == 1000000
     # 验证 api_key 正确取自 DEEPSEEK_API_KEY，而非 "placeholder"
     assert server.agent is not None
-    assert server.agent.agent.llm.config.api_key == "sk-deepseek-direct-key"
-    assert server.agent.agent.llm.config.base_url == "https://api.deepseek.com"
+    assert server.agent.llm.config.api_key == "sk-deepseek-direct-key"
+    assert server.agent.llm.config.base_url == "https://api.deepseek.com"
 
     # 验证当 Provider 凭据不存在时，切换模型绝不塞 placeholder 假 key，而是返回 -32002 错误
     fail_resp = await server.handle_request(

@@ -147,6 +147,18 @@ class AntigravityProvider(OpenAIProvider):
         contents: list[dict[str, Any]] = []
         system_parts: list[dict[str, Any]] = []
 
+        # 预先构建 tool_call_id -> tool_name 映射表作为多层防御安全网
+        id_to_tool_name: dict[str, str] = {}
+        for m in messages:
+            if m.role == "assistant" and m.metadata and "tool_calls" in m.metadata:
+                for tc in m.metadata["tool_calls"]:
+                    tid = tc.get("id") if isinstance(tc, dict) else getattr(tc, "id", None)
+                    tname = tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", None)
+                    if not tname and isinstance(tc, dict) and "function" in tc:
+                        tname = tc["function"].get("name")
+                    if tid and tname:
+                        id_to_tool_name[str(tid)] = str(tname)
+
         for msg in messages:
             if isinstance(msg.content, str):
                 parts = [{"text": msg.content}] if msg.content else []
@@ -189,7 +201,8 @@ class AntigravityProvider(OpenAIProvider):
                     model_parts.append({"text": ""})
                 contents.append({"role": "model", "parts": model_parts})
             elif msg.role == "tool":
-                tool_name = (msg.metadata or {}).get("tool_name", "tool")
+                tid = str((msg.metadata or {}).get("tool_call_id", ""))
+                tool_name = (msg.metadata or {}).get("tool_name") or id_to_tool_name.get(tid) or "tool"
                 contents.append(
                     {
                         "role": "user",

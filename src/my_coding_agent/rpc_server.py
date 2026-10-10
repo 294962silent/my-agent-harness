@@ -24,7 +24,6 @@ from my_coding_agent.rpc import ModelRpcMixin, SessionRpcMixin, SystemRpcMixin, 
 from my_coding_agent.model_catalog import (
     resolve_initial_llm,
     resolve_model_context_window,
-    switch_llm_model,
 )
 from my_coding_agent.paths import AgentPaths
 from my_coding_agent.permissions import PermissionGate
@@ -35,35 +34,13 @@ from my_coding_agent.serialization import (
     uuid7_str,
 )
 from my_coding_agent.session_ops import (
-    branch_session_tree,
-    build_tree_nodes,
-    clone_session_tree,
-    compute_session_stats,
     compute_session_usage,
     estimate_model_cost,
-    fork_session_tree,
-    list_project_sessions,
-    resolve_session_file,
 )
 from my_coding_agent.settings import Settings, load_settings
 from my_coding_agent.tracer import DebugEventTracer
 
-__all__ = [
-    "RpcServer",
-    "serialize_event",
-    "serialize_message",
-    "uuid7_str",
-    "resolve_model_context_window",
-    "compute_session_usage",
-    "compute_session_stats",
-    "list_project_sessions",
-    "resolve_session_file",
-    "build_tree_nodes",
-    "fork_session_tree",
-    "clone_session_tree",
-    "branch_session_tree",
-    "switch_llm_model",
-]
+__all__ = ["RpcServer"]
 
 logger = logging.getLogger(__name__)
 

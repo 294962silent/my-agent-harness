@@ -127,10 +127,14 @@ def repair_tool_history(messages: Sequence[Message]) -> ToolHistoryRepair:
             used_result_positions.add(matched_pos)
         else:
             # 补齐中断结果
+            tool_name = call.get("name") or call.get("function", {}).get("name")
+            meta: dict[str, Any] = {"tool_call_id": call_id, "is_error": True}
+            if tool_name:
+                meta["tool_name"] = str(tool_name)
             synthetic = Message(
                 role="tool",
                 content=_INTERRUPTED_TOOL_RESULT,
-                metadata={"tool_call_id": call_id, "is_error": True},
+                metadata=meta,
             )
             selected_results[occurrence] = (None, synthetic)
             synthesized_results += 1

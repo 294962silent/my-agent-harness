@@ -213,6 +213,11 @@ class CodingAgent:
         return self.agent.memory_store
 
     @property
+    def message_queue(self) -> Any:
+        """底层干预消息队列。"""
+        return self.agent.message_queue
+
+    @property
     def system_prompt(self) -> str | None:
         """底层系统提示词。"""
         return self.agent.system_prompt

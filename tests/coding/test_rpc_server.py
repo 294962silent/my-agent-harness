@@ -22,7 +22,8 @@ from my_agent_llm.auth.manager import AuthManager
 from my_agent_llm.auth.schema import ApiKeyCredential
 from my_agent_llm.models import Message, Response, StreamChunk
 from my_coding_agent import AgentPaths, CodingAgent
-from my_coding_agent.rpc_server import RpcServer, serialize_event
+from my_coding_agent.rpc_server import RpcServer
+from my_coding_agent.serialization import serialize_event
 
 
 class FakeLLM:
@@ -105,7 +106,7 @@ async def test_rpc_server_initialize_and_prompt(tmp_path: Path):
     assert server.agent.workspace == tmp_path.resolve()
 
     # Inject fake LLM to avoid real API
-    server.agent.agent.llm = FakeLLM()  # type: ignore[assignment]
+    server.agent.llm = FakeLLM()  # type: ignore[assignment]
 
     # 2. Prompt Stream
     prompt_req = {
@@ -217,13 +218,13 @@ async def test_rpc_server_steer_abort_and_shutdown(tmp_path: Path):
     steer_req = {"jsonrpc": "2.0", "id": 10, "method": "steer", "params": {"message": "即时纠偏"}}
     steer_resp = await server.handle_request(steer_req)
     assert steer_resp["result"]["status"] == "ok"
-    assert server.agent.agent.message_queue.has_steering()
+    assert server.agent.message_queue.has_steering()
 
     # Followup
     followup_req = {"jsonrpc": "2.0", "id": 11, "method": "followup", "params": {"message": "排队任务"}}
     followup_resp = await server.handle_request(followup_req)
     assert followup_resp["result"]["status"] == "ok"
-    assert server.agent.agent.message_queue.has_followup()
+    assert server.agent.message_queue.has_followup()
 
     # Abort
     abort_req = {"jsonrpc": "2.0", "id": 12, "method": "abort", "params": {}}
@@ -381,7 +382,7 @@ async def test_model_switch_updates_context_budget(tmp_path: Path, monkeypatch):
     )
     assert init_resp["result"]["status"] == "ok"
     assert server.agent is not None
-    ctx = server.agent.agent.context_manager
+    ctx = server.agent.context_manager
     assert ctx.budget == 128_000  # 注入的 FakeLLM 无 config.model → 未知模型回落
 
     switch_resp = await server.handle_request(
@@ -434,7 +435,7 @@ async def test_footer_context_tokens_is_view_estimate_not_session_total(tmp_path
     assert last["total"] >= 51_000  # 会话累计量确实很大（旧实现把它当了分子）
     assert 0 < last["contextTokens"] < 51_000  # 修复后：上下文占用（视图估算）
     assert server.agent is not None
-    assert last["contextTokens"] == server.agent.agent.context_manager.context_tokens
+    assert last["contextTokens"] == server.agent.context_manager.context_tokens
 
 
 class DeepseekFlashFakeLLM(FakeLLM):
@@ -564,9 +565,9 @@ async def test_rpc_server_credentials_resolution_from_auth_store(tmp_path: Path,
     )
     assert resp["result"]["status"] == "ok"
     assert server.agent is not None
-    assert server.agent.agent.llm is not None
-    assert server.agent.agent.llm.config.provider == "deepseek"
-    assert server.agent.agent.llm.config.api_key == "sk-stored-in-auth-json"
+    assert server.agent.llm is not None
+    assert server.agent.llm.config.provider == "deepseek"
+    assert server.agent.llm.config.api_key == "sk-stored-in-auth-json"
 
 
 @pytest.mark.anyio
@@ -694,17 +695,17 @@ async def test_rpc_server_steer_accepts_flexible_keys(tmp_path: Path):
     # 1. params: { message: "msg1" }
     r1 = await server.handle_request({"jsonrpc": "2.0", "id": 1, "method": "steer", "params": {"message": "msg1"}})
     assert r1["result"]["status"] == "ok"
-    assert server.agent.agent.message_queue.get_steering_messages()[0].content == "msg1"
+    assert server.agent.message_queue.get_steering_messages()[0].content == "msg1"
 
     # 2. params: { prompt: "msg2" }
     r2 = await server.handle_request({"jsonrpc": "2.0", "id": 2, "method": "steer", "params": {"prompt": "msg2"}})
     assert r2["result"]["status"] == "ok"
-    assert server.agent.agent.message_queue.get_steering_messages()[0].content == "msg2"
+    assert server.agent.message_queue.get_steering_messages()[0].content == "msg2"
 
     # 3. params: { text: "msg3" }
     r3 = await server.handle_request({"jsonrpc": "2.0", "id": 3, "method": "steer", "params": {"text": "msg3"}})
     assert r3["result"]["status"] == "ok"
-    assert server.agent.agent.message_queue.get_steering_messages()[0].content == "msg3"
+    assert server.agent.message_queue.get_steering_messages()[0].content == "msg3"
 
 
 @pytest.mark.anyio
@@ -760,7 +761,7 @@ async def test_rpc_server_concurrent_prompt_routes_to_steer(tmp_path: Path):
 
     # 验证 steer 消息已进入队列
     assert server.agent is not None
-    assert server.agent.agent.message_queue.has_steering()
+    assert server.agent.message_queue.has_steering()
 
     await task1
     assert server.is_prompt_running is False
@@ -784,10 +785,10 @@ async def test_rpc_server_clear_queue(tmp_path: Path):
     await server.handle_request({"jsonrpc": "2.0", "id": 3, "method": "followup", "params": {"message": "follow1"}})
 
     assert server.agent is not None
-    assert len(server.agent.agent.message_queue) == 2
+    assert len(server.agent.message_queue) == 2
 
     # 调用 clear_queue
     resp = await server.handle_request({"jsonrpc": "2.0", "id": 4, "method": "clear_queue", "params": {}})
     assert resp["result"]["cleared"] is True
     assert resp["result"]["count"] == 2
-    assert len(server.agent.agent.message_queue) == 0
+    assert len(server.agent.message_queue) == 0

@@ -64,6 +64,7 @@ def test_repair_synthesizes_interrupted_tool_call():
     assert synth_msg.content == _INTERRUPTED_TOOL_RESULT
     assert synth_msg.metadata is not None
     assert synth_msg.metadata["tool_call_id"] == "call_1"
+    assert synth_msg.metadata["tool_name"] == "bash"
     assert synth_msg.metadata.get("is_error")
 
 
@@ -82,6 +83,7 @@ def test_repair_multiple_dangling_tool_calls():
     assert repair.synthesized_results == 3
 
     assert repair.messages[1].metadata is not None and repair.messages[1].metadata["tool_call_id"] == "c1"
+    assert repair.messages[1].metadata.get("tool_name") == "bash"
     assert repair.messages[2].metadata is not None and repair.messages[2].metadata["tool_call_id"] == "c2"
     assert repair.messages[3].metadata is not None and repair.messages[3].metadata["tool_call_id"] == "c3"
     for i in (1, 2, 3):
