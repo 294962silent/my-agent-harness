@@ -20,20 +20,6 @@ import type { MessageContent, MessageContentBlock } from "../protocol.js";
 import { DynamicBorder } from "../components/dynamic-border.js";
 import { FooterComponent, formatTokens } from "../components/footer.js";
 import { HeaderComponent } from "../components/header.js";
-import { LoginSelectorComponent } from "../components/login-selector.js";
-import {
-  type LogoutProviderItem,
-  LogoutSelectorComponent,
-} from "../components/logout-selector.js";
-import {
-  type ModelItem,
-  ModelSelectorComponent,
-} from "../components/model-selector.js";
-import {
-  type SessionItem,
-  SessionSelectorComponent,
-} from "../components/session-selector.js";
-import { SettingsSelectorComponent } from "../components/settings-selector.js";
 import {
   StatusIndicator,
   WorkingStatusIndicator,
@@ -42,30 +28,34 @@ import {
   type LoadedResourcesData,
   StartupResourcesComponent,
 } from "../components/startup-resources.js";
-import { ThemeSelectorComponent } from "../components/theme-selector.js";
-import { ThinkingSelectorComponent } from "../components/thinking-selector.js";
 import { ToolExecutionComponent } from "../components/tool-execution.js";
-import {
-  type TreeNode,
-  TreeSelectorComponent,
-} from "../components/tree-selector.js";
 import { UserMessageComponent } from "../components/user-message.js";
 import {
-  type UserMessageItem,
-  UserMessageSelectorComponent,
-} from "../components/user-message-selector.js";
+  openForkSelector,
+  openLoginSelector,
+  openLogoutSelector,
+  openModelSelector,
+  openSessionSelector,
+  openSettingsSelector,
+  openThemeSelector,
+  openThinkingSelector,
+  openTreeSelector,
+} from "./selector-manager.js";
+import {
+  renderFallbackSessionStats,
+  renderPiSessionStats,
+  renderSessionHistory,
+} from "./history-renderer.js";
+import {
+  dispatchAgentEvent,
+  displayMessageContent,
+} from "./event-dispatcher.js";
 import { theme } from "../theme/theme.js";
 import { createChatViewport } from "./chat-viewport.js";
 import {
   createInteractiveTui,
   type InteractiveTuiOptions,
 } from "./tui-renderer.js";
-
-function displayMessageContent(content: MessageContent): string {
-  return typeof content === "string"
-    ? content
-    : content.map((block) => block.type === "image" ? "[image]" : block.text).join("");
-}
 
 export interface InteractiveModeOptions extends InteractiveTuiOptions {
   workspace?: string;
@@ -139,7 +129,7 @@ export class InteractiveMode {
   public workspace: string;
   public onExit?: () => Promise<void> | void;
   private unsubscribeBridge?: () => void;
-  private hasRenderedTurnError = false;
+  public hasRenderedTurnError = false;
   public startupResources: StartupResourcesComponent;
   public loadedResources: LoadedResourcesData;
 
@@ -336,310 +326,7 @@ export class InteractiveMode {
   }
 
   public handleAgentEvent(event: any): void {
-    if (!event || !event.type) return;
-
-    switch (event.type) {
-      case "agent_start": {
-        this.isStreaming = true;
-        this.isWorking = true;
-        this.hasRenderedTurnError = false;
-        this.activeToolCalls.clear();
-        this.currentStreamingAssistant = undefined;
-        this.updateStatusDisplay("Working");
-        break;
-      }
-
-      case "turn_start": {
-        this.isWorking = true;
-        this.hasRenderedTurnError = false;
-        this.updateStatusDisplay("Working");
-        break;
-      }
-
-      case "message_start": {
-        if (event.message?.role === "user") {
-          const content = displayMessageContent(event.message.content);
-          if (content) {
-            let isLocallyPreRendered = false;
-            if (this.pendingSubmittedPrompts > 0) {
-              this.pendingSubmittedPrompts--;
-              isLocallyPreRendered = true;
-            }
-
-            const steerIdx = this.pendingSteeringList.findIndex((message) => displayMessageContent(message) === content);
-            if (steerIdx !== -1) {
-              this.pendingSteeringList.splice(steerIdx, 1);
-            } else {
-              const followIdx = this.pendingFollowupList.findIndex((message) => displayMessageContent(message) === content);
-              if (followIdx !== -1) {
-                this.pendingFollowupList.splice(followIdx, 1);
-              }
-            }
-            this.updatePendingMessagesDisplay();
-
-            // 若不是刚刚在 handleUserInput 中本地预挂载的普通 Prompt，则正常挂载用户气泡
-            if (!isLocallyPreRendered) {
-              const userMsg = new UserMessageComponent(content);
-              this.chatContainer.addChild(userMsg);
-              this.chatContainer.addChild(new Spacer(1));
-            }
-          }
-        } else if (event.message?.role === "assistant") {
-          this.currentStreamingAssistant = new AssistantMessageComponent();
-          this.chatContainer.addChild(this.currentStreamingAssistant);
-          this.chatContainer.addChild(new Spacer(1));
-        }
-        break;
-      }
-
-      case "message_update": {
-        if (!this.currentStreamingAssistant) {
-          this.currentStreamingAssistant = new AssistantMessageComponent();
-          this.latestAssistantMessage = this.currentStreamingAssistant;
-          this.chatContainer.addChild(this.currentStreamingAssistant);
-          this.chatContainer.addChild(new Spacer(1));
-        }
-
-        // 解析 message.content 中的 thinking 与 text 块 (使用全量快照，杜绝二次方爆炸)
-        if (Array.isArray(event.message?.content)) {
-          let thinkingText = "";
-          let contentText = "";
-          for (const block of event.message.content) {
-            if (block.type === "thinking" && block.thinking) {
-              thinkingText += block.thinking;
-            } else if (block.type === "text" && block.text) {
-              contentText += block.text;
-            }
-          }
-          if (thinkingText) {
-            this.currentStreamingAssistant.setReasoning(thinkingText);
-          }
-          if (contentText) {
-            this.currentStreamingAssistant.setContent(contentText);
-          }
-        } else if (
-          typeof event.message?.content === "string" &&
-          event.message.content
-        ) {
-          this.currentStreamingAssistant.setContent(event.message.content);
-        }
-        break;
-      }
-
-      case "message_end": {
-        if (event.message?.role !== "assistant") break;
-        const isError =
-          event.message?.metadata?.stop_reason === "error" ||
-          event.message?.stopReason === "error" ||
-          event.message?.role === "error" ||
-          event.stop_reason === "error" ||
-          event.stopReason === "error";
-
-        const contentStr =
-          typeof event.message?.content === "string"
-            ? event.message.content
-            : Array.isArray(event.message?.content)
-              ? event.message.content
-                  .map((b: any) =>
-                    typeof b === "string"
-                      ? b
-                      : b?.text || b?.thinking || "",
-                  )
-                  .join("")
-              : String(event.message?.content ?? "");
-
-        if (this.currentStreamingAssistant) {
-          const isCancelled =
-            event.message?.metadata?.stop_reason === "cancelled" ||
-            event.message?.metadata?.stop_reason === "aborted" ||
-            event.message?.stopReason === "cancelled" ||
-            event.message?.stopReason === "aborted";
-          if (isCancelled) {
-            this.chatContainer.removeChild(this.currentStreamingAssistant);
-            this.currentStreamingAssistant = undefined;
-            break;
-          }
-          if (
-            !this.currentStreamingAssistant.getContentText() &&
-            contentStr
-          ) {
-            if (isError) {
-              this.chatContainer.removeChild(this.currentStreamingAssistant);
-              this.appendErrorMessage(contentStr);
-              this.hasRenderedTurnError = true;
-            } else {
-              this.currentStreamingAssistant.setContent(contentStr);
-            }
-          } else if (isError && contentStr) {
-            this.appendErrorMessage(contentStr);
-            this.hasRenderedTurnError = true;
-          }
-          this.currentStreamingAssistant.finalize();
-          this.latestAssistantMessage = this.currentStreamingAssistant;
-          this.currentStreamingAssistant = undefined;
-        } else if (
-          contentStr &&
-          event.message?.role === "assistant"
-        ) {
-          const isCancelled =
-            event.message?.metadata?.stop_reason === "cancelled" ||
-            event.message?.metadata?.stop_reason === "aborted" ||
-            event.message?.stopReason === "cancelled" ||
-            event.message?.stopReason === "aborted";
-          if (isCancelled) {
-            // 中断废弃的半截文本直接忽略，不新建气泡挂载
-            break;
-          }
-          if (isError) {
-            this.appendErrorMessage(contentStr);
-            this.hasRenderedTurnError = true;
-          } else {
-            const assistant = new AssistantMessageComponent();
-            assistant.setContent(contentStr);
-            assistant.finalize();
-            this.chatContainer.addChild(assistant);
-            this.chatContainer.addChild(new Spacer(1));
-            this.latestAssistantMessage = assistant;
-          }
-        }
-        if (event.usage) {
-          this.updateFooterUsage(event.usage, event.contextWindow);
-        }
-        break;
-      }
-
-      case "tool_execution_start": {
-        const id = event.toolCallId || `tc-${Date.now()}`;
-        const name = event.toolName || "tool";
-        const args = event.args || {};
-        const toolComponent = new ToolExecutionComponent(name, id, args, () =>
-          this.ui.requestRender(),
-        );
-        this.activeToolCalls.set(id, toolComponent);
-        this.toolStartTimes.set(id, Date.now());
-        this.chatContainer.addChild(toolComponent);
-        this.chatContainer.addChild(new Spacer(1));
-        this.updateStatusDisplay(`正在执行工具: ${name}...`);
-        break;
-      }
-
-      case "tool_execution_update": {
-        const id = event.toolCallId;
-        const toolComponent = this.activeToolCalls.get(id);
-        if (toolComponent && event.partialResult) {
-          toolComponent.updatePartialResult(event.partialResult);
-        }
-        break;
-      }
-
-      case "tool_execution_end": {
-        const id = event.toolCallId || event.tool_call_id;
-        const toolComponent = id ? this.activeToolCalls.get(id) : undefined;
-        if (toolComponent) {
-          toolComponent.updateResult(event.result, Boolean(event.isError));
-          this.toolStartTimes.delete(id);
-        }
-        if (this.isWorking) {
-          this.updateStatusDisplay("Working");
-        }
-        break;
-      }
-
-      case "turn_end": {
-        this.isWorking = false;
-        this.clearStatusDisplay();
-        if (event.usage) {
-          this.updateFooterUsage(event.usage, event.contextWindow);
-        }
-        break;
-      }
-
-      case "agent_end": {
-        try {
-          this.isStreaming = false;
-          this.isWorking = false;
-          this.isSubmitting = false;
-          this.pendingSteeringList = [];
-          this.pendingFollowupList = [];
-          this.updatePendingMessagesDisplay();
-          const stopReason = String(
-            event.stop_reason ?? event.stopReason ?? "",
-          );
-          const isError = stopReason === "error";
-          const isCancelled =
-            stopReason === "cancelled" || stopReason === "aborted";
-          const finalText = String(event.final_text ?? event.finalText ?? "");
-
-          if (this.currentStreamingAssistant) {
-            if (
-              isCancelled ||
-              (!this.currentStreamingAssistant.getContentText() &&
-                finalText &&
-                isError)
-            ) {
-              this.chatContainer.removeChild(this.currentStreamingAssistant);
-            } else {
-              this.currentStreamingAssistant.finalize();
-            }
-            this.currentStreamingAssistant = undefined;
-          }
-          // 自动闭合所有未正常结束的工具调用
-          for (const tool of this.activeToolCalls.values()) {
-            if (!tool.finished) {
-              tool.updateResult("执行中断", true);
-            }
-          }
-          this.activeToolCalls.clear();
-          this.toolStartTimes.clear();
-          if (event.usage) {
-            this.updateFooterUsage(event.usage, event.contextWindow);
-          }
-          if (isError && finalText && !this.hasRenderedTurnError) {
-            this.appendErrorMessage(finalText);
-            this.hasRenderedTurnError = true;
-          }
-        } finally {
-          this.clearStatusDisplay();
-          this.footer.update({ isBusy: false });
-        }
-        break;
-      }
-
-      case "context_compacted": {
-        if (event.tokensAfter !== undefined) {
-          this.footer.update({ contextTokens: event.tokensAfter });
-        }
-        this.appendSystemNotice(
-          `✓ 上下文已压缩: ${(event.tokensBefore ?? 0).toLocaleString()} -> ${(event.tokensAfter ?? 0).toLocaleString()} tokens`,
-        );
-        break;
-      }
-
-      case "auto_retry_start": {
-        const sec = ((event.delayMs || 2000) / 1000).toFixed(1);
-        const err = event.errorMessage ? `: ${event.errorMessage}` : "";
-        const text = `重试中 (${event.attempt}/${event.maxAttempts}) ${sec}s 后继续${err} (Esc 取消)`;
-        this.updateStatusDisplay(text);
-        break;
-      }
-
-      case "auto_retry_end": {
-        if (event.success) {
-          this.updateStatusDisplay("Working");
-        } else {
-          this.clearStatusDisplay();
-          if (event.finalError) {
-            this.appendErrorMessage(
-              `已达最大重试次数 (${event.attempt})，请求失败: ${event.finalError}`,
-            );
-            this.hasRenderedTurnError = true;
-          }
-        }
-        break;
-      }
-    }
-
-    this.ui.requestRender();
+    dispatchAgentEvent(this, event);
   }
 
   public getSlashCommands(): SlashCommand[] {
@@ -1102,186 +789,11 @@ export class InteractiveMode {
   // --------------------------------------------------------------------------
 
   public showModelSelector(initialSearch?: string): void {
-    this.showSelector((done) => {
-      const selector = new ModelSelectorComponent(
-        this.currentModelName,
-        async () => {
-          const res = await this.bridge.listModels({ scope: "configured" });
-          return ((res as any)?.models || []).map((m: any) => ({
-            id: m.id || m.name,
-            name: m.name || m.id,
-            provider: m.provider || "default",
-            contextWindow: m.contextWindow || m.context_window || 128000,
-            is_configured: m.is_configured ?? true,
-          }));
-        },
-        async (selected: ModelItem) => {
-          done();
-          if (selected) {
-            try {
-              this.currentModelName = selected.id;
-              const supported = this.getSupportedThinkingLevels();
-              if (
-                !supported.includes(this.currentThinkingLevel.toLowerCase())
-              ) {
-                this.currentThinkingLevel = supported[0] || "off";
-                void this.bridge.setThinking(this.currentThinkingLevel);
-              }
-              const ctxWin =
-                selected.contextWindow ||
-                (selected.id.startsWith("gemini-") ? 1048576 : 128000);
-              this.footer.update({
-                modelName: selected.id,
-                providerName: selected.provider,
-                thinkingLevel: this.currentThinkingLevel,
-                contextWindow: ctxWin,
-              });
-              this.updateEditorBorderColor();
-              const switchRes: any = await this.bridge.switchModel(
-                selected.id,
-                selected.provider,
-              );
-              if (switchRes?.context_window || switchRes?.contextWindow) {
-                this.footer.update({
-                  contextWindow:
-                    switchRes.context_window || switchRes.contextWindow,
-                });
-              }
-              this.appendSystemNotice(
-                `✓ 已成功切换至模型: ${selected.id} (${selected.provider})`,
-              );
-            } catch (err: any) {
-              this.appendErrorMessage(
-                `切换模型失败: ${err.message || String(err)}`,
-              );
-            }
-          }
-        },
-        () => done(),
-        initialSearch,
-        async (defaultModel: ModelItem) => {
-          done();
-          if (defaultModel) {
-            try {
-              this.currentModelName = defaultModel.id;
-              const supported = this.getSupportedThinkingLevels();
-              if (
-                !supported.includes(this.currentThinkingLevel.toLowerCase())
-              ) {
-                this.currentThinkingLevel = supported[0] || "off";
-                void this.bridge.setThinking(this.currentThinkingLevel);
-              }
-              const ctxWin =
-                defaultModel.contextWindow ||
-                (defaultModel.id.startsWith("gemini-") ? 1048576 : 128000);
-              this.footer.update({
-                modelName: defaultModel.id,
-                providerName: defaultModel.provider,
-                thinkingLevel: this.currentThinkingLevel,
-                contextWindow: ctxWin,
-              });
-              this.updateEditorBorderColor();
-              const switchRes: any = await this.bridge.switchModel(
-                defaultModel.id,
-                defaultModel.provider,
-              );
-              if (switchRes?.context_window || switchRes?.contextWindow) {
-                this.footer.update({
-                  contextWindow:
-                    switchRes.context_window || switchRes.contextWindow,
-                });
-              }
-              await this.bridge.setSetting("defaultModel", defaultModel.id);
-              await this.bridge.setSetting(
-                "defaultProvider",
-                defaultModel.provider,
-              );
-              this.appendSystemNotice(
-                `✓ 已成功切换并保存为默认模型: ${defaultModel.id} (${defaultModel.provider})`,
-              );
-            } catch (err: any) {
-              this.appendErrorMessage(
-                `设置默认模型失败: ${err.message || String(err)}`,
-              );
-            }
-          }
-        },
-        undefined,
-        () => this.ui.requestRender(),
-      );
-      return { component: selector, focus: selector };
-    });
+    openModelSelector(this, initialSearch);
   }
 
   public showSessionSelector(): void {
-    this.showSelector((done) => {
-      const selector = new SessionSelectorComponent(
-        async (allProjects: boolean) => {
-          const res = await this.bridge.listSessions(
-            allProjects ? { all_projects: true } : {},
-          );
-          return ((res as any)?.sessions || []).map((s: any) => ({
-            id: s.id || s.session_id,
-            name: s.name || s.title || s.first_message || s.session_id,
-            path: s.path,
-            modified:
-              s.modified ??
-              (s.updated_at
-                ? Math.floor(s.updated_at / 1000)
-                : Math.floor(Date.now() / 1000)),
-            cwd: s.cwd || s.workspace || this.workspace,
-            message_count: s.message_count || 0,
-            parent_session: s.parent_session || s.parent_session_path,
-            parent_session_path: s.parent_session_path || s.parent_session,
-          }));
-        },
-        async (session: SessionItem) => {
-          done();
-          if (session) {
-            try {
-              const target = session.path || session.id;
-              const res: any = await this.bridge.resumeSession(target);
-              if (res?.session_name || res?.session_id) {
-                this.footer.update({
-                  sessionName: res.session_name || res.session_id,
-                });
-              }
-              if (res?.usage) {
-                this.updateFooterUsage(
-                  res.usage,
-                  res.contextWindow ?? res.context_window,
-                );
-              }
-              this.renderSessionHistory(
-                res?.messages || [],
-                `✓ 已成功恢复会话: \`${res?.session_name || res?.session_id || session.id}\``,
-              );
-            } catch (err: any) {
-              this.appendErrorMessage(
-                `恢复会话失败: ${err.message || String(err)}`,
-              );
-            }
-          }
-        },
-        () => done(),
-        () => this.ui.requestRender(),
-        this.footer.getSessionName(),
-        async (sessionToDelete: SessionItem) => {
-          try {
-            await this.bridge.deleteSession(
-              sessionToDelete.path || sessionToDelete.id,
-            );
-            this.appendSystemNotice(
-              `✓ 已成功删除历史会话: \`${sessionToDelete.name || sessionToDelete.id}\``,
-            );
-          } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : String(err);
-            this.appendErrorMessage(`删除会话失败: ${msg}`);
-          }
-        },
-      );
-      return { component: selector, focus: selector };
-    });
+    openSessionSelector(this);
   }
 
   public getSupportedThinkingLevels(): string[] {
@@ -1369,239 +881,31 @@ export class InteractiveMode {
   }
 
   public showThinkingSelector(): void {
-    const levels = this.getSupportedThinkingLevels();
-    if (levels.length === 1 && levels[0] === "off") {
-      this.appendSystemNotice("当前模型不支持思考模式 (thinking: off)。");
-      return;
-    }
-    this.showSelector((done) => {
-      const selector = new ThinkingSelectorComponent(
-        this.currentThinkingLevel,
-        levels,
-        async (level: string) => {
-          done();
-          if (level) {
-            try {
-              this.currentThinkingLevel = level;
-              this.footer.update({ thinkingLevel: level });
-              this.updateEditorBorderColor();
-              await this.bridge.setThinking(level);
-              this.appendSystemNotice(`✓ 思考预算等级已调整为: ${level}`);
-            } catch (err: any) {
-              this.appendErrorMessage(
-                `设置思考预算失败: ${err.message || String(err)}`,
-              );
-            }
-          }
-        },
-        () => done(),
-      );
-      return { component: selector, focus: selector };
-    });
+    openThinkingSelector(this);
   }
 
   public showLoginSelector(): void {
-    this.showSelector((done) => {
-      const selector = new LoginSelectorComponent(
-        async (provider: string, key: string) => {
-          done();
-          try {
-            await this.bridge.login(provider, key);
-            this.appendSystemNotice(`✓ 已成功为 ${provider} 绑定 API 密钥。`);
-          } catch (err: any) {
-            this.appendErrorMessage(
-              `绑定 API 密钥失败: ${err.message || String(err)}`,
-            );
-          }
-        },
-        () => done(),
-      );
-      return { component: selector, focus: selector };
-    });
+    openLoginSelector(this);
   }
 
   public showLogoutSelector(): void {
-    this.showSelector((done) => {
-      const defaultProviders: LogoutProviderItem[] = [
-        { id: "deepseek", label: "DeepSeek", description: "deepseek API key" },
-        { id: "openai", label: "OpenAI", description: "openai API key" },
-        {
-          id: "anthropic",
-          label: "Anthropic",
-          description: "anthropic API key",
-        },
-        {
-          id: "antigravity",
-          label: "Antigravity",
-          description: "oauth credential",
-        },
-      ];
-      const selector = new LogoutSelectorComponent(
-        defaultProviders,
-        async (providerId: string) => {
-          done();
-          try {
-            await this.bridge.logout(providerId);
-            this.appendSystemNotice(`✓ 已成功注销 ${providerId} 的凭据。`);
-          } catch (err: any) {
-            this.appendErrorMessage(
-              `注销凭据失败: ${err.message || String(err)}`,
-            );
-          }
-        },
-        () => done(),
-      );
-      return { component: selector, focus: selector };
-    });
+    openLogoutSelector(this);
   }
 
   public showThemeSelector(): void {
-    const curTheme = theme.currentThemeName;
-    this.showSelector((done) => {
-      const selector = new ThemeSelectorComponent(
-        curTheme,
-        ["dark", "light"],
-        async (themeName: string) => {
-          done();
-          theme.setTheme(themeName);
-          try {
-            await this.bridge.setSetting("theme", themeName);
-          } catch {
-            // ignore
-          }
-          this.appendSystemNotice(`✓ 主题已切换至: ${themeName}`);
-          this.ui.requestRender();
-        },
-        () => {
-          theme.setTheme(curTheme);
-          done();
-          this.ui.requestRender();
-        },
-        (previewTheme: string) => {
-          theme.setTheme(previewTheme);
-          this.ui.requestRender();
-        },
-      );
-      return { component: selector, focus: selector };
-    });
+    openThemeSelector(this);
   }
 
   public showTreeSelector(): void {
-    this.showSelector((done) => {
-      const selector = new TreeSelectorComponent(
-        async () => {
-          const res = await this.bridge.getTree();
-          return ((res as any)?.nodes ||
-            (res as any)?.tree ||
-            []) as TreeNode[];
-        },
-        async (node: TreeNode) => {
-          done();
-          try {
-            const branchRes: any = await this.bridge.branchSession(node.id);
-            if (branchRes?.messages && Array.isArray(branchRes.messages)) {
-              this.renderSessionHistory(branchRes.messages);
-            }
-            if (branchRes?.editor_text) {
-              this.defaultEditor.setMessageContent(branchRes.editor_text);
-            }
-            this.appendSystemNotice(`✓ 已切换至分支节点: ${node.id}`);
-          } catch (err: any) {
-            this.appendErrorMessage(
-              `切换分支失败: ${err.message || String(err)}`,
-            );
-          }
-        },
-        () => done(),
-        undefined,
-        () => this.ui.requestRender(),
-      );
-      return { component: selector, focus: selector };
-    });
+    openTreeSelector(this);
   }
 
   public async showForkSelector(): Promise<void> {
-    const userMessages: UserMessageItem[] = [];
-    try {
-      const res: any = await this.bridge.getTree();
-      const tree: TreeNode[] = (res?.tree || res?.nodes || []) as TreeNode[];
-      for (const n of tree) {
-        if (n.role === "user") {
-          userMessages.push({ id: n.id, text: n.preview || n.id });
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    if (userMessages.length === 0) {
-      this.appendSystemNotice("当前会话暂无历史用户消息可供分叉。");
-      return;
-    }
-
-    this.showSelector((done) => {
-      const selector = new UserMessageSelectorComponent(
-        userMessages,
-        async (msg: UserMessageItem) => {
-          done();
-          try {
-            const client = (this.bridge as any).client;
-            const res: any =
-              (await client?.sendRequest?.("session_fork", {
-                entry_id: msg.id,
-              })) || (await (this.bridge as any).forkSession?.(msg.id));
-            if (res?.messages) {
-              if (res?.new_session_id) {
-                this.footer.update({ sessionName: res.new_session_id });
-              }
-              this.renderSessionHistory(
-                res.messages,
-                `✓ 已从用户提问分叉开辟新会话: ${res.new_session_id || msg.id}`,
-              );
-            } else {
-              this.appendSystemNotice(
-                `✓ 已成功从节点 ${msg.id} 分叉开辟新会话: ${res?.new_session_id || ""}`,
-              );
-            }
-          } catch (err: any) {
-            this.appendErrorMessage(
-              `分叉会话失败: ${err.message || String(err)}`,
-            );
-          }
-        },
-        () => done(),
-      );
-      return { component: selector, focus: selector };
-    });
+    await openForkSelector(this);
   }
 
   public async showSettingsSelector(): Promise<void> {
-    let currentSettings: Record<string, unknown> = {};
-    try {
-      const res: any = await this.bridge.getSettings();
-      if (res?.settings) {
-        currentSettings = res.settings;
-      }
-    } catch {
-      // ignore
-    }
-
-    this.showSelector((done) => {
-      const selector = new SettingsSelectorComponent(
-        currentSettings,
-        async (key: string, value: unknown) => {
-          try {
-            await this.bridge.setSetting(key, value);
-          } catch (err: any) {
-            this.appendErrorMessage(
-              `修改配置失败: ${err.message || String(err)}`,
-            );
-          }
-        },
-        () => done(),
-      );
-      return { component: selector, focus: selector };
-    });
+    await openSettingsSelector(this);
   }
 
   // --------------------------------------------------------------------------
@@ -1642,237 +946,15 @@ export class InteractiveMode {
   }
 
   public renderSessionHistory(messages: any[], banner?: string): void {
-    this.chatContainer.clear();
-    this.activeToolCalls.clear();
-    this.toolStartTimes.clear();
-    this.currentStreamingAssistant = undefined;
-
-    if (banner) {
-      const bannerComp = new AssistantMessageComponent();
-      bannerComp.appendTextDelta(banner);
-      bannerComp.finalize();
-      this.chatContainer.addChild(bannerComp);
-    } else if (!messages || messages.length === 0) {
-      const welcome = new Text(
-        theme.fg(
-          "muted",
-          "欢迎使用 my-pi-agent！输入需求或按 / 开启命令菜单。",
-        ),
-        1,
-        0,
-      );
-      this.chatContainer.addChild(welcome);
-    }
-
-    if (!messages || messages.length === 0) {
-      this.ui.requestRender();
-      return;
-    }
-
-    const pendingTools = new Map<string, ToolExecutionComponent>();
-
-    for (const msg of messages) {
-      if (
-        msg.role === "compaction" ||
-        msg.type === "compaction" ||
-        msg.role === "compactionSummary"
-      ) {
-        const compComponent = new CompactionSummaryMessageComponent({
-          summary: String(msg.summary || msg.content || ""),
-          tokensBefore: Number(msg.tokens_before || msg.tokensBefore || 0),
-        });
-        this.chatContainer.addChild(new Spacer(1));
-        this.chatContainer.addChild(compComponent);
-        continue;
-      }
-      if (msg.role === "user") {
-        const userText =
-          typeof msg.content === "string"
-            ? msg.content
-            : Array.isArray(msg.content)
-              ? msg.content
-                  .map((b: any) =>
-                    typeof b === "string" ? b : b?.type === "image" ? "[image]" : b?.text || b?.content || "",
-                  )
-                  .join("")
-              : String(msg.content ?? "");
-        this.chatContainer.addChild(new UserMessageComponent(userText));
-      } else if (msg.role === "assistant") {
-        const assistantComp = new AssistantMessageComponent();
-        const thinking =
-          msg.metadata?.thinking || msg.metadata?.reasoning_content;
-        if (thinking) {
-          assistantComp.setReasoning(String(thinking));
-        }
-        const assistantText =
-          typeof msg.content === "string"
-            ? msg.content
-            : Array.isArray(msg.content)
-              ? msg.content
-                  .map((b: any) =>
-                    typeof b === "string" ? b : b?.text || b?.content || "",
-                  )
-                  .join("")
-              : msg.content == null
-                ? ""
-                : String(msg.content);
-        if (assistantText) {
-          assistantComp.setContent(assistantText);
-        }
-        assistantComp.finalize();
-        this.chatContainer.addChild(assistantComp);
-
-        const toolCalls = msg.metadata?.tool_calls;
-        if (Array.isArray(toolCalls)) {
-          for (const tc of toolCalls) {
-            const rawTc = tc as Record<string, unknown>;
-            const toolName = String(
-              rawTc.name ||
-                (rawTc.function as Record<string, unknown>)?.name ||
-                "tool",
-            );
-            const callId = String(rawTc.id || "");
-            let parsedArgs: Record<string, unknown> = {};
-            if (rawTc.args && typeof rawTc.args === "object") {
-              parsedArgs = rawTc.args as Record<string, unknown>;
-            } else if ((rawTc.function as Record<string, unknown>)?.arguments) {
-              const fnArgs = (rawTc.function as Record<string, unknown>)
-                .arguments;
-              if (typeof fnArgs === "string") {
-                try {
-                  parsedArgs = JSON.parse(fnArgs);
-                } catch {
-                  parsedArgs = { raw: fnArgs };
-                }
-              } else if (typeof fnArgs === "object" && fnArgs !== null) {
-                parsedArgs = fnArgs as Record<string, unknown>;
-              }
-            } else if (rawTc.arguments && typeof rawTc.arguments === "object") {
-              parsedArgs = rawTc.arguments as Record<string, unknown>;
-            }
-            const toolComp = new ToolExecutionComponent(
-              toolName,
-              callId,
-              parsedArgs,
-            );
-            this.chatContainer.addChild(toolComp);
-            if (callId) {
-              pendingTools.set(callId, toolComp);
-            }
-          }
-        }
-      } else if (msg.role === "tool") {
-        const callId = String(msg.metadata?.tool_call_id || "");
-        const toolComp = callId ? pendingTools.get(callId) : undefined;
-        const isError = Boolean(msg.metadata?.is_error);
-        if (toolComp) {
-          toolComp.updateResult(msg.content, isError);
-          pendingTools.delete(callId);
-        } else {
-          const toolName = String(msg.metadata?.tool_name || "tool");
-          const standalone = new ToolExecutionComponent(toolName, callId, {});
-          standalone.updateResult(msg.content, isError);
-          this.chatContainer.addChild(standalone);
-        }
-      }
-    }
-
-    for (const toolComp of pendingTools.values()) {
-      if (!toolComp.finished) {
-        toolComp.updateResult("(已完成)", false);
-      }
-    }
-
-    this.transcriptScrollView?.scrollToEnd?.();
-    this.ui.requestRender();
+    renderSessionHistory(this, messages, banner);
   }
 
   public renderPiSessionStats(stats: any): void {
-    let info = `${theme.bold("Session Info")}\n\n`;
-    const sessionName =
-      stats.sessionName || (this.footer as any)?.data?.sessionName;
-    if (sessionName) {
-      info += `${theme.fg("dim", "Name:")} ${sessionName}\n`;
-    }
-    info += `${theme.fg("dim", "File:")}\n${stats.sessionFile ?? "In-memory"}\n`;
-    info += `${theme.fg("dim", "ID:")} ${stats.sessionId}\n\n`;
-
-    info += `${theme.bold("Messages")}\n`;
-    info += `${theme.fg("dim", "Total:")} ${stats.totalMessages ?? 0}\n`;
-    info += `${theme.fg("dim", "User:")} ${stats.userMessages ?? 0}\n`;
-    info += `${theme.fg("dim", "Assistant:")} ${stats.assistantMessages ?? 0}\n`;
-    info += `${theme.fg("dim", "Tools:")} ${stats.toolCalls ?? 0} calls, ${stats.toolResults ?? 0} results\n\n`;
-
-    info += `${theme.bold("Tokens")}\n`;
-    const tokens = stats.tokens || {};
-    const input = Number(tokens.input ?? 0);
-    const cacheRead = Number(tokens.cacheRead ?? 0);
-    const cacheWrite = Number(tokens.cacheWrite ?? 0);
-    const output = Number(tokens.output ?? 0);
-    const promptTokens = input + cacheRead + cacheWrite;
-    const total = Number(tokens.total ?? promptTokens + output);
-
-    info += `${theme.fg("dim", "Input:")} ${promptTokens.toLocaleString()}\n`;
-    if (promptTokens > 0 && (cacheRead > 0 || cacheWrite > 0)) {
-      const hitRate = theme.fg(
-        "dim",
-        `(${((cacheRead / promptTokens) * 100).toFixed(1)}%)`,
-      );
-      info += `  ${theme.fg("dim", "Cached:")} ${cacheRead.toLocaleString()} ${hitRate}\n`;
-      const written =
-        cacheWrite > 0
-          ? ` ${theme.fg("dim", `(${cacheWrite.toLocaleString()} written to cache)`)}`
-          : "";
-      info += `  ${theme.fg("dim", "Uncached:")} ${(input + cacheWrite).toLocaleString()}${written}\n`;
-    }
-    info += `${theme.fg("dim", "Output:")} ${output.toLocaleString()}\n`;
-    info += `${theme.fg("dim", "Total:")} ${total.toLocaleString()}\n`;
-
-    const cost = Number(stats.cost ?? 0);
-    const breakdown = stats.usageBreakdown || [];
-    const cacheWaste = stats.cacheWaste || {};
-    if (cost > 0 || (cacheWaste.missedTokens && cacheWaste.missedTokens > 0)) {
-      info += `\n${theme.bold("Cost")}\n`;
-      info += `${theme.fg("dim", "Total:")} $${cost.toFixed(3)}`;
-      if (breakdown.length > 0) {
-        for (const entry of breakdown) {
-          info += `\n  ${theme.fg("dim", `${entry.key}:`)} $${Number(entry.cost ?? 0).toFixed(3)} ${theme.fg("dim", `(${formatTokens(entry.tokens ?? 0)} tokens)`)}`;
-        }
-      }
-      if (cacheWaste.missedTokens > 0) {
-        const missLabel =
-          cacheWaste.missCount === 1
-            ? "1 miss"
-            : `${cacheWaste.missCount} misses`;
-        const detail = `${cacheWaste.missedTokens.toLocaleString()} tokens, ${missLabel}`;
-        info +=
-          cacheWaste.missedCost >= 0.0001
-            ? `\n${theme.fg("dim", "Cache Re-billed:")} $${cacheWaste.missedCost.toFixed(3)} ${theme.fg("dim", `(${detail})`)}`
-            : `\n${theme.fg("dim", "Cache Re-billed:")} ${detail}`;
-      }
-    }
-
-    this.chatContainer.addChild(new Spacer(1));
-    this.chatContainer.addChild(new Text(info, 1, 0));
-    this.ui.requestRender();
+    renderPiSessionStats(this, stats);
   }
 
   public renderFallbackSessionStats(): void {
-    const sessionName = (this.footer as any)?.data?.sessionName || "default";
-    const model = this.currentModelName;
-    const thinking = this.currentThinkingLevel;
-    const messageCount = this.chatContainer.children.length;
-    const info = [
-      theme.bold("Session Info"),
-      "",
-      `  ${theme.fg("dim", "Name:")} ${sessionName}`,
-      `  ${theme.fg("dim", "Workspace:")} ${this.workspace}`,
-      `  ${theme.fg("dim", "Model:")} ${model} (thinking: ${thinking})`,
-      `  ${theme.fg("dim", "Messages:")} ${messageCount}`,
-    ].join("\n");
-    this.chatContainer.addChild(new Spacer(1));
-    this.chatContainer.addChild(new Text(info, 1, 0));
-    this.ui.requestRender();
+    renderFallbackSessionStats(this);
   }
 
   // --------------------------------------------------------------------------

@@ -127,486 +127,437 @@ export interface SlashCommandContext {
   showSettingsSelector(): void;
 }
 
+export type SlashCommandHandler = (
+  mode: SlashCommandContext,
+  args: string,
+) => Promise<void> | void;
+
+const STREAMING_MUTATION_COMMANDS = new Set([
+  "clear",
+  "new",
+  "resume",
+  "session",
+  "compact",
+  "clone",
+  "fork",
+  "branch",
+]);
+
+// ── 单一职责命令处理器 ─────────────────────────────────────────────
+
+async function handleClear(mode: SlashCommandContext): Promise<void> {
+  if (mode.isStreaming) {
+    mode.appendErrorMessage("当前智能体正在执行中，无法清空屏幕会话。");
+    return;
+  }
+  mode.chatContainer.clear();
+  mode.ui.requestRender();
+}
+
+function handleHelp(mode: SlashCommandContext): void {
+  mode.appendSystemNotice(
+    "可用命令列表：\n" +
+      BUILTIN_SLASH_COMMANDS.map(
+        (c) => `  /${c.name.padEnd(12)} - ${c.description}`,
+      ).join("\n"),
+  );
+}
+
+async function handleModel(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    const allModelsRes: any = await mode.bridge.listModels({ scope: "all" });
+    const models: ModelItem[] = ((allModelsRes as any)?.models || []).map((m: any) => ({
+      id: m.id || m.name,
+      provider: m.provider || "default",
+      contextWindow: m.contextWindow || m.context_window,
+    }));
+    const matched = models.find(
+      (m) =>
+        m.id.toLowerCase() === args.toLowerCase() ||
+        `${m.provider}/${m.id}`.toLowerCase() === args.toLowerCase(),
+    );
+    if (matched) {
+      mode.currentModelName = matched.id;
+      const ctxWin =
+        matched.contextWindow ||
+        (matched.id.startsWith("gemini-") ? 1048576 : 128000);
+      mode.footer.update({
+        modelName: matched.id,
+        providerName: matched.provider,
+        contextWindow: ctxWin,
+      });
+      const switchRes: any = await mode.bridge.switchModel(matched.id, matched.provider);
+      if (switchRes?.context_window || switchRes?.contextWindow) {
+        mode.footer.update({
+          contextWindow: switchRes.context_window || switchRes.contextWindow,
+        });
+      }
+      mode.appendSystemNotice(`✓ 已成功切换至模型: ${matched.id} (${matched.provider})`);
+    } else {
+      mode.showModelSelector(args);
+    }
+  } else {
+    mode.showModelSelector();
+  }
+}
+
+async function handleSession(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    const res: any = await mode.bridge.resumeSession(args);
+    if (res?.session_name || res?.session_id) {
+      mode.footer.update({ sessionName: res.session_name || res.session_id });
+    }
+    mode.renderSessionHistory(res?.messages || [], `✓ 已成功恢复历史会话 [${args}]`);
+  } else {
+    try {
+      const res: any = await mode.bridge.getSessionStats();
+      if (res?.stats) {
+        mode.renderPiSessionStats(res.stats);
+      } else {
+        mode.renderFallbackSessionStats();
+      }
+    } catch {
+      mode.renderFallbackSessionStats();
+    }
+  }
+}
+
+async function handleResume(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    try {
+      const res: any = await mode.bridge.resumeSession(args);
+      if (res?.session_name || res?.session_id) {
+        mode.footer.update({ sessionName: res.session_name || res.session_id });
+      }
+      if (res?.usage) {
+        mode.updateFooterUsage(res.usage, res.contextWindow ?? res.context_window);
+      }
+      mode.renderSessionHistory(res?.messages || [], `✓ 已成功恢复历史会话 [${args}]`);
+    } catch (err: any) {
+      mode.appendErrorMessage(`恢复会话失败: ${err.message || String(err)}`);
+    }
+  } else {
+    mode.showSessionSelector();
+  }
+}
+
+async function handleThinking(mode: SlashCommandContext, args: string): Promise<void> {
+  const validLevels = ["off", "minimal", "low", "medium", "high", "xhigh", "max"];
+  if (args) {
+    const normalized = args.trim().toLowerCase();
+    if (validLevels.includes(normalized)) {
+      mode.currentThinkingLevel = normalized;
+      mode.footer.update({ thinkingLevel: normalized });
+      mode.updateEditorBorderColor();
+      await mode.bridge.setThinking(normalized);
+      mode.appendSystemNotice(`✓ 思考预算已更新为: ${normalized}`);
+    } else {
+      mode.appendErrorMessage(`未知思考等级 "${args}"。可用等级: ${validLevels.join(", ")}。`);
+    }
+  } else {
+    mode.showThinkingSelector();
+  }
+}
+
+async function handleLogin(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    const parts = args.split(" ");
+    const provider = parts[0] || "";
+    const key = parts.slice(1).join(" ");
+    const client = (mode.bridge as any).client;
+    const res =
+      (await client?.sendRequest?.("login", { provider, key })) ||
+      (await client?.request?.("login", { provider, key })) ||
+      (await mode.bridge.login(provider, key));
+    mode.appendSystemNotice(res?.message || `✓ 成功保存 ${provider.toUpperCase()}_API_KEY`);
+  } else {
+    mode.showLoginSelector();
+  }
+}
+
+async function handleLogout(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    const client = (mode.bridge as any).client;
+    const res: any =
+      (await client?.sendRequest?.("auth_logout", { provider: args })) ||
+      (await mode.bridge.logout(args));
+    mode.appendSystemNotice(`✓ 已成功清除 ${res?.provider || args} 的认证凭据。`);
+  } else {
+    mode.showLogoutSelector();
+  }
+}
+
+async function handleNew(mode: SlashCommandContext): Promise<void> {
+  const client = (mode.bridge as any).client;
+  const res: any =
+    (await client?.sendRequest?.("session_new", {})) ||
+    (await client?.request?.("session_new", {})) ||
+    (await mode.bridge.newSession());
+  mode.chatContainer.clear();
+  const sid = res?.session_id || res?.new_session_id || res?.id || "";
+  const sname = res?.session_name || sid;
+  if (res?.usage) {
+    mode.updateFooterUsage(res.usage, res.context_window || res.contextWindow);
+  } else {
+    mode.footer.update({
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      totalTokens: 0,
+      contextTokens: 0,
+      costUsd: 0,
+      cacheHitRate: undefined,
+    });
+  }
+  mode.footer.update({
+    sessionName: sname,
+    contextWindow: res?.context_window || res?.contextWindow || mode.footer.getContextWindow(),
+  });
+  mode.appendSystemNotice(`✓ 已成功结束旧会话并开启新会话: ${sid}`);
+}
+
+async function handleName(mode: SlashCommandContext, args: string): Promise<void> {
+  if (!args) {
+    const currentName = (mode.footer as any)?.data?.sessionName || "未命名会话 (default)";
+    mode.appendSystemNotice(`当前会话名称: ${currentName}\n修改名称用法: /name <新名称>`);
+    return;
+  }
+  const res: any =
+    (await (mode.bridge as any).sessionName?.(args)) ??
+    (await (mode.bridge.client as any).sendRequest?.("session_name", { name: args }));
+  const newName = res?.name || args;
+  mode.footer.update({ sessionName: newName });
+  mode.appendSystemNotice(`✓ 会话名称已更新: ${newName}`);
+}
+
+async function handleCompact(mode: SlashCommandContext, args: string): Promise<void> {
+  mode.isStreaming = true;
+  mode.clearStatusDisplay();
+  const compIndicator = new CompactionStatusIndicator(mode.ui, "manual");
+  compIndicator.start();
+  mode.activeStatusIndicator = compIndicator;
+  mode.defaultEditor.setWorkingStatusIndicator(compIndicator);
+  mode.footer.update({ isBusy: true });
+  mode.ui.requestRender();
+  try {
+    const client = (mode.bridge as any).client;
+    const res: any =
+      (await client?.sendRequest?.("session_compact", { instructions: args })) ||
+      (await client?.request?.("session_compact", { instructions: args })) ||
+      (await (mode.bridge as any).compact?.(args));
+
+    if (res?.tokens_after !== undefined) {
+      mode.footer.update({ contextTokens: res.tokens_after });
+    }
+
+    if (res?.summary) {
+      const compComponent = new CompactionSummaryMessageComponent({
+        summary: res.summary,
+        tokensBefore: res.tokens_before ?? 0,
+      });
+      mode.chatContainer.addChild(new Spacer(1));
+      mode.chatContainer.addChild(compComponent);
+    }
+  } catch (err: any) {
+    mode.appendErrorMessage(`压缩失败: ${err.message || String(err)}`);
+  } finally {
+    mode.isStreaming = false;
+    mode.clearStatusDisplay();
+    mode.footer.update({ isBusy: false });
+    mode.ui.requestRender();
+  }
+}
+
+async function handleClone(mode: SlashCommandContext): Promise<void> {
+  const res: any = await (
+    (mode.bridge as any).cloneSession?.() ??
+    (mode.bridge.client as any).sendRequest?.("session_clone")
+  );
+  const newId = res?.new_session_id || "";
+  if (newId) {
+    mode.footer.update({ sessionName: newId });
+  }
+  mode.appendSystemNotice(`✓ 已克隆当前会话开辟全新探索副本: ${newId}`);
+}
+
+async function handleFork(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    const client = (mode.bridge as any).client;
+    const res: any =
+      (await client?.sendRequest?.("session_fork", { node_id: args })) ||
+      (await (mode.bridge as any).forkSession?.(args));
+    mode.appendSystemNotice(`✓ 已成功从节点 ${args} 分叉开辟新会话: ${res?.new_session_id || ""}`);
+  } else {
+    await mode.showForkSelector();
+  }
+}
+
+async function handleReload(mode: SlashCommandContext): Promise<void> {
+  const res: any =
+    (await (mode.bridge as any).reloadResources?.()) ??
+    (await (mode.bridge.client as any).sendRequest?.("resource_reload"));
+  if (res?.resources) {
+    mode.updateResources(res.resources);
+  }
+  mode.appendSystemNotice(`✓ 资源重载完成: ${res?.summary || ""}`);
+}
+
+async function handleTrust(mode: SlashCommandContext, args: string): Promise<void> {
+  const res: any =
+    (await (mode.bridge as any).setTrust?.(args === "true")) ??
+    (await (mode.bridge.client as any).sendRequest?.("trust_set", { trusted: args === "true" }));
+  mode.appendSystemNotice(
+    `✓ 项目信任状态已设置为: ${res?.decision || (args === "true" ? "trusted" : "untrusted")} (${res?.path || mode.workspace})`,
+  );
+}
+
+function handleQuota(mode: SlashCommandContext): void {
+  mode.appendSystemNotice("当前配额状态：正常");
+}
+
+async function handleDebug(mode: SlashCommandContext): Promise<void> {
+  try {
+    const client = (mode.bridge as any).client;
+    const res: any =
+      (await client?.request?.("debug_dump", {})) ||
+      (await client?.sendRequest?.("debug_dump", {}));
+    if (res?.dump_file) {
+      const lines = [`✓ 调试快照已导出至: ${res.dump_file}`];
+      if (res?.log_file) lines.push(`  会话调试日志: ${res.log_file}`);
+      if (res?.events_file) lines.push(`  会话事件流: ${res.events_file}`);
+      mode.appendSystemNotice(lines.join("\n"));
+    } else {
+      mode.appendErrorMessage("导出调试快照失败。");
+    }
+  } catch (err: any) {
+    mode.appendErrorMessage(`导出调试快照异常: ${err.message || String(err)}`);
+  }
+}
+
+async function handleSteer(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    await mode.bridge.steer(args);
+    mode.appendSystemNotice(`[Steer 提示已注入]: ${args}`);
+  }
+}
+
+async function handleFollowup(mode: SlashCommandContext, args: string): Promise<void> {
+  if (args) {
+    await mode.bridge.followUp(args);
+    mode.appendSystemNotice(`[Followup 任务已排队]: ${args}`);
+  }
+}
+
+function handleCopy(mode: SlashCommandContext): void {
+  const target = mode.currentStreamingAssistant || mode.latestAssistantMessage;
+  const text = target?.getContentText();
+  if (!text) {
+    mode.appendErrorMessage("当前暂无智能体消息可供复制。");
+    return;
+  }
+  const isWindows = process.platform === "win32";
+  const isMac = process.platform === "darwin";
+  try {
+    let proc;
+    if (isWindows) {
+      proc = spawn("clip");
+    } else if (isMac) {
+      proc = spawn("pbcopy");
+    } else {
+      proc = spawn("xclip", ["-selection", "clipboard"]);
+    }
+    proc.on("error", () => {});
+    proc.stdin?.write(text);
+    proc.stdin?.end();
+  } catch {
+    // ignore clipboard error
+  }
+  mode.appendSystemNotice("✓ 已将最后一条智能体回答内容复制到系统剪贴板。");
+}
+
+function handleHotkeys(mode: SlashCommandContext): void {
+  const list = [
+    theme.bold("常用键盘快捷键说明清单 (Hotkeys):"),
+    "",
+    `  ${theme.bold("导航与视口 (Navigation):")}`,
+    `    ↑ / ↓         在选择器列表中上下选择条目`,
+    `    Tab           切换选择器范围 (all vs scoped)`,
+    `    Ctrl+O        展开 / 折叠思考过程 (Thinking) 与工具执行卡片`,
+    "",
+    `  ${theme.bold("编辑与会话 (Editing):")}`,
+    `    Enter         提交提问 (在输入框) 或确认当前所选条目 (在选择器)`,
+    `    Ctrl+V        粘贴剪贴板图片（也支持 Ctrl+Shift+V）`,
+    `    Ctrl+Q        排队追问 (Follow-up) 当前任务完成后自动顺延执行`,
+    `    Alt+Q/Alt+Up  召回并编辑全部待发排队消息 (Steering & Follow-up)`,
+    `    Ctrl+C        清空当前输入文字 (输入框有文字时) / 关闭弹窗 (选择器中)`,
+    `    Ctrl+D        快速退出终端 (仅当输入框为空时生效)`,
+    `    Ctrl+L        快速唤起模型选择器 (Model Catalog)`,
+    "",
+    `  ${theme.bold("流程与控制 (Control):")}`,
+    `    Esc           中断当前正在执行的流式回答 (Abort) / 取消并关闭弹窗`,
+    `    Shift+Tab     轮转切换思考预算深度 (off -> low -> high -> max)`,
+    `    /             呼出全部斜杠命令菜单与自动补全`,
+    `    !cmd          执行本地 Shell 命令并将输出加入上下文`,
+    `    !!cmd         静默执行本地 Shell 命令 (不加入对话上下文)`,
+  ].join("\n");
+  mode.appendSystemNotice(list);
+}
+
+// ── 派发表 (Command Dispatch Map) ─────────────────────────────────
+
+const COMMAND_DISPATCH: Record<string, SlashCommandHandler> = {
+  clear: handleClear,
+  help: handleHelp,
+  model: handleModel,
+  session: handleSession,
+  resume: handleResume,
+  thinking: handleThinking,
+  login: handleLogin,
+  logout: handleLogout,
+  theme: (mode) => mode.showThemeSelector(),
+  tree: (mode) => mode.showTreeSelector(),
+  settings: (mode) => mode.showSettingsSelector(),
+  new: handleNew,
+  name: handleName,
+  compact: handleCompact,
+  clone: handleClone,
+  fork: handleFork,
+  branch: handleFork, // branch 别名映射至 fork
+  reload: handleReload,
+  trust: handleTrust,
+  quota: handleQuota,
+  debug: handleDebug,
+  steer: handleSteer,
+  followup: handleFollowup,
+  copy: handleCopy,
+  hotkeys: handleHotkeys,
+  quit: (mode) => void mode.handleExit(),
+  exit: (mode) => void mode.handleExit(),
+};
+
+/**
+ * 执行斜杠命令的主分发入口。
+ */
 export async function executeSlashCommand(mode: SlashCommandContext, input: string): Promise<void> {
   const parts = input.slice(1).split(" ");
   const cmd = (parts[0] || "").toLowerCase();
   const args = parts.slice(1).join(" ").trim();
 
-  if (
-    mode.isStreaming &&
-    [
-      "clear",
-      "new",
-      "resume",
-      "session",
-      "compact",
-      "clone",
-      "fork",
-    ].includes(cmd)
-  ) {
+  if (mode.isStreaming && STREAMING_MUTATION_COMMANDS.has(cmd)) {
     mode.appendErrorMessage(`当前智能体正在执行中，无法执行 /${cmd} 操作。`);
     return;
   }
 
+  const handler = COMMAND_DISPATCH[cmd];
+  if (!handler) {
+    mode.appendErrorMessage(`未知命令 /${cmd}，输入 /help 查看可用命令。`);
+    return;
+  }
+
   try {
-    switch (cmd) {
-      case "clear": {
-        if (mode.isStreaming) {
-          mode.appendErrorMessage("当前智能体正在执行中，无法清空屏幕会话。");
-          return;
-        }
-        mode.chatContainer.clear();
-        mode.ui.requestRender();
-        break;
-      }
-      case "help": {
-        mode.appendSystemNotice(
-          "可用命令列表：\n" +
-            BUILTIN_SLASH_COMMANDS.map(
-              (c) => `  /${c.name.padEnd(12)} - ${c.description}`,
-            ).join("\n"),
-        );
-        break;
-      }
-      case "model": {
-        if (args) {
-          const allModelsRes: any = await mode.bridge.listModels({
-            scope: "all",
-          });
-          const models: ModelItem[] = (
-            (allModelsRes as any)?.models || []
-          ).map((m: any) => ({
-            id: m.id || m.name,
-            provider: m.provider || "default",
-            contextWindow: m.contextWindow || m.context_window,
-          }));
-          const matched = models.find(
-            (m) =>
-              m.id.toLowerCase() === args.toLowerCase() ||
-              `${m.provider}/${m.id}`.toLowerCase() === args.toLowerCase(),
-          );
-          if (matched) {
-            mode.currentModelName = matched.id;
-            const ctxWin =
-              matched.contextWindow ||
-              (matched.id.startsWith("gemini-") ? 1048576 : 128000);
-            mode.footer.update({
-              modelName: matched.id,
-              providerName: matched.provider,
-              contextWindow: ctxWin,
-            });
-            const switchRes: any = await mode.bridge.switchModel(
-              matched.id,
-              matched.provider,
-            );
-            if (switchRes?.context_window || switchRes?.contextWindow) {
-              mode.footer.update({
-                contextWindow:
-                  switchRes.context_window || switchRes.contextWindow,
-              });
-            }
-            mode.appendSystemNotice(
-              `✓ 已成功切换至模型: ${matched.id} (${matched.provider})`,
-            );
-          } else {
-            mode.showModelSelector(args);
-          }
-        } else {
-          mode.showModelSelector();
-        }
-        break;
-      }
-      case "session": {
-        if (args) {
-          const res: any = await mode.bridge.resumeSession(args);
-          if (res?.session_name || res?.session_id) {
-            mode.footer.update({
-              sessionName: res.session_name || res.session_id,
-            });
-          }
-          mode.renderSessionHistory(
-            res?.messages || [],
-            `✓ 已成功恢复历史会话 [${args}]`,
-          );
-        } else {
-          try {
-            const res: any = await mode.bridge.getSessionStats();
-            if (res?.stats) {
-              mode.renderPiSessionStats(res.stats);
-            } else {
-              mode.renderFallbackSessionStats();
-            }
-          } catch {
-            mode.renderFallbackSessionStats();
-          }
-        }
-        break;
-      }
-      case "resume": {
-        if (args) {
-          try {
-            const res: any = await mode.bridge.resumeSession(args);
-            if (res?.session_name || res?.session_id) {
-              mode.footer.update({
-                sessionName: res.session_name || res.session_id,
-              });
-            }
-            if (res?.usage) {
-              mode.updateFooterUsage(
-                res.usage,
-                res.contextWindow ?? res.context_window,
-              );
-            }
-            mode.renderSessionHistory(
-              res?.messages || [],
-              `✓ 已成功恢复历史会话 [${args}]`,
-            );
-          } catch (err: any) {
-            mode.appendErrorMessage(
-              `恢复会话失败: ${err.message || String(err)}`,
-            );
-          }
-        } else {
-          mode.showSessionSelector();
-        }
-        break;
-      }
-      case "thinking": {
-        const validLevels = [
-          "off",
-          "minimal",
-          "low",
-          "medium",
-          "high",
-          "xhigh",
-          "max",
-        ];
-        if (args) {
-          const normalized = args.trim().toLowerCase();
-          if (validLevels.includes(normalized)) {
-            mode.currentThinkingLevel = normalized;
-            mode.footer.update({ thinkingLevel: normalized });
-            mode.updateEditorBorderColor();
-            await mode.bridge.setThinking(normalized);
-            mode.appendSystemNotice(`✓ 思考预算已更新为: ${normalized}`);
-          } else {
-            mode.appendErrorMessage(
-              `未知思考等级 "${args}"。可用等级: ${validLevels.join(", ")}。`,
-            );
-          }
-        } else {
-          mode.showThinkingSelector();
-        }
-        break;
-      }
-      case "login": {
-        if (args) {
-          const parts = args.split(" ");
-          const provider = parts[0] || "";
-          const key = parts.slice(1).join(" ");
-          const client = (mode.bridge as any).client;
-          const res =
-            (await client?.sendRequest?.("login", { provider, key })) ||
-            (await client?.request?.("login", { provider, key })) ||
-            (await mode.bridge.login(provider, key));
-          mode.appendSystemNotice(
-            res?.message || `✓ 成功保存 ${provider.toUpperCase()}_API_KEY`,
-          );
-        } else {
-          mode.showLoginSelector();
-        }
-        break;
-      }
-      case "logout": {
-        if (args) {
-          const client = (mode.bridge as any).client;
-          const res: any =
-            (await client?.sendRequest?.("auth_logout", {
-              provider: args,
-            })) || (await mode.bridge.logout(args));
-          mode.appendSystemNotice(
-            `✓ 已成功清除 ${res?.provider || args} 的认证凭据。`,
-          );
-        } else {
-          mode.showLogoutSelector();
-        }
-        break;
-      }
-      case "theme": {
-        mode.showThemeSelector();
-        break;
-      }
-      case "tree": {
-        mode.showTreeSelector();
-        break;
-      }
-      case "settings": {
-        await mode.showSettingsSelector();
-        break;
-      }
-      case "new": {
-        const client = (mode.bridge as any).client;
-        const res: any =
-          (await client?.sendRequest?.("session_new", {})) ||
-          (await client?.request?.("session_new", {})) ||
-          (await mode.bridge.newSession());
-        mode.chatContainer.clear();
-        const sid = res?.session_id || res?.new_session_id || res?.id || "";
-        const sname = res?.session_name || sid;
-        if (res?.usage) {
-          mode.updateFooterUsage(
-            res.usage,
-            res.context_window || res.contextWindow,
-          );
-        } else {
-          mode.footer.update({
-            inputTokens: 0,
-            outputTokens: 0,
-            cacheReadTokens: 0,
-            cacheWriteTokens: 0,
-            totalTokens: 0,
-            contextTokens: 0,
-            costUsd: 0,
-            cacheHitRate: undefined,
-          });
-        }
-        mode.footer.update({
-          sessionName: sname,
-          contextWindow:
-            res?.context_window ||
-            res?.contextWindow ||
-            mode.footer.getContextWindow(),
-        });
-        mode.appendSystemNotice(`✓ 已成功结束旧会话并开启新会话: ${sid}`);
-        break;
-      }
-      case "name": {
-        if (!args) {
-          const currentName =
-            (mode.footer as any)?.data?.sessionName || "未命名会话 (default)";
-          mode.appendSystemNotice(
-            `当前会话名称: ${currentName}\n修改名称用法: /name <新名称>`,
-          );
-          break;
-        }
-        const res: any =
-          (await (mode.bridge as any).sessionName?.(args)) ??
-          (await (mode.bridge.client as any).sendRequest?.("session_name", {
-            name: args,
-          }));
-        const newName = res?.name || args;
-        mode.footer.update({ sessionName: newName });
-        mode.appendSystemNotice(`✓ 会话名称已更新: ${newName}`);
-        break;
-      }
-      case "compact": {
-        mode.isStreaming = true;
-        mode.clearStatusDisplay();
-        const compIndicator = new CompactionStatusIndicator(
-          mode.ui,
-          "manual",
-        );
-        compIndicator.start();
-        mode.activeStatusIndicator = compIndicator;
-        mode.defaultEditor.setWorkingStatusIndicator(compIndicator);
-        mode.footer.update({ isBusy: true });
-        mode.ui.requestRender();
-        try {
-          const client = (mode.bridge as any).client;
-          const res: any =
-            (await client?.sendRequest?.("session_compact", {
-              instructions: args,
-            })) ||
-            (await client?.request?.("session_compact", {
-              instructions: args,
-            })) ||
-            (await (mode.bridge as any).compact?.(args));
-
-          if (res?.tokens_after !== undefined) {
-            mode.footer.update({ contextTokens: res.tokens_after });
-          }
-
-          if (res?.summary) {
-            const compComponent = new CompactionSummaryMessageComponent({
-              summary: res.summary,
-              tokensBefore: res.tokens_before ?? 0,
-            });
-            mode.chatContainer.addChild(new Spacer(1));
-            mode.chatContainer.addChild(compComponent);
-          }
-        } catch (err: any) {
-          mode.appendErrorMessage(`压缩失败: ${err.message || String(err)}`);
-        } finally {
-          mode.isStreaming = false;
-          mode.clearStatusDisplay();
-          mode.footer.update({ isBusy: false });
-          mode.ui.requestRender();
-        }
-        break;
-      }
-      case "clone": {
-        const res: any = await ((mode.bridge as any).cloneSession?.() ??
-          (mode.bridge.client as any).sendRequest?.("session_clone"));
-        const newId = res?.new_session_id || "";
-        if (newId) {
-          mode.footer.update({ sessionName: newId });
-        }
-        mode.appendSystemNotice(`✓ 已克隆当前会话开辟全新探索副本: ${newId}`);
-        break;
-      }
-      case "fork": {
-        if (args) {
-          const client = (mode.bridge as any).client;
-          const res: any =
-            (await client?.sendRequest?.("session_fork", {
-              node_id: args,
-            })) || (await (mode.bridge as any).forkSession?.(args));
-          mode.appendSystemNotice(
-            `✓ 已成功从节点 ${args} 分叉开辟新会话: ${res?.new_session_id || ""}`,
-          );
-        } else {
-          await mode.showForkSelector();
-        }
-        break;
-      }
-      case "reload": {
-        const res: any =
-          (await (mode.bridge as any).reloadResources?.()) ??
-          (await (mode.bridge.client as any).sendRequest?.(
-            "resource_reload",
-          ));
-        if (res?.resources) {
-          mode.updateResources(res.resources);
-        }
-        mode.appendSystemNotice(`✓ 资源重载完成: ${res?.summary || ""}`);
-        break;
-      }
-      case "trust": {
-        const res: any =
-          (await (mode.bridge as any).setTrust?.(args === "true")) ??
-          (await (mode.bridge.client as any).sendRequest?.("trust_set", {
-            trusted: args === "true",
-          }));
-        mode.appendSystemNotice(
-          `✓ 项目信任状态已设置为: ${res?.decision || (args === "true" ? "trusted" : "untrusted")} (${res?.path || mode.workspace})`,
-        );
-        break;
-      }
-      case "quota": {
-        mode.appendSystemNotice("当前配额状态：正常");
-        break;
-      }
-      case "debug": {
-        try {
-          const client = (mode.bridge as any).client;
-          const res: any =
-            (await client?.request?.("debug_dump", {})) ||
-            (await client?.sendRequest?.("debug_dump", {}));
-          if (res?.dump_file) {
-            const lines = [`✓ 调试快照已导出至: ${res.dump_file}`];
-            if (res?.log_file) {
-              lines.push(`  会话调试日志: ${res.log_file}`);
-            }
-            if (res?.events_file) {
-              lines.push(`  会话事件流: ${res.events_file}`);
-            }
-            mode.appendSystemNotice(lines.join("\n"));
-          } else {
-            mode.appendErrorMessage("导出调试快照失败。");
-          }
-        } catch (err: any) {
-          mode.appendErrorMessage(
-            `导出调试快照异常: ${err.message || String(err)}`,
-          );
-        }
-        break;
-      }
-      case "steer": {
-        if (args) {
-          await mode.bridge.steer(args);
-          mode.appendSystemNotice(`[Steer 提示已注入]: ${args}`);
-        }
-        break;
-      }
-      case "followup": {
-        if (args) {
-          await mode.bridge.followUp(args);
-          mode.appendSystemNotice(`[Followup 任务已排队]: ${args}`);
-        }
-        break;
-      }
-      case "copy": {
-        const target =
-          mode.currentStreamingAssistant || mode.latestAssistantMessage;
-        const text = target?.getContentText();
-        if (!text) {
-          mode.appendErrorMessage("当前暂无智能体消息可供复制。");
-          break;
-        }
-        const isWindows = process.platform === "win32";
-        const isMac = process.platform === "darwin";
-        try {
-          let proc;
-          if (isWindows) {
-            proc = spawn("clip");
-          } else if (isMac) {
-            proc = spawn("pbcopy");
-          } else {
-            proc = spawn("xclip", ["-selection", "clipboard"]);
-          }
-          proc.on("error", () => {});
-          proc.stdin?.write(text);
-          proc.stdin?.end();
-        } catch {
-          // ignore clipboard error
-        }
-        mode.appendSystemNotice(
-          "✓ 已将最后一条智能体回答内容复制到系统剪贴板。",
-        );
-        break;
-      }
-      case "hotkeys": {
-        const list = [
-          theme.bold("常用键盘快捷键说明清单 (Hotkeys):"),
-          "",
-          `  ${theme.bold("导航与视口 (Navigation):")}`,
-          `    ↑ / ↓         在选择器列表中上下选择条目`,
-          `    Tab           切换选择器范围 (all vs scoped)`,
-          `    Ctrl+O        展开 / 折叠思考过程 (Thinking) 与工具执行卡片`,
-          "",
-          `  ${theme.bold("编辑与会话 (Editing):")}`,
-          `    Enter         提交提问 (在输入框) 或确认当前所选条目 (在选择器)`,
-          `    Ctrl+V        粘贴剪贴板图片（也支持 Ctrl+Shift+V）`,
-          `    Ctrl+Q        排队追问 (Follow-up) 当前任务完成后自动顺延执行`,
-          `    Alt+Q/Alt+Up  召回并编辑全部待发排队消息 (Steering & Follow-up)`,
-          `    Ctrl+C        清空当前输入文字 (输入框有文字时) / 关闭弹窗 (选择器中)`,
-          `    Ctrl+D        快速退出终端 (仅当输入框为空时生效)`,
-          `    Ctrl+L        快速唤起模型选择器 (Model Catalog)`,
-          "",
-          `  ${theme.bold("流程与控制 (Control):")}`,
-          `    Esc           中断当前正在执行的流式回答 (Abort) / 取消并关闭弹窗`,
-          `    Shift+Tab     轮转切换思考预算深度 (off -> low -> high -> max)`,
-          `    /             呼出全部斜杠命令菜单与自动补全`,
-          `    !cmd          执行本地 Shell 命令并将输出加入上下文`,
-          `    !!cmd         静默执行本地 Shell 命令 (不加入对话上下文)`,
-        ].join("\n");
-        mode.appendSystemNotice(list);
-        break;
-      }
-      case "quit":
-      case "exit": {
-        void mode.handleExit();
-        break;
-      }
-      default: {
-        mode.appendErrorMessage(
-          `未知命令 /${cmd}，输入 /help 查看可用命令。`,
-        );
-      }
-    }
+    await handler(mode, args);
   } catch (err: any) {
-    mode.appendErrorMessage(
-      `执行命令 /${cmd} 失败: ${err.message || String(err)}`,
-    );
+    mode.appendErrorMessage(`执行命令 /${cmd} 失败: ${err.message || String(err)}`);
   }
 }
