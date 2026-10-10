@@ -524,15 +524,13 @@ def build_models_catalog(
                     "provider": prov,
                     "name": custom_model,
                     "contextWindow": ctx_win,
-                    "context_window": ctx_win,
                     "is_configured": prov in configured_providers,
                 },
             )
 
     for m in models:
-        ctx = m.get("contextWindow") or m.get("context_window") or resolve_model_context_window(m.get("id", ""))
+        ctx = m.get("contextWindow") or resolve_model_context_window(m.get("id", ""))
         m["contextWindow"] = ctx
-        m["context_window"] = ctx
 
     return configured_providers, models
 

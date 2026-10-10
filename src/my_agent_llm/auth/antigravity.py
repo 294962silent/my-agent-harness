@@ -41,7 +41,7 @@ class AntigravityAuthResolver:
         workspace: Path | None = None,
     ) -> None:
         home = Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~").expanduser()
-        self.workspace_auth_path = (Path(workspace).resolve() / ".my_agent" / "auth.json") if workspace else None
+        self.workspace_auth_path = (Path(workspace).resolve() / ".my-pi-agent" / "auth.json") if workspace else None
         if pi_auth_path is not None:
             self.pi_auth_path = Path(pi_auth_path).resolve()
         elif "MY_AGENT_HOME" not in os.environ:
@@ -53,7 +53,7 @@ class AntigravityAuthResolver:
         if credentials_path is not None:
             self.credentials_path = Path(credentials_path).resolve()
         else:
-            self.credentials_path = home / ".my_agent" / "credentials.json"
+            self.credentials_path = home / ".my-pi-agent" / "credentials.json"
 
     def resolve_credentials(self) -> AntigravityCredentials | None:
         """从工作区/项目凭据或环境变量动态获取凭据，零硬编码，隔离外部环境。"""

@@ -446,7 +446,6 @@ async def test_models_list_and_switch_deepseek_credential(tmp_path: Path, monkey
     assert "openai" not in providers
     flash_m = next(m for m in models if m["id"] == "deepseek-flash")
     assert flash_m["contextWindow"] == 1000000
-    assert flash_m["context_window"] == 1000000
     assert not any(m["id"] == "gpt-4o" for m in models)
 
     # 验证 model_switch 成功使用 DEEPSEEK_API_KEY，并返回 context_window

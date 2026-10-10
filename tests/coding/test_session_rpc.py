@@ -71,7 +71,7 @@ async def test_session_lifecycle_rpc(tmp_path: Path, monkeypatch):
     assert new_resp["result"]["usage"]["contextTokens"] == 0
     assert server.session_usage["input"] == 0
     assert server.session_usage["contextTokens"] == 0
-    assert new_resp["result"]["context_window"] > 0
+    assert new_resp["result"]["contextWindow"] > 0
 
     # 在新 session 中产生交互并重命名
     await server.handle_request(
