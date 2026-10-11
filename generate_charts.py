@@ -6,7 +6,7 @@ import numpy as np  # type: ignore
 plt.rcParams["font.sans-serif"] = ["Segoe UI", "Microsoft YaHei", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
-# Create figure with 2 main columns (wider landscape for zero-overlap perfection)
+# Create figure: Left 54% for Domain Pass Rates, Right 46% for Difficulty & Outcome Distribution
 fig = plt.figure(figsize=(18, 9), dpi=300)
 fig.patch.set_facecolor("#0B0F19")  # Ultra-clean Dark Palette (OpenAI/Anthropic style)
 
@@ -16,14 +16,14 @@ C_PI = "#64748B"  # Steel Slate for Official Pi
 C_TEXT = "#F8FAFC"  # Crisp white text
 C_SUBTEXT = "#94A3B8"  # Slate grey text
 C_GRID = "#1E293B"  # Subtle dark grid line
-C_ACCENT = "#10B981"  # Emerald green accent for savings/highlights
 C_GOLD = "#F59E0B"  # Amber gold for win highlight
+C_GREEN = "#10B981"  # Emerald green
+C_RED = "#EF4444"  # Coral red for fails
 
-# Grid layout: left column takes 54% width, right column takes 46% width
-gs = fig.add_gridspec(3, 2, width_ratios=[1.22, 1.0], wspace=0.26, hspace=0.48)
+gs = fig.add_gridspec(2, 2, width_ratios=[1.25, 1.0], wspace=0.26, hspace=0.38)
 
 # ==========================================
-# Subplot 1: Task Pass Rates across Domains
+# Subplot 1: Task Pass Rates across Domains (Left Full Height)
 # ==========================================
 ax1 = fig.add_subplot(gs[:, 0])
 ax1.set_facecolor("#0B0F19")
@@ -64,7 +64,6 @@ ax1.set_xticklabels(categories, fontsize=9.5, color=C_TEXT, fontweight="medium")
 ax1.set_ylim(0, 115)
 ax1.grid(axis="y", color=C_GRID, linestyle="--", linewidth=0.8, zorder=0)
 
-# Custom data labels with slight horizontal offsets to eliminate collisions
 for rect in rects1:
     h = rect.get_height()
     ax1.annotate(
@@ -93,7 +92,7 @@ for rect in rects2:
         color=C_TEXT,
     )
 
-# Highlight Badge on System & DevOps (+5.9% Win) with rounded pill box, clear of the text
+# Highlight Badge on System & DevOps (+5.9% Win)
 ax1.annotate(
     "+5.9% Win",
     xy=(2 - width / 2 - 0.02, 81.5),
@@ -111,81 +110,114 @@ for spine in ax1.spines.values():
     spine.set_color(C_GRID)
 ax1.tick_params(colors=C_SUBTEXT)
 
-# Legend on Left Subplot
 leg = ax1.legend(loc="upper right", frameon=True, facecolor="#111827", edgecolor="#374151", fontsize=10)
 for text in leg.get_texts():
     text.set_color(C_TEXT)
 
 # ==========================================
-# Subplots 2, 3, 4: Efficiency & Economics
+# Subplot 2: Pass Rate by Difficulty Tier (Right Top)
 # ==========================================
-ax2_1 = fig.add_subplot(gs[0, 1])
-ax2_2 = fig.add_subplot(gs[1, 1])
-ax2_3 = fig.add_subplot(gs[2, 1])
+ax2 = fig.add_subplot(gs[0, 1])
+ax2.set_facecolor("#0B0F19")
 
-for ax in [ax2_1, ax2_2, ax2_3]:
-    ax.set_facecolor("#0B0F19")
-    ax.grid(axis="x", color=C_GRID, linestyle="--", linewidth=0.8, zorder=0)
-    for spine in ax.spines.values():
-        spine.set_color(C_GRID)
-    ax.tick_params(colors=C_SUBTEXT)
+diff_categories = [
+    "Easy (4 tasks)\nBaseline",
+    "Medium (55 tasks)\nCore Challenges",
+    "Hard (30 tasks)\nExtreme Engineering",
+]
+diff_mypi = [100.0, 83.6, 70.0]
+diff_pi = [100.0, 83.6, 73.3]
 
-# 1. Total Tokens (Millions)
-m_tokens_my = 41.7
-m_tokens_pi = 93.3
-ax2_1.barh([1], [m_tokens_my], height=0.40, color=C_MYPI, alpha=0.95, zorder=3)
-ax2_1.barh([0], [m_tokens_pi], height=0.40, color=C_PI, alpha=0.75, zorder=3)
-ax2_1.set_yticks([1, 0])
-ax2_1.set_yticklabels(["MyPiAgent", "Official Pi"], fontsize=10, color=C_TEXT, fontweight="bold")
-ax2_1.set_title(
-    r"Total Tokens Consumed (Millions)  ▼ 55.3% Token Savings",
-    fontsize=11.5,
-    fontweight="bold",
-    color=C_ACCENT,
-    pad=8,
-    loc="left",
+x_diff = np.arange(len(diff_categories))
+w_diff = 0.30
+
+r1_d = ax2.bar(x_diff - w_diff / 2 - 0.02, diff_mypi, w_diff, label="MyPiAgent", color=C_MYPI, zorder=3, alpha=0.95)
+r2_d = ax2.bar(x_diff + w_diff / 2 + 0.02, diff_pi, w_diff, label="Official Pi", color=C_PI, zorder=3, alpha=0.75)
+
+ax2.set_ylabel("Pass Rate (%)", fontsize=11, fontweight="bold", color=C_TEXT)
+ax2.set_title(
+    "Pass Rate by Difficulty Tier (Official Task Metadata)", fontsize=12.5, fontweight="bold", color=C_TEXT, pad=12
 )
-ax2_1.set_xlim(0, 125)
-ax2_1.text(m_tokens_my + 2.5, 1, "41.7 M (-55.3%)", va="center", fontsize=9.5, fontweight="bold", color=C_MYPI)
-ax2_1.text(m_tokens_pi + 2.5, 0, "93.3 M", va="center", fontsize=9.5, color=C_SUBTEXT)
+ax2.set_xticks(x_diff)
+ax2.set_xticklabels(diff_categories, fontsize=9.5, color=C_TEXT)
+ax2.set_ylim(0, 118)
+ax2.grid(axis="y", color=C_GRID, linestyle="--", linewidth=0.8, zorder=0)
 
-# 2. Prompt Cache Hit Rate (%)
-m_cache_my = 96.7
-m_cache_pi = 35.0
-ax2_2.barh([1], [m_cache_my], height=0.40, color=C_MYPI, alpha=0.95, zorder=3)
-ax2_2.barh([0], [m_cache_pi], height=0.40, color=C_PI, alpha=0.75, zorder=3)
-ax2_2.set_yticks([1, 0])
-ax2_2.set_yticklabels(["MyPiAgent", "Official Pi"], fontsize=10, color=C_TEXT, fontweight="bold")
-ax2_2.set_title(
-    r"Prompt Cache Hit Rate (%)  ▲ 2.8x Higher Prefix Cache",
-    fontsize=11.5,
-    fontweight="bold",
-    color=C_ACCENT,
-    pad=8,
-    loc="left",
-)
-ax2_2.set_xlim(0, 125)
-ax2_2.text(m_cache_my + 2.5, 1, "96.7% (Append-Only Epoch)", va="center", fontsize=9.5, fontweight="bold", color=C_MYPI)
-ax2_2.text(m_cache_pi + 2.5, 0, "~35.0% (Rolling Pruned)", va="center", fontsize=9.5, color=C_SUBTEXT)
+for rect in r1_d:
+    h = rect.get_height()
+    ax2.annotate(
+        f"{h:.1f}%",
+        xy=(rect.get_x() + rect.get_width() / 2, h),
+        xytext=(-1, 4),
+        textcoords="offset points",
+        ha="center",
+        va="bottom",
+        fontsize=8.8,
+        fontweight="bold",
+        color=C_MYPI,
+    )
 
-# 3. Total Benchmark Cost ($ USD) - Escaping dollar signs to avoid MathJax math mode
-m_cost_my = 4.62
-m_cost_pi = 10.50
-ax2_3.barh([1], [m_cost_my], height=0.40, color=C_MYPI, alpha=0.95, zorder=3)
-ax2_3.barh([0], [m_cost_pi], height=0.40, color=C_PI, alpha=0.75, zorder=3)
-ax2_3.set_yticks([1, 0])
-ax2_3.set_yticklabels(["MyPiAgent", "Official Pi"], fontsize=10, color=C_TEXT, fontweight="bold")
-ax2_3.set_title(
-    r"Total Benchmark Cost (USD)  ▼ 56.0% Lower Cost",
-    fontsize=11.5,
-    fontweight="bold",
-    color=C_ACCENT,
-    pad=8,
-    loc="left",
+for rect in r2_d:
+    h = rect.get_height()
+    ax2.annotate(
+        f"{h:.1f}%",
+        xy=(rect.get_x() + rect.get_width() / 2, h),
+        xytext=(1, 4),
+        textcoords="offset points",
+        ha="center",
+        va="bottom",
+        fontsize=8.8,
+        fontweight="normal",
+        color=C_TEXT,
+    )
+
+for spine in ax2.spines.values():
+    spine.set_color(C_GRID)
+ax2.tick_params(colors=C_SUBTEXT)
+
+# ==========================================
+# Subplot 3: Head-to-Head 89 Tasks Outcome Breakdown (Right Bottom)
+# ==========================================
+ax3 = fig.add_subplot(gs[1, 1])
+ax3.set_facecolor("#0B0F19")
+
+outcome_labels = [
+    "Double Win (65)\nBoth Solved",
+    "Official Exclusive (7)\nPi Won",
+    "MyPi Exclusive (6)\nMyPi Won (*)",
+    "Double Fail (11)\nHardware/Assert Limit",
+]
+outcome_counts = [65, 7, 6, 11]
+outcome_colors = [C_GREEN, C_PI, C_GOLD, C_RED]
+
+y_pos = np.arange(len(outcome_labels))[::-1]  # Top to bottom
+
+bars = ax3.barh(y_pos, outcome_counts, height=0.48, color=outcome_colors, zorder=3, alpha=0.90)
+
+ax3.set_xlabel("Number of Tasks (Total: 89)", fontsize=11, fontweight="bold", color=C_TEXT)
+ax3.set_title(
+    "Head-to-Head Match Breakdown (89 Tasks Ground Truth)", fontsize=12.5, fontweight="bold", color=C_TEXT, pad=12
 )
-ax2_3.set_xlim(0, 15)
-ax2_3.text(m_cost_my + 0.35, 1, r"\$4.62 (Save \$5.88)", va="center", fontsize=9.5, fontweight="bold", color=C_MYPI)
-ax2_3.text(m_cost_pi + 0.35, 0, r"\$10.50", va="center", fontsize=9.5, color=C_SUBTEXT)
+ax3.set_yticks(y_pos)
+ax3.set_yticklabels(outcome_labels, fontsize=9.5, color=C_TEXT, fontweight="medium")
+ax3.set_xlim(0, 78)
+ax3.grid(axis="x", color=C_GRID, linestyle="--", linewidth=0.8, zorder=0)
+
+for bar, count in zip(bars, outcome_counts):
+    pct = count / 89 * 100
+    ax3.text(
+        count + 1.2,
+        bar.get_y() + bar.get_height() / 2,
+        f"{count} tasks ({pct:.1f}%)",
+        va="center",
+        fontsize=9.2,
+        fontweight="bold",
+        color=C_TEXT,
+    )
+
+for spine in ax3.spines.values():
+    spine.set_color(C_GRID)
+ax3.tick_params(colors=C_SUBTEXT)
 
 # Global Figure Title
 fig.suptitle(
@@ -194,14 +226,13 @@ fig.suptitle(
 
 plt.figtext(
     0.5,
-    0.935,
-    "Evaluated on 89 Linux system, DevOps, compilation & reverse-engineering tasks | Base Model: DeepSeek-V4.1",
+    0.938,
+    "Rigorous Head-to-Head Evaluation across 89 Tasks | Identical Host Sandbox | Base Model: DeepSeek-V4.1",
     ha="center",
     fontsize=11,
     color=C_SUBTEXT,
 )
 
-# Keep spacious top margin so titles and subtitles never collide
 plt.subplots_adjust(top=0.865, bottom=0.08, left=0.055, right=0.96)
 
 out_paths = [
