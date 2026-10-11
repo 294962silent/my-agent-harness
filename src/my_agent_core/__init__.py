@@ -9,6 +9,8 @@ from my_agent_core.context import ContextManager
 from my_agent_core.events import (
     AgentEnd,
     AgentStart,
+    AutoRetryEnd,
+    AutoRetryStart,
     ContextCompacted,
     Event,
     MessageEnd,
@@ -71,6 +73,8 @@ from my_agent_core.tools.builtin.task_tools import (  # pyright: ignore[reportMi
 __all__ = [
     "Agent",
     "AutoRetryPolicy",
+    "AutoRetryStart",
+    "AutoRetryEnd",
     "is_retryable_error",
     "tool",
     "Tool",

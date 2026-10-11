@@ -26,6 +26,8 @@ __all__ = [
     "ToolExecutionEnd",
     "ContextCompacted",
     "ToolsChanged",
+    "AutoRetryStart",
+    "AutoRetryEnd",
 ]
 
 
