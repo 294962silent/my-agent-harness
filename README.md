@@ -248,6 +248,10 @@ npm start
 
 > **评测环境**：完全一致的本地物理机（Windows 宿主机 + Docker Sandbox）、统一底座大模型采用 DeepSeek-V4.1 (`deepseek/deepseek-chat` / DS-V4.1-Flash)。
 
+<p align="center">
+  <img src="docs/assets/terminal_bench_comparison.png" alt="Terminal-Bench 2.1: MyPiAgent vs Official Pi Coding Agent Benchmark Results" width="100%" />
+</p>
+
 ### 1. 核心终局总榜 (Head-to-Head Overview)
 
 | 核心指标 | 自研 MyPiAgent (Python) | 原厂 Pi 官方 Agent (Node.js) | 对比与胜出分析 |

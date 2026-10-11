@@ -27,6 +27,8 @@ dev = [
     "pytest>=8.0,<10.0",
     "anyio>=4.0",
     "ruff>=0.16.7",
+    "matplotlib>=3.11.2",
+    "numpy>=2.4.6",
 ]
 
 [tool.hatch.build.targets.wheel]
