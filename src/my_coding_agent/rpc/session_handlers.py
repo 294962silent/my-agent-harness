@@ -38,7 +38,6 @@ class SessionRpcMixin:
             )
 
         entry = SessionInfoEntry(
-            name=name,
             title=name,
             cwd=str(self.agent.workspace),
             parent_id=self.agent.session.tree.current_id,

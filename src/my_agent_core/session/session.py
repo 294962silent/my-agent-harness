@@ -289,7 +289,6 @@ class Session:
             id=self.id,
             cwd=self.cwd,
             title=name_val,
-            name=name_val,
             created_at=created_at_val,
             metadata=meta,
         )
