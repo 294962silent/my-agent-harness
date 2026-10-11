@@ -128,7 +128,7 @@
    uv run python -m pytest tests/
    ```
 
-   - **结果**：`665 passed in 27.5s`（全绿灯通过，失败数为 0）。
+   - **结果**：`812 passed`（全绿灯通过，失败数为 0）。
 
 2. **TypeScript TUI 组件与端到端测试**：
 
@@ -144,7 +144,7 @@
    npm run build
    ```
 
-   - **结果**：`tsc` 0 报错，产出干净的 `tui/dist/`。
+   - **结果**：`tsc` 0 报错，产出干净的 `my-pi-tui/dist/`。
 
 ### 3.2 代码风格与极简规范检查
 

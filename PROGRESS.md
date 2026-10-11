@@ -1042,6 +1042,50 @@ my-pi-agent/
     - 在 89 道真实环境 Linux 赛题中斩获 **72 胜 / 80.90% 绝对胜率**（底座大模型：DeepSeek-V4.1-Flash），攻克 `gpt2-codegolf` (1614万 Tokens)、`torch-pipeline-parallelism`、`compile-compcert`、`fix-ocaml-gc` 等地狱级题目，突破 80% 行业关键大关。
 - **验证**：新增 `tests/eval/` 单元测试套件（18 个测试全部通过），全库 Python 离线测试规模达 **773 个测试全部通过**（前端 71 个测试全绿，总计 844 个自动化测试 100% 绿灯）。
 
+---
+
+### 阶段 38：Terminal-Bench 2.1 终局战报定格 (71胜/83.53%)、全链路极简重构、垫片彻底拔除与安全加固（2026-10-11，v0.2.0 发布）
+
+**目标**：定格 Terminal-Bench 2.1 历史性终局战报；依照 Pi/Tau 核心架构规范与《代码简化与反模式消除指南》，全盘拔除所有历史兼容别名与垫片；消除巨石类与深层穿透；加固命令链与文件并发安全；完成双端全量质量门禁验证（814 Python 测试 + 80 TUI 测试全绿），正式发布 `v0.2.0`。
+
+- **改了什么**：
+  - **Terminal-Bench 2.1 终局战报与可视化体系定格**：
+    - 严谨剔除原厂 Pi 72 胜中的自研 Agent 误统计胜场，校准原厂基准为 59 胜 / 66.29%（有效分母 85）；
+    - 自研 MyPiAgent 斩获 **71 胜 / 83.53% 胜率**（底座 DeepSeek-V4.1-Flash），全面反超原厂 Pi；
+    - 在 README 中集成 15 篇架构与实战长文专栏导航、九大实战暗坑归纳、对比矩阵与高清战报图表资产。
+  - **彻底拔除历史兼容垫片与死代码 (`src/my_agent_core/`, `src/my_coding_agent/`, `my-pi-tui/`)**：
+    - 移除 `_provider_context` 别名垫片，微内核直接使用 `clean_provider_context`；
+    - 移除 `make_task_tools` 残留垫片与 6 个空壳结果子类 (`ReadResult` 等)，统一收敛为 `StringCompatibleToolResult`；
+    - 移除 `edit` 工具已废弃的扁平 `old_text`/`new_text` 兼容入参；
+    - 移除 `SessionStore.create_session()` 与 `open_session()` 废弃方法；
+    - 移除 `CompactionEntry` 伪装成 `Message` 的 `role`/`content` 鸭子类型属性，条目回归纯净 `summary`；
+    - 消除 `ModelChangeEntry` 与 `SessionInfoEntry` 镜像字段及双向同步验证器，由单一规范字段与 alias 驱动，净化 JSONL 序列化；
+    - 拔除 `rpc_server.py::__all__` 中 13 个虚假重导出别名，彻底收敛为 `__all__ = ["RpcServer"]`。
+  - **TUI 交互巨石类模块化与命令分发表改造 (`my-pi-tui/`)**：
+    - 将 1938 行巨石类 `interactive-mode.ts` 解耦拆分为 `selector-manager.ts` (457行)、`history-renderer.ts` (250行) 与 `event-dispatcher.ts` (316行)；
+    - 将 500 行 switch 阶梯的 `slash-commands.ts` 彻底重构为声明式 `COMMAND_DISPATCH: Record<string, SlashCommandHandler>` 分发表模式；
+    - 移除 `footer.ts` 中的 `tokensUsed` 历史冗余字段。
+  - **架构深层穿透消除与元数据自愈**：
+    - 为 `CodingAgent` 注入门面代理属性（`llm`, `model`, `messages`, `context_manager`, `registry`, `message_queue` 等），彻底消除 40+ 处 `server.agent.agent.*` 深层穿透；
+    - 为 `loop.py` 工具执行、截断失败与合成中断全面注入 `tool_name` 元数据；
+    - `AntigravityProvider` 强化工具结果反向回查 `tool_name` 自愈，杜绝盲目回退为 `"tool"`；
+    - 统一模型配置与 RPC 响应为 `contextWindow`，消除历史 `context_window` 杂音；
+    - 标准化导出全量 14 类核心生命周期事件（包含 `AutoRetryStart`, `AutoRetryEnd`）。
+  - **核心安全与并发加固**：
+    - 命令链注入防护：转义分号、管道符与反引号，阻断命令注入风险；
+    - 宏文件路径穿越防御：强制白名单检验与绝对路径限制；
+    - `AuthManager` 引入跨线程细粒度 `FileLock`，保障凭据读写并发安全；
+    - 健全后台任务 `BackgroundJob` 强引用防止被事件循环过早 GC；
+    - 修复 Anthropic 并发工具结果未合并导致的 API 报错。
+- **验证**：
+  - Python 全量自动化测试：**814 passed** (`pytest`)，零失败；
+  - 前端 TUI 自动化测试：**80 passed, 0 failed, 1 skipped** (`npm test`)；
+  - 前端 TypeScript 编译：`npm run build` 0 错误；
+  - Pyright 静态类型分析：`0 errors, 0 warnings`；
+  - Ruff 代码规范：`All checks passed!`。
+  - 正式发布 `v0.2.0`。
+
+
 
 
 

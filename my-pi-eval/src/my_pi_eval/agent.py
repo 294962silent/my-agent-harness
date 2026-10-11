@@ -148,7 +148,7 @@ class MyPiAgent(BaseAgent):
         return "my-pi-agent"
 
     def version(self) -> str | None:
-        return "0.1.1"
+        return "0.2.0"
 
     async def setup(self, environment: Any) -> None:
         """Environment setup hook prior to task execution."""

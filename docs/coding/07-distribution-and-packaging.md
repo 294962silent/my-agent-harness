@@ -1,6 +1,6 @@
 # 工程发布、全平台分发与全局 CLI 规范 (`distribution`)
 
-- **定位**：工程分发体系、跨平台 CLI 绑定与多渠道安装打包规范 (`package.json`, `pyproject.toml`, `tui/bin/`)
+- **定位**：工程分发体系、跨平台 CLI 绑定与多渠道安装打包规范 (`package.json`, `pyproject.toml`, `my-pi-tui/bin/`)
 - **核心能力**：全局 CLI（`my-pi-agent` 与 `my-agent` 双命令绑定）、npm workspaces 与 `npm link` 原生支持、Python 单一工程统一内核、跨平台分发路径
 
 ---
@@ -28,7 +28,7 @@
 ```json
 {
   "name": "my-pi-agent",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "bin": {
     "my-pi-agent": "my-pi-tui/bin/my-agent.js",
     "my-agent": "my-pi-tui/bin/my-agent.js"
