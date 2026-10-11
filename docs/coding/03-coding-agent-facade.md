@@ -110,7 +110,7 @@ Pi 官方标准     已激活工具的一   各工具专属规则   POSIX 标准
 - **只读工具白名单**：
 
   ```python
-  READONLY_TOOLS = frozenset({"read", "grep", "find"})
+  READONLY_TOOLS = frozenset({"read", "grep", "find", "ls"})
   ```
 
   在非 `strict` 模式下，上述只读操作直接放行，零阻塞。
@@ -123,7 +123,7 @@ Pi 官方标准     已激活工具的一   各工具专属规则   POSIX 标准
       "git log",
       "pytest",
       "python -m pytest",
-      "uv run",
+      "uv run pytest",
   )
   ```
 

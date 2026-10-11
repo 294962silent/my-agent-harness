@@ -219,7 +219,7 @@ npm start
   - `FileMutationQueue` 细粒度单文件并发互斥写锁，彻底规避并发竞争覆盖。
 - **业务安全权限审查门禁 (`PermissionGate`)**：
   - 支持四种安全运行模式（`review` 审查 / `autonomous` 自主 / `strict` 只读 / `yolo` 全放行）；
-  - 只读工具白名单（`read`, `grep`, `find`）与安全 Shell 前缀免审批通道（`git status`, `git diff`, `pytest`, `uv run`）；
+  - 只读工具白名单（`read`, `grep`, `find`, `ls`）与安全 Shell 前缀免审批通道（`git status`, `git diff`, `git log`, `pytest`, `python -m pytest`, `uv run pytest`）；
   - `Accept-on-Diff` 词级反色代码差异比对与交互式批准/驳回机制。
 - **纯函数 ReAct 微内核与七阶段流水线 (`loop.py`)**：
   - 约 110 行无状态异步状态机，两专职子生成器分治；
