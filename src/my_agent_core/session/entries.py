@@ -10,7 +10,7 @@ import time
 from typing import Annotated, Any, Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from my_agent_llm.models import Message, MessageContent
@@ -38,18 +38,13 @@ class SessionInfoEntry(BaseSessionEntry):
 
     type: Literal["session_info", "sessionInfo"] = "session_info"
     cwd: str | None = None
-    title: str | None = None
-    name: str | None = None
+    title: str | None = Field(default=None, alias="name")
     created_at: float | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    @model_validator(mode="after")
-    def _sync_title_name(self) -> SessionInfoEntry:
-        if self.name and not self.title:
-            self.title = self.name
-        elif self.title and not self.name:
-            self.name = self.title
-        return self
+    @property
+    def name(self) -> str | None:
+        return self.title
 
 
 class MessageEntry(BaseSessionEntry):
@@ -72,20 +67,15 @@ class MessageEntry(BaseSessionEntry):
 
 
 class ModelChangeEntry(BaseSessionEntry):
-    """记录运行时大模型变更（兼容 Pi 原厂 modelId 字段）。"""
+    """记录运行时大模型变更（对标 Pi 原厂 modelId 字段）。"""
 
     type: Literal["model_change", "modelChange"] = "model_change"
-    model: str | None = None
-    model_id: str | None = Field(default=None, alias="modelId")
+    model: str = Field(default="", alias="modelId")
     provider: str | None = None
 
-    @model_validator(mode="after")
-    def _sync_model_fields(self) -> ModelChangeEntry:
-        if self.model_id and not self.model:
-            self.model = self.model_id
-        elif self.model and not self.model_id:
-            self.model_id = self.model
-        return self
+    @property
+    def model_id(self) -> str:
+        return self.model
 
 
 class ThinkingLevelChangeEntry(BaseSessionEntry):
@@ -96,7 +86,7 @@ class ThinkingLevelChangeEntry(BaseSessionEntry):
 
 
 class CompactionEntry(BaseSessionEntry):
-    """记录上下文压缩覆盖的条目 ID 清单与折叠摘要（兼容 Pi 原厂 firstKeptEntryId 与 tokensBefore）。"""
+    """记录上下文压缩覆盖的条目 ID 清单与折叠摘要（对齐 Pi 原厂 firstKeptEntryId 与 tokensBefore）。"""
 
     type: Literal["compaction"] = "compaction"
     summary: str
@@ -104,14 +94,6 @@ class CompactionEntry(BaseSessionEntry):
     tokens_before: int | None = Field(default=None, alias="tokensBefore")
     replaces_entry_ids: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
-
-    @property
-    def role(self) -> str:
-        return "system"
-
-    @property
-    def content(self) -> str:
-        return self.summary
 
 
 class BranchSummaryEntry(BaseSessionEntry):

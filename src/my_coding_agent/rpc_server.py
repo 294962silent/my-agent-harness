@@ -233,7 +233,6 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
                 self.agent.session.metadata["name"] = name_str
                 self.agent.session.metadata["title"] = name_str
                 info_entry = SessionInfoEntry(
-                    name=name_str,
                     title=name_str,
                     cwd=str(workspace_path),
                     parent_id=self.agent.session.tree.current_id,
