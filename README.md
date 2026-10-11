@@ -21,6 +21,8 @@
   ·
   <a href="#-适合什么人看">适合人群</a>
   ·
+  <a href="#-架构设计与实战系列长文-blog-series">系列长文</a>
+  ·
   <a href="#-什么是-my-pi-agent">架构拓扑</a>
   ·
   <a href="#-快速开始-quickstart">快速开始</a>
@@ -78,6 +80,22 @@
 4. **DAG 树状会话持久化与分支探索**：掌握只追加（Append-Only）JSONL 存储、跨进程文件锁、纯内存防环树算法，以及 `/tree`、`/fork`、`/clone` 与安全删除拦截机制；
 5. **Append-Only 前缀一致性与离散 Epoch 块级压缩管线**：彻底废除旧的滚动截断与工具篡改，动态 80% 水位线门控管控，L3 磁盘溢出 + L4 结构化摘要与全生命周期文件足迹累积，联动 `retainedTail` 快照锁定基准前缀，实测斩获 96.7% 的大模型 KV-Cache（Prompt Cache）命中率；
 6. **双核解耦通信范式**：基于标准 stdio JSON-RPC 2.0 管道，实现 Python 纯无头业务内核与基于 `@earendil-works/pi-tui` 原厂终端的跨进程优雅通信。
+
+---
+
+## 📖 架构设计与实战系列长文 (Blog Series)
+
+为了帮助更多对 Agent Harness 与底层机制感兴趣的开发者透彻理解本项目，作者在个人博客上撰写了 **15 篇全景源码级技术长文**，详细复盘了从 ReAct 微内核、上下文压缩、Session 树状持久化到真实 Terminal-Bench 评测大营救的每一个工程细节：
+
+👉 **博客专栏直达**：[my-pi-agent 架构设计与实战长文系列 (15 篇全集)](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)
+
+| 模块分类 | 精选文章与核心议题 | 聚焦知识点 |
+| :--- | :--- | :--- |
+| **微内核与调度** | • [`my-pi-agent--架构设计`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--模型层`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--loop微内核`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--异步支持`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 纯函数无状态微内核、ReAct 调度状态机、多提供商流式统一接入、并发与异步设计 |
+| **会话与上下文** | • [`my-pi-agent--session管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--context管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--memory系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 树状 DAG 增量落盘持久化、Append-Only 前缀不变性、80% 水位线离散 Epoch 块级压缩、96.7% 缓存命中 |
+| **决策与交互治理** | • [`my-pi-agent--agent类与hook系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--动态干预机制`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--todolist与background`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 五大决策拦截门禁（Hooks）、Steering 即时插话与排队追问、长时后台作业生命周期与进程树治理 |
+| **工具生态与扩展** | • [`my-pi-agent--工具系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--skill与plugin`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--extension机制与mcp`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--subagent与task委派`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 七大核心工具与单文件互斥锁、Skills 自动发现与注入、MCP 客户端扩展与防递归子智能体 |
+| **工业基准实战** | • [`my-pi-agent--agent评估`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | Terminal-Bench 2.1 89 题真实考场大营救、Scheme 1 宿主驱动 vs Scheme 2 容器安装、83.53% 胜率全景复盘 |
 
 ---
 
@@ -316,6 +334,7 @@ npm start
 ### 6. 深度报告与报告索引
 
 完整逐题矩阵、执行耗时明细与评测系统设计详见：
+- 🌐 [个人博客专栏：my-pi-agent 架构设计与实战长文系列 (15 篇全集)](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)
 - 📄 [`my-pi-eval/results/README.md`](my-pi-eval/results/README.md)：Terminal-Bench 2.1 评测结果中心总览；
 - 📄 [`my-pi-eval/results/comparison_matrix.md`](my-pi-eval/results/comparison_matrix.md)：89 题逐题全量横向对比矩阵（状态对比、独占分析与技术反思）；
 - 📄 [`docs/eval/01-evaluation-harness-architecture.md`](docs/eval/01-evaluation-harness-architecture.md)：评测子系统架构设计与 Harbor Framework 适配规范。
