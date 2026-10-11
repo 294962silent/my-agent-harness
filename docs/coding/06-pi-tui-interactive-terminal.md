@@ -2,7 +2,7 @@
 
 - **定位**：100% 对标 Pi 原厂体验的独立终端表现层与交互状态机 (`my-pi-tui/src/`)
 - **设计标杆**：`@earendil-works/pi-coding-agent`、`@earendil-works/pi-tui` (Mario Zechner)
-- **核心组件**：`CustomEditor` 顶部边框嵌入式转圈动效、四大交互选择器、`CompactionSummaryMessage` 折叠卡片、思考深度快捷键轮转
+- **核心组件**：`CustomEditor` 顶部边框嵌入式转圈动效、全套全屏模态选择器、`CompactionSummaryMessage` 折叠卡片、思考深度快捷键轮转
 
 ---
 
@@ -93,6 +93,9 @@
    - 可视化浏览当前会话的完整 DAG 分支拓扑图与节点信息；
 7. **`LogoutSelectorComponent` (/logout)**：
    - 安全注销特定 Provider 凭据。
+8. **`UserMessageSelectorComponent` (/fork)**：
+   - 交互式浏览当前会话中的历史用户输入列表；
+   - 支持回车选择任意历史提问作为分叉锚点（Fork Point），派生出全新独立会话分支并无缝切换。
 
 ---
 

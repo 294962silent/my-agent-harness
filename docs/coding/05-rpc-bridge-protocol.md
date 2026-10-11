@@ -139,6 +139,7 @@
 | `auto_retry_start` | `attempt`, `maxAttempts`, `delayMs`, `errorMessage` | 遇到 429/5xx 瞬时抖动触发重试，输入框顶部边框呈现实时倒计时 |
 | `auto_retry_end` | `success`, `attempt`, `finalError` | 自动重试完成，成功切回 Working 态，耗尽则触发终态报错 |
 | `context_compacted` | `tokensBefore`, `tokensAfter` | 视口呈现可展开的 `[compaction]` 摘要卡片 |
+| `tools_changed` | `action`, `name` | 动态注册或注销工具通知，触发前端动作空间与补全更新 |
 
 ---
 

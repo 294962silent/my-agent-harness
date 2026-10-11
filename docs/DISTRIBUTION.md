@@ -137,8 +137,8 @@ uv run python scripts/build_dist.py
 - 收集 Python 核心与前端 JS 产物；
 - 注入跨平台 `.cmd` 与 `.sh` 启动脚本；
 - 在 `dist/` 目录下生成：
-  - `dist/my-pi-agent-v0.1.0-portable.zip`
-  - `dist/my-pi-agent-v0.1.0-portable.tar.gz`
+  - `dist/my-pi-agent-v0.2.0-portable.zip`
+  - `dist/my-pi-agent-v0.2.0-portable.tar.gz`
 将这两个文件直接上传到 GitHub Releases 附件即可。
 
 ---
@@ -155,10 +155,10 @@ uv run python scripts/build_dist.py
        ┌───────────────────┴───────────────────┐
        ▼                                       ▼
 【Node.js 侧启动 (npx)】               【Python 侧启动 (uvx)】
-tui/src/client.ts                     my_coding_agent/cli.py
+my-pi-tui/src/client.ts               my_coding_agent/cli.py
   - 自动探测系统 uv                     - 自动探测系统 node
   - 降级探测 python3/python             - 透传 --python-executable
-  - 启动 Python rpc_server              - 桥接启动 tui/bin/my-agent.js
+  - 启动 Python rpc_server              - 桥接启动 my-pi-tui/bin/my-agent.js
 ```
 
 无论用户从哪一端切入，两端均具备对偶的环境探针，确保用户体验完全一致、开箱即用。
