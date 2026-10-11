@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
   <a href="https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/"><img src="https://img.shields.io/badge/blog-series-success.svg?style=flat-square" alt="blog" /></a>
   <a href="#"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="python" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/tests-773%20python%20%7C%2071%20tui%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/tests-814%20python%20%7C%2080%20tui%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
 </p>
 
 <p align="center">
@@ -112,7 +112,7 @@
 对标业界标杆 Tau 与 Pi 的清晰设计哲学，项目严格划分为四大职责单一的正交层：
 
 ```text
-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent  →  my_agent_core  →  my_agent_llm
+my-pi-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent  →  my_agent_core  →  my_agent_llm
 ```
 
 ```text
@@ -132,9 +132,9 @@ tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent  →  my_a
 ```
 
 - **`my_agent_llm`**：多提供商翻译层，将 OpenAI、DeepSeek、Anthropic 与 Antigravity（Google internal SSE）统一抽象为中立的流式事件与类型安全的结构化 `ToolCall`；
-- **`my_agent_core`**：通用的便携 Agent 微内核，管理状态机循环、12 个只读生命周期事件、五大专职 Hook 决策拦截点、树状 Session 与廉价优先四层压缩；
+- **`my_agent_core`**：通用的便携 Agent 微内核，管理状态机循环、14 个只读生命周期事件、五大专职 Hook 决策拦截点、树状 Session 与离散 Epoch 块级压缩管线；
 - **`my_coding_agent`**：专注代码工程的产品层，封装 7 大工作区编码工具、`FileMutationQueue` 细粒度并发锁、`PermissionGate` 权限门禁与 stdio JSON-RPC 2.0 服务端；
-- **`tui`**：独立前端展示层，基于 Mario Zechner 原厂终端引擎 `@earendil-works/pi-tui`，提供无闪烁差量渲染与高辨识度卡片视觉系统。
+- **`my-pi-tui`**：独立前端展示层，基于 Mario Zechner 原厂终端引擎 `@earendil-works/pi-tui`，提供无闪烁差量渲染与高辨识度卡片视觉系统。
 
 ---
 
@@ -194,8 +194,8 @@ npm install
 npm run build
 
 # 4. 运行全量离线自动化测试套件 (100% 绿灯全通)
-uv run python -m pytest   # 773 Python offline tests passed (746+ baseline)
-npm test                  # 71 TUI tests passed
+uv run python -m pytest   # 814 Python offline tests passed (814 baseline)
+npm test                  # 80 TUI tests passed (80 passed in 81 tests)
 
 # 5. 启动开发态终端
 npm start
@@ -444,7 +444,7 @@ my-pi-agent/
 │       ├── file_reference.py       # @ 文件引用解析与快照直通注入
 │       └── rpc_server.py           # stdio JSON-RPC 2.0 服务端门面
 │
-├── tests/                          # ⭐ 全局统一测试目录 (uv run pytest 773 测试并发全通)
+├── tests/                          # ⭐ 全局统一测试目录 (uv run pytest 814 测试并发全通)
 │   ├── llm/                        # LLM 层单元测试 (91 tests)
 │   ├── core/                       # 框架内核单元测试 (392 tests)
 │   ├── coding/                     # 业务与工具测试 (276 tests)

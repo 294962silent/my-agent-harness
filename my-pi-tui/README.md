@@ -1,4 +1,4 @@
-# my-agent-tui
+# my-pi-tui
 
 `my-pi-agent` 的高质感交互终端表现层（基于 `@earendil-works/pi-tui` 的 Node.js / TypeScript 前端微内核）。
 
@@ -95,7 +95,7 @@ npm install
 # 2. 编译 TypeScript
 npm run build
 
-# 3. 运行 TUI 自动化测试套件 (71 tests, 100% 绿灯全通)
+# 3. 运行 TUI 自动化测试套件 (80 passed in 81 tests, 100% 绿灯全通)
 npm test
 
 # 4. 本地启动交互终端
