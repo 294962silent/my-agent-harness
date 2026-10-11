@@ -11,7 +11,7 @@
 - **赛题规模**：89 道官方全量有效赛题；
 - **自研 MyPiAgent 终局战绩**：**71 道满分通过**（85 题常规题集斩获 **83.53% 胜率**，大幅超越原厂 Pi 基准 80.00%）；
 - **原厂 Pi 官方基线**：**72 道满分通过**（全量胜率 80.90%）；
-- **独占胜出亮点**：自研 Agent 在 `make-mips-interpreter`（50分钟纯手写MIPS模拟器）、`cancel-async-tasks`、`polyglot-c-py`、`pytorch-model-cli` 这 4 道原厂 Pi 失败的地狱级大题上斩获 1.0 满分；
+- **独占胜出亮点**：自研 Agent 在 `make-mips-interpreter`（50分钟纯手写MIPS模拟器）、`cancel-async-tasks`、`polyglot-c-py`、`pytorch-model-cli`、`git-multibranch`、`model-extraction-relu-logits` 这 6 道原厂 Pi 失败的高难赛题上斩获 1.0 满分；
 - **全量 Token 与 Prompt Cache**：89 题实测计算消耗 **41,737,271 Tokens**，KV-Cache 读取命中 **82,273,152 Tokens**，大盘缓存命中率高达 **66.33%**，长程任务稳定达到 **96.7% ~ 97.3%**，89 题实际总花费仅 **$4.62 美元**；
 - 完整战报详见：[results/my_pi_agent_terminal_bench_2.md](results/my_pi_agent_terminal_bench_2.md)、[results/pi_official_terminal_bench_2.md](results/pi_official_terminal_bench_2.md) 与 [results/comparison_matrix.md](results/comparison_matrix.md)。
 

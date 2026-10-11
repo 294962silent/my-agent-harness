@@ -26,7 +26,7 @@ my-pi-agent/
 │   │   ├── task_store.py           # TaskStore 任务状态机与 DAG 依赖图
 │   │   ├── background.py           # BackgroundRunner 进程树清理引擎
 │   │   ├── session/                # 树状分支持久化会话系统
-│   │   ├── context.py              # ContextManager 四层压缩管线 (L3->L1->L2->L4)
+│   │   ├── context.py              # 离散 Epoch 块级压缩管线 (80% 水位线门控 + L3 磁盘溢出 + L4 结构化摘要)
 │   │   └── skills.py               # Skills 声明式管理与提示词注入
 │   │
 │   └── my_coding_agent/            # 3. 业务工具与 stdio RPC 服务端 (纯无头架构)
@@ -43,7 +43,7 @@ my-pi-agent/
 │   ├── core/                       # 框架内核单元测试 (337 tests)
 │   └── coding/                     # 业务与工具测试 (252 tests)
 │
-├── tui/                            # ⭐ 独立的终端交互表现层 (基于 @earendil-works/pi-tui)
+├── my-pi-tui/                     # ⭐ 独立的终端交互表现层 (基于 @earendil-works/pi-tui)
 │   ├── package.json                # 依赖 @earendil-works/pi-tui, chalk, marked
 │   ├── tsconfig.json
 │   ├── bin/
