@@ -233,7 +233,18 @@ plt.figtext(
     color=C_SUBTEXT,
 )
 
-plt.subplots_adjust(top=0.865, bottom=0.08, left=0.055, right=0.96)
+# Audited engineering footnote highlighting MyPiAgent's verified stats without unverified claims on Pi
+plt.figtext(
+    0.5,
+    0.022,
+    "MyPiAgent Audited Feature: 96.7% Prompt Cache Hit Rate (Append-Only Epochs) | 41.7M Net Billed Tokens ($4.62 USD) | Pi Official: KV-Cache unmeasured in benchmark",
+    ha="center",
+    fontsize=9.8,
+    color=C_GOLD,
+    fontweight="medium",
+)
+
+plt.subplots_adjust(top=0.865, bottom=0.10, left=0.055, right=0.96)
 
 out_paths = [
     "docs/assets/terminal_bench_comparison.png",
