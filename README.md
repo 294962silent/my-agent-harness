@@ -281,7 +281,26 @@ npm start
 | **工具映射与防御** | 容器内原生 bash/fs 进程调用 | `HarborToolRegistry` 桥接，附加 50KB 截断防御与 Windows CRLF ➔ LF 自动规整 | 精细化错误拦截，彻底防止 Windows 宿主机回车换行符破坏 Linux 容器 Shell 脚本。 |
 | **能效与成本** | 纯客户端 session 统计 | 离散 Epoch 块级压缩，逐条扫描 session 转录本核算真实 Prompt Cache 命中率 | 具备超长会话防溢出保护与精准财务级成本审计能力，Token 开销仅为原厂 44.7%。 |
 
-### 4. 深度报告与报告索引
+### 4. 评测实战踩坑与攻坚全景归纳 (Engineering Pitfalls & Solutions)
+
+在真实大规模（Terminal-Bench 2.1 89 题）自动化评测实战中，我们遭遇并攻坚了以下九大核心技术暗坑，按系统层次分类归纳如下：
+
+#### 一、 网络与容器环境基础设施 (Infrastructure & Network)
+- **1. 网络问题**：89个镜像共120多g（走不了镜像站，只能走我的代理。。。）；容器内 Python pip 下载依赖超时；容器内安装编译工具超时；安装Node.js 运行时超时。大部分解决是通过配置镜像站或者穿透到主机的代理端口，但是更规范还是应该使用Google 云原生 K8s 集群或者AWS 云端环境，或者E2B 等专有 Agent 云沙箱
+- **2. 容器网络网段分配耗尽**：Docker 中，每个独立的容器网络（Bridge Network）都需要被分配一段私有 IP 网段，默认是31 个，一开始我没有即使关闭容器和临时网络(docker network prune)，导致网段分配耗尽
+- **3. 并发启动瞬间的资源踩踏**：并发评测导致容器抢夺虚拟网桥与端口和镜像存储层文件锁（很多题目使用的是同一个底层镜像（比如 Ubuntu 22.04）），而本地的 Docker 引擎守护进程（dockerd）本质上是一个单进程服务
+
+#### 二、 沙箱工具桥接与系统进程治理 (Tool Bridging & Process Management)
+- **4. 动态工作目录（CWD）保持**：harbor工具桥接，在 Harbor / Docker 评测中，每次 environment.exec 都是一个完全无状态（Stateless）的临时会话。如果模型在第 1 轮执行 cd build，下一轮会话会瞬间重置回根目录 /app，因此需要宿主机在内存中维护 self._cwd 变量。每次模型发来命令，底层自动包装
+- **5. 单一通道下的文件读写与 Base64 管道**：Docker 容器环境底层只暴露了唯一的命令执行通道 await environment.exec(command)，因此读文件依靠cat 命令，写文件依靠先转base64再容器内部再base64 -d解码（原因：linuxshell可能会因为代码中有引号反斜号等产生冲突）
+- **6. 孤儿与僵尸进程树治理**：agent调用bash工具启动父进程，然后再启动子进程，因为超时杀死父进程，却没杀死子进程，导致僵尸进程，在 Windows 系统下利用 taskkill /T，在 Linux / Mac 系统下利用“进程组 PGID”
+
+#### 三、 微内核调度、上下文与大模型交互 (Kernel Scheduling & LLM Interaction)
+- **7. KV-Cache 缓存与前缀不变性**：kvcache缓存失败，之前压缩机制设计的有问题，滚动裁剪让每轮都将中间的message变成占位符，导致kvcache反复失效；现在仅保留最基本的压缩机制，即达到百分之八十上下文时，工具结果落盘后调用大模型形成摘要
+- **8. 压缩切点截断与工具断头**：压缩时，把本来成对工具调用请求和结果截断了，导致工具调用断头api400
+- **9. 模型输出长度触顶与 ReAct 假死**：之前ReActloop一旦没有工具调用便会停止，单次 HTTP 响应的最大输出 Token 数都有一个硬性上限，一旦大模型的思考过程太长，或者要输出的代码太长时，会被被强行截断
+
+### 5. 深度报告与报告索引
 
 完整逐题矩阵、执行耗时明细与评测系统设计详见：
 - 📄 [`my-pi-eval/results/README.md`](my-pi-eval/results/README.md)：Terminal-Bench 2.1 评测结果中心总览；
