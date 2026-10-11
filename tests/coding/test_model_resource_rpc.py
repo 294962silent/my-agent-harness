@@ -466,7 +466,6 @@ async def test_models_list_and_switch_deepseek_credential(tmp_path: Path, monkey
     )
     assert switch_resp["result"]["status"] == "ok"
     assert switch_resp["result"]["model"] == "deepseek-flash"
-    assert switch_resp["result"]["context_window"] == 1000000
     assert switch_resp["result"]["contextWindow"] == 1000000
     # 验证 api_key 正确取自 DEEPSEEK_API_KEY，而非 "placeholder"
     assert server.agent is not None

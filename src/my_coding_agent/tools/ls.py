@@ -7,9 +7,9 @@ from pathlib import Path
 from my_agent_core.tools import Tool, tool
 
 from my_coding_agent.tools.base import (
-    DEFAULT_MAX_BYTES,
     PATH_ALIASES,
     resolve_path,
+    truncate_output,
     wrap_tool_executor,
 )
 
@@ -64,18 +64,10 @@ def make_ls_tool(workspace: Path | str) -> Tool:
                 results.append(f"{entry}{suffix}")
 
             output = "\n".join(results)
-            encoded = output.encode("utf-8")
-            if len(encoded) > DEFAULT_MAX_BYTES:
-                encoded = encoded[:DEFAULT_MAX_BYTES]
-                last_nl = encoded.rfind(b"\n")
-                if last_nl != -1:
-                    encoded = encoded[:last_nl]
-                output = encoded.decode("utf-8", errors="ignore")
-                output += f"\n\n[Output truncated: output exceeded {DEFAULT_MAX_BYTES // 1024}KB limit]"
-            elif truncated_by_limit:
+            if truncated_by_limit:
                 output += f"\n\n[Output truncated: reached entry limit of {effective_limit}]"
 
-            return output if output else "(Empty directory)"
+            return truncate_output(output) if output else "(Empty directory)"
         except Exception as e:
             return f"Error: {e}"
 

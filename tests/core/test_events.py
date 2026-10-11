@@ -17,6 +17,8 @@ import my_agent_core.events as events_module
 from my_agent_core.events import (
     AgentEnd,
     AgentStart,
+    AutoRetryEnd,
+    AutoRetryStart,
     ContextCompacted,
     Event,
     MessageEnd,
@@ -81,7 +83,7 @@ def test_events_are_pure_frozen_dataclasses():
 
 
 def test_all_event_subclasses_frozen_with_timestamp():
-    """全量覆盖 12 类 Event，验证它们都继承自 Event，带有只读 timestamp 且不可变。"""
+    """全量覆盖 14 类 Event，验证它们都继承自 Event，带有只读 timestamp 且不可变。"""
     msg = Message(role="assistant", content="hello")
     all_event_instances: list[Event] = [
         AgentStart(system_prompt="sys", user_input="in"),
@@ -96,6 +98,8 @@ def test_all_event_subclasses_frozen_with_timestamp():
         ToolExecutionEnd(tool_call_id="call_1", tool_name="bash", result="done", is_error=False),
         ContextCompacted(tokens_before=100, tokens_after=50, summarized_count=2),
         ToolsChanged(action="register", name="bash"),
+        AutoRetryStart(attempt=1, max_attempts=3, delay_ms=2000, error_message="429 RateLimit"),
+        AutoRetryEnd(success=True, attempt=1),
     ]
 
     for ev in all_event_instances:

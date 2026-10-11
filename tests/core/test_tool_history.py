@@ -230,11 +230,13 @@ def test_agent_aborted_with_tool_calls_repaired(tmp_path):
         res = await agent.run("Start")
         assert res == "(cancelled)"
 
-        # 验证会话中悬空的工具调用被即刻自愈补齐为中断结果
+        # 验证会话中悬空的工具调用被即刻自愈补齐为中断结果（含 tool_name 元数据）
         tool_msgs = [m for m in session.get_current_path_messages() if m.role == "tool"]
         assert len(tool_msgs) == 1
         assert tool_msgs[0].content == _INTERRUPTED_TOOL_RESULT
-        assert tool_msgs[0].metadata is not None and tool_msgs[0].metadata["tool_call_id"] == "call_aborted"
+        assert tool_msgs[0].metadata is not None
+        assert tool_msgs[0].metadata["tool_call_id"] == "call_aborted"
+        assert tool_msgs[0].metadata.get("tool_name") == "test_tool"
 
         # 续跑恢复：下一轮能够顺利恢复，不会因悬空工具调用报 API 400 异常
         agent._aborted = False
