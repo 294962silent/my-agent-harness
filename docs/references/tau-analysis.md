@@ -131,10 +131,10 @@
 ### 阶段一：高价值核心机制吸收 (P0 - 快速落地)
 
 1. **移植 `repair_tool_history` 历史自愈机制**：
-   - 纳入 `packages/my-agent-core/src/my_agent_core/context.py` 的上下文准备流水线中；
+   - 纳入 `src/my_agent_core/context.py` 的上下文准备流水线中；
    - 彻底免疫用户中途 `abort` 或网络重连导致的 ToolCall 悬空 400 报错。
 2. **可取消的退避重试机制 (`wait_for_retry`)**：
-   - 升级 `packages/my-agent-llm/src/my_agent_llm/`，在 429 / 500 重试的 `sleep` 过程中支持外部 `signal.is_cancelled()` 毫秒级打断。
+   - 升级 `src/my_agent_llm/`，在 429 / 500 重试的 `sleep` 过程中支持外部 `signal.is_cancelled()` 毫秒级打断。
 3. **集成 models.dev 模型元数据表**：
    - 为 `my-agent-llm` 引入模型规范配置表，自动对齐 Context Window 限制与 Thinking 级别转换。
 

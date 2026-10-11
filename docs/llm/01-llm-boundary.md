@@ -1,6 +1,6 @@
 # 模型边界层设计规范 (`my-agent-llm`)
 
-- **定位**：独立轻量 SDK 包 (`packages/my-agent-llm`)
+- **定位**：独立轻量 SDK 包 (`src/my_agent_llm`)
 - **核心类**：`LLM`, `Config`, `Message`, `Response`, `StreamChunk`, `ToolCall`, `TurnOutcome`
 - **主要实现**：`client.py`, `models.py`, `config.py`, `providers/`
 

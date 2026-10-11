@@ -1,6 +1,6 @@
 # 单层 Agent 与纯函数微内核调度设计规范 (`my_agent_core.agent` & `loop`)
 
-- **定位**：Agent 执行中枢、ReAct 微内核状态机与转录本自愈引擎 (`packages/my-agent-core/src/my_agent_core/agent.py`, `loop.py`, `tool_history.py`)
+- **定位**：Agent 执行中枢、ReAct 微内核状态机与转录本自愈引擎 (`src/my_agent_core/agent.py`, `loop.py`, `tool_history.py`)
 - **核心组件**：
   - `run_agent_loop`：无状态纯函数异步生成器微内核（约 110 行优雅状态机）
   - `_assistant_turn` & `_execute_tools_turn`：专职子生成器车间

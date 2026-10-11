@@ -1,6 +1,6 @@
 # Skills 技能机制设计规范 (`my_agent_core.skills`)
 
-- **定位**：声明式 Agent 技能发现与渐进式披露管理引擎 (`packages/my-agent-core/src/my_agent_core/skills.py`)
+- **定位**：声明式 Agent 技能发现与渐进式披露管理引擎 (`src/my_agent_core/skills.py`)
 - **核心类**：`Skill`, `SkillManager`
 - **关键 API**：`get(name)`, `list()`, `format_prompt()`, `format_invocation(name, instructions)`
 

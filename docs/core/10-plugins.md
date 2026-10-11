@@ -1,6 +1,6 @@
 # Claude Code 风格 Plugin 插件系统设计规范 (`my_agent_core.plugins`)
 
-- **定位**：Claude Code 官方标准插件聚合分发与自包含资源解构系统 (`packages/my-agent-core/src/my_agent_core/plugins.py`)
+- **定位**：Claude Code 官方标准插件聚合分发与自包含资源解构系统 (`src/my_agent_core/plugins.py`)
 - **核心类**：`PluginAuthor`, `PluginManifest`, `Plugin`, `PluginManager`
 - **主要实现**：`plugins.py`
 

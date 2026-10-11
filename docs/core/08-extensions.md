@@ -1,8 +1,8 @@
 # Extension 扩展与命令路由机制 (`my_agent_core.extensions`)
 
-- **定位**：代码级模块扩展与本地 0 Token 命令调度系统 (`packages/my-agent-core/src/my_agent_core/extensions/`)
+- **定位**：代码级模块扩展与本地 0 Token 命令调度系统 (`src/my_agent_core/extensions.py`)
 - **核心类**：`ExtensionAPI`, `ExtensionManager`
-- **主要实现**：`extensions/core.py`
+- **主要实现**：`extensions.py`
 
 ---
 

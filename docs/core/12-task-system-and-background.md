@@ -92,7 +92,7 @@
 
 ### 1. 异步调度与通知收割
 
-在 `packages/my-coding-agent` 中，`bash` 工具支持 `run_in_background: bool = False` 参数：
+在 `src/my_coding_agent` 中，`bash` 工具支持 `run_in_background: bool = False` 参数：
 
 1. 模型传 `run_in_background=True` 时，`BackgroundRunner` 启动后台异步子进程，立即返回 `[Background task bg_000001 started for command: '...']`；
 2. 主 Agent 立即收到占位结果，继续推进其他工作；

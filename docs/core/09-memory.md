@@ -1,6 +1,6 @@
 # Memory 长期记忆系统设计规范 (`my_agent_core.memory`)
 
-- **定位**：跨会话受控持久化记忆存储与快照注入引擎 (`packages/my-agent-core/src/my_agent_core/memory.py`)
+- **定位**：跨会话受控持久化记忆存储与快照注入引擎 (`src/my_agent_core/memory.py`)
 - **核心类**：`MemoryStore`, `make_memory_tool`
 - **主要实现**：`memory.py`
 

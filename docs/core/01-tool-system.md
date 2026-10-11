@@ -1,6 +1,6 @@
 # 工具系统设计规范 (`my_agent_core.tools`)
 
-- **定位**：框架核心层工具原语与执行调度引擎 (`packages/my-agent-core/src/my_agent_core/tools/`, `registry.py`)
+- **定位**：框架核心层工具原语与执行调度引擎 (`src/my_agent_core/tools/`, `registry.py`)
 - **核心类**：`Tool`, `@tool`, `ToolRegistry`, `ToolResult`, `ToolCall`
 - **主要实现**：`tools/core.py`, `registry.py`, `tools/builtin/`
 

@@ -1,6 +1,6 @@
 # 动态干预机制与两层循环设计规范 (`my_agent_core.message_queue`)
 
-- **定位**：Pi 风格即时转向（Steer）与排队追问（Follow-up）双层调度引擎 (`packages/my-agent-core/src/my_agent_core/message_queue.py`)
+- **定位**：Pi 风格即时转向（Steer）与排队追问（Follow-up）双层调度引擎 (`src/my_agent_core/message_queue.py`)
 - **核心类**：`MessageType`, `QueuedMessage`, `MessageQueue`
 - **主要实现**：`message_queue.py`, `agent.py`
 

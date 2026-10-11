@@ -1,6 +1,6 @@
 # Subagents 与 SubagentTask 任务委派设计规范 (`my_agent_core.subagents` & `subagent_tasks`)
 
-- **定位**：声明式多智能体发现与受控任务委派调度引擎 (`packages/my-agent-core/src/my_agent_core/subagents.py`, `subagent_tasks.py`)
+- **定位**：声明式多智能体发现与受控任务委派调度引擎 (`src/my_agent_core/subagents.py`, `subagent_tasks.py`)
 - **核心类**：`Subagent`, `SubagentManager`, `SubagentTask`, `SubagentTaskManager`, `make_task_tool`
 - **主要实现**：`subagents.py`, `subagent_tasks.py`, `tools/builtin/task.py`
 

@@ -1,6 +1,6 @@
 # 树状会话与持久化存储子系统 (`my_agent_core.session`)
 
-- **定位**：崩溃安全的树状对话历史、状态折叠投影与只追加存储引擎 (`packages/my-agent-core/src/my_agent_core/session/`)
+- **定位**：崩溃安全的树状对话历史、状态折叠投影与只追加存储引擎 (`src/my_agent_core/session/`)
 - **核心模块**：
   - `entries.py`：9 种强类型判别多态实体（`SessionEntry` Discriminated Union）
   - `tree.py`：纯内存 DAG 算法（死锁环路检测、路径回溯、LCA 最近公共祖先）

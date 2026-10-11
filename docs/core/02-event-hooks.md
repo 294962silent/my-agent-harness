@@ -1,10 +1,10 @@
 # 事件驱动与生命周期拦截体系 (`my_agent_core.events` & `hooks`)
 
-- **定位**：Agent 神经系统（只读事实广播）与关键控制流安全门禁拦截总线 (`packages/my-agent-core/src/my_agent_core/events.py`, `hooks.py`)
+- **定位**：Agent 神经系统（只读事实广播）与关键控制流安全门禁拦截总线 (`src/my_agent_core/events.py`, `hooks.py`)
 - **核心模块**：
-  - `events.py`：12 种纯只读事实事件（`Event` 基类，不可变数据结构，只单向向外广播）
+  - `events.py`：14 种纯只读事实事件（`Event` 基类，不可变数据结构，只单向向外广播）
   - `hooks.py`：五大专职 Hook 决策拦截点（`*Hook` 数据结构）、`HookResult` 统一干预模型与 `HookRegistry`
-- **主要实现**：`events.py`, `hooks.py`, `extensions/core.py`
+- **主要实现**：`events.py`, `hooks.py`, `extensions.py`
 
 ---
 
@@ -178,7 +178,7 @@ class HookResult:
 
 ### 4. 扩展分流机制（`ExtensionAPI.on`）
 
-`packages/my-agent-core/src/my_agent_core/extensions/core.py` 中的 `api.on` 装饰器通过 Python `issubclass` 实现智能类型安全分流：
+`src/my_agent_core/extensions.py` 中的 `api.on` 装饰器通过 Python `issubclass` 实现智能类型安全分流：
 
 ```python
 @api.on(TurnStart)          # 自动识别为 Event 子类 ➔ 注册到只读事件订阅者 (subscribers)
