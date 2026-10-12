@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from my_agent_core.tools import Tool, tool
+from my_coding_agent.image_processing import detect_image_mime_from_extension, process_image
 
 from my_coding_agent.tools.base import (
     DEFAULT_MAX_BYTES,
@@ -24,13 +26,28 @@ def make_read_tool(workspace: Path) -> Tool:
         prompt_guidelines=["Use read to examine files instead of cat or sed."],
         is_parallel_safe=True,
     )
-    async def read(path: str, offset: int = 1, limit: int | None = None) -> str:
+    async def read(path: str, offset: int = 1, limit: int | None = None) -> Any:
         try:
             target = resolve_path(workspace, path)
             if not target.exists():
                 return f"Error: File not found: {path}"
             if target.is_dir():
                 return f"Error: Path is a directory: {path}"
+
+            img_mime = detect_image_mime_from_extension(target.name)
+            if img_mime:
+                raw_bytes = target.read_bytes()
+                processed = process_image(raw_bytes, img_mime)
+                if not processed.ok:
+                    return f"Read image file [{img_mime}]\nError: {processed.error}"
+                text_note = f"Read image file [{processed.mime_type}]"
+                if processed.hints:
+                    text_note += "\n" + "\n".join(processed.hints)
+                return [
+                    {"type": "text", "text": text_note},
+                    {"type": "image", "data": processed.data, "mime_type": processed.mime_type},
+                ]
+
             if is_binary_file(target):
                 size = target.stat().st_size
                 return f"Error: Cannot read binary file ({size} bytes): {path}"

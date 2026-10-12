@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from enum import Enum
-from typing import Any, Literal
+from typing import Any, Literal, NotRequired, Required, cast
 
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import TypedDict
@@ -71,9 +71,14 @@ class TextContent(TypedDict):
 
 
 class ImageContent(TypedDict):
-    type: Literal["image"]
-    data: str
-    mime_type: Literal["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"]
+    type: Required[Literal["image"]]
+    mime_type: Required[Literal["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"]]
+    data: NotRequired[str]
+    asset_path: NotRequired[str]
+    sha256: NotRequired[str]
+    width: NotRequired[int]
+    height: NotRequired[int]
+    size_bytes: NotRequired[int]
 
 
 ContentBlock = TextContent | ImageContent
@@ -98,18 +103,42 @@ class Message(BaseModel):
                 if part_type == "text":
                     valid_blocks.append({"type": "text", "text": str(part.get("text", ""))})
                 elif part_type == "image":
-                    raw_data = str(part.get("data", "")).strip()
-                    if not raw_data:
+                    if "data" not in part and "asset_path" not in part:
+                        raise ValueError("Image block must contain either 'data' or 'asset_path'")
+                    raw_data = str(part.get("data", "")).strip() if part.get("data") else ""
+                    asset_path = str(part.get("asset_path", "")).strip() if part.get("asset_path") else ""
+                    if not raw_data and not asset_path:
                         # 剔除空图片数据，防范大模型提供商报 400
                         continue
                     mime = str(part.get("mime_type", "image/png")).lower()
                     if mime == "image/jpg":
                         mime = "image/jpeg"
-                    valid_blocks.append({
+                    item: dict[str, Any] = {
                         "type": "image",
-                        "data": raw_data,
-                        "mime_type": mime,  # type: ignore[typeddict-item]
-                    })
+                        "mime_type": mime,
+                    }
+                    if raw_data:
+                        item["data"] = raw_data
+                    if asset_path:
+                        item["asset_path"] = asset_path
+                    if "sha256" in part:
+                        item["sha256"] = str(part["sha256"])
+                    if "width" in part:
+                        try:
+                            item["width"] = int(part["width"])
+                        except (ValueError, TypeError):
+                            pass
+                    if "height" in part:
+                        try:
+                            item["height"] = int(part["height"])
+                        except (ValueError, TypeError):
+                            pass
+                    if "size_bytes" in part:
+                        try:
+                            item["size_bytes"] = int(part["size_bytes"])
+                        except (ValueError, TypeError):
+                            pass
+                    valid_blocks.append(cast(ContentBlock, item))
             self.content = valid_blocks
         return self
 

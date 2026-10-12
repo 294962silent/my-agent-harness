@@ -68,10 +68,19 @@ class ToolResult:
     meta: dict[str, Any] = field(default_factory=dict)
     terminate: bool = False
 
-    def serialize(self) -> str:
-        """转成写入 messages 的字符串。失败时返回错误文本。"""
-        raw = str(self.data) if self.ok else (self.error or "Unknown error")
-        return truncate_tool_output(raw)
+    def serialize(self) -> Any:
+        """转成写入 messages 的内容。多模态内容块列表完整保留，普通文本执行 50KB/2000行 截断。"""
+        if not self.ok:
+            raw = self.error or "Unknown error"
+            return truncate_tool_output(str(raw))
+        if isinstance(self.data, list):
+            # 检查是否为多模态内容块列表 (ContentBlock)
+            is_multimodal = any(
+                isinstance(item, dict) and item.get("type") in ("image", "text") for item in self.data
+            )
+            if is_multimodal:
+                return self.data
+        return truncate_tool_output(str(self.data))
 
 
 _FRAMEWORK_RESERVED_PARAMS: frozenset[str] = frozenset({"on_update", "signal", "tool_call_id"})

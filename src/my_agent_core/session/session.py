@@ -108,7 +108,7 @@ class Session:
         self.path = Path(path)
         self.id = f"{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
         self.created_at = datetime.now().isoformat()
-        self.cwd = cwd or str(Path.cwd())
+        self.cwd = str(cwd) if cwd else str(Path.cwd())
         self.tree = SessionTree()
         self.compaction_floor: str | None = None
         self.metadata = metadata or {}  # 额外元数据（子代理：agent_type/parent_session_id），进 SessionInfoEntry
@@ -186,9 +186,50 @@ class Session:
         self.save()
         return entry
 
-    def get_current_path_messages(self) -> list[Message]:
-        """当前路径上的纯对话消息列表（自动排除非 MessageEntry 节点）。"""
-        return [e.message for e in self.tree.get_current_path() if isinstance(e, MessageEntry)]
+    def _hydrate_message_images(self, message: Message) -> Message:
+        """从磁盘资产目录透明水合图片的 Base64 数据并还原为规范格式。"""
+        if not isinstance(message.content, list):
+            return message
+        has_hydrated = False
+        hydrated_blocks = []
+        for part in message.content:
+            if isinstance(part, dict) and part.get("type") == "image":
+                raw_data = part.get("data")
+                asset_path = part.get("asset_path")
+                if not raw_data and asset_path:
+                    try:
+                        from .assets import load_image_asset
+
+                        loaded_b64 = load_image_asset(self.path.parent, asset_path)
+                        part = {
+                            "type": "image",
+                            "data": loaded_b64,
+                            "mime_type": part.get("mime_type", "image/png"),
+                        }
+                        has_hydrated = True
+                    except Exception:
+                        pass
+                elif raw_data and "asset_path" in part:
+                    part = {
+                        "type": "image",
+                        "data": raw_data,
+                        "mime_type": part.get("mime_type", "image/png"),
+                    }
+                    has_hydrated = True
+            hydrated_blocks.append(part)
+        if has_hydrated:
+            return message.model_copy(update={"content": hydrated_blocks})
+        return message
+
+    def get_current_path_messages(self, hydrate_images: bool = True) -> list[Message]:
+        """当前路径上的纯对话消息列表（自动排除非 MessageEntry 节点）。
+
+        hydrate_images=True 时自动从会话资产目录水合图片 Base64 数据，确保送给 LLM Provider 时具备完整视觉内容。
+        """
+        raw_msgs = [e.message for e in self.tree.get_current_path() if isinstance(e, MessageEntry)]
+        if not hydrate_images:
+            return raw_msgs
+        return [self._hydrate_message_images(m) for m in raw_msgs]
 
     def add_summary_cache(
         self,
@@ -306,7 +347,7 @@ class Session:
                 temp_path = Path(f.name)
                 f.write(entry_to_json_line(info_entry) + "\n")
                 for e in self.tree.entries.values():
-                    f.write(entry_to_json_line(e) + "\n")
+                    f.write(entry_to_json_line(e, assets_dir=self.path.parent) + "\n")
                 f.flush()
                 os.fsync(f.fileno())
             os.replace(temp_path, self.path)

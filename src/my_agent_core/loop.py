@@ -450,6 +450,14 @@ async def _execute_tools_turn(
         is_err = not res.ok
         effective_terminate = res.terminate
 
+        # 文本视图（供 Hook 审计、ToolExecutionEnd 广播及 TUI 显示）
+        if isinstance(obs, list):
+            text_view = "\n".join(
+                str(item.get("text", "")) for item in obs if isinstance(item, dict) and item.get("type") == "text"
+            ) or "[Multimodal content]"
+        else:
+            text_view = str(obs)
+
         # 触发决策点 5: tool_result (after_tool_call 结果篡改与熔断介入)
         if after_tool_call is not None and not (signal is not None and signal.is_cancelled()):
             try:
@@ -457,7 +465,7 @@ async def _execute_tools_turn(
                     ToolResultHook(
                         tool_call_id=call.id,
                         tool_name=call.name,
-                        result=obs,
+                        result=text_view,
                         is_error=is_err,
                         terminate=effective_terminate,
                     )
@@ -467,20 +475,23 @@ async def _execute_tools_turn(
                 if decision is not None:
                     if decision.block:
                         obs = f"Tool '{call.name}' blocked: {decision.reason or 'blocked by policy'}"
+                        text_view = obs
                         is_err = True
                     elif decision.updated_result is not None:
                         obs = decision.updated_result
+                        text_view = str(decision.updated_result)
                         is_err = False
                     if decision.terminate is not None:
                         effective_terminate = decision.terminate
             except Exception as exc:
                 obs = f"Error in after_tool_call for '{call.name}': {exc}"
+                text_view = obs
                 is_err = True
 
         yield ToolExecutionEnd(
             tool_call_id=call.id,
             tool_name=call.name,
-            result=obs,
+            result=text_view,
             is_error=is_err,
             terminate=effective_terminate,
         )

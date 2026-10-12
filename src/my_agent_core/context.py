@@ -18,9 +18,23 @@ from my_agent_llm import Message  # pyright: ignore[reportMissingImports]
 if TYPE_CHECKING:
     from my_agent_core.session import Session
 
-IMAGE_EQUIVALENT_CHARS = 4000  # 一张图片约等效 1000 Tokens (4000 字符)
+IMAGE_EQUIVALENT_CHARS = 4800  # 一张图片约等效 1200 Tokens (4800 字符，对标 Pi)
 CHARS_PER_TOKEN = 4
 DEFAULT_CONTEXT_BUDGET = 100_000  # 默认 token 预算（约 gpt-4 context 上限）
+
+
+def _msg_chars(msg: Message) -> int:
+    """计算单条消息的等效字符数（纯文本长度 + 每张图片 4800 字符，对标 Pi 的 estimateTextAndImageContentChars）。"""
+    if isinstance(msg.content, str):
+        return len(msg.content)
+    chars = 0
+    for part in msg.content:
+        if isinstance(part, dict):
+            if part.get("type") == "text":
+                chars += len(str(part.get("text", "")))
+            elif part.get("type") == "image":
+                chars += IMAGE_EQUIVALENT_CHARS
+    return chars
 
 
 def estimate_tokens(messages: list[Message], ratio: float | None = None) -> int:
@@ -217,17 +231,25 @@ class CompactionInfo:
 
 
 def _serialize_messages(messages: list[Message]) -> str:
-    """逐条 'role: content'（tool_calls 只列名称）——摘要器好读，省 token。"""
+    """逐条 'role: content'（tool_calls 只列名称）——摘要器好读，省 token。
+
+    对标 Pi / 现有规范：Base64 数据彻底剥离，仅保留文本内容及轻量 [image] 标记。
+    """
     lines = []
     for m in messages:
-        content = (
-            m.content
-            if isinstance(m.content, str)
-            else "".join(part["text"] if part["type"] == "text" else "[image]" for part in m.content)
-        )
+        if isinstance(m.content, str):
+            content = m.content
+        else:
+            content = "".join(
+                str(part.get("text", "")) if part.get("type") == "text" else "[image]" for part in m.content
+            )
+
         if m.role == "assistant" and m.metadata and m.metadata.get("tool_calls"):
-            names = [tc.get("function", {}).get("name", "?") for tc in m.metadata["tool_calls"]]
-            lines.append(f"assistant: [tool_calls: {', '.join(names)}] {content}")
+            names = [
+                tc.get("name") or tc.get("function", {}).get("name", "?")
+                for tc in m.metadata["tool_calls"]
+            ]
+            lines.append(f"assistant: [tool_calls: {', '.join(names)}] {content}".rstrip())
         elif m.role == "tool":
             lines.append(f"tool: {content[:4000]}")
         else:
@@ -440,7 +462,7 @@ class ContextManager:
         acc = 0
         cut = len(messages)
         for i in range(len(messages) - 1, 0, -1):  # 跳过 system（index 0）
-            acc += len(messages[i].text_content)
+            acc += _msg_chars(messages[i])
             if acc >= budget_chars:
                 cut = i
                 break
