@@ -16,6 +16,13 @@ EVAL_DIR = Path("D:/code/python/agent-eval/pi-terminal-bench")
 HARBOR_EXE = EVAL_DIR / ".venv" / "Scripts" / "harbor.exe"
 TASK_DIR = Path("D:/code/python/agent-eval/terminal-bench-2/build-cython-ext")
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(EVAL_DIR / ".env", override=False)
+except ImportError:
+    pass
+
 
 def main() -> None:
     print("=" * 80)
@@ -41,7 +48,8 @@ def main() -> None:
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONPATH"] = f"{REPO_ROOT / 'src'};{REPO_ROOT / 'my-pi-eval' / 'src'}"
-    env["DEEPSEEK_API_KEY"] = "sk-0ecbb64201d441119f6a6b57e7eb15e3"
+    if "DEEPSEEK_API_KEY" in os.environ:
+        env["DEEPSEEK_API_KEY"] = os.environ["DEEPSEEK_API_KEY"]
 
     start_time = time.time()
     proc = subprocess.run(

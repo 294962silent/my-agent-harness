@@ -91,7 +91,9 @@ async def run_e2e_test():
         assert "original 3840x2160" in text_block["text"]
         assert "displayed at 2000x1125" in text_block["text"]
         assert "Multiply coordinates by 1.92" in text_block["text"]
-        print(f"  ✓ Text note verified:\n    {text_block['text'].splitlines()[0]}\n    {text_block['text'].splitlines()[1]}")
+        print(
+            f"  ✓ Text note verified:\n    {text_block['text'].splitlines()[0]}\n    {text_block['text'].splitlines()[1]}"
+        )
 
         assert image_block["type"] == "image"
         assert image_block["mime_type"] == "image/png"
@@ -99,7 +101,9 @@ async def run_e2e_test():
         raw_decoded = base64.b64decode(image_block["data"])
         with Image.open(io.BytesIO(raw_decoded)) as resized_check:
             assert resized_check.size == (2000, 1125)
-            print(f"  ✓ Resized binary verified: {resized_check.size[0]}x{resized_check.size[1]} (aspect ratio preserved)")
+            print(
+                f"  ✓ Resized binary verified: {resized_check.size[0]}x{resized_check.size[1]} (aspect ratio preserved)"
+            )
 
         # ---------------------------------------------------------
         # Step 3: Test ReAct Tool Batch Execution Pipeline
@@ -154,7 +158,9 @@ async def run_e2e_test():
         assert images_dir.exists() and images_dir.is_dir()
         spilled_files = list(images_dir.glob("*.png"))
         assert len(spilled_files) == 1, f"Expected 1 deduplicated asset file, got {len(spilled_files)}"
-        print(f"  ✓ Spilled image asset exists on disk: {spilled_files[0].name} ({spilled_files[0].stat().st_size} bytes)")
+        print(
+            f"  ✓ Spilled image asset exists on disk: {spilled_files[0].name} ({spilled_files[0].stat().st_size} bytes)"
+        )
 
         # Test reload and transparent hydration
         reloaded_session = Session.load(session_file)
@@ -180,8 +186,8 @@ async def run_e2e_test():
 
         # Build conversation: Early image turn + Mid text turns + Recent image turn
         history = [
-            hydrated_messages[0], # User with 4K image (estimated ~1200 tokens)
-            hydrated_messages[1], # Tool with 4K image (estimated ~1200 tokens)
+            hydrated_messages[0],  # User with 4K image (estimated ~1200 tokens)
+            hydrated_messages[1],  # Tool with 4K image (estimated ~1200 tokens)
             Message(role="assistant", content="I inspected the dashboard."),
             Message(role="user", content="Here are additional logs: " + "verbose " * 200),
             Message(role="assistant", content="Logs verified."),
@@ -218,9 +224,7 @@ async def run_e2e_test():
         latest_view_msg = view[-1]
         assert latest_view_msg.role == "user"
         assert isinstance(latest_view_msg.content, list)
-        latest_img_block = next(
-            b for b in latest_view_msg.content if isinstance(b, dict) and b.get("type") == "image"
-        )
+        latest_img_block = next(b for b in latest_view_msg.content if isinstance(b, dict) and b.get("type") == "image")
         assert latest_img_block.get("data") == image_block["data"], "Latest image in retainedTail lost data!"
         print("  ✓ Compacted view verified: Summary at prefix, active retainedTail has full Vision capability intact")
 

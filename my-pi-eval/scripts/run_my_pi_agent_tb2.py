@@ -18,6 +18,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 EVAL_DIR = Path("D:/code/python/agent-eval/pi-terminal-bench")
 TB2_TASKS_DIR = Path("D:/code/python/agent-eval/terminal-bench-2")
 HARBOR_EXE = EVAL_DIR / ".venv" / "Scripts" / "harbor.exe"
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(EVAL_DIR / ".env", override=False)
+except ImportError:
+    pass
 PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_pi_agent_progress.json"
 PROGRESS_LOCK = threading.Lock()
 
@@ -102,7 +109,8 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONPATH"] = f"{REPO_ROOT / 'src'};{REPO_ROOT / 'my-pi-eval' / 'src'}"
-    env["DEEPSEEK_API_KEY"] = "sk-0ecbb64201d441119f6a6b57e7eb15e3"
+    if "DEEPSEEK_API_KEY" in os.environ:
+        env["DEEPSEEK_API_KEY"] = os.environ["DEEPSEEK_API_KEY"]
     env["PIP_INDEX_URL"] = "https://mirrors.aliyun.com/pypi/simple/"
     env["PIP_EXTRA_INDEX_URL"] = "https://download.pytorch.org/whl/cpu"
     env["PIP_TRUSTED_HOST"] = "mirrors.aliyun.com download.pytorch.org"
