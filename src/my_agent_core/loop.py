@@ -102,7 +102,6 @@ class CancellationToken:
         return self._cancelled
 
 
-
 async def _assistant_turn(
     *,
     llm: LLMProtocol | Any,
@@ -452,9 +451,12 @@ async def _execute_tools_turn(
 
         # 文本视图（供 Hook 审计、ToolExecutionEnd 广播及 TUI 显示）
         if isinstance(obs, list):
-            text_view = "\n".join(
-                str(item.get("text", "")) for item in obs if isinstance(item, dict) and item.get("type") == "text"
-            ) or "[Multimodal content]"
+            text_view = (
+                "\n".join(
+                    str(item.get("text", "")) for item in obs if isinstance(item, dict) and item.get("type") == "text"
+                )
+                or "[Multimodal content]"
+            )
         else:
             text_view = str(obs)
 
@@ -610,7 +612,7 @@ async def run_agent_loop(
             view = await context_manager.prepare(clean_messages) if context_manager else clean_messages
             view = clean_provider_context(view)
 
-            # 派发上下文压缩事件（若触发了 L4/L2 压缩）
+            # 派发上下文压缩事件（若触发了 compact 压缩）
             comp_info = getattr(context_manager, "pending_compaction", None) if context_manager is not None else None
             if comp_info is not None:
                 yield ContextCompacted(

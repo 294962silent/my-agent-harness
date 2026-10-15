@@ -433,7 +433,7 @@ class Agent:
         self._ctx.reset()
 
     async def compact(self, instructions: str | None = None) -> None:
-        """手动触发压缩：无条件执行一次 L4 摘要（写缓存 + 事件），不动 messages。"""
+        """手动触发压缩：无条件执行一次 compact 结构化摘要（写缓存 + 事件），不动 messages。"""
         await self._ctx.compact(self.messages, instructions=instructions)
         await self._handle_compaction()
 

@@ -2,7 +2,7 @@
 
 - **定位**：长文本上下文动态管理、离散 Epoch 块级压缩与 Prompt Cache 前缀稳定性引擎 (`src/my_agent_core/context.py`)
 - **核心类**：`ContextManager`, `ContextSessionBridge`, `CompactionInfo`
-- **压缩规约**：Append-Only 稳定前缀 (门控内) ➔ 80% 动态水位线 ➔ L3 磁盘溢出 ➔ L4 离散块结构化摘要
+- **压缩规约**：Append-Only 稳定前缀 (门控内) ➔ 80% 动态水位线 ➔ 工具输出持久化到磁盘 ➔ compact 离散块结构化摘要
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### 1. 传统滚动压缩的致命缺陷：前缀缓存频繁击穿 (Prefix Invalidation)
 
-在早期的 Agent 架构中，常见的上下文压缩策略依赖“滑动窗口”模式（如 L1 滚动裁切中间轮次、L2 逐轮将过早工具输出替换为占位符）。
+在早期的 Agent 架构中，常见的上下文压缩策略依赖“滑动窗口”模式（如旧式滚动裁切中间轮次、逐轮将过早工具输出替换为占位符）。
 然而在深度对标现代主流大模型（如 DeepSeek、OpenAI、Anthropic）的原厂机制后，我们发现**逐轮滚动篡改是导致 API 成本激增与延迟劣化的头号元凶**：
 
 - **KV-Cache / Prompt Cache 机制原理**：现代大模型服务端对输入 Prompt 实施前缀哈希缓存。只要输入消息序列的前 $K$ 个字节与此前请求完全一致，服务端即可直接复用已计算好的 KV-Cache，不仅大幅降低首字延迟（TTFT），且读取已缓存 Token 的价格仅为常规输入的 1/10 甚至更低；
@@ -18,7 +18,7 @@
 
 ### 2. 架构重构：Append-Only 前缀一致性 + 离散 Epoch 块级压缩 (Pi 原厂对齐)
 
-基于上述工程洞察，`my-pi-agent` 彻底废除了旧的逐轮 L1 滚动截断与 L2 滚动工具篡改，确立了**对标 Pi 原厂的“Append-Only 前缀一致性 + 80% 动态水位线离散 Epoch 块级压缩”新范式**：
+基于上述工程洞察，`my-pi-agent` 彻底废除了旧的逐轮滚动截断与滚动工具篡改，确立了**对标 Pi 原厂的“Append-Only 前缀一致性 + 80% 动态水位线离散 Epoch 块级压缩”新范式**：
 
 ```text
                未超 80% 预算门控 (tokens <= budget_threshold)
@@ -29,8 +29,8 @@
 (messages)    │
               │ 超出 80% 动态水位线 (tokens > budget_threshold)
               └────────────────────────────────────────────► 触发离散 Epoch 块压缩
-                                                             ├─ 尝试 L3: 超大结果磁盘溢出 (results_dir)
-                                                             └─ 执行 L4: 离散块 LLM 智能结构化摘要
+                                                             ├─ 尝试: 超大结果持久化到磁盘 (results_dir)
+                                                             └─ 执行: compact 离散块 LLM 智能结构化摘要
                                                                           │
                                                                           ▼
                                                          确立新 Epoch 稳定基准前缀：
@@ -74,15 +74,15 @@ def set_budget(self, budget: int) -> None:
 - **API 真实回执反向锚定**：每轮大模型交互返回后，通过 `record_usage(usage)` 提取 `prompt_tokens`、`cache_read_tokens` 与 `cache_write_tokens`，结合上一次发送视图的字符数计算真实比率 `ratio = total_prompt_tokens / last_view_chars`；
 - **Footer 视口无缝联动**：状态栏与微内核共用同一锚定比率，确保终端 UI 显示的上下文占比与微内核门控完全同源、零时差。
 
-### 4. 离散 Epoch 块级压缩与基准前缀确立 (L3 ➔ L4)
+### 4. 离散 Epoch 块级压缩与基准前缀确立（工具输出持久化到磁盘 ➔ compact 结构化摘要）
 
 当突破 80% 水位线时，`ContextManager` 执行离散块压缩：
 
-1. **L3 超大工具结果磁盘溢出**：
+1. **超大工具输出持久化到磁盘**：
    - 检查 `results_dir`；若存在超出 `max_chars`（默认 20,000 字符）的单条工具消息，将其持久化至 `.my_agent_core/tool-results/<tool_call_id>.txt`，并在视图中替换为 `<persisted-output>` 路径与前 2000 字符预览；
-   - 若溢出后总 Token 回落至 80% 水位线以下，则直接返回溢出视图，**无需调用大模型**；
-2. **L4 离散块 LLM 结构化摘要**：
-   - 若 L3 溢出后依然超限，计算切割点 `cut = _find_cut(messages)`（向后保留 `keep_recent_tokens` 并严格对齐到 `user` 消息边界，永不破坏 `assistant(tool_calls) + tool*` 协议配对）；
+   - 若落盘持久化后总 Token 回落至 80% 水位线以下，则直接返回溢出视图，**无需调用大模型**；
+2. **compact 离散块 LLM 结构化摘要**：
+   - 若工具输出持久化到磁盘后依然超限，计算切割点 `cut = _find_cut(messages)`（向后保留 `keep_recent_tokens` 并严格对齐到 `user` 消息边界，永不破坏 `assistant(tool_calls) + tool*` 协议配对）；
    - 将 `messages[1:cut]`（跳过 System Prompt）打包作为上下文，调用大模型生成离散块结构化摘要；
    - 摘要生成后，构造全新的基准视图：
      ```python
@@ -92,7 +92,7 @@ def set_budget(self, budget: int) -> None:
 
 ### 5. 防注入双标签结构与 6 Section 约束
 
-在 L4 摘要生成过程中，系统部署了严密的安全与信息保留约束：
+在 compact 摘要生成过程中，系统部署了严密的安全与信息保留约束：
 
 - **`<analysis>` ➔ `<summary>` 双标签防注入**：
   大模型被明确指令先在 `<analysis>` 标签内梳理核心上下文，随后在 `<summary>` 标签内输出正文。框架通过正则严格只提取 `<summary>` 内容，彻底杜绝历史对话中恶意注入的指令劫持摘要器；

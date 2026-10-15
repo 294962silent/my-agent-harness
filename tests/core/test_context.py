@@ -100,7 +100,7 @@ def test_snap_cut_to_group_preserves_parallel_tool_groups():
 
 
 def test_budget_tool_results_persists_large(tmp_path):
-    """L3：超大 tool 消息 → 落盘 + 视图换预览；原 messages 未修改（#4）。"""
+    """工具输出落盘持久化：超大 tool 消息 → 落盘 + 视图换预览；原 messages 未修改（#4）。"""
     big = _msg("tool", "z" * 100, tool_call_id="c1")
     msgs = [_msg("user", "q"), big]
     view = budget_tool_results(msgs, max_chars=50, results_dir=tmp_path)
@@ -197,21 +197,21 @@ async def test_prepare_preserves_prefix_invariance_across_turns():
 
 @pytest.mark.anyio
 async def test_prepare_gate_below_threshold_leaves_everything_untouched(tmp_path):
-    """门控未开：条数超 L1 阈值、单条超 L3 阈值，也一条都不动（本次新行为核心）。"""
+    """门控未开：即便存在超大工具结果与大量历史，低于阈值也一条都不动（本次新行为核心）。"""
     llm = FakeLLM()
     ctx = _small_ctx(llm, budget=1_000_000, results_dir=tmp_path)
     old_tools = [_msg("tool", "y" * 500, tool_call_id=f"c{i}") for i in range(8)]
     big = _msg("tool", "z" * 30000, tool_call_id="big")
     msgs = [_msg("user", "q") for _ in range(60)] + old_tools + [big]  # 69 条
     view = await ctx.prepare(msgs)
-    assert view == msgs  # 逐条相等：L1/L2/L3 全部未生效
+    assert view == msgs  # 逐条相等：工具输出落盘持久化与 compact 均未触发
     assert len(llm.calls) == 0
     assert not list(tmp_path.iterdir())  # 没有落盘
 
 
 @pytest.mark.anyio
-async def test_prepare_gate_above_threshold_runs_l3_spill(tmp_path):
-    """门控开启：超阈 → L3 落盘（以落盘副作用证明整批管线确实跑过）。"""
+async def test_prepare_gate_above_threshold_runs_tool_output_spill(tmp_path):
+    """门控开启：超阈 → 工具输出落盘持久化（以落盘副作用证明整批管线确实跑过）。"""
     llm = FakeLLM()
     ctx = _small_ctx(llm, budget=8000, results_dir=tmp_path)
     msgs = [_msg("user", "q"), _msg("tool", "z" * 30000, tool_call_id="big")]
@@ -222,8 +222,8 @@ async def test_prepare_gate_above_threshold_runs_l3_spill(tmp_path):
 
 
 @pytest.mark.anyio
-async def test_prepare_gate_above_threshold_triggers_l4_summary():
-    """门控开启：超阈值且无法单靠 L3 规避时，触发 L4 离散摘要建立稳定前缀，绝不进行滚动中间篡改。"""
+async def test_prepare_gate_above_threshold_triggers_compact_summary():
+    """门控开启：超阈值且无法单靠工具输出落盘规避时，触发 compact 离散摘要建立稳定前缀，绝不进行滚动中间篡改。"""
     llm = FakeLLM([_response(content="Summary of earlier conversation")])
     ctx = _small_ctx(llm, budget=10_000)
     msgs = (
@@ -247,7 +247,7 @@ async def test_prepare_gate_cache_branch_below_threshold_no_free_layers(tmp_path
     big = _msg("tool", "z" * 30000, tool_call_id="big")
     view = await ctx.prepare(msgs + [big])
     assert len(llm.calls) == 1  # 未触发迭代摘要
-    assert any(m.content == "z" * 30000 for m in view)  # 新增大结果未被 L3 落盘
+    assert any(m.content == "z" * 30000 for m in view)  # 新增大结果未被落盘持久化
     assert not list(tmp_path.iterdir())
     assert any("[Context summary" in m.content for m in view)  # 摘要仍在视图里
 
@@ -358,7 +358,7 @@ async def test_cache_reused_no_resummary():
 
 @pytest.mark.anyio
 async def test_cache_branch_applies_free_layers_to_newly(tmp_path):
-    """缓存分支：新增内容也支持 L3 大输出落盘，保证超大输出不撑爆上下文。"""
+    """缓存分支：新增内容也支持超大工具输出持久化到磁盘，保证超大输出不撑爆上下文。"""
     llm = FakeLLM([_response(content="## Goal\n...")])
     ctx = _small_ctx(llm, budget=2000, keep_recent_tokens=100, results_dir=tmp_path)
     msgs = [_msg("user", "x" * 300) for _ in range(25)]
@@ -367,7 +367,7 @@ async def test_cache_branch_applies_free_layers_to_newly(tmp_path):
     big_tool = _msg("tool", "z" * 30000, tool_call_id="big")
     more = msgs + [big_tool]
     view = await ctx.prepare(more)
-    assert len(llm.calls) == 1  # 走缓存分支、未再次调摘要、且 L3 落盘后视图有 preview
+    assert len(llm.calls) == 1  # 走缓存分支、未再次调摘要、且工具输出落盘后视图有 preview
     assert any("<persisted-output>" in m.content for m in view)
     assert (tmp_path / "big.txt").exists()
 
@@ -602,7 +602,7 @@ async def test_bridge_restore_and_write(tmp_path):
 
 @pytest.mark.anyio
 async def test_summary_prompt_includes_6_sections():
-    """验证 L4 摘要 Prompt 包含完整的 6 Section 约束模板。"""
+    """验证 compact 摘要 Prompt 包含完整的 6 Section 约束模板。"""
     llm = FakeLLM([_response(content="## Goal\n...")])
     ctx = _small_ctx(llm, budget=1000, keep_recent_tokens=100)
     msgs = [_msg("user", "x" * 300) for _ in range(20)]
@@ -691,7 +691,7 @@ async def test_extract_file_operations_from_standard_tool_call_entities():
 async def test_discrete_epoch_compaction_establishes_stable_prefix():
     """验证离散块压缩触发后，确立全新的稳定前缀 Epoch，后续轮次完全保持只读追加。
 
-    1. 前 20 轮累计超过 80% 阈值，触发且仅触发 1 次 L4 块摘要；
+    1. 前 20 轮累计超过 80% 阈值，触发且仅触发 1 次 compact 块摘要；
     2. 后续 10 轮交互中，LLM calls 保持为 1（无重复摘要）；
     3. 后续 10 轮中，[System, Summary, *retained_tail] 保持 100% 字节不变，保障 KV-Cache 98%+ 命中。
     """

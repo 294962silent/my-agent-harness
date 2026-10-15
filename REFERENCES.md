@@ -18,7 +18,7 @@
 - [三、事件驱动与生命周期拦截体系 (`my_agent_core.events`)](#三事件驱动与生命周期拦截体系-my_agent_coreevents)
 - [四、单层 Agent 与原生异步 ReAct 循环 (`my_agent_core.agent`)](#四单层-agent-与原生异步-react-循环-my_agent_coreagent)
 - [五、树状会话与原子持久化 (`my_agent_core.session`)](#五树状会话与原子持久化-my_agent_coresession)
-- [六、上下文四层廉价优先压缩管线 (`my_agent_core.context`)](#六上下文四层廉价优先压缩管线-my_agent_corecontext)
+- [六、上下文压缩管线：工具输出持久化到磁盘与 compact 智能摘要 (`my_agent_core.context`)](#六上下文压缩管线工具输出持久化到磁盘与-compact-智能摘要-my_agent_corecontext)
 - [七、Skills 技能机制 (`my_agent_core.skills`)](#七skills-技能机制-my_agent_coreskills)
 - [八、Subagents 与 Task 任务委派 (`my_agent_core.subagents` & `subagent_tasks`)](#八subagents-与-task-任务委派-my_agent_coresubagents--subagent_tasks)
 - [九、Extension 扩展与命令路由机制 (`my_agent_core.extensions`)](#九extension-扩展与命令路由机制-my_agent_coreextensions)
@@ -147,21 +147,19 @@
 
 ---
 
-## 六、上下文四层廉价优先压缩管线 (`my_agent_core.context`)
+## 六、上下文压缩管线：工具输出持久化到磁盘与 compact 智能摘要 (`my_agent_core.context`)
 
 ### 1. 参考项目与源码定位
 
 - **主要参考**：
-  - **Pi (`packages/agent/src/harness/compaction/compaction.ts`)**：廉价优先多层压缩思想（Cheap-first Pipeline）与 `retainedTail` 缓存机制；
+  - **Pi (`packages/agent/src/harness/compaction/compaction.ts`)**：工具输出持久化到磁盘、80% 动态水位线门控、compact 结构化摘要与 `retainedTail` 缓存机制；
   - **OpenHands (`openhands.sdk.context.condenser`)**：LLM 摘要提示词防注入与先分析再总结（`<analysis>` / `<summary>` 标签剥离）。
 
 ### 2. 核心借鉴的设计机制
 
-- **四层廉价优先流水线（L3 ➔ L1 ➔ L2 ➔ L4）**：
-  1. **L3 大结果落盘**：超大工具输出写入磁盘文件，上下文内替换为文件路径引用（0 API 开销）；
-  2. **L1 裁切中间轮次**：保留系统提示词与最近 $N$ 轮，裁切中间历史（0 API 开销）；
-  3. **L2 旧结果占位**：历史过旧的工具输出替换为简短占位符（0 API 开销）；
-  4. **L4 LLM 智能摘要**：仅当上述 3 层仍超预算时，才花费 1 次 API 调用生成结构化摘要。
+- **两阶段压缩流水线（工具输出落盘持久化 ➔ compact 结构化摘要）**：
+  1. **工具输出持久化到磁盘**：超大工具输出写入磁盘文件，上下文内替换为文件路径引用与前 2000 字符预览（0 API 开销）；
+  2. **compact LLM 智能摘要**：仅当落盘持久化后仍超 80% 预算时，才花费 1 次 API 调用生成结构化摘要。彻底废除旧的滚动截断与工具篡改，保障 Append-Only 前缀一致性与 KV-Cache 高命中率；
 - **Usage 锚定估算**：使用 `chars / 4` 兜底，并通过每轮实测的 `Response.usage` 动态校准 Token 计数；
 - **`compaction_floor` 护栏**：压缩后指针被锁定在压缩点之后，防止指针回退导致历史压缩缓存失效。
 
@@ -444,7 +442,7 @@
 | **事件拦截** | `src/my_agent_core/events.py` | Pi (`hooks.md`) | 五大生命周期决策拦截点、HookResult 统一干预、流式熔断丢弃半截 |
 | **异步循环** | `src/my_agent_core/agent.py` | Pi (`agent-loop.ts`), pig-mono | 单层类内联 ReAct 循环、纯协程驱动、临时视图零污染 |
 | **会话持久化** | `src/my_agent_core/session/` | Pi (`jsonl-storage.ts`), Tau (`tau-ai`) | 树状分支存储、只追加存储驱动、`rewind/fork` 纯内存树算法 |
-| **上下文压缩** | `src/my_agent_core/context.py` | Pi (`compaction.ts`), OpenHands | 离散 Epoch 块级压缩管线 (80% 水位线门控 + L3 磁盘溢出 + L4 结构化摘要)、Append-Only 前缀不变性、96.7% 缓存命中 |
+| **上下文压缩** | `src/my_agent_core/context.py` | Pi (`compaction.ts`), OpenHands | 离散 Epoch 块级压缩管线 (80% 水位线门控 + 工具输出持久化到磁盘 + compact 结构化摘要)、Append-Only 前缀不变性、96.7% 缓存命中 |
 | **Skills 机制** | `src/my_agent_core/skills.py` | Pi (`skills.ts`), OpenHands | 渐进式披露、启动仅注入清单、`invoke_skill` 显式调用 |
 | **Subagents** | `src/my_agent_core/subagent_tasks.py` | Claude Code, OpenHands, Pi | 独立子会话树、防递归工具过滤、子代理沙箱隔离 |
 | **Extension** | `src/my_agent_core/extensions/` | Pi (`ExtensionAPI`) | 静态注册面 + 动态调度、本地 0 Token 命令行前置路由 |

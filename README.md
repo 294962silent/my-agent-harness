@@ -78,7 +78,7 @@
 2. **七阶段工具执行流水线与 Never-Throw 保证**：掌握参数强类型归一化、Preflight 预检、实时进度流、因果并发安全（只读并发、含写保序），以及通过 `tool_history.py` 转录本三阶段自愈彻底免疫大模型 API 400 校验死锁；
 3. **五大生命周期决策拦截点（Hooks）**：将只读事实事件（Events）与决策干预门禁（Hooks）彻底正交解耦，深刻理解“调模型前临时 View 改写 vs 真实底层 Session 零污染”的高级设计原则；
 4. **DAG 树状会话持久化与分支探索**：掌握只追加（Append-Only）JSONL 存储、跨进程文件锁、纯内存防环树算法，以及 `/tree`、`/fork`、`/clone` 与安全删除拦截机制；
-5. **Append-Only 前缀一致性与离散 Epoch 块级压缩管线**：彻底废除旧的滚动截断与工具篡改，动态 80% 水位线门控管控，L3 磁盘溢出 + L4 结构化摘要与全生命周期文件足迹累积，联动 `retainedTail` 快照锁定基准前缀，实测斩获 96.7% 的大模型 KV-Cache（Prompt Cache）命中率；
+5. **Append-Only 前缀一致性与离散 Epoch 块级压缩管线**：彻底废除旧的滚动截断与工具篡改，动态 80% 水位线门控管控，工具输出持久化到磁盘 + compact 结构化摘要与全生命周期文件足迹累积，联动 `retainedTail` 快照锁定基准前缀，实测斩获 96.7% 的大模型 KV-Cache（Prompt Cache）命中率；
 6. **双核解耦通信范式**：基于标准 stdio JSON-RPC 2.0 管道，实现 Python 纯无头业务内核与基于 `@earendil-works/pi-tui` 原厂终端的跨进程优雅通信。
 
 ---
@@ -232,8 +232,8 @@ npm start
 - **树状会话持久化与离散 Epoch 块级压缩管线 (`context.py`)**：
   - 树状 DAG 结构、逐条原子落盘（`fsync` + `os.replace`），崩溃永不损坏历史；
   - 支持 `/tree` 查看拓扑树、`/fork` 节点分叉、`/clone` 全量探索副本；
-  - **Append-Only 前缀一致性保证**：彻底废除旧的逐轮 L1 滚动裁切与 L2 滚动工具篡改，在未超 80% 水位线前严格只读追加（Append-Only），前缀字节 100% 保持不变，大模型 KV-Cache（Prompt Cache）实测命中率达 **96.7%**；
-  - **动态 80% 水位线门控与离散 Epoch 块级压缩**：对标 Pi 原厂机制，当且仅当上下文突破 80% 预算时才触发离散块压缩；先尝试 L3 超大结果磁盘溢出，超预算后执行 L4 智能摘要（`<analysis>` + `<summary>` 双标签防注入 + 6 Section 约束 + `<read-files>`/`<modified-files>` 全生命周期文件操作足迹累积）；
+  - **Append-Only 前缀一致性保证**：彻底废除旧的逐轮滚动裁切与滚动工具篡改，在未超 80% 水位线前严格只读追加（Append-Only），前缀字节 100% 保持不变，大模型 KV-Cache（Prompt Cache）实测命中率达 **96.7%**；
+  - **动态 80% 水位线门控与离散 Epoch 块级压缩**：对标 Pi 原厂机制，当且仅当上下文突破 80% 预算时才触发离散块压缩；先尝试工具输出持久化到磁盘，超预算后执行 compact 智能结构化摘要（`<analysis>` + `<summary>` 双标签防注入 + 6 Section 约束 + `<read-files>`/`<modified-files>` 全生命周期文件操作足迹累积）；
   - `retainedTail` 静态前缀快照缓存与 `compaction_floor` 指针安全护栏，确立下一周期稳定基准前缀。
 - **自动化基准评测体系与 Terminal-Bench 2.1 终局战报 (`my-pi-eval`)**：
   - **Scheme 1 宿主机编排型轻量架构**：基于 Harbor Framework 实现 `MyPiAgent` 适配，Agent 核心运行于宿主机，通过 Docker 管道桥接 7 大工具，实现沙箱零污染与秒级冷启动；

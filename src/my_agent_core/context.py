@@ -67,7 +67,7 @@ def _snap_cut_to_group(messages: list[Message], cut: int) -> int:
 def budget_tool_results(
     messages: list[Message], max_chars: int = 20000, results_dir: Path | None = None
 ) -> list[Message]:
-    """L3：content 超 max_chars 的 tool 消息 → 落盘到 results_dir/<tool_call_id>.txt，视图换预览。
+    """工具输出落盘持久化：content 超 max_chars 的 tool 消息 → 落盘到 results_dir/<tool_call_id>.txt，视图换预览。
 
     落盘失败（results_dir 为 None / IO 错误）→ 保留原 content（降级）。
     """
@@ -245,10 +245,7 @@ def _serialize_messages(messages: list[Message]) -> str:
             )
 
         if m.role == "assistant" and m.metadata and m.metadata.get("tool_calls"):
-            names = [
-                tc.get("name") or tc.get("function", {}).get("name", "?")
-                for tc in m.metadata["tool_calls"]
-            ]
+            names = [tc.get("name") or tc.get("function", {}).get("name", "?") for tc in m.metadata["tool_calls"]]
             lines.append(f"assistant: [tool_calls: {', '.join(names)}] {content}".rstrip())
         elif m.role == "tool":
             lines.append(f"tool: {content[:4000]}")
@@ -258,10 +255,10 @@ def _serialize_messages(messages: list[Message]) -> str:
 
 
 class ContextManager:
-    """阀值门控的四层压缩管线 + usage 锚定估算 + retainedTail 缓存。
+    """阈值门控的压缩管线（工具输出持久化到磁盘 + compact 结构化摘要）+ usage 锚定估算 + retainedTail 缓存。
 
     纯视图逻辑：prepare 只返回新 list，绝不修改传入 messages；缓存/树交互由 Agent 做。
-    门控：未超 budget_threshold（80% budget）→ 四层一条都不跑，原样返回。
+    门控：未超 budget_threshold（80% budget）→ 压缩机制一条都不跑，原样返回。
     """
 
     def __init__(
@@ -335,7 +332,7 @@ class ContextManager:
 
         对齐 Pi/Tau 规范：未超 budget_threshold（80% budget）时，严格保持只读追加（Append-Only），
         保障前缀完全一致性以最大化大模型 KV-Cache（Prompt Cache）命中率。
-        超阈值时执行离散块压缩（L4 结构化摘要），建立下一个周期的静态稳定前缀。
+        超阈值时执行离散块压缩（compact 结构化摘要），建立下一个周期的静态稳定前缀。
         """
         self.pending_compaction = None
         if self._summary is not None:
@@ -411,7 +408,7 @@ class ContextManager:
         return view + newly
 
     def _apply_free_layers(self, view: list[Message]) -> list[Message]:
-        """免费层执行：仅支持 L3 大结果磁盘溢出，废除 L1 滚动裁切与 L2 滚动工具篡改以保障前缀缓存。"""
+        """轻量层执行：仅支持超大工具输出持久化到磁盘，废除旧滚动裁切与滚动工具篡改以保障前缀缓存。"""
         if self.results_dir:
             view = budget_tool_results(view, results_dir=self.results_dir)
         return view
@@ -515,7 +512,7 @@ class ContextManager:
 
 
 class ContextSessionBridge:
-    """ContextManager ↔ Session 持久化桥：缓存 entry 的读写、L3 落盘目录。
+    """ContextManager ↔ Session 持久化桥：缓存 entry 的读写、工具输出落盘目录。
 
     ContextManager 保持纯视图逻辑（不 import session）；本类负责 context 缓存
     与 session 树的相互转换。Agent 只调本类方法，不碰桥内部。
@@ -525,7 +522,7 @@ class ContextSessionBridge:
         self.session = session
 
     def results_dir(self) -> Path | None:
-        """L3 落盘目录：session 所在 workspace 的 .my_agent_core/tool-results/。"""
+        """工具输出落盘目录：session 所在 workspace 的 .my_agent_core/tool-results/。"""
         return self.session.path.parent.parent / "tool-results"
 
     def restore_cache(self, ctx: ContextManager) -> None:

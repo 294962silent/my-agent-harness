@@ -26,7 +26,7 @@ my-pi-agent/
 │   │   ├── task_store.py           # TaskStore 任务状态机与 DAG 依赖图
 │   │   ├── background.py           # BackgroundRunner 进程树清理引擎
 │   │   ├── session/                # 树状分支持久化会话系统
-│   │   ├── context.py              # 离散 Epoch 块级压缩管线 (80% 水位线门控 + L3 磁盘溢出 + L4 结构化摘要)
+│   │   ├── context.py              # 离散 Epoch 块级压缩管线 (80% 水位线门控 + 工具输出持久化到磁盘 + compact 结构化摘要)
 │   │   └── skills.py               # Skills 声明式管理与提示词注入
 │   │
 │   └── my_coding_agent/            # 3. 业务工具与 stdio RPC 服务端 (纯无头架构)
@@ -237,12 +237,12 @@ my-pi-agent/
 
 ### 阶段 4：context 管理（2026-08-11）
 
-**目标**：超 budget 上下文自动压缩——四层管线（L3 落盘 → L1 裁中间 → L2 占位 → L4 摘要）+ usage 锚定估算 + retainedTail 缓存，Agent 集成压缩策略、事件通知与会话内缓存持久化。
+**目标**：超 budget 上下文自动压缩——压缩管线（工具输出落盘持久化 + compact 结构化摘要）+ usage 锚定估算 + retainedTail 缓存，Agent 集成压缩策略、事件通知与会话内缓存持久化。
 
 - 提交：`4b5925f` `168168b` `e74a610` `014b0ba` `575da36`（worktree 分支 `context-management`）
 - **改了什么**：
   - `session.py`：`SessionEntry` 加 `type` 字段；新增 `add_summary_cache` / `get_full_history_messages`；`rewind` 加护栏
-  - `context.py`（新增）：`ContextManager` 四层管线（L3 落盘 → L1 裁中间 → L2 占位 → L4 摘要）+ usage 锚定 + retainedTail 缓存（prepare / 缓存复用 / 迭代再摘要 / 摘要失败降级不压缩）
+  - `context.py`（新增）：`ContextManager` 压缩管线（工具输出落盘持久化 + compact 结构化摘要）+ usage 锚定 + retainedTail 缓存（prepare / 缓存复用 / 迭代再摘要 / 摘要失败降级不压缩）
   - `agent.py`：`context_budget=` 参数、`run()` 内 prepare、`compact()` 手动触发、`ContextCompacted` 事件发射
   - `__init__.py` / README：导出 `ContextManager`；阶段 4 勾选
 - **过程中的关键教训**：
@@ -357,7 +357,7 @@ my-pi-agent/
 - **改了什么**：
   - `events.py`：`HookRegistry.emit(event)` 异步化（支持 `async def` 协程与同步 `def` 回调混合注册与短路拦截）；`MessageUpdate` 继承 `Interceptable` 并增加 `chunk` 字段，支持流式 Token 生成过程中的 Hook 实时熔断。
   - `tools/core.py` & `registry.py`：`Tool` 增加 `is_parallel_safe: bool = False`；`Tool.execute` 支持原生协程并用 `asyncio.to_thread` 自动桥接同步函数；`ToolRegistry.execute_batch` 实现**只读并发（`asyncio.gather`）+ 写入按序串行 + 严格保序回填**。
-  - `context.py`：`prepare`、`force_compact`、`_do_summarize`、`_call_summarizer` 四层压缩管线异步化，使用 `await self.llm.achat` 生成 L4 摘要。
+  - `context.py`：`prepare`、`force_compact`、`_do_summarize`、`_call_summarizer` 压缩管线异步化，使用 `await self.llm.achat` 生成 compact 结构化摘要。
   - `agent.py`：核心 ReAct 循环重构为原生异步 `async def run(prompt)`，接入 `llm.achat_stream` 流式迭代；实现 `agent.abort()` 叫停机制（叫停时丢弃未完成半截内容，不写入 Session，发射 `AgentEnd(stop_reason="cancelled")`）；移除冗余同步入口 `run_sync`（提交 `6d20c1a`），保持纯粹原生异步 API。
   - `tasks.py` & `task.py`：`TaskManager.start_task` 与工具桥 `task` 异步化，标记 `is_parallel_safe=True`，支持父 Agent 一次性派发多个子代理并发并行执行。
   - `files.py` & `mcp.py`：`read` 标记为并发安全，`write/edit/bash` 标记为写入串行；MCP 客户端基于 `AsyncExitStack` 重写，彻底移除所有 `threading.Thread`、`threading.Event`、`run_coroutine_threadsafe` 等多线程代码（~60% 代码量缩减）。
@@ -478,7 +478,7 @@ my-pi-agent/
   - `tools.py`（`my-coding-agent`）：
     - `write` 和 `edit` 接入 `FileMutationQueue` 单文件锁保护，将外部并发声明提升为 `is_parallel_safe=True`（多文件并发修改耗时直降，同名文件自动保序排队）；
     - 精细化错误文案（Prompt-Quality Errors）：`read` 增加行数统计与精准越界提示，`edit` 增加文件行数、未找到排查建议与多重匹配检测，`bash` 超时自动捕获并回显子进程已输出的最后 2000 字符日志。
-  - `context.py`：升级 L4 结构化压缩为完整的 6 Section 约束模板（`Goal`, `Constraints & Preferences`, `Progress (Done/InProgress/Blocked)`, `Key Decisions`, `Next Steps`, `Critical Context`）；新增 `extract_file_operations` 与 `format_file_operations`，自动从被压缩历史中提取并累积读改文件足迹（`<read-files>` 与 `<modified-files>`）。
+  - `context.py`：升级 compact 结构化压缩为完整的 6 Section 约束模板（`Goal`, `Constraints & Preferences`, `Progress (Done/InProgress/Blocked)`, `Key Decisions`, `Next Steps`, `Critical Context`）；新增 `extract_file_operations` 与 `format_file_operations`，自动从被压缩历史中提取并累积读改文件足迹（`<read-files>` 与 `<modified-files>`）。
   - `agent.py`：对齐 Pi 规范，在每轮执行结束（包含纯文本答复轮）无条件成对发射 `TurnEnd(message, tool_results)` 事件，杜绝轮次悬空。
   - `docs/references/tau-analysis.md`（新增）：深度调研与解构 Python 版 Pi Harness 开源框架 Tau（`tau-ai`），横向对比三层架构，提炼 Textual TUI、OAuth 认证链、JSONL RPC 模式、models.dev 动态模型表、`repair_tool_history` 自愈等核心亮点与演进路线。
   - 测试：更新 `test_registry.py`（验证并发因果时序与全员并发）、`test_agent.py`（严格断言配对 `TurnEnd`）、`test_tools.py`（扩充 5 项单测覆盖文件锁并发、越界行数提示、多重匹配与超时日志捕获）、`test_context.py`（扩充 2 项单测覆盖 6 Section 约束模板与跨压缩文件足迹累积）。
@@ -540,7 +540,7 @@ my-pi-agent/
     2. 拆解 `session/` 子包（9 种多态实体、纯内存树算法防环路、`SessionState` 纯函数无锁折叠投影、纯追加 `SessionStorage`）；
     3. 提炼 `loop.py` 纯函数微内核并暴露 `prompt_stream` 事件流；
     4. `Agent` 消除 18 参数上帝类构造。
-  - `docs/core/14-codebase-cleanup-and-defect-repair.md`（新增）：基于双路并行 Subagent（Deslop Pass 与 Verbosity Pass）对抗式审查结论，形式化定义 P0-1（POSIX 进程组防自杀）、P0-2（`ExtensionAPI.on` 异步 Hook 协程包装）、P1-1（`context.py` L3 重复写放大消除）、P1-2（`Tool.timeout` 接入 `asyncio.wait_for` 真实生效）等关键缺陷与修复规格。
+  - `docs/core/14-codebase-cleanup-and-defect-repair.md`（新增）：基于双路并行 Subagent（Deslop Pass 与 Verbosity Pass）对抗式审查结论，形式化定义 P0-1（POSIX 进程组防自杀）、P0-2（`ExtensionAPI.on` 异步 Hook 协程包装）、P1-1（`context.py` 工具输出持久化重复写放大消除）、P1-2（`Tool.timeout` 接入 `asyncio.wait_for` 真实生效）等关键缺陷与修复规格。
   - 博客更新：修润 `my-pi-agent--todolist与background.md`，理顺工具演进脉络与随路回显架构。
 - **验证**：三包全量 **304 个离线测试** 持续 100% 绿灯全通。
 
@@ -958,7 +958,7 @@ my-pi-agent/
       3. 在 `run_agent_loop` 准备完 `view` 之后增加 `view = _provider_context(view)` 双保险，确保送入任何大模型 Provider 的消息列表 100% 经过合法拓扑闭合检验。
 - **验证**：编写 `tests/core/test_compaction_orphan_tool_prevention.py` 回归测试，全库测试规模提升至 **742 个 Python 核心测试全部通过**，**71 个 TUI 自动化测试全部通过**（共 813 测试，100% 绿灯全通）。在右侧真实 TUI 中重放测试，400 报错彻底消失，压缩后多轮调用完美通过。
   - **完成第二阶段 6 大深度特性与极限边界测试 (TC-11 ~ TC-16)**：
-    - **TC-11（巨量输出与 L3 磁盘溢出截断）**：注入 2500 行大量输出，系统触发 50KB 字节级与尾部保留截断，落盘完整日志并注入恢复路径，TUI 视口流畅无死锁；
+    - **TC-11（巨量输出与工具输出落盘截断）**：注入 2500 行大量输出，系统触发 50KB 字节级与尾部保留截断，落盘完整日志并注入恢复路径，TUI 视口流畅无死锁；
     - **TC-12（会话树分支拓扑与可视化）**：验证 `/tree` 弹出交互式 DAG 树选择器，`/fork` 从历史消息创建平行会话分支并克隆会话文件；
     - **TC-13（会话隔离与全新生命周期）**：验证 `/new` 优雅结束旧会话、清空 Token/内存状态并开辟空白会话；验证 `/session` 打印结构化元数据，`/resume` 弹出带范围过滤的历史会话选择器；
     - **TC-14（动态技能机制）**：验证 `/skill:test-helper` 宏展开与系统提示词注入，Agent 完整执行技能 SOP 指令；
@@ -985,7 +985,7 @@ my-pi-agent/
     - **TC-31 ~ TC-33（FileMutationQueue 并发文件锁）**：单文件写操作严格串行互斥；多文件修改非阻塞并发并行；异常中断锁安全释放防死锁；
     - **TC-34 ~ TC-37（MCP 扩展协议）**：启动期自动扫描 `.mcp.json`；stdio JSON-RPC 通信调用；智能体退出时外部 MCP 子进程树彻底回收清理；子服务崩溃隔离容错；
     - **TC-38 ~ TC-41（多 Provider 适配与参数同步）**：Anthropic Wire 格式转换与工具块组装；DeepSeek/OpenAI 思考增量流式解析；Antigravity 专有 SSE 事件反序列化；切模型后上下文窗口 `set_budget` 与 Schema 自动同步；
-    - **TC-42 ~ TC-45（四层上下文压缩极端边界）**：L1 消息裁切保留组边界；L2 旧工具结果微压缩保留 metadata；L3 巨型单次结果落盘生成摘要；L4 逼近阈值时携带旧摘要递进式迭代再摘要；
+    - **TC-42 ~ TC-45（上下文压缩极端边界）**：消息裁切保留组边界；旧工具结果微压缩保留 metadata；工具输出持久化到磁盘生成摘要；compact 逼近阈值时携带旧摘要递进式迭代再摘要；
     - **TC-46 ~ TC-50（会话回溯护栏、多工具调度与全景体检终极验收）**：禁止 rewind 越过 `compaction_floor`；`TaskGuardHook` 任务看板未完成提醒；单轮只读工具并行、写工具串行混合调度；异常中断下会话落盘一致性；全库 745 个 Python 测试与 71 个 TUI 测试大回归全绿。
   - **定位并根治子代理 Frontmatter YAML 列表解析 Bug (`src/my_agent_core/subagents.py`)**：
     - **根因分析**：`parse_frontmatter` 将 YAML 列表强转为 `str`（`"['read', 'grep']"`），`_split_csv` 逗号切割后导致工具名变成了带括号和单引号的畸形文本（`"['read'"`），使白名单匹配失效，子代理可用工具被清空。
@@ -1012,7 +1012,7 @@ my-pi-agent/
     - 确立 Append-Only 原则：在未超出 80% 水位线门控前，传给大模型的 View 严格保持只读追加，历史前缀 100% 字节不变，最大化利用现代大模型服务端 KV-Cache。
   - **动态 80% 水位线管控与离散 Epoch 块级压缩 (`context.py`)**：
     - `budget_threshold = (budget * 4) // 5`：未超 80% 门控原样返回；超限时触发离散 Epoch 块压缩；
-    - 门控触发后优先尝试 L3 超大工具结果磁盘溢出；若仍超限，花费 1 次 LLM API 执行 L4 结构化摘要；
+    - 门控触发后优先尝试工具输出持久化到磁盘；若仍超限，花费 1 次 LLM API 执行 compact 结构化摘要；
     - 摘要生成后建立全新稳定基准前缀：`[System, [Context summary], *retained_tail]`，后续轮次在该基准上继续 Append-Only 累积；
     - 维持双标签 `<analysis>` / `<summary>` 防注入与 6 Section 约束，并累积 `<read-files>` / `<modified-files>` 全生命周期文件操作足迹。
   - **编写前缀稳定性与仿真验证测试 (`tests/core/test_context.py`)**：

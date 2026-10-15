@@ -49,7 +49,7 @@
 | **LLM 适配层** | 统一异步生成器流式协议（`AssistantMessageEvent`），内置 `openai-codex`、`google`、`mistral`、`anthropic` 等 | 统一 `LLM` 门面（`chat` / `stream` / `achat` / `achat_stream`），内置 OpenAI / DeepSeek / Anthropic | Tau 的流式事件颗粒度更细（包含 `ThinkingDelta`、`ToolCallDelta`、`ProviderRetryEvent`）；`my-pi-agent` 具备双向同步/异步门面。 |
 | **Agent 状态机** | `AgentHarness` + 独立无状态生成器 `run_agent_loop` | 单层/双层一体化 `Agent` 类，统一持有上下文、Session 与 ReAct 循环 | Tau 采用了 Harness（状态宿主）与 Loop（纯迭代生成器）分离的函数式设计；`my-pi-agent` 采用了面向对象的聚合设计。 |
 | **动态干预机制** | 内置 `QueuedMessages`（支持 `steering` 与 `follow_up`，`one_at_a_time` / `all` 模式） | 内置 `MessageQueue`（支持 `steering` 与 `follow_up`，三大安全点拦截） | 两者完全对齐 Pi 标准，底层原理一致。 |
-| **上下文管理** | Token 窗口估算 + 自动/手动触发 Compaction（L4 级摘要与裁剪） | 离散 Epoch 块级压缩管线 + Append-Only 前缀一致性（80% 水位线门控 + L3 磁盘溢出 + L4 结构化摘要） | `my-pi-agent` 彻底消除逐轮滚动篡改，保障前缀字节不变（KV-Cache 命中率达 96.7%）；Tau 的 Token 统计与 models.dev 联动紧密。 |
+| **上下文管理** | Token 窗口估算 + 自动/手动触发 Compaction（compact 摘要与裁剪） | 离散 Epoch 块级压缩管线 + Append-Only 前缀一致性（80% 水位线门控 + 工具输出持久化到磁盘 + compact 结构化摘要） | `my-pi-agent` 彻底消除逐轮滚动篡改，保障前缀字节不变（KV-Cache 命中率达 96.7%）；Tau 的 Token 统计与 models.dev 联动紧密。 |
 | **工具与插件系统** | 基础文件/命令工具 + Project 扩展系统 | Pydantic 驱动强类型工具 + Claude Code 标准 Plugin 规范（`PluginManifest` / `PluginManager`）+ MCP 原生客户端 | `my-pi-agent` 完整实现了 Claude Code 规范的插件发现与分发机制，并具备原生异步 MCP 客户端。 |
 | **长期记忆系统** | 主要依赖 Session 树与 Branch 历史 | 独立 `MemoryStore`（`MEMORY.md` / `USER.md`，Frozen Snapshot 前缀缓存保护，§ 块分割） | `my-pi-agent` 拥有完整的类 Hermes / Pi 记忆系统与快照机制。 |
 | **终端交互层** | 基于 **Textual** 构建的完整终端 GUI（多 Tab、语法高亮、实时 Markdown 渲染、折叠组件、主题切换） | 核心 SDK 与无状态 Demo 驱动 | **Tau 极强**，拥有目前开源 Python Agent 中最成熟的 Textual TUI 前端实现。 |
@@ -159,4 +159,4 @@
 
 Tau 是一个设计极其考究、代码风格高度优雅的现代化 Python Agent 实现范本。它在 **TUI 界面交互、OAuth 生态集成、动态模型元数据注册、RPC 进程解耦与历史自愈容错** 方面的设计堪称典范。
 
-`my-pi-agent` 在核心层（异步架构、四层上下文压缩、Claude Code 插件分发、双层循环动态干预、长期记忆系统）已经建立了极其稳固坚实的底层基石。未来通过逐步借鉴并吸收 Tau 在产品交互层与工程化层面的闪光点，`my-pi-agent` 将演进为一个在**内核深度与终端体验上均达到行业顶尖水平**的全功能 AI 编码智能体！
+`my-pi-agent` 在核心层（异步架构、离散 Epoch 块级上下文压缩、Claude Code 插件分发、双层循环动态干预、长期记忆系统）已经建立了极其稳固坚实的底层基石。未来通过逐步借鉴并吸收 Tau 在产品交互层与工程化层面的闪光点，`my-pi-agent` 将演进为一个在**内核深度与终端体验上均达到行业顶尖水平**的全功能 AI 编码智能体！

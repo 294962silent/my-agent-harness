@@ -28,7 +28,7 @@
 | **TC-04** | 工具异常与错误自愈 | 不存在文件与非零退出码命令，捕获 `status=ERROR`，Never-Throw 保证成立 | **PASS** |
 | **TC-05** | 运行时动态 Steering 插话 | 耗时任务中途注入新指令，在轮次边界精确出队并顺滑转向 | **PASS** |
 | **TC-06** | 实时 Esc 中断与清场复位 | 执行中敲击 `Esc`，毫秒级取消子进程，清理半截气泡并复位输入框 | **PASS** |
-| **TC-07** | 斜杠命令系统测试 | `/help` 命令浮窗、`/compact` 强制 L4 摘要、`/clear` 清屏重置 | **PASS** |
+| **TC-07** | 斜杠命令系统测试 | `/help` 命令浮窗、`/compact` 强制 compact 摘要、`/clear` 清屏重置 | **PASS** |
 | **TC-08** | 多轮会话树与代词记忆 | 跨轮代词指代记忆（代号回忆）、读取穿插与历史继承 | **PASS** |
 | **TC-09** | 双轨日志白盒核验 | `.debug.log`、`.events.jsonl` 与会话树 `.jsonl` 记录 100% 吻合 | **PASS** |
 | **TC-10** | 极限压力与特殊字符转义 | 复杂嵌套引号、反引号、JSON 符号与 Emoji 输入零报错、零乱码 | **PASS** |
@@ -37,7 +37,7 @@
 
 | 编号 | 测试场景 | 核心验证点 | 判定 |
 | :--- | :--- | :--- | :--- |
-| **TC-11** | 巨量输出截断与 L3 落盘 | 2500 行日志轰炸，50KB 字节保护触发，tail-truncate 并在本地落盘 Temp 日志 | **PASS** |
+| **TC-11** | 巨量输出截断与工具输出落盘 | 2500 行日志轰炸，50KB 字节保护触发，tail-truncate 并在本地落盘 Temp 日志 | **PASS** |
 | **TC-12** | 会话树分支拓扑与可视化 | `/tree` 弹出交互式 DAG 树状图，`/fork` 从历史消息创建平行探索副本 | **PASS** |
 | **TC-13** | 会话隔离与全新生命周期 | `/new` 重置清零会话，`/session` 打印元数据，`/resume` 弹出跨会话选择器 | **PASS** |
 | **TC-14** | 动态技能机制测试 | `/skill:test-helper` 宏展开与系统提示词注入，严格执行技能 SOP | **PASS** |
@@ -80,8 +80,8 @@
 | **TC-41** | 运行时模型切换与 Schema 同步 | 动态切模型后，上下文窗口 `set_budget` 与 Function Calling Schema 自动刷新 | **PASS** |
 | **TC-42** | L1 消息裁切 (`snip_messages`) | 消息超 50 条时保留头尾、中间插入 `[snipped N]` 占位，组边界不被切裂 | **PASS** |
 | **TC-43** | L2 工具结果微压缩 (`micro_compact`) | 历史超长工具结果自动替换为占位符，且严格保留 `tool_call_id` metadata | **PASS** |
-| **TC-44** | L3 巨型单次结果落盘 | 校验超限单条工具结果落盘至 `tool-results/`，内存仅保留摘要指针 | **PASS** |
-| **TC-45** | L4 迭代再摘要机制 | 已有摘要逼近 80% 阈值时，自动附带旧摘要进行二次递进式摘要 | **PASS** |
+| **TC-44** | 工具输出落盘持久化 | 校验超限单条工具结果落盘至 `tool-results/`，内存仅保留摘要指针 | **PASS** |
+| **TC-45** | compact 迭代再摘要机制 | 已有摘要逼近 80% 阈值时，自动附带旧摘要进行二次递进式摘要 | **PASS** |
 | **TC-46** | 会话回溯与 Compaction Floor | 尝试 rewind 越过 `compaction_floor` 时抛出清晰防护异常，阻止致幻 | **PASS** |
 | **TC-47** | TaskGuardHook 自动提醒 | 存在未完成任务时，模型试图结束轮次会触发看板完成度提醒 | **PASS** |
 | **TC-48** | 单轮多工具并行与串行混合 | 校验 `ToolRegistry.execute_batch` 对只读工具并行、写工具串行的调度时序 | **PASS** |
@@ -138,8 +138,8 @@
    所有工具调用（文件缺失、命令失败退出码、循环依赖拦截、参数畸形）均被安全转化为 `ToolResult(ok=False, error=...)`，未向 ReAct 循环上抛任何未捕获异常。
 2. **Atomic Session Persistence**：
    全量会话落盘与状态更新均采用原子写（tempfile + `fsync` + `os.replace`），即便模拟掉电截断也能安全恢复全部有效历史。
-3. **Cheap-First Context Transformation**：
-   四层压缩管线（L3 落盘 ➔ L1 裁中间 ➔ L2 占位 ➔ L4 摘要）按成本由低到高严格执行，`compaction_floor` 护栏有效阻止非法回退。
+3. **Cheap-First Context Transformation & Append-Only Prefix Invariance**：
+   两阶段压缩管线（工具输出持久化到磁盘 ➔ compact 结构化摘要）严格执行，`compaction_floor` 护栏有效阻止非法回退。
 4. **Subagent Anti-Recursion**：
    所有子代理均被强制设置 `subagent_dirs=[]`、`plugin_dirs=[]`，且工具注册表中严格剔除 `task` 工具，杜绝递归套娃派发。
 5. **Extension Isolation**：
