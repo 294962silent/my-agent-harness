@@ -45,6 +45,29 @@ export interface InitializeResult {
   messages?: SessionMessage[];
 }
 
+export type PermissionRisk = "low" | "medium" | "high";
+
+/** Kernel -> TUI permission request payload (see docs/dev/permission-approval.md). */
+export interface PermissionRequestParams {
+  request_id: string;
+  tool_call_id?: string;
+  tool_name?: string;
+  action?: string;
+  target?: string;
+  preview?: string | null;
+  risk?: PermissionRisk;
+  reason?: string;
+  details?: Record<string, unknown>;
+  timeout_ms?: number;
+}
+
+/** TUI -> kernel permission decision. */
+export interface PermissionResult {
+  approved: boolean;
+  scope?: "once" | "session";
+  reason?: string;
+}
+
 export interface PythonKernelClientOptions {
   workspace?: string;
   model?: string;
@@ -234,6 +257,12 @@ export class PythonKernelClient extends EventEmitter {
 
     try {
       const msg = JSON.parse(trimmed);
+      if (msg.method === "permission_request") {
+        // Server-initiated request: must NEVER be mistaken for a response to
+        // one of our own requests, even though it carries an `id`.
+        this.emit("permission_request", msg.params);
+        return;
+      }
       if (
         "id" in msg &&
         (msg.result !== undefined || msg.error !== undefined)
@@ -288,6 +317,29 @@ export class PythonKernelClient extends EventEmitter {
 
       this.child!.stdin!.write(JSON.stringify(req) + "\n");
     });
+  }
+
+  /**
+   * Answer a server-initiated permission_request. This deliberately bypasses
+   * sendRequest(): it is a response to the kernel's request id, not a new
+   * request, and must not be registered as a pending client request.
+   */
+  public respondPermission(id: string, result: PermissionResult): void {
+    if (!this.child || !this.child.stdin) {
+      // The kernel is not running (or already gone) — there is nobody to
+      // answer. Callers may treat this as an implicit deny.
+      return;
+    }
+    const response: JsonRpcResponse = {
+      jsonrpc: "2.0",
+      id,
+      result,
+    };
+    try {
+      this.child.stdin.write(JSON.stringify(response) + "\n");
+    } catch {
+      // Never throw while replying: the kernel will fail closed on timeout.
+    }
   }
 
   public async prompt(

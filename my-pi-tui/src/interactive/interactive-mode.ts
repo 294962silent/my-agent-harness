@@ -13,6 +13,10 @@ import {
   TuiMainScreen,
 } from "@earendil-works/pi-tui";
 import { KernelBridge } from "../bridge/kernel-bridge.js";
+import type {
+  PermissionRequestParams,
+  PermissionResult,
+} from "../client.js";
 import { AssistantMessageComponent } from "../components/assistant-message.js";
 import { CompactionSummaryMessageComponent } from "../components/compaction-summary-message.js";
 import { CustomEditor } from "../components/custom-editor.js";
@@ -35,6 +39,7 @@ import {
   openLoginSelector,
   openLogoutSelector,
   openModelSelector,
+  openPermissionDialog,
   openSessionSelector,
   openSettingsSelector,
   openThemeSelector,
@@ -112,6 +117,13 @@ export class InteractiveMode {
   private activeSelectorToken?: object;
   private activeSelectorDispose?: () => void;
   public activeSelectorComponent?: any;
+
+  private unsubscribePermissionRequest?: () => void;
+  private pendingPermissionRequests: Array<{
+    params: PermissionRequestParams;
+    requestId: string;
+  }> = [];
+  private permissionDialogActive = false;
 
   public currentStreamingAssistant?: AssistantMessageComponent;
   public latestAssistantMessage?: AssistantMessageComponent;
@@ -216,6 +228,9 @@ export class InteractiveMode {
     // 1. 订阅 KernelBridge 事件
     this.subscribeToBridge();
 
+    // 1.1 订阅内核主动发起的工具审批请求
+    this.subscribeToPermissionRequests();
+
     // 2. 注册终端按键拦截
     this.setupKeybindings();
 
@@ -237,6 +252,10 @@ export class InteractiveMode {
       this.unsubscribeBridge();
       this.unsubscribeBridge = undefined;
     }
+    if (this.unsubscribePermissionRequest) {
+      this.unsubscribePermissionRequest();
+      this.unsubscribePermissionRequest = undefined;
+    }
     this.ui.stop();
   }
 
@@ -252,6 +271,97 @@ export class InteractiveMode {
     this.unsubscribeBridge = this.bridge.subscribe((event: any) => {
       this.handleAgentEvent(event);
     });
+  }
+
+  // --------------------------------------------------------------------------
+  // 工具审批 (Permission Approval)
+  // --------------------------------------------------------------------------
+
+  private subscribeToPermissionRequests(): void {
+    if (this.unsubscribePermissionRequest) {
+      this.unsubscribePermissionRequest();
+      this.unsubscribePermissionRequest = undefined;
+    }
+    const client = (this.bridge as any)?.client;
+    if (!client || typeof client.on !== "function") return;
+
+    const handler = (params: PermissionRequestParams) => {
+      this.handlePermissionRequest(params);
+    };
+    client.on("permission_request", handler);
+    this.unsubscribePermissionRequest = () => {
+      if (typeof client.off === "function") {
+        client.off("permission_request", handler);
+      } else if (typeof client.removeListener === "function") {
+        client.removeListener("permission_request", handler);
+      }
+    };
+  }
+
+  /**
+   * Handle a server-initiated permission request.
+   *
+   * Fail-closed rules:
+   * - no request id -> nothing can be answered;
+   * - kernel process not running -> reply deny immediately (do not hang);
+   * - dialog construction/render throws -> reply deny (see maybeShow...).
+   */
+  public handlePermissionRequest(params: PermissionRequestParams): void {
+    const request = (params || {}) as PermissionRequestParams;
+    const client = (this.bridge as any)?.client;
+    const requestId: string = request.request_id || (request as any).id;
+
+    if (!requestId) {
+      return;
+    }
+
+    if (!client || client.child == null) {
+      // Kernel is not running: the request cannot be shown/answered, and
+      // respondPermission is a no-op when there is no child process.
+      try {
+        client?.respondPermission?.(requestId, { approved: false });
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
+    this.pendingPermissionRequests.push({ params: request, requestId });
+    this.maybeShowNextPermissionRequest();
+  }
+
+  private maybeShowNextPermissionRequest(): void {
+    if (this.permissionDialogActive) return;
+    const entry = this.pendingPermissionRequests.shift();
+    if (!entry) return;
+
+    this.permissionDialogActive = true;
+    try {
+      openPermissionDialog(this, entry.params, (result) => {
+        this.finishPermissionRequest(entry.requestId, result);
+      });
+    } catch {
+      // Rendering/mounting failed: deny immediately so the kernel does not
+      // block until its timeout.
+      this.finishPermissionRequest(entry.requestId, { approved: false });
+    }
+  }
+
+  private finishPermissionRequest(
+    requestId: string,
+    result: PermissionResult,
+  ): void {
+    const client = (this.bridge as any)?.client;
+    try {
+      client?.respondPermission?.(requestId, result);
+    } catch {
+      // Never let a reply failure keep the UI stuck; the kernel will time out
+      // and fail closed on its own.
+    }
+    this.permissionDialogActive = false;
+    this.ui.requestRender();
+    // Process any request that arrived while the dialog was open.
+    this.maybeShowNextPermissionRequest();
   }
 
   public updatePendingMessagesDisplay(): void {

@@ -22,8 +22,34 @@ import {
   type UserMessageItem,
 } from "../components/user-message-selector.js";
 import { SettingsSelectorComponent } from "../components/settings-selector.js";
+import { PermissionDialogComponent } from "../components/permission-dialog.js";
+import type { PermissionRequestParams, PermissionResult } from "../client.js";
 import { theme } from "../theme/theme.js";
 import type { InteractiveMode } from "./interactive-mode.js";
+
+/**
+ * 唤起工具审批弹窗 (Permission Approval)
+ *
+ * 弹窗做出选择后先卸载自身（焦点交还编辑器），再把结果回传给调用方。
+ * 构造函数若抛异常会向上冒泡，由调用方兜底回 { approved: false }。
+ */
+export function openPermissionDialog(
+  mode: InteractiveMode,
+  request: PermissionRequestParams,
+  onDecision: (result: PermissionResult) => void,
+): void {
+  mode.showSelector((done) => {
+    const dialog = new PermissionDialogComponent(
+      request,
+      (result: PermissionResult) => {
+        done();
+        onDecision(result);
+      },
+      () => mode.ui.requestRender(),
+    );
+    return { component: dialog, focus: dialog };
+  });
+}
 
 /**
  * 唤起模型选择器 (Model Catalog)
