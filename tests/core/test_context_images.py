@@ -5,7 +5,6 @@ import pytest
 from my_agent_core.context import (
     IMAGE_EQUIVALENT_CHARS,
     ContextManager,
-    _chars_of,
     _serialize_messages,
     estimate_tokens,
 )

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    concurrency:
+      # Cancel superseded runs for the same branch/PR and matrix leg.
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Sync Python dependencies
+        run: uv sync --frozen --python ${{ matrix.python-version }}
+
+      - name: Lint (ruff)
+        run: uv run ruff check src tests
+
+      - name: Python tests (pytest)
+        run: uv run python -m pytest -q
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install TUI dependencies
+        run: npm ci
+
+      - name: Build TUI
+        run: npm run build
+
+      # my-pi-tui/dist is gitignored, so the TUI must be built before the wheel.
+      - name: Build wheel with TUI assets
+        run: uv build --wheel --out-dir dist
+
+      - name: Verify wheel bundles TUI entry
+        run: >-
+          uv run python -c "import glob, zipfile;
+          wheel = sorted(glob.glob('dist/*.whl'))[-1];
+          names = zipfile.ZipFile(wheel).namelist();
+          assert 'my_coding_agent/my-pi-tui/bin/my-agent.js' in names, 'TUI entry missing from ' + wheel;
+          print(wheel, len(names), 'entries, TUI assets OK')"
+
+      - name: TUI tests
+        run: npm test

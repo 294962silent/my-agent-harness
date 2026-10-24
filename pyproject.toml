@@ -38,6 +38,12 @@ packages = [
     "src/my_coding_agent",
 ]
 
+[tool.hatch.build.targets.wheel.force-include]
+# TUI assets are gitignored (my-pi-tui/dist), so `npm run build` must run before `uv build`.
+"my-pi-tui/bin" = "my_coding_agent/my-pi-tui/bin"
+"my-pi-tui/dist" = "my_coding_agent/my-pi-tui/dist"
+"my-pi-tui/package.json" = "my_coding_agent/my-pi-tui/package.json"
+
 [tool.pytest.ini_options]
 pythonpath = ["src", "my-pi-eval/src", "."]
 testpaths = ["tests"]

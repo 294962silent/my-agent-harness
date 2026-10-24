@@ -8,7 +8,6 @@ from PIL import Image
 
 from my_agent_core.session import Session
 from my_agent_core.session.assets import load_image_asset, save_image_asset
-from my_agent_llm import Message
 from my_agent_llm.config import Config
 from my_agent_llm.providers.openai import OpenAIProvider
 

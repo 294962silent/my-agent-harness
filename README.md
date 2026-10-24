@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
   <a href="https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/"><img src="https://img.shields.io/badge/blog-series-success.svg?style=flat-square" alt="blog" /></a>
   <a href="#"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="python" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/tests-814%20python%20%7C%2080%20tui%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/tests-828%20python%20%7C%2080%20tui%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
 </p>
 
 <p align="center">
@@ -83,7 +83,7 @@
 
 #### 【第 2 层：上下文与状态管理层】
 3. **DAG 树状分支会话**：构建基于 DAG 的树状分支会话系统：采用『Entry 节点 ➔ Tree 内存拓扑 ➔ Session 磁盘管理』分层架构，支持分支派生与无损回退（/fork 与 /rewind）及可视化导航（/tree）；引入 Compaction Floor 压缩安全护栏，防止越界回退至已折叠历史。
-4. **自适应前缀保护压缩**：借鉴 NVIDIA SoL-Pi，设计三层上下文压缩管线：第一层结合历史任务轮次自适应预估剩余轮次，仅在后续读取收益大于缓存重写成本时触发压缩；第二层超大工具输出本地落盘并返回文件绝对路径；第三层执行结构化语义摘要，严格防止切断工具调用对；全链路保障前缀不变性，长程复杂任务实测斩获 96.7% 的 KV-Cache 命中率。
+4. **自适应前缀保护压缩**：借鉴 NVIDIA SoL-Pi，设计三层上下文压缩管线：第一层结合历史任务轮次自适应预估剩余轮次，仅在后续读取收益大于缓存重写成本时触发压缩；第二层超大工具输出本地落盘并返回文件绝对路径；第三层执行结构化语义摘要，严格防止切断工具调用对；全链路保障前缀不变性，长程复杂任务实测斩获 66.3% 的 KV-Cache 命中率。
 
 #### 【第 3 层：工具生态与执行韧性层】
 5. **两级因果并发与细粒度写锁**：设计两级工具并发执行体系：安全只读工具支持异步并发提速，一旦批次中包含非安全工具（如 Bash）则全员自动降级为严格串行；实现细粒度单文件排队锁，达成跨文件无锁并发、同文件严格时序排队写入，杜绝并发覆写冲突。
@@ -103,10 +103,10 @@
 | 模块分类 | 精选文章与核心议题 | 聚焦知识点 |
 | :--- | :--- | :--- |
 | **微内核与调度** | • [`my-pi-agent--架构设计`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--模型层`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--loop微内核`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--异步支持`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 纯函数无状态微内核、ReAct 调度状态机、多提供商流式统一接入、并发与异步设计 |
-| **会话与上下文** | • [`my-pi-agent--session管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--context管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--memory系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 树状 DAG 增量落盘持久化、Append-Only 前缀不变性、80% 水位线离散 Epoch 块级压缩、96.7% 缓存命中 |
+| **会话与上下文** | • [`my-pi-agent--session管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--context管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--memory系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 树状 DAG 增量落盘持久化、Append-Only 前缀不变性、80% 水位线离散 Epoch 块级压缩、66.3% 缓存命中 |
 | **决策与交互治理** | • [`my-pi-agent--agent类与hook系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--动态干预机制`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--todolist与background`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 五大决策拦截门禁（Hooks）、Steering 即时插话与排队追问、长时后台作业生命周期与进程树治理 |
 | **工具生态与扩展** | • [`my-pi-agent--工具系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--skill与plugin`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--extension机制与mcp`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--subagent与task委派`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 七大核心工具与单文件互斥锁、Skills 自动发现与注入、MCP 客户端扩展与防递归子智能体 |
-| **工业基准实战** | • [`my-pi-agent--agent评估`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | Terminal-Bench 2.1 89 题真实考场大营救、Scheme 1 宿主驱动 vs Scheme 2 容器安装、83.53% 胜率全景复盘 |
+| **工业基准实战** | • [`my-pi-agent--agent评估`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | Terminal-Bench 2.1 89 题真实考场大营救、Scheme 1 宿主驱动 vs Scheme 2 容器安装、逼近原厂 Pi（71/89 vs 72/89）全景复盘 |
 
 ---
 
@@ -205,12 +205,14 @@ npm install
 npm run build
 
 # 4. 运行全量离线自动化测试套件 (100% 绿灯全通)
-uv run python -m pytest   # 814 Python offline tests passed (814 baseline)
+uv run python -m pytest   # 828 Python offline tests passed (828 baseline)
 npm test                  # 80 TUI tests passed (80 passed in 81 tests)
 
 # 5. 启动开发态终端
 npm start
 ```
+
+> **构建 wheel 注意**：`my-pi-tui/dist/` 被 `.gitignore` 忽略，因此执行 `uv build` 打包前必须先运行 `npm run build`（或 `npm run build --prefix my-pi-tui`），否则 wheel 内不会包含 TUI 资产。
 
 ---
 
@@ -243,14 +245,14 @@ npm start
 - **树状会话持久化与离散 Epoch 块级压缩管线 (`context.py`)**：
   - 树状 DAG 结构、逐条原子落盘（`fsync` + `os.replace`），崩溃永不损坏历史；
   - 支持 `/tree` 查看拓扑树、`/fork` 节点分叉、`/clone` 全量探索副本；
-  - **Append-Only 前缀一致性保证**：彻底废除旧的逐轮滚动裁切与滚动工具篡改，在未超 80% 水位线前严格只读追加（Append-Only），前缀字节 100% 保持不变，大模型 KV-Cache（Prompt Cache）实测命中率达 **96.7%**；
+  - **Append-Only 前缀一致性保证**：彻底废除旧的逐轮滚动裁切与滚动工具篡改，在未超 80% 水位线前严格只读追加（Append-Only），前缀字节 100% 保持不变，大模型 KV-Cache（Prompt Cache）实测命中率达 **66.3%**；
   - **动态 80% 水位线门控与离散 Epoch 块级压缩**：对标 Pi 原厂机制，当且仅当上下文突破 80% 预算时才触发离散块压缩；先尝试工具输出持久化到磁盘，超预算后执行 compact 智能结构化摘要（`<analysis>` + `<summary>` 双标签防注入 + 6 Section 约束 + `<read-files>`/`<modified-files>` 全生命周期文件操作足迹累积）；
   - `retainedTail` 静态前缀快照缓存与 `compaction_floor` 指针安全护栏，确立下一周期稳定基准前缀。
 - **自动化基准评测体系与 Terminal-Bench 2.1 终局战报 (`my-pi-eval`)**：
   - **Scheme 1 宿主机编排型轻量架构**：基于 Harbor Framework 实现 `MyPiAgent` 适配，Agent 核心运行于宿主机，通过 Docker 管道桥接 7 大工具，实现沙箱零污染与秒级冷启动；
   - **凭据物理隔离**：严格读取专属 `my-pi-eval/.env`，禁止读取宿主 `~/.my-pi-agent/auth.json`，杜绝沙箱逃逸泄露 API Key；
-  - **Terminal-Bench 2.1 终局大胜**：在 89 道真实环境 Linux 赛题中斩获 **71 胜 / 79.78% 胜率**（高度逼近原厂 Pi 72 胜 / 80.90%，仅差 1 题；底座大模型：DeepSeek-V4.1-Flash）；
-  - **全量 Token 采集与缓存核算**：从底层 session.jsonl 逐条提取真实 Token 与缓存指标，实测 `build-cython-ext` 复杂编译任务斩获 **96.7% 前缀缓存命中率**。
+  - **Terminal-Bench 2.1 终局战报**：在 89 道真实环境 Linux 赛题中取得 **71 胜 / 79.78% 通过率**（原厂 Pi 72 胜 / 80.90%，仅差 1 题；底座大模型：DeepSeek-V4.1-Flash）；
+  - **全量 Token 采集与缓存核算**：从底层 session.jsonl 逐条提取真实 Token 与缓存指标，实测全量 89 题缓存命中率 **66.3%**（其中 `build-cython-ext` 单任务达 97.3%）。
 - **动态即时转向（Steering）与排队追问（Follow-up）双层调度 (`message_queue.py`)**：
   - 支持在智能体运行处理对话期间，用户直接键入文本按回车即时插话（Steering），或按 **`Ctrl+Q`** 提交排队追问（Follow-up）；
   - 严格对标 Pi 原厂 Pending 待发区呈现规范（输入框上方灰显指示 `Steering: ...` 与 `Follow-up: ...`，提示 `↳ Alt+Q to edit all queued messages`）；
@@ -291,7 +293,7 @@ npm start
 | **原厂 Pi 独占胜出** | - | **7 道** | 原厂 Pi 满分，自研 Agent 格式微差或超时 |
 | **双负赛题 (双方均未过)** | **11 道** | 11 道 | 包含单机物理算力极限与上游环境断言题 |
 | **自研实测净 Token 消耗** | **41,737,271 Tokens** | 122,295,809 Tokens (毛计) | 自研离散压缩扣除 82.3M 缓存后净计费 Token 显著压低；原厂基准未审计细分缓存 |
-| **自研实测 Prompt Cache 命中率** | **96.7% ~ 97.3%** 🌟 | 未审计 (Unmeasured) | 自研离散 Epoch 块级压缩保障 Append-Only 前缀一致性；原厂基准未单独统计 |
+| **自研实测 Prompt Cache 命中率** | **66.3%** 🌟 | 未审计 (Unmeasured) | 自研离散 Epoch 块级压缩保障 Append-Only 前缀一致性；原厂基准未单独统计 |
 | **全量 89 题评测总开销** | **$4.62 美元** (约 33.5 元) | $18.84 美元 (未计缓存折扣) | 自研享受 DeepSeek 82.3M 缓存折扣后总成本仅 $4.62 |
 
 ### 2. 自研独占胜出高难赛题亮点 (6 道 🌟)
@@ -455,7 +457,7 @@ my-pi-agent/
 │       ├── file_reference.py       # @ 文件引用解析与快照直通注入
 │       └── rpc_server.py           # stdio JSON-RPC 2.0 服务端门面
 │
-├── tests/                          # ⭐ 全局统一测试目录 (uv run pytest 814 测试并发全通)
+├── tests/                          # ⭐ 全局统一测试目录 (uv run pytest 828 测试并发全通)
 │   ├── llm/                        # LLM 层单元测试 (91 tests)
 │   ├── core/                       # 框架内核单元测试 (392 tests)
 │   ├── coding/                     # 业务与工具测试 (276 tests)
@@ -497,7 +499,7 @@ my-pi-agent/
 - [**前后端 RPC 通信协议**](docs/coding/05-rpc-bridge-protocol.md)：29 个 stdio JSON-RPC 2.0 方法规范与 Prompt Cache 命中率核算；
 - [**Pi-TUI 终端交互表现层**](docs/coding/06-pi-tui-interactive-terminal.md)：`CustomEditor` 边框动效、思考等级自适应与三大交互选择器；
 - [**工程分发与全局 CLI 架构**](docs/coding/07-distribution-and-packaging.md)：npm 全球发布、双引擎自愈启动与跨平台打包；
-- [**上下文离散块压缩与前缀一致性规范**](docs/core/05-context-compaction.md)：动态 80% 水位线门控、Append-Only 前缀一致性与实测 96.7% Cache 命中率；
+- [**上下文离散块压缩与前缀一致性规范**](docs/core/05-context-compaction.md)：动态 80% 水位线门控、Append-Only 前缀一致性与实测 66.3% Cache 命中率；
 - [**自动化基准评测架构与战报**](docs/eval/01-evaluation-harness-architecture.md)：Harbor BaseAgent 适配、Scheme 1 宿主驱动与 Terminal-Bench 2.1 终局战报（71 胜 / 79.78% 胜率，逼近原厂 72 胜）。
 
 ---
