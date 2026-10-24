@@ -41,9 +41,6 @@ jobs:
       - name: Lint (ruff)
         run: uv run ruff check src tests
 
-      - name: Python tests (pytest)
-        run: uv run python -m pytest -q
-
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
@@ -53,8 +50,13 @@ jobs:
       - name: Install TUI dependencies
         run: npm ci
 
+      # TUI 必须先构建：pytest 里的 CLI 冒烟测试会加载 dist/app.js，
+      # 而 dist/ 被 gitignore，干净 clone 下不存在。
       - name: Build TUI
         run: npm run build
+
+      - name: Python tests (pytest)
+        run: uv run python -m pytest -q
 
       # my-pi-tui/dist is gitignored, so the TUI must be built before the wheel.
       - name: Build wheel with TUI assets
