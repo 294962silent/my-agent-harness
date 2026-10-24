@@ -194,19 +194,37 @@ def repair_tool_history(messages: Sequence[Message]) -> ToolHistoryRepair:
     )
 
 
+def _is_droppable_assistant_round(message: Message) -> bool:
+    """判断是否是必须从 provider 上文中剥离的 assistant 轮。
+
+    两类：
+
+    1. 显式标记为异常结束（``error`` / ``aborted`` / ``cancelled``）且无正文的轮次
+       —— 包含它发起的 tool_calls，因为对应结果一定是残缺的；
+    2. 没有任何正文、也没有 ``stop_reason`` 标记、且不含工具调用的空轮
+       —— 典型来源是流式被截断或进程被杀，这种消息对任何 provider 都不合法。
+
+    ``stop_reason == "end_turn"`` 的空轮视为「模型正常返回空」，保持原样。
+    """
+    if message.role != "assistant":
+        return False
+    if (message.text_content or "").strip():
+        return False
+
+    metadata = message.metadata or {}
+    stop_reason = metadata.get("stop_reason")
+    if stop_reason in {"error", "aborted", "cancelled"}:
+        return True
+    if stop_reason == "end_turn":
+        return False
+    return not metadata.get("tool_calls")
+
+
 def clean_provider_context(messages: Sequence[Message]) -> list[Message]:
     """清洗会话历史以严格满足主流大模型 Provider 的上下文契约。
 
-    1. 剥离无正文且以异常中断结尾的终端 assistant 失败轮次（避免 OpenAI/Anthropic 400）；
+    1. 剥离异常中断 / 无标记的空 assistant 轮次（避免 OpenAI/Anthropic 400）；
     2. 串联 repair_tool_history 拓扑修复，自动补齐断头调用并安全丢弃孤儿结果。
     """
-    replayable = tuple(
-        m
-        for m in messages
-        if not (
-            m.role == "assistant"
-            and bool(m.metadata and m.metadata.get("stop_reason") in {"error", "aborted", "cancelled"})
-            and not m.content
-        )
-    )
+    replayable = tuple(m for m in messages if not _is_droppable_assistant_round(m))
     return list(repair_tool_history(replayable).messages)
