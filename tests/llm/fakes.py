@@ -2,6 +2,8 @@
 
 from types import SimpleNamespace
 
+import openai
+
 
 def _to_sdk_tool_calls(tool_calls):
     """wire 形状的 tool_calls → fake SDK 对象（模拟真实 SDK 的解析结果）。"""
@@ -35,8 +37,30 @@ def make_openai_response(content: str = "hi", tool_calls=None, finish="stop", mo
     )
 
 
+class _FakeHttpResponse:
+    """最小 httpx Response 替身：openai.APIStatusError 只需 status_code/headers/request。"""
+
+    def __init__(self, status_code: int, message: str):
+        self.status_code = status_code
+        self.headers: dict[str, str] = {}
+        self.request = SimpleNamespace(
+            method="POST",
+            url="https://example.test/v1/chat/completions",
+        )
+        self.text = message
+
+
+def make_bad_request_error(message: str = "Unsupported parameter: stream_options") -> openai.BadRequestError:
+    """构造 SDK 400 BadRequestError（用于验证 stream_options 降级路径）。"""
+    return openai.BadRequestError(
+        f"Error code: 400 - {message}",
+        response=_FakeHttpResponse(400, message),
+        body={"error": {"message": message}},
+    )
+
+
 class FakeOpenAI:
-    """替身：chat.completions.create 按脚本返回，记录请求。"""
+    """替身：chat.completions.create 按脚本返回（或抛出）响应，记录请求。"""
 
     def __init__(self, responses: list):
         self.responses = list(responses)
@@ -54,4 +78,7 @@ class FakeOpenAI:
 
     def create(self, **kwargs):
         self.calls.append(kwargs)
-        return self.responses.pop(0)
+        item = self.responses.pop(0)
+        if isinstance(item, BaseException):
+            raise item
+        return item

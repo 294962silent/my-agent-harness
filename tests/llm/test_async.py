@@ -8,9 +8,10 @@ import pytest
 from my_agent_llm.config import Config
 from my_agent_llm.models import Message, Response, ToolCall
 from my_agent_llm.providers.anthropic import AnthropicProvider
+from my_agent_llm.providers.deepseek import DeepSeekProvider
 from my_agent_llm.providers.openai import OpenAIProvider
 from tests.llm.fake_anthropic import make_anthropic_response, make_block
-from tests.llm.fakes import make_openai_response
+from tests.llm.fakes import make_bad_request_error, make_openai_response
 
 
 class FakeAsyncOpenAI:
@@ -32,7 +33,10 @@ class FakeAsyncOpenAI:
 
     async def create(self, **kwargs):
         self.calls.append(kwargs)
-        return self.responses.pop(0)
+        item = self.responses.pop(0)
+        if isinstance(item, BaseException):
+            raise item
+        return item
 
 
 class FakeAsyncStream:
@@ -277,3 +281,92 @@ def test_anthropic_achat_missing_async_client():
     p = AnthropicProvider(Config(api_key="test"), client=FakeAsyncAnthropic([]))
     with pytest.raises(RuntimeError, match="async_client"):
         asyncio.run(p.achat([Message(role="user", content="hi")], model="claude-sonnet-4-5"))
+
+
+def _collect_stream(provider, model="gpt-4.1-mini"):
+    async def collect():
+        return [c async for c in provider.achat_stream([Message(role="user", content="hi")], model=model)]
+
+    return asyncio.run(collect())
+
+
+def _usage_only_chunk(prompt=10, completion=5):
+    return SimpleNamespace(
+        id="u",
+        choices=[],
+        usage=SimpleNamespace(prompt_tokens=prompt, completion_tokens=completion, total_tokens=prompt + completion),
+    )
+
+
+def test_openai_achat_stream_requests_include_usage():
+    """异步流式请求带 stream_options.include_usage；usage-only 末块进入 StreamChunk.usage。"""
+    chunks = [
+        SimpleNamespace(
+            id="1",
+            choices=[SimpleNamespace(delta=SimpleNamespace(content="a"), finish_reason="stop")],
+            usage=None,
+        ),
+        _usage_only_chunk(),
+    ]
+    p = OpenAIProvider(
+        Config(api_key="test"),
+        client=FakeAsyncOpenAI([]),
+        async_client=FakeAsyncOpenAI([FakeAsyncStream(chunks)]),
+    )
+
+    out = _collect_stream(p)
+
+    assert p.async_client.calls[0]["stream_options"] == {"include_usage": True}
+    assert [c.content for c in out] == ["a", ""]
+    assert out[-1].usage == {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
+    assert out[-1].response is not None
+    assert out[-1].response.usage == out[-1].usage
+
+
+def test_openai_achat_stream_downgrades_once_when_gateway_rejects_stream_options():
+    """异步路径同样：400 拒绝 stream_options → 去参重试一次，并记住降级。"""
+    chunks = [SimpleNamespace(id="1", choices=[], usage=_usage_only_chunk(2, 1).usage)]
+    p = OpenAIProvider(
+        Config(api_key="test"),
+        client=FakeAsyncOpenAI([]),
+        async_client=FakeAsyncOpenAI(
+            [
+                make_bad_request_error("Unsupported parameter: stream_options"),
+                FakeAsyncStream(chunks),
+                FakeAsyncStream(chunks),
+            ]
+        ),
+    )
+
+    out = _collect_stream(p)
+    assert out[-1].usage == {"prompt_tokens": 2, "completion_tokens": 1, "total_tokens": 3}
+    assert len(p.async_client.calls) == 2
+    assert p.async_client.calls[0]["stream_options"] == {"include_usage": True}
+    assert "stream_options" not in p.async_client.calls[1]
+    assert p._stream_usage_supported is False
+
+    _collect_stream(p)
+    assert len(p.async_client.calls) == 3
+    assert "stream_options" not in p.async_client.calls[2]
+
+
+def test_deepseek_achat_stream_requests_include_usage():
+    """DeepSeek 异步流式同样请求 include_usage 并透传 usage。"""
+    chunks = [
+        SimpleNamespace(
+            id="1",
+            choices=[SimpleNamespace(delta=SimpleNamespace(content="x"), finish_reason="stop")],
+            usage=None,
+        ),
+        _usage_only_chunk(4, 2),
+    ]
+    p = DeepSeekProvider(
+        Config(api_key="test"),
+        client=FakeAsyncOpenAI([]),
+        async_client=FakeAsyncOpenAI([FakeAsyncStream(chunks)]),
+    )
+
+    out = _collect_stream(p, model="deepseek-chat")
+
+    assert p.async_client.calls[0]["stream_options"] == {"include_usage": True}
+    assert out[-1].usage == {"prompt_tokens": 4, "completion_tokens": 2, "total_tokens": 6}

@@ -5,6 +5,8 @@ import inspect
 import os
 from collections.abc import AsyncIterator, Iterator
 
+import openai
+
 from ..config import Config
 from ..models import Message, Response, StreamChunk
 from .openai import OpenAIProvider, _ToolCallAccumulator
@@ -72,13 +74,27 @@ class DeepSeekProvider(OpenAIProvider):
         text_acc = ""
         usage = None
         final_finish_reason: str | None = None
-        for chunk in self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
-            model=model,
-            messages=self._convert_messages(messages),
-            tools=tools,
-            stream=True,
-            **kwargs,
-        ):
+        stream_kwargs, usage_injected = self._stream_request_kwargs(kwargs)
+        try:
+            stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
+        except openai.APIStatusError as exc:
+            if not self._handle_stream_options_rejection(exc, usage_injected):
+                raise
+            stream_kwargs.pop("stream_options", None)
+            stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
+        for chunk in stream:
             chunk_usage = self._extract_usage(chunk)
             if chunk_usage:
                 usage = chunk_usage
@@ -154,13 +170,26 @@ class DeepSeekProvider(OpenAIProvider):
         text_acc = ""
         usage = None
         final_finish_reason: str | None = None
-        stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
-            model=model,
-            messages=self._convert_messages(messages),
-            tools=tools,
-            stream=True,
-            **kwargs,
-        )
+        stream_kwargs, usage_injected = self._stream_request_kwargs(kwargs)
+        try:
+            stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
+        except openai.APIStatusError as exc:
+            if not self._handle_stream_options_rejection(exc, usage_injected):
+                raise
+            stream_kwargs.pop("stream_options", None)
+            stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
         try:
             async for chunk in stream:
                 chunk_usage = self._extract_usage(chunk)

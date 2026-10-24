@@ -3,14 +3,42 @@
 
 from types import SimpleNamespace
 
+import openai
+import pytest
 from my_agent_llm.config import Config
 from my_agent_llm.models import Message, Response, ToolCall
 from my_agent_llm.providers.openai import OpenAIProvider
-from tests.llm.fakes import FakeOpenAI, make_openai_response
+from tests.llm.fakes import FakeOpenAI, make_bad_request_error, make_openai_response
 
 
 def _provider(responses):
     return OpenAIProvider(Config(api_key="test"), client=FakeOpenAI(responses))
+
+
+class _FakeSyncStream:
+    """同步流替身：__iter__ 按脚本产块。"""
+
+    def __init__(self, chunks):
+        self._chunks = list(chunks)
+
+    def __iter__(self):
+        return iter(self._chunks)
+
+
+def _text_chunk(content, finish=None):
+    return SimpleNamespace(
+        id="c",
+        choices=[SimpleNamespace(delta=SimpleNamespace(content=content), finish_reason=finish)],
+        usage=None,
+    )
+
+
+def _usage_only_chunk(prompt=10, completion=5):
+    return SimpleNamespace(
+        id="u",
+        choices=[],
+        usage=SimpleNamespace(prompt_tokens=prompt, completion_tokens=completion, total_tokens=prompt + completion),
+    )
 
 
 def test_chat_returns_response():
@@ -231,3 +259,86 @@ def test_convert_messages_skips_empty_tool_calls():
     call = p.client.calls[0]
     assert call["messages"] == [{"role": "assistant", "content": "done"}]
     assert "tool_calls" not in call["messages"][0]
+
+
+# ── 流式 usage：请求流末尾携带 usage，并兼容不支持该参数的网关 ──────────────
+
+
+def test_stream_requests_include_usage_and_extracts_tail_usage():
+    """流式请求体带 stream_options.include_usage；usage-only 末块被 _extract_usage 取到。"""
+    usage_chunk = _usage_only_chunk(10, 5)
+    p = _provider([_FakeSyncStream([_text_chunk("a"), _text_chunk("b", "stop"), usage_chunk])])
+
+    chunks = list(p.stream([Message(role="user", content="hi")], model="gpt-4.1-mini"))
+
+    assert p.client.calls[0]["stream_options"] == {"include_usage": True}
+    assert p.client.calls[0]["stream"] is True
+    # 末块（choices 为空）的 usage 被正确提取，并透传到聚合末块
+    assert OpenAIProvider._extract_usage(usage_chunk) == {
+        "prompt_tokens": 10,
+        "completion_tokens": 5,
+        "total_tokens": 15,
+    }
+    assert [c.content for c in chunks] == ["a", "b", ""]
+    assert chunks[-1].usage == {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
+    assert chunks[-1].response is not None
+    assert chunks[-1].response.usage == chunks[-1].usage
+
+
+def test_stream_explicit_stream_options_are_respected():
+    """调用方显式传 stream_options 时不覆盖。"""
+    p = _provider([_FakeSyncStream([_text_chunk("ok", "stop")])])
+    list(
+        p.stream(
+            [Message(role="user", content="hi")],
+            model="gpt-4.1-mini",
+            stream_options={"include_usage": False},
+        )
+    )
+    assert p.client.calls[0]["stream_options"] == {"include_usage": False}
+
+
+def test_stream_downgrades_once_when_gateway_rejects_stream_options():
+    """网关 400 拒绝 stream_options → 去掉参数重试一次，且后续请求不再尝试。"""
+    p = _provider(
+        [
+            make_bad_request_error("Unsupported parameter: stream_options"),
+            _FakeSyncStream([_text_chunk("a", "stop"), _usage_only_chunk(3, 2)]),
+            _FakeSyncStream([_text_chunk("b", "stop")]),
+        ]
+    )
+
+    first = list(p.stream([Message(role="user", content="hi")], model="gpt-4.1-mini"))
+    assert [c.content for c in first] == ["a", ""]
+    assert first[-1].usage == {"prompt_tokens": 3, "completion_tokens": 2, "total_tokens": 5}
+
+    # 只重试一次：两次 create，第一次带参数，第二次不带
+    assert len(p.client.calls) == 2
+    assert p.client.calls[0]["stream_options"] == {"include_usage": True}
+    assert "stream_options" not in p.client.calls[1]
+    assert p._stream_usage_supported is False
+
+    # 降级被记住：下一次请求直接不带参数，也不再多打一次
+    list(p.stream([Message(role="user", content="hi")], model="gpt-4.1-mini"))
+    assert len(p.client.calls) == 3
+    assert "stream_options" not in p.client.calls[2]
+
+
+def test_stream_400_unrelated_error_is_not_retried():
+    """400 但与 stream_options 无关 → 原样抛出，不重试、不降级。"""
+    p = _provider([make_bad_request_error("The model `nope` does not exist")])
+    with pytest.raises(openai.BadRequestError):
+        list(p.stream([Message(role="user", content="hi")], model="nope"))
+    assert len(p.client.calls) == 1
+    assert p._stream_usage_supported is True
+
+
+def test_stream_non_400_error_is_not_retried():
+    """非 400 错误（如 500）→ 不触发降级重试。"""
+    response = SimpleNamespace(status_code=500, headers={}, request=SimpleNamespace())
+    err = openai.InternalServerError("Error code: 500 - upstream boom", response=response, body=None)
+    p = _provider([err])
+    with pytest.raises(openai.InternalServerError):
+        list(p.stream([Message(role="user", content="hi")], model="gpt-4.1-mini"))
+    assert len(p.client.calls) == 1
+    assert p._stream_usage_supported is True

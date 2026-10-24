@@ -3,6 +3,8 @@
 
 import inspect
 import json
+import os
+import uuid
 from collections.abc import AsyncIterator, Iterator
 
 import openai
@@ -10,6 +12,43 @@ import openai
 from ..config import Config
 from ..models import Message, Response, StreamChunk, ToolCall
 from ._base import Provider
+
+
+OPENCODE_HOST_MARKER = "opencode.ai"
+_OPENCODE_SESSION_ID: str | None = None
+
+
+def _opencode_session_id() -> str:
+    """OpenCode Go 网关要求每次对话携带稳定会话 ID（进程内复用）。"""
+    global _OPENCODE_SESSION_ID
+    if _OPENCODE_SESSION_ID is None:
+        _OPENCODE_SESSION_ID = os.environ.get("OPENCODE_SESSION_ID") or str(uuid.uuid4())
+    return _OPENCODE_SESSION_ID
+
+
+def _default_headers_for(base_url: str | None) -> dict[str, str]:
+    """为 OpenCode Go 网关补充客户端身份与会话路由头。"""
+    if not base_url or OPENCODE_HOST_MARKER not in base_url:
+        return {}
+    return {
+        "x-opencode-session": _opencode_session_id(),
+        "User-Agent": os.environ.get("OPENCODE_USER_AGENT") or "my-pi-agent/0.2.0",
+    }
+
+
+_STREAM_USAGE_OPTIONS = {"include_usage": True}
+# 网关报错文案里出现任一关键词，才认定是「不认识 stream_options」而非别的问题。
+_STREAM_OPTIONS_ERROR_MARKERS = ("stream_options", "include_usage", "unsupported")
+
+
+def _is_stream_options_unsupported(exc: BaseException) -> bool:
+    """400 且错误文案指向 stream_options/include_usage → 该网关不支持 usage 统计开关。"""
+    if not isinstance(exc, openai.APIStatusError):
+        return False
+    if getattr(exc, "status_code", None) != 400:
+        return False
+    text = f"{getattr(exc, 'message', '') or ''} {exc}".lower()
+    return any(marker in text for marker in _STREAM_OPTIONS_ERROR_MARKERS)
 
 
 class _ToolCallAccumulator:
@@ -70,6 +109,8 @@ class OpenAIProvider(Provider):
 
     def __init__(self, config: Config, client=None, async_client=None):
         """初始化。client/async_client 可注入（测试缝隙）。"""
+        # 部分 OpenAI 兼容网关不认 stream_options；一旦 400 就永久降级（实例级标记）
+        self._stream_usage_supported = True
         self.config = config
         if client is not None or async_client is not None:
             self.client = client
@@ -82,6 +123,9 @@ class OpenAIProvider(Provider):
         }
         if config.base_url:
             kwargs["base_url"] = config.base_url
+            headers = _default_headers_for(config.base_url)
+            if headers:
+                kwargs["default_headers"] = headers
         self.client = openai.OpenAI(**kwargs)
         self.async_client = openai.AsyncOpenAI(**kwargs)
 
@@ -205,6 +249,21 @@ class OpenAIProvider(Provider):
             out["cache_read_tokens"] = cache_read
         return out
 
+    def _stream_request_kwargs(self, kwargs: dict) -> tuple[dict, bool]:
+        """流式请求参数：默认要求末块携带 usage；返回 (参数, 本次是否由本类注入)。"""
+        opts = dict(kwargs)
+        if not self._stream_usage_supported or "stream_options" in opts:
+            return opts, False
+        opts["stream_options"] = dict(_STREAM_USAGE_OPTIONS)
+        return opts, True
+
+    def _handle_stream_options_rejection(self, exc: BaseException, injected: bool) -> bool:
+        """网关 400 拒绝 stream_options：记实例降级标记，返回 True 表示可去掉参数重试一次。"""
+        if not injected or not _is_stream_options_unsupported(exc):
+            return False
+        self._stream_usage_supported = False
+        return True
+
     def chat(
         self,
         messages: list[Message],
@@ -242,13 +301,26 @@ class OpenAIProvider(Provider):
         """同步流式：逐 delta 产文本块；流式结束补发末块（完整 tool_calls + usage）。"""
         if self.client is None:
             raise RuntimeError("client not provided; cannot run sync methods")
-        stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
-            model=model,
-            messages=self._convert_messages(messages),
-            tools=tools,
-            stream=True,
-            **kwargs,
-        )
+        stream_kwargs, usage_injected = self._stream_request_kwargs(kwargs)
+        try:
+            stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
+        except openai.APIStatusError as exc:
+            if not self._handle_stream_options_rejection(exc, usage_injected):
+                raise
+            stream_kwargs.pop("stream_options", None)
+            stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
         accumulator = _ToolCallAccumulator()
         text_acc = ""
         usage = None
@@ -326,13 +398,26 @@ class OpenAIProvider(Provider):
         """异步流式：逐 delta 产文本块；流式结束补发末块（完整 tool_calls + usage）。"""
         if self.async_client is None:
             raise RuntimeError("async_client not provided; cannot run async methods")
-        stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
-            model=model,
-            messages=self._convert_messages(messages),
-            tools=tools,
-            stream=True,
-            **kwargs,
-        )
+        stream_kwargs, usage_injected = self._stream_request_kwargs(kwargs)
+        try:
+            stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
+        except openai.APIStatusError as exc:
+            if not self._handle_stream_options_rejection(exc, usage_injected):
+                raise
+            stream_kwargs.pop("stream_options", None)
+            stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
+                model=model,
+                messages=self._convert_messages(messages),
+                tools=tools,
+                stream=True,
+                **stream_kwargs,
+            )
         accumulator = _ToolCallAccumulator()
         text_acc = ""
         usage = None
