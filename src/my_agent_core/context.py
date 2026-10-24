@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -49,6 +50,30 @@ def _has_tool_calls(msg: Message) -> bool:
     return bool(msg.metadata and msg.metadata.get("tool_calls"))
 
 
+def _canonical_content(msg: Message) -> str:
+    """序列化消息内容（dict 键稳定排序），供无标识消息生成内容指纹。"""
+    return json.dumps(msg.content, ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _message_key(msg: Message) -> str:
+    """计算消息的稳定标识（不依赖列表下标）。
+
+    优先级：tool 消息的 metadata["tool_call_id"] → 消息 id（若模型提供）→
+    (role, sha1(序列化内容)[:16])。历史清洗只做增删/重排，不重写这些标识，
+    因此压缩边界用它定位比裸下标更可靠。
+    """
+    meta = msg.metadata or {}
+    if msg.role == "tool":
+        tool_call_id = meta.get("tool_call_id")
+        if tool_call_id is not None and str(tool_call_id) != "":
+            return f"tool_call_id:{tool_call_id}"
+    msg_id = getattr(msg, "id", None) or meta.get("id")
+    if msg_id is not None and str(msg_id) != "":
+        return f"id:{msg_id}"
+    digest = hashlib.sha1(_canonical_content(msg).encode("utf-8")).hexdigest()[:16]
+    return f"{msg.role}:sha1:{digest}"
+
+
 def _as_token_count(value: Any) -> int:
     """provider 返回的 token 计数 → 安全 int（None / 非数字 / NaN / Inf 一律 0）。"""
     try:
@@ -79,8 +104,14 @@ def budget_tool_results(
             continue
         try:
             results_dir.mkdir(parents=True, exist_ok=True)
-            tid = str(m.metadata.get("tool_call_id", i)) if m.metadata else str(i)
-            path = results_dir / f"{tid}.txt"
+            resolved_dir = results_dir.resolve()
+            raw_tid = str(m.metadata.get("tool_call_id", i)) if m.metadata else str(i)
+            hashed_tid = hashlib.sha1(raw_tid.encode("utf-8", errors="replace")).hexdigest()[:12]
+            # 白名单清洗：tool_call_id 可被模型控制，只允许安全字符，否则用 sha1 前 12 位
+            safe_tid = raw_tid if re.fullmatch(r"[A-Za-z0-9_.-]+", raw_tid) else hashed_tid
+            path = (resolved_dir / f"{safe_tid}.txt").resolve()
+            if not path.is_relative_to(resolved_dir):
+                path = (resolved_dir / f"{hashed_tid}.txt").resolve()
             _ = path.write_text(m.content, encoding="utf-8")
         except OSError:
             continue  # 降级：保留原 content
@@ -278,6 +309,8 @@ class ContextManager:
         self._summary: str | None = None
         self._covered_count: int | None = None
         self._retained_tail: list[dict[str, Any]] | None = None
+        # 空尾缓存（强压全部消息）时，用「最后一条已覆盖消息」的 key 作为边界锚点
+        self._end_key: str | None = None
         self._ratio: float | None = None
         self._last_view_chars = 0
         self._last_view_tokens = 0
@@ -285,10 +318,15 @@ class ContextManager:
         self.pending_compaction: CompactionInfo | None = None
 
     def restore_cache(self, *, summary: str, covered_count: int, retained_tail: list[dict[str, Any]]) -> None:
-        """从 session 缓存 entry 恢复（Agent 构造时调用）。"""
+        """从 session 缓存 entry 恢复（Agent 构造时调用）。
+
+        边界 key 不落盘：非空尾可从 retained_tail[0] 反推；空尾在 session 恢复后
+        没有可校验的消息标识，prepare 会视其为不可校验并放弃缓存安全重建。
+        """
         self._summary = summary
         self._covered_count = covered_count
         self._retained_tail = retained_tail
+        self._end_key = None
 
     def set_budget(self, budget: int) -> None:
         """更新压缩预算（业务层在构造后与切模型后同步当前模型窗口）：阀值同步重算为 80%。"""
@@ -336,19 +374,22 @@ class ContextManager:
         """
         self.pending_compaction = None
         if self._summary is not None:
-            view = self._build_cached_view(messages)
-            tokens = estimate_tokens(view, self._ratio)
-            if tokens <= self.budget_threshold:
-                self._record_view(view, tokens)
-                return view
-            if self.results_dir:
-                spilled_view = self._apply_free_layers(view)
-                tokens = estimate_tokens(spilled_view, self._ratio)
+            view = self._build_cached_view(messages, allow_legacy_position=False)
+            if view is not None:
+                tokens = estimate_tokens(view, self._ratio)
                 if tokens <= self.budget_threshold:
-                    self._record_view(spilled_view, tokens)
-                    return spilled_view
-            # 缓存视图仍超阈 → 迭代再摘要（_call_summarizer 附旧摘要）
-            return await self._do_summarize(messages)
+                    self._record_view(view, tokens)
+                    return view
+                if self.results_dir:
+                    spilled_view = self._apply_free_layers(view)
+                    tokens = estimate_tokens(spilled_view, self._ratio)
+                    if tokens <= self.budget_threshold:
+                        self._record_view(spilled_view, tokens)
+                        return spilled_view
+                # 缓存视图仍超阈 → 迭代再摘要（_call_summarizer 附旧摘要）
+                return await self._do_summarize(messages)
+            # 边界消息已被删除/改写：放弃缓存，按无缓存路径安全重建（绝不猜下标）
+            self._invalidate_cache()
         tokens = estimate_tokens(messages, self._ratio)
         if tokens <= self.budget_threshold:
             self._record_view(messages, tokens)
@@ -366,6 +407,7 @@ class ContextManager:
         self._summary = None
         self._covered_count = None
         self._retained_tail = None
+        self._end_key = None
         self._ratio = None
         self.pending_compaction = None
 
@@ -383,6 +425,7 @@ class ContextManager:
         self._summary = None
         self._covered_count = None
         self._retained_tail = None
+        self._end_key = None
         cut = self._find_cut(messages)
         if cut is None:
             start = 1 if (messages and messages[0].role == "system") else 0
@@ -393,19 +436,92 @@ class ContextManager:
 
     # ── 内部 ──
 
-    def _build_cached_view(self, messages: list[Message]) -> list[Message]:
-        """缓存分支重建视图：原 system + 摘要 + retained_tail 快照 + 之后新增（严格防重复）。"""
+    def _build_cached_view(
+        self, messages: list[Message], *, allow_legacy_position: bool = True
+    ) -> list[Message] | None:
+        """缓存分支重建视图：原 system + 摘要 + retained_tail + 之后新增（严格防重复）。
+
+        尾部边界用稳定消息 key 定位；定位失败（边界被删除/改写）返回 None，
+        由 prepare 放弃缓存安全重建，绝不以过期下标猜测边界。
+        allow_legacy_position 仅供「无任何标识可校验」的历史缓存兼容路径使用，
+        prepare 生产路径传入 False（拒绝不可校验的裸下标）。
+        """
         assert self._summary is not None and self._covered_count is not None
         assert self._retained_tail is not None
+        start = self._locate_boundary(messages, allow_legacy_position=allow_legacy_position)
+        if start is None:
+            return None
         system_msg = [messages[0]] if messages and messages[0].role == "system" else []
-        min_start = self._covered_count + len(self._retained_tail)
-        start = min_start
-        if start < len(messages):
-            start = max(min_start, _snap_cut_to_group(messages, start))
-        newly = messages[start:] if len(messages) > start else []
-        view = system_msg + [Message(role="user", content=SUMMARY_MESSAGE_PREFIX + self._summary)]
-        view += [Message(**d) for d in self._retained_tail]
-        return view + newly
+        summary_msg = Message(role="user", content=SUMMARY_MESSAGE_PREFIX + self._summary)
+        if not self._retained_tail:
+            return system_msg + [summary_msg] + list(messages[start:])
+        if self._tail_matches(messages, start):
+            tail = [Message(**d) for d in self._retained_tail]
+            newly = list(messages[start + len(tail) :])
+        else:
+            # 尾部快照与当前列表对不上（清洗增删/改写）→ 以边界 key 为锚点用真实消息重建
+            tail = list(messages[start:])
+            newly = []
+        return system_msg + [summary_msg] + tail + newly
+
+    def _locate_boundary(self, messages: list[Message], *, allow_legacy_position: bool = True) -> int | None:
+        """在当前列表中定位缓存边界（第一条未被摘要覆盖的消息下标）。
+
+        - 有 retained_tail：用尾部首条消息的稳定 key 查找；同 key 多条时用整段尾部校验消歧；
+        - 尾为空且本进程记录了 end_key：定位最后一条已覆盖消息，边界取其下一个位置；
+        - 尾为空且无 key（session 恢复的空尾缓存）：无法校验任何标识 → 返回 None 触发安全重建；
+          仅当 allow_legacy_position=True 时退回 covered_count + 工具组边界收敛（兼容路径）。
+        """
+        if not messages:
+            return None if self._retained_tail else 0
+        if self._retained_tail:
+            boundary = self._retained_tail[0]
+            boundary_key = _message_key(Message(**boundary))
+            boundary_role = boundary.get("role")
+            candidates = [
+                i for i, m in enumerate(messages) if m.role == boundary_role and _message_key(m) == boundary_key
+            ]
+            if not candidates:
+                return None
+            matches = [i for i in candidates if self._tail_matches(messages, i)]
+            if matches:
+                # 内容相同的重复消息会有多个合法匹配：仅用历史下标作消歧提示，不作为边界依据
+                return self._closest_to_recorded(matches)
+            # key 命中但尾部被改写：唯一候选时以它为锚点重建；多候选无法消歧 → 放弃缓存
+            return candidates[0] if len(candidates) == 1 else None
+        if self._end_key is not None:
+            candidates = [i for i, m in enumerate(messages) if _message_key(m) == self._end_key]
+            return candidates[0] + 1 if len(candidates) == 1 else None
+        if not allow_legacy_position:
+            return None  # 无任何可校验标识 → 放弃缓存，交由 prepare 安全重建
+        # 历史兼容：空尾缓存没有可校验的消息标识，只能按记录下标 + 工具组边界收敛
+        assert self._covered_count is not None
+        cut = self._covered_count
+        if cut < 0 or cut > len(messages):
+            return None
+        if 0 < cut < len(messages):
+            cut = _snap_cut_to_group(messages, cut)
+        return cut
+
+    def _closest_to_recorded(self, positions: list[int]) -> int:
+        """多个候选都通过尾部整段校验时，用压缩时记录的下标做消歧（仅提示，不直接采信）。"""
+        if self._covered_count is None:
+            return positions[0]
+        return min(positions, key=lambda i: (abs(i - self._covered_count), i))
+
+    def _tail_matches(self, messages: list[Message], start: int) -> bool:
+        """校验快照尾部与当前列表在 start 处逐条一致（内容 + metadata）。"""
+        tail = self._retained_tail or []
+        if start + len(tail) > len(messages):
+            return False
+        return all(messages[start + i].model_dump() == snapshot for i, snapshot in enumerate(tail))
+
+    def _invalidate_cache(self) -> None:
+        """丢弃不可安全复用的压缩缓存（后续走无缓存路径安全重建）。"""
+        self._summary = None
+        self._covered_count = None
+        self._retained_tail = None
+        self._end_key = None
 
     def _apply_free_layers(self, view: list[Message]) -> list[Message]:
         """轻量层执行：仅支持超大工具输出持久化到磁盘，废除旧滚动裁切与滚动工具篡改以保障前缀缓存。"""
@@ -441,6 +557,7 @@ class ContextManager:
         self._summary = summary
         self._covered_count = cut
         self._retained_tail = [m.model_dump() for m in retained]
+        self._end_key = _message_key(messages[cut - 1]) if cut > 0 else None
         self.pending_compaction = CompactionInfo(
             tokens_before=tokens_before,
             tokens_after=tokens_after,
