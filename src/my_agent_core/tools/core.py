@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-from collections.abc import Callable, Sequence
+import logging
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, get_type_hints, overload
 
 from pydantic import BaseModel, ConfigDict, ValidationError, create_model
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_TOOL_MAX_BYTES = 50 * 1024  # 51,200 bytes (50KB)
 DEFAULT_TOOL_MAX_LINES = 2000
@@ -100,6 +102,8 @@ class Tool:
     is_async: bool
     params_model: type[BaseModel] | None
     is_mcp: bool = False
+    # 不可取消：超时只告警不中断（写盘等有副作用工具，避免「报超时但文件已改」的状态分裂）
+    uncancellable: bool = False
 
     def __init__(
         self,
@@ -114,6 +118,7 @@ class Tool:
         timeout: float | None = None,
         is_parallel_safe: bool = False,
         is_mcp: bool = False,
+        uncancellable: bool = False,
     ):
         self.func = func
         self.name = name or func.__name__
@@ -124,6 +129,7 @@ class Tool:
         self.timeout = timeout
         self.is_parallel_safe = is_parallel_safe
         self.is_mcp = is_mcp
+        self.uncancellable = uncancellable
         self.is_async = inspect.iscoroutinefunction(func)
         sig = inspect.signature(func)
         self._accepts_on_update = "on_update" in sig.parameters
@@ -248,12 +254,18 @@ class Tool:
 
         try:
             if self.is_async:
-                if self.timeout is not None and self.timeout > 0:
+                if self.uncancellable:
+                    # 有副作用工具：绝不半途报超时，等待协程真正结束
+                    result = await self._await_uncancellable(async_func_call())
+                elif self.timeout is not None and self.timeout > 0:
                     result = await asyncio.wait_for(async_func_call(), timeout=self.timeout)
                 else:
                     result = await async_func_call()
             else:
-                if self.timeout is not None and self.timeout > 0:
+                if self.uncancellable:
+                    # wait_for 只能取消 Future、杀不掉工作线程；直接等线程跑完（超时仅告警）
+                    result = await self._await_uncancellable(asyncio.to_thread(func_call))
+                elif self.timeout is not None and self.timeout > 0:
                     result = await asyncio.wait_for(asyncio.to_thread(func_call), timeout=self.timeout)
                 else:
                     result = await asyncio.to_thread(func_call)
@@ -267,6 +279,25 @@ class Tool:
         if isinstance(result, ToolResult):
             return result
         return ToolResult(ok=True, data=result)
+
+    async def _await_uncancellable(self, awaitable: Awaitable[Any]) -> Any:
+        """执行不可取消工具：超时配置退化为「只告警不中断」，等待其真正结束。
+
+        写盘类工具的副作用无法撤销：若此处用 wait_for 提前返回超时错误，
+        线程/协程仍可能继续把文件改完，造成转录本与磁盘状态不一致。
+        """
+        if self.timeout is None or self.timeout <= 0:
+            return await awaitable
+        task = asyncio.ensure_future(awaitable)
+        done, _ = await asyncio.wait({task}, timeout=self.timeout)
+        if not done:
+            logger.warning(
+                "工具 [%s] 执行已超过配置超时 %ss，但该工具标记为不可取消："
+                "继续等待其完成，结果不按超时错误处理",
+                self.name,
+                self.timeout,
+            )
+        return await task
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """直接调用工具函数本体。"""
@@ -285,6 +316,7 @@ def tool(
     raw_schema: dict[str, Any] | None = None,
     timeout: float | None = None,
     is_parallel_safe: bool = False,
+    uncancellable: bool = False,
 ) -> Tool: ...
 
 
@@ -300,6 +332,7 @@ def tool(
     raw_schema: dict[str, Any] | None = None,
     timeout: float | None = None,
     is_parallel_safe: bool = False,
+    uncancellable: bool = False,
 ) -> Callable[[Callable[..., Any]], Tool]: ...
 
 
@@ -314,6 +347,7 @@ def tool(
     raw_schema: dict[str, Any] | None = None,
     timeout: float | None = None,
     is_parallel_safe: bool = False,
+    uncancellable: bool = False,
 ) -> Tool | Callable[[Callable[..., Any]], Tool]:
     """@tool 装饰器：支持 @tool 与 @tool(name=..., description=..., params_model=...)。
 
@@ -332,6 +366,7 @@ def tool(
             raw_schema=raw_schema,
             timeout=timeout,
             is_parallel_safe=is_parallel_safe,
+            uncancellable=uncancellable,
         )
 
     if func is None:
