@@ -39,3 +39,9 @@ my-pi-eval/cache/
 .worktrees
 
 
+
+# 本机部署与个人资料（不入库）
+DEPLOY_NOTES.md
+PROJECT_REVIEW.md
+PRODUCT_STRATEGY.md
+fix_local_install.ps1
