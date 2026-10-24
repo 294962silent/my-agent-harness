@@ -395,7 +395,8 @@ class Agent:
                     and (bool(msg.metadata and msg.metadata.get("stop_reason") == "cancelled") or self._aborted)
                 )
                 if msg.role != "system" and not is_cancelled_partial_text:
-                    self.session.add_message(msg.role, msg.content, **(msg.metadata or {}))
+                    # 树变更留在事件循环线程；JSONL 落盘（fsync/重写）交给工作线程，避免阻塞 TUI
+                    await self.session.add_message_async(msg.role, msg.content, **(msg.metadata or {}))
             elif isinstance(event, ContextCompacted):
                 self._ctx_bridge.write_compaction(self._ctx)
 

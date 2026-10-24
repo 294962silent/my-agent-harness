@@ -3,13 +3,23 @@
 
 一个会话 = 一棵树（entry 带 id/parent_id）+ current_id 指针。rewind = 移动指针、
 旧分支保留。文件格式为纯粹的 SessionEntry 流：第 1 行是 SessionInfoEntry，后续每行为 MessageEntry/CompactionEntry 等。
+
+落盘策略（format_version=2）：
+- 仅新增 entry（消息链式追加）时只向文件末尾追加新行，不重写历史；
+- rewind/fork/compaction/reset/元数据变更等结构性变更仍走原子全量重写；
+- 全量重写时若 current 指针不在写入序列末尾，追加一条 CustomEntry 指针记录
+  （namespace=my_agent_core.session），读取时「最后出现的指针记录为准」。
 """
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import os
 import tempfile
-from collections.abc import Iterable
+import threading
+import time
+from collections.abc import Iterable, Iterator
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
@@ -19,13 +29,22 @@ from my_agent_llm import Message, MessageContent
 
 from .entries import (
     CompactionEntry,
+    CustomEntry,
     MessageEntry,
     SessionEntry,
     SessionHeaderEntry,
     SessionInfoEntry,
 )
 from .jsonl import entry_from_json_line, entry_to_json_line
+from .storage import _lock_file, _unlock_file
 from .tree import path_to_entry
+
+# 文件格式版本：2 = 支持增量追加 + 指针记录（legacy 文件无此标记，仍按旧语义读取）
+_FORMAT_VERSION = 2
+_FORMAT_VERSION_KEY = "format_version"
+_POINTER_NAMESPACE = "my_agent_core.session"
+_POINTER_CUSTOM_TYPE = "pointer"
+_RESERVED_META_KEYS = ("current_id", "root_id", "compaction_floor", _FORMAT_VERSION_KEY)
 
 
 class SessionTree:
@@ -113,11 +132,25 @@ class Session:
         self.compaction_floor: str | None = None
         self.metadata = metadata or {}  # 额外元数据（子代理：agent_type/parent_session_id），进 SessionInfoEntry
         self._storage: Any | None = None
+        # 落盘基线：上次成功落盘后的 entry 序列/id/尺寸/元数据；用于判定能否只追加
+        self._save_lock = threading.Lock()
+        self._persisted_ids: tuple[str, ...] | None = None
+        self._persisted_root_id: str | None = None
+        self._persisted_floor: str | None = None
+        self._persisted_metadata: dict[str, Any] | None = None
+        self._persisted_header: tuple[str, str, str] | None = None
+        self._persisted_size = -1
+        self._append_enabled = False  # 仅当文件已带 format_version=2 标记时才允许增量追加
 
     @classmethod
     def load(cls, path: Path) -> Session:
-        """从 JSONL 文件恢复整棵树。首行非 SessionInfoEntry → ValueError；
-        非尾行损坏 → ValueError（带行号）；尾行撕裂 → 丢弃该行（宽容兜底）。"""
+        """从 JSONL 文件恢复整棵树。首行非 SessionInfoEntry/SessionHeaderEntry → ValueError；
+        非尾行损坏 → ValueError（带行号）；尾行撕裂 → 丢弃该行（宽容兜底）。
+
+        format_version=2 的文件支持增量追加与「指针记录」：最后出现的指针记录决定
+        current_id/root_id/compaction_floor；旧格式（无标记）仍按首行 metadata 恢复，
+        保证历史会话可读。
+        """
         path = Path(path).resolve()
         try:
             with open(path, encoding="utf-8") as f:
@@ -135,6 +168,9 @@ class Session:
         if not isinstance(first_entry, (SessionInfoEntry, SessionHeaderEntry)):
             raise ValueError(f"Session file {path}: line 1 must be a valid SessionHeaderEntry or SessionInfoEntry")
 
+        header_meta = dict(getattr(first_entry, "metadata", {}) or {})
+        is_v2 = header_meta.get(_FORMAT_VERSION_KEY) == _FORMAT_VERSION
+
         tree_lines = lines[1:]
         if tree_lines and tree_lines[-1].strip():
             try:
@@ -142,8 +178,12 @@ class Session:
             except Exception:
                 tree_lines = tree_lines[:-1]
 
-        tree = SessionTree.from_jsonl_iter(tree_lines)
-        meta = dict(getattr(first_entry, "metadata", {}) or {})
+        if is_v2:
+            tree, meta = _restore_v2_tree(tree_lines, header_meta)
+        else:
+            tree = SessionTree.from_jsonl_iter(tree_lines)
+            meta = dict(header_meta)
+
         if getattr(first_entry, "name", None):
             meta["name"] = first_entry.name
         if getattr(first_entry, "title", None):
@@ -158,13 +198,14 @@ class Session:
                     meta["name"] = sub_name
                     meta["title"] = sub_name
 
-        # 优先恢复 current_id / root_id
-        cur = meta.get("current_id")
-        if isinstance(cur, str) and cur in tree.entries:
-            tree.current_id = cur
-        root = meta.get("root_id")
-        if isinstance(root, str) and root in tree.entries:
-            tree.root_id = root
+        # 旧格式：首行 metadata 的 current_id/root_id 是权威指针（兼容存量文件）
+        if not is_v2:
+            cur = meta.get("current_id")
+            if isinstance(cur, str) and cur in tree.entries:
+                tree.current_id = cur
+            root = meta.get("root_id")
+            if isinstance(root, str) and root in tree.entries:
+                tree.root_id = root
 
         session = cls(path=path, cwd=first_entry.cwd)
         session.id = first_entry.id
@@ -175,7 +216,8 @@ class Session:
         )
         session.tree = tree
         session.compaction_floor = meta.get("compaction_floor")
-        session.metadata = {k: v for k, v in meta.items() if k not in ("current_id", "root_id", "compaction_floor")}
+        session.metadata = {k: v for k, v in meta.items() if k not in _RESERVED_META_KEYS}
+        session._sync_persisted_state(append_enabled=is_v2)
         return session
 
     def add_message(
@@ -184,6 +226,17 @@ class Session:
         """加到树 + save()。"""
         entry = self.tree.add_entry(role, content, parent_id, **metadata)
         self.save()
+        return entry
+
+    async def add_message_async(
+        self, role: str, content: MessageContent, parent_id: str | None = None, **metadata: Any
+    ) -> MessageEntry:
+        """异步版 add_message：树变更留在事件循环线程，落盘（含 fsync）交给工作线程。
+
+        Agent 每收到一个 MessageEnd 都会调用；避免长会话全量重写/fsync 阻塞承载 TUI 的事件循环。
+        """
+        entry = self.tree.add_entry(role, content, parent_id, **metadata)
+        await asyncio.to_thread(self.save)
         return entry
 
     def _hydrate_message_images(self, message: Message) -> Message:
@@ -308,14 +361,104 @@ class Session:
             cur = self.tree.entries.get(cur.parent_id)
         return False
 
-    def save(self) -> None:
-        """原子落盘：临时文件 + fsync + os.replace。写入首条 SessionInfoEntry 与所有多态 SessionEntry。"""
+    # ── 持久化：增量追加 / 原子全量重写 ─────────────────────────
+
+    @contextlib.contextmanager
+    def _process_file_lock(self, timeout: float = 10.0) -> Iterator[None]:
+        """跨进程排他锁：与 JsonlSessionStorage 共用 `.{name}.lock` 约定，保证追加串行。"""
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        lock_path = self.path.parent / f".{self.path.name}.lock"
+        fd = os.open(str(lock_path), os.O_RDWR | os.O_CREAT)
+        try:
+            start = time.monotonic()
+            while True:
+                try:
+                    _lock_file(fd)
+                    break
+                except (BlockingIOError, OSError, PermissionError):
+                    if time.monotonic() - start > timeout:
+                        raise TimeoutError(f"Timeout ({timeout}s) waiting for session lock {lock_path}") from None
+                    time.sleep(0.01)
+            try:
+                yield
+            finally:
+                _unlock_file(fd)
+        finally:
+            os.close(fd)
+
+    def _header_meta(self) -> dict[str, Any]:
+        """首行 SessionInfoEntry 的 metadata：额外元数据 + 指针 + 格式版本。"""
         meta = dict(self.metadata)
         meta["current_id"] = self.tree.current_id
         meta["root_id"] = self.tree.root_id
         meta["compaction_floor"] = self.compaction_floor
+        meta[_FORMAT_VERSION_KEY] = _FORMAT_VERSION
+        return meta
 
+    def _pointer_record_line(self) -> str | None:
+        """current 指针不在写入序列末尾时，补一条指针记录（读取时最后一条生效）。
+
+        常见于 rewind/branch 后的全量重写，以及压缩 entry（不动 current）后的追加。
+        """
+        if not self.tree.entries:
+            return None
+        last_id = next(reversed(self.tree.entries))
+        if self.tree.current_id == last_id:
+            return None
+        record = CustomEntry(
+            namespace=_POINTER_NAMESPACE,
+            custom_type=_POINTER_CUSTOM_TYPE,
+            data={
+                "current_id": self.tree.current_id,
+                "root_id": self.tree.root_id,
+                "compaction_floor": self.compaction_floor,
+            },
+        )
+        return entry_to_json_line(record)
+
+    def _can_append_incrementally(self) -> bool:
+        """是否只是「在文件尾部新增 entry」：是则只追加，不重写历史。"""
+        if not self._append_enabled or self._persisted_ids is None:
+            return False
+        ids = tuple(self.tree.entries)
+        persisted = self._persisted_ids
+        if len(ids) <= len(persisted) or ids[: len(persisted)] != persisted:
+            return False
+        if (self.id, self.cwd, self.created_at) != self._persisted_header:
+            return False
+        if self.tree.root_id != self._persisted_root_id:
+            return False
+        if self.compaction_floor != self._persisted_floor:
+            return False
+        if self.metadata != self._persisted_metadata:
+            return False
+        try:
+            # 文件被外部改写（尺寸变化）时放弃增量，退回全量重写，避免把陈旧前缀当事实
+            return self.path.stat().st_size == self._persisted_size
+        except OSError:
+            return False
+
+    def _append_incrementally(self) -> None:
+        """只向 JSONL 尾部追加新增 entry（+ 必要时一条指针记录），带 fsync。"""
+        persisted = self._persisted_ids or ()
+        new_entries = list(self.tree.entries.values())[len(persisted) :]
+        lines = [entry_to_json_line(e, assets_dir=self.path.parent) for e in new_entries]
+        pointer_line = self._pointer_record_line()
+        if pointer_line is not None:
+            lines.append(pointer_line)
+        payload = "".join(line + "\n" for line in lines)
+        try:
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(payload)
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as exc:
+            raise OSError(f"Failed to append session {self.path}: {exc}") from exc
+        self._sync_persisted_state(append_enabled=True)
+
+    def _rewrite_full(self) -> None:
+        """原子全量重写：临时文件 + fsync + os.replace（写入首行会话头 + 所有多态 SessionEntry）。"""
+        meta = self._header_meta()
         created_at_val: float | None = None
         try:
             if isinstance(self.created_at, str):
@@ -333,6 +476,12 @@ class Session:
             created_at=created_at_val,
             metadata=meta,
         )
+        lines = [entry_to_json_line(info_entry)]
+        lines.extend(entry_to_json_line(e, assets_dir=self.path.parent) for e in self.tree.entries.values())
+        pointer_line = self._pointer_record_line()
+        if pointer_line is not None:
+            lines.append(pointer_line)
+        payload = "".join(line + "\n" for line in lines)
 
         temp_path: Path | None = None
         try:
@@ -345,9 +494,7 @@ class Session:
                 delete=False,
             ) as f:
                 temp_path = Path(f.name)
-                f.write(entry_to_json_line(info_entry) + "\n")
-                for e in self.tree.entries.values():
-                    f.write(entry_to_json_line(e, assets_dir=self.path.parent) + "\n")
+                f.write(payload)
                 f.flush()
                 os.fsync(f.fileno())
             os.replace(temp_path, self.path)
@@ -355,6 +502,32 @@ class Session:
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)
             raise
+        self._sync_persisted_state(append_enabled=True)
+
+    def _sync_persisted_state(self, *, append_enabled: bool) -> None:
+        """记录磁盘上的事实，作为下一次「能否只追加」的基线。"""
+        self._persisted_ids = tuple(self.tree.entries)
+        self._persisted_root_id = self.tree.root_id
+        self._persisted_floor = self.compaction_floor
+        self._persisted_metadata = dict(self.metadata)
+        self._persisted_header = (self.id, self.cwd, self.created_at)
+        try:
+            self._persisted_size = self.path.stat().st_size
+        except OSError:
+            self._persisted_size = -1
+        self._append_enabled = append_enabled
+
+    def save(self) -> None:
+        """落盘：仅新增 entry 时尾部追加；结构性变更（rewind/compaction/reset/元数据）原子重写。
+
+        追加与重写都在实例锁 + 跨进程文件锁内完成；fsync 阻塞由调用方挪到工作线程
+        （Agent 走 add_message_async / asyncio.to_thread）。
+        """
+        with self._save_lock, self._process_file_lock():
+            if self._can_append_incrementally():
+                self._append_incrementally()
+            else:
+                self._rewrite_full()
 
     def append_entry(self, entry: SessionEntry) -> None:
         """追加一条任意多态 SessionEntry 并原子持久化。"""
@@ -407,3 +580,56 @@ class Session:
             messages=tuple(self.get_current_path_messages()),
             active_leaf_id=self.tree.current_id,
         )
+
+
+def _is_pointer_record(entry: SessionEntry) -> bool:
+    """是否为格式 v2 的指针记录（CustomEntry，不进入会话树）。"""
+    return (
+        isinstance(entry, CustomEntry)
+        and entry.namespace == _POINTER_NAMESPACE
+        and entry.custom_type == _POINTER_CUSTOM_TYPE
+    )
+
+
+def _restore_v2_tree(lines: Iterable[str], header_meta: dict[str, Any]) -> tuple[SessionTree, dict[str, Any]]:
+    """恢复 format_version=2 的树。
+
+    语义：指针记录按出现顺序覆盖 current/root/floor；普通 entry 依次入树并把
+    current 推进到自身（追加进去的 entry 天然成为新的活动叶）。这样
+    「全量重写 + 尾部指针记录 + 后续增量追加」都能还原出与内存一致的指针。
+    """
+    tree = SessionTree()
+    meta = dict(header_meta)
+    pointer = meta.get("current_id")
+    root = meta.get("root_id")
+    floor = meta.get("compaction_floor")
+    last_entry_id: str | None = None
+    for idx, line in enumerate(lines, start=2):  # start=2 因为 line 1 是会话头
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = entry_from_json_line(line)
+        except Exception as exc:
+            raise ValueError(f"Corrupted entry at line {idx}: {exc}") from exc
+        if _is_pointer_record(entry):
+            data = entry.data if isinstance(entry, CustomEntry) else {}
+            pointer = data.get("current_id")
+            root = data.get("root_id", root)
+            floor = data.get("compaction_floor", floor)
+            continue
+        tree.entries[entry.id] = entry
+        last_entry_id = entry.id
+        pointer = entry.id
+        if root is None:
+            root = entry.id
+    if pointer is not None and pointer not in tree.entries:
+        pointer = last_entry_id
+    if root is not None and root not in tree.entries:
+        root = next(iter(tree.entries), None)
+    tree.current_id = pointer
+    tree.root_id = root
+    meta["current_id"] = pointer
+    meta["root_id"] = root
+    meta["compaction_floor"] = floor
+    return tree, meta

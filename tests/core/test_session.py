@@ -52,9 +52,10 @@ def test_atomic_write_tmp_remnant_does_not_break(tmp_path):
 
 
 def test_atomic_write_failure_keeps_snapshot(tmp_path, monkeypatch):
-    """写中断（os.replace 抛错）→ 上次快照不被破坏（#6）。"""
+    """结构性全量重写中断（os.replace 抛错）→ 上次快照不被破坏（#6）。"""
     session = Session(path=tmp_path / "s.jsonl")
     session.add_message("user", "q1")
+    entry_id = next(iter(session.tree.entries))
     snapshot = session.path.read_text(encoding="utf-8")
 
     def boom(_src, _dst):
@@ -62,7 +63,7 @@ def test_atomic_write_failure_keeps_snapshot(tmp_path, monkeypatch):
 
     monkeypatch.setattr("my_agent_core.session.session.os.replace", boom)
     try:
-        session.add_message("user", "q2")
+        session.rewind(entry_id)  # 指针落盘 → 走临时文件 + os.replace 的原子重写
     except OSError:
         pass
     else:

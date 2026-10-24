@@ -479,17 +479,21 @@ async def test_interop_legacy_session_file_read_by_jsonl_storage(
     storage = JsonlSessionStorage(file_path)
     entries = await storage.read_all()
 
-    assert len(entries) == 4
-    assert isinstance(entries[0], SessionInfoEntry)
-    assert entries[0].id == session.id
-    assert isinstance(entries[1], MessageEntry)
-    assert entries[1].message.role == "user"
-    assert entries[1].message.content == "how are you?"
-    assert isinstance(entries[2], MessageEntry)
-    assert entries[2].message.role == "assistant"
-    assert entries[2].message.content == "I am fine!"
-    assert isinstance(entries[3], CompactionEntry)
-    assert entries[3].summary == "## Summary"
+    # format_version=2 下，指针不在末尾时会追加一条 CustomEntry 指针记录（也是合法 entry）
+    pointer_records = [e for e in entries if getattr(e, "namespace", None) == "my_agent_core.session"]
+    history = [e for e in entries if e not in pointer_records]
+    assert len(pointer_records) == 1
+    assert len(history) == 4
+    assert isinstance(history[0], SessionInfoEntry)
+    assert history[0].id == session.id
+    assert isinstance(history[1], MessageEntry)
+    assert history[1].message.role == "user"
+    assert history[1].message.content == "how are you?"
+    assert isinstance(history[2], MessageEntry)
+    assert history[2].message.role == "assistant"
+    assert history[2].message.content == "I am fine!"
+    assert isinstance(history[3], CompactionEntry)
+    assert history[3].summary == "## Summary"
 
 
 def test_session_facade_bridge_methods(tmp_path: Path) -> None:
