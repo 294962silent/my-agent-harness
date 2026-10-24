@@ -419,7 +419,11 @@ async def _execute_tools_turn(
             try:
                 return await registry.execute_batch(calls_to_run, signal=signal)
             finally:
-                safe_put(_SENTINEL)
+                # 哨兵必须排到所有已调度的线程回调之后：同步工具的进度事件是经
+                # call_soon_threadsafe 投递的，若在此处直接 put_nowait，哨兵会插队，
+                # 消费端先看到哨兵而丢掉最后几条 ToolExecutionUpdate。
+                with contextlib.suppress(RuntimeError):
+                    loop.call_soon_threadsafe(queue.put_nowait, _SENTINEL)
 
         runner = asyncio.create_task(_run_batch())
         try:
