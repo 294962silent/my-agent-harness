@@ -45,3 +45,8 @@ DEPLOY_NOTES.md
 PROJECT_REVIEW.md
 PRODUCT_STRATEGY.md
 fix_local_install.ps1
+
+# 保留 dist 占位：hatch 的 force-include 在干净 clone 下需要一个存在的目录
+!my-pi-tui/dist/
+my-pi-tui/dist/*
+!my-pi-tui/dist/.gitkeep
