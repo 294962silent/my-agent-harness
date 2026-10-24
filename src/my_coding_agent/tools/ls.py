@@ -3,11 +3,13 @@ from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
+from typing import Any
 
-from my_agent_core.tools import Tool, tool
+from my_agent_core.tools import Tool, ToolResult, tool
 
 from my_coding_agent.tools.base import (
     PATH_ALIASES,
+    PathEscapeError,
     resolve_path,
     truncate_output,
     wrap_tool_executor,
@@ -16,7 +18,7 @@ from my_coding_agent.tools.base import (
 DEFAULT_LS_LIMIT = 500
 
 
-def make_ls_tool(workspace: Path | str) -> Tool:
+def make_ls_tool(workspace: Path | str, *, allow_outside_reads: bool = False) -> Tool:
     """创建工作区绑定的 ls 工具（对标 Pi 官方 ls 实现）。
 
     - path: 目录路径（默认当前工作目录 "."）
@@ -32,9 +34,9 @@ def make_ls_tool(workspace: Path | str) -> Tool:
         prompt_snippet="List directory contents",
         is_parallel_safe=True,
     )
-    async def ls(path: str = ".", limit: int = DEFAULT_LS_LIMIT) -> str:
+    async def ls(path: str = ".", limit: int = DEFAULT_LS_LIMIT) -> Any:
         try:
-            target = resolve_path(workspace, path)
+            target = resolve_path(workspace, path, allow_outside=allow_outside_reads)
             if not target.exists():
                 return f"Error: Path not found: {path}"
             if not target.is_dir():
@@ -68,6 +70,8 @@ def make_ls_tool(workspace: Path | str) -> Tool:
                 output += f"\n\n[Output truncated: reached entry limit of {effective_limit}]"
 
             return truncate_output(output) if output else "(Empty directory)"
+        except PathEscapeError as e:
+            return ToolResult(ok=False, error=str(e))
         except Exception as e:
             return f"Error: {e}"
 

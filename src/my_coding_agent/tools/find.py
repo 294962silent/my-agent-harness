@@ -3,12 +3,14 @@ from __future__ import annotations
 import fnmatch
 import os
 from pathlib import Path
+from typing import Any
 
-from my_agent_core.tools import Tool, tool
+from my_agent_core.tools import Tool, ToolResult, tool
 
 from my_coding_agent.tools.base import (
     DEFAULT_IGNORE_DIRS,
     PATH_ALIASES,
+    PathEscapeError,
     resolve_path,
     truncate_output,
     wrap_tool_executor,
@@ -17,7 +19,7 @@ from my_coding_agent.tools.base import (
 DEFAULT_FIND_LIMIT = 1000
 
 
-def make_find_tool(workspace: Path | str) -> Tool:
+def make_find_tool(workspace: Path | str, *, allow_outside_reads: bool = False) -> Tool:
     """创建 find 工具工厂，在 workspace 内按 glob pattern 检索文件。"""
     workspace = Path(workspace).resolve()
 
@@ -27,9 +29,9 @@ def make_find_tool(workspace: Path | str) -> Tool:
         prompt_snippet="Find files by glob pattern (respects .gitignore)",
         is_parallel_safe=True,
     )
-    async def find(pattern: str = "*", path: str = ".", limit: int = DEFAULT_FIND_LIMIT) -> str:
+    async def find(pattern: str = "*", path: str = ".", limit: int = DEFAULT_FIND_LIMIT) -> Any:
         try:
-            target_root = resolve_path(workspace, path)
+            target_root = resolve_path(workspace, path, allow_outside=allow_outside_reads)
             if not target_root.exists():
                 return f"Error: Path not found: {path}"
 
@@ -73,6 +75,8 @@ def make_find_tool(workspace: Path | str) -> Tool:
 
             output = "\n".join(matched_paths) if matched_paths else f"No files matching '{pattern}' found."
             return truncate_output(output)
+        except PathEscapeError as e:
+            return ToolResult(ok=False, error=str(e))
         except Exception as e:
             return f"Error: {e}"
 

@@ -46,8 +46,8 @@ async def test_read_offset_beyond_end(tmp_path):
 
 @pytest.mark.anyio
 async def test_read_path_outside_workspace(tmp_path):
-    """跨 workspace 外部路径 → 返回 'File not found' 或 'not found'。"""
-    read = make_read_tool(tmp_path)
+    """跨 workspace 外部路径（显式开启只读放宽）→ 返回 'File not found' 或 'not found'。"""
+    read = make_read_tool(tmp_path, allow_outside_reads=True)
     result = await read.execute({"path": "../secret.txt"})
     assert "not found" in result.data.lower() or "Error" in result.data
 

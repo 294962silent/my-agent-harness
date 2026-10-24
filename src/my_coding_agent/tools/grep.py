@@ -4,12 +4,14 @@ import fnmatch
 import os
 import re
 from pathlib import Path
+from typing import Any
 
-from my_agent_core.tools import Tool, tool
+from my_agent_core.tools import Tool, ToolResult, tool
 
 from my_coding_agent.tools.base import (
     DEFAULT_IGNORE_DIRS,
     PATH_ALIASES,
+    PathEscapeError,
     is_binary_file,
     resolve_path,
     truncate_output,
@@ -17,7 +19,7 @@ from my_coding_agent.tools.base import (
 )
 
 
-def make_grep_tool(workspace: Path | str) -> Tool:
+def make_grep_tool(workspace: Path | str, *, allow_outside_reads: bool = False) -> Tool:
     """创建 grep 工具工厂，在 workspace 内检索文件（对标 Pi 官方 grep 协议与参数）。"""
     workspace = Path(workspace).resolve()
 
@@ -37,9 +39,9 @@ def make_grep_tool(workspace: Path | str) -> Tool:
         limit: int | None = None,
         regex: bool = False,
         case_sensitive: bool = False,
-    ) -> str:
+    ) -> Any:
         try:
-            target_root = resolve_path(workspace, path)
+            target_root = resolve_path(workspace, path, allow_outside=allow_outside_reads)
             if not target_root.exists():
                 return f"Error: Path not found: {path}"
 
@@ -84,6 +86,11 @@ def make_grep_tool(workspace: Path | str) -> Tool:
                         files_to_search.append(Path(root) / f)
 
             for file_path in files_to_search:
+                # os.walk 可能枚举到指向工作区外的 symlink；逐个解析并拒绝越界目标
+                try:
+                    file_path = resolve_path(workspace, file_path, allow_outside=allow_outside_reads)
+                except (PathEscapeError, OSError, RuntimeError):
+                    continue
                 if is_binary_file(file_path):
                     continue
                 try:
@@ -126,6 +133,8 @@ def make_grep_tool(workspace: Path | str) -> Tool:
 
             output = "\n".join(matches) if matches else f"No matches found for pattern '{pattern}'."
             return truncate_output(output)
+        except PathEscapeError as e:
+            return ToolResult(ok=False, error=str(e))
         except Exception as e:
             return f"Error: {e}"
 

@@ -5,12 +5,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from my_agent_core.tools import Tool, tool
+from my_agent_core.tools import Tool, ToolResult, tool
 from pydantic import BaseModel, ConfigDict, Field
 
 from my_coding_agent.mutation_queue import FileMutationQueue
 from my_coding_agent.tools.base import (
     PATH_ALIASES,
+    PathEscapeError,
     is_binary_file,
     resolve_path,
     wrap_tool_executor,
@@ -62,11 +63,12 @@ def make_edit_tool(workspace: Path, mutation_queue: FileMutationQueue | None = N
             "Keep edits[].oldText as small as possible while still being unique in the file. Do not pad with large unchanged regions.",
         ],
         is_parallel_safe=True,
+        uncancellable=True,  # 写盘副作用不可撤销：超时只告警，绝不半途报错
     )
     async def edit(
         path: str,
         edits: list[dict] | list[EditBlock] | None = None,
-    ) -> str:
+    ) -> Any:
         try:
             target = resolve_path(workspace, path)
             if not target.exists():
@@ -181,6 +183,8 @@ def make_edit_tool(workspace: Path, mutation_queue: FileMutationQueue | None = N
                 target.write_bytes(out_bytes)
 
                 return f"Successfully applied {len(edit_blocks)} edit(s) to {path}.\nDiff:\n```diff\n{diff}```"
+        except PathEscapeError as e:
+            return ToolResult(ok=False, error=str(e))
         except Exception as e:
             return f"Error: {e}"
 

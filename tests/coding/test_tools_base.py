@@ -16,12 +16,12 @@ def test_resolve_path_relative(tmp_path: Path):
 
 def test_resolve_path_absolute(tmp_path: Path):
     abs_file = (tmp_path.parent / "config.toml").resolve()
-    target = resolve_path(tmp_path, str(abs_file))
+    target = resolve_path(tmp_path, str(abs_file), allow_outside=True)
     assert target == abs_file
 
 
 def test_resolve_path_parent_traversal(tmp_path: Path):
-    target = resolve_path(tmp_path, "../sibling/file.txt")
+    target = resolve_path(tmp_path, "../sibling/file.txt", allow_outside=True)
     assert target == (tmp_path.parent / "sibling/file.txt").resolve()
 
 

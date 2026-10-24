@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,11 +27,45 @@ DEFAULT_IGNORE_DIRS = {
 PATH_ALIASES: tuple[str, ...] = ("filePath", "file_path", "file", "filename")
 
 
-def resolve_path(workspace: Path, p: str | Path) -> Path:
+class PathEscapeError(ValueError):
+    """解析后的路径落在工作区之外（越界访问）。"""
+
+    def __init__(self, workspace: Path, target: Path) -> None:
+        self.workspace = workspace
+        self.target = target
+        super().__init__(f"路径在工作区之外: target={target} (workspace={workspace})")
+
+
+def _is_within(workspace: Path, target: Path) -> bool:
+    """判断 target 是否位于 workspace 内（Windows 下兼容大小写与盘符差异）。"""
+    try:
+        target.relative_to(workspace)
+        return True
+    except ValueError:
+        pass
+    if os.name != "nt":
+        return False
+    try:
+        ws_norm = os.path.normcase(str(workspace))
+        target_norm = os.path.normcase(str(target))
+        return os.path.commonpath((ws_norm, target_norm)) == ws_norm
+    except ValueError:
+        return False
+
+
+def resolve_path(workspace: Path, p: str | Path, *, allow_outside: bool = False) -> Path:
+    """把工具入参解析为绝对路径，并校验结果仍在 workspace 内。
+
+    - 默认越界（绝对路径、.. 穿越、symlink 指向外部）抛出 PathEscapeError；
+    - allow_outside=True 仅供只读工具通过显式开关放宽（默认关闭）；
+    - write/edit 永远不允许放宽。
+    """
+    workspace_resolved = Path(workspace).resolve()
     raw = Path(p)
-    if raw.is_absolute():
-        return raw.resolve()
-    return (workspace / raw).resolve()
+    target = raw.resolve() if raw.is_absolute() else (workspace_resolved / raw).resolve()
+    if not allow_outside and not _is_within(workspace_resolved, target):
+        raise PathEscapeError(workspace_resolved, target)
+    return target
 
 
 def is_binary_file(path: Path) -> bool:

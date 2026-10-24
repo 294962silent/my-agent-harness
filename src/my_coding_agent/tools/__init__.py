@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     )
 
 from my_coding_agent.mutation_queue import FileMutationQueue
-from my_coding_agent.tools.base import is_binary_file, resolve_path
+from my_coding_agent.tools.base import PathEscapeError, is_binary_file, resolve_path
 from my_coding_agent.tools.bash import make_bash_tool
 from my_coding_agent.tools.edit import EditBlock, make_edit_tool
 from my_coding_agent.tools.find import make_find_tool
@@ -43,6 +43,7 @@ def build_coding_tools(
 __all__ = [
     "build_coding_tools",
     "resolve_path",
+    "PathEscapeError",
     "is_binary_file",
     "make_read_tool",
     "make_write_tool",

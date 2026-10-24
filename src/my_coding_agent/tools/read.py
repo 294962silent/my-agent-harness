@@ -3,20 +3,21 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from my_agent_core.tools import Tool, tool
+from my_agent_core.tools import Tool, ToolResult, tool
 from my_coding_agent.image_processing import detect_image_mime_from_extension, process_image
 
 from my_coding_agent.tools.base import (
     DEFAULT_MAX_BYTES,
     DEFAULT_MAX_LINES,
     PATH_ALIASES,
+    PathEscapeError,
     is_binary_file,
     resolve_path,
     wrap_tool_executor,
 )
 
 
-def make_read_tool(workspace: Path) -> Tool:
+def make_read_tool(workspace: Path, *, allow_outside_reads: bool = False) -> Tool:
     workspace = workspace.resolve()
 
     @tool(
@@ -28,7 +29,7 @@ def make_read_tool(workspace: Path) -> Tool:
     )
     async def read(path: str, offset: int = 1, limit: int | None = None) -> Any:
         try:
-            target = resolve_path(workspace, path)
+            target = resolve_path(workspace, path, allow_outside=allow_outside_reads)
             if not target.exists():
                 return f"Error: File not found: {path}"
             if target.is_dir():
@@ -93,6 +94,8 @@ def make_read_tool(workspace: Path) -> Tool:
                 )
 
             return result_text
+        except PathEscapeError as e:
+            return ToolResult(ok=False, error=str(e))
         except Exception as e:
             return f"Error: {e}"
 

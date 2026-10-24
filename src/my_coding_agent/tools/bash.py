@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from my_agent_core.background import BackgroundRunner
+from my_agent_core.env_filter import filter_env
 from my_agent_core.tools import Tool, tool
 
 from my_coding_agent.tools.base import (
@@ -177,7 +178,7 @@ def make_bash_tool(
                 kwargs["preexec_fn"] = os.setsid
 
             shell_path, is_bash = _resolve_shell()
-            env = dict(os.environ)
+            env = filter_env()
             if is_bash:
                 env.setdefault("LANG", "C.UTF-8")
                 env.setdefault("LC_ALL", "C.UTF-8")
