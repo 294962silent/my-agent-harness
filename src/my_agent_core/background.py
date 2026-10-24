@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from my_agent_core.env_filter import filter_env
+
 if TYPE_CHECKING:
     from my_agent_core.message_queue import (  # pyright: ignore[reportMissingImports]
         MessageQueue,
@@ -77,6 +79,7 @@ class BackgroundRunner:
                 proc = await asyncio.create_subprocess_shell(
                     command,
                     cwd=str(cwd),
+                    env=filter_env(),
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     start_new_session=os.name != "nt",

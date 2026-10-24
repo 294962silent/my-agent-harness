@@ -109,8 +109,8 @@ class ModelRpcMixin:
                 },
             )
 
-        key_name = f"{provider.upper()}_API_KEY"
-        os.environ[key_name] = key
+        # 凭据只写入 AuthManager（~/.my-pi-agent/auth.json），绝不注入 os.environ；
+        # 否则模型可通过 shell 工具读取该 Key。模型热更新路径见下方 switch_llm_model。
         auth_mgr.set_api_key(provider=provider, key=key)
 
         # 3. 若当前模型正在使用该提供商，立刻原地热更新当前活跃模型实例

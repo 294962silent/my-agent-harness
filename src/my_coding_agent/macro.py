@@ -15,6 +15,8 @@ from subprocess import TimeoutExpired
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from my_agent_core.env_filter import filter_env
+
 from my_coding_agent.paths import AgentPaths
 
 
@@ -77,6 +79,7 @@ class MacroEngine:
                 cmd_str,
                 shell=True,  # noqa: S602 # nosec B602
                 cwd=str(target_cwd),
+                env=filter_env(),
                 capture_output=True,
                 text=True,
                 timeout=timeout,

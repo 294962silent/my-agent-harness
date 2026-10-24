@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -246,6 +247,7 @@ async def test_login_hot_refreshes_active_llm(tmp_path: Path, monkeypatch: pytes
 
     custom_home = tmp_path / "home"
     monkeypatch.setenv("MY_AGENT_HOME", str(custom_home))
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     workspace = tmp_path / "work"
     workspace.mkdir()
 
@@ -267,6 +269,8 @@ async def test_login_hot_refreshes_active_llm(tmp_path: Path, monkeypatch: pytes
 
     # 验证活跃模型实例已被原地热更新
     assert server.agent.llm.config.api_key == "brand-new-key"
+    # /login 只落盘 AuthManager，不把 Key 写进 os.environ
+    assert "DEEPSEEK_API_KEY" not in os.environ
 
 
 @pytest.mark.anyio

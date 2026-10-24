@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import os
 from pathlib import Path
 import pytest
 
@@ -494,9 +495,10 @@ async def test_footer_context_window_resolves_from_llm_config_model(tmp_path: Pa
 
 
 @pytest.mark.anyio
-async def test_rpc_server_login_updates_auth_manager_and_env(tmp_path: Path, monkeypatch):
+async def test_rpc_server_login_updates_auth_manager_without_env_leak(tmp_path: Path, monkeypatch):
     custom_home = tmp_path / "custom_agent_home"
     monkeypatch.setenv("MY_AGENT_HOME", str(custom_home))
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
 
     workspace_dir = tmp_path / "user_project"
     workspace_dir.mkdir()
@@ -534,6 +536,9 @@ async def test_rpc_server_login_updates_auth_manager_and_env(tmp_path: Path, mon
     assert cred is not None
     assert isinstance(cred, ApiKeyCredential)
     assert cred.key == "sk-deepseek-test-999"
+
+    # 断言 3: /login 绝不把 Key 注入 os.environ（否则模型 shell 可读出）
+    assert "DEEPSEEK_API_KEY" not in os.environ
 
 
 @pytest.mark.anyio

@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -16,6 +15,7 @@ from mcp.client.stdio import (  # pyright: ignore[reportMissingImports]
     StdioServerParameters,
     stdio_client,
 )
+from my_agent_core.env_filter import filter_env  # pyright: ignore[reportMissingImports]
 from my_agent_core.tools import (  # pyright: ignore[reportMissingImports]
     Tool,
     ToolResult,
@@ -48,7 +48,7 @@ class MCPConnection:
 
     async def _run(self) -> None:
         try:
-            server_env = os.environ.copy()
+            server_env = filter_env()
             if self.config.env:
                 server_env.update(self.config.env)
 
