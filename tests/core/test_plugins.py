@@ -122,7 +122,7 @@ def test_plugin_manifest_loading_and_fallback():
         plugin4 = Plugin.from_directory(p4)
         assert plugin4.name == "single-skill-plugin"
         assert plugin4.manifest.version == "1.0.0"
-        assert plugin4.skills_dir == p4
+        assert plugin4.skills_dir == p4.resolve()
 
         # 5. 损坏的 JSON 语法错误，降级为目录名兜底推断
         p5 = Path(tmpdir) / "broken-json-plugin"
@@ -151,9 +151,9 @@ def test_plugin_resource_directories():
         (p / ".mcp.json").write_text('{"mcpServers": {}}')
 
         plugin = Plugin.from_directory(p)
-        assert plugin.skills_dir == p / "skills"
-        assert plugin.agents_dir == p / "agents"
-        assert plugin.mcp_config_path == p / ".mcp.json"
+        assert plugin.skills_dir == (p / "skills").resolve()
+        assert plugin.agents_dir == (p / "agents").resolve()
+        assert plugin.mcp_config_path == (p / ".mcp.json").resolve()
 
 
 def test_plugin_commands_fallback_for_skills():
@@ -163,7 +163,7 @@ def test_plugin_commands_fallback_for_skills():
         (p / "commands").mkdir()
 
         plugin = Plugin.from_directory(p)
-        assert plugin.skills_dir == p / "commands"
+        assert plugin.skills_dir == (p / "commands").resolve()
 
 
 def test_plugin_manager_discovery_and_extraction():
@@ -183,15 +183,15 @@ def test_plugin_manager_discovery_and_extraction():
         assert "plugin-a" in manager.plugins
         assert "plugin-b" in manager.plugins
 
-        assert manager.get_skill_dirs() == [p1 / "skills"]
-        assert manager.get_subagent_dirs() == [p2 / "agents"]
-        assert manager.get_mcp_config_paths() == [p1 / ".mcp.json"]
+        assert manager.get_skill_dirs() == [(p1 / "skills").resolve()]
+        assert manager.get_subagent_dirs() == [(p2 / "agents").resolve()]
+        assert manager.get_mcp_config_paths() == [(p1 / ".mcp.json").resolve()]
 
         # 禁用其中一个插件
         manager.plugins["plugin-a"].enabled = False
         assert manager.get_skill_dirs() == []
         assert manager.get_mcp_config_paths() == []
-        assert manager.get_subagent_dirs() == [p2 / "agents"]
+        assert manager.get_subagent_dirs() == [(p2 / "agents").resolve()]
 
 
 def test_plugin_manager_direct_plugin_dir_and_disabled():
