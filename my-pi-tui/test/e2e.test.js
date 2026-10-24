@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PythonKernelClient } from "../dist/client.js";
@@ -7,7 +9,20 @@ import { PythonKernelClient } from "../dist/client.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "../..");
 
-test("End-to-End: PythonKernelClient launches real Python rpc_server and manages lifecycle requests", async (t) => {
+// 该用例会真实拉起 Python 内核，initialize 阶段需要解析模型凭据。
+// CI 上没有 auth.json / API key，跳过而不是伪造凭据。
+const hasCredential =
+  Boolean(
+    process.env.OPENAI_API_KEY ||
+      process.env.DEEPSEEK_API_KEY ||
+      process.env.ANTHROPIC_API_KEY,
+  ) || fs.existsSync(path.join(os.homedir(), ".my-pi-agent", "auth.json"));
+
+const skipReason = hasCredential
+  ? false
+  : "无模型凭据（auth.json / *_API_KEY），跳过真实内核冒烟";
+
+test("End-to-End: PythonKernelClient launches real Python rpc_server and manages lifecycle requests", { skip: skipReason }, async (t) => {
   const client = new PythonKernelClient({
     workspace: repoRoot,
   });
