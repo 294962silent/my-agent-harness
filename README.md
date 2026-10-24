@@ -11,7 +11,6 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/my-pi-agent"><img src="https://img.shields.io/npm/v/my-pi-agent.svg?style=flat-square&color=cb3837" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
-  <a href="https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/"><img src="https://img.shields.io/badge/blog-series-success.svg?style=flat-square" alt="blog" /></a>
   <a href="#"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="python" /></a>
   <a href="#"><img src="https://img.shields.io/badge/tests-828%20python%20%7C%2080%20tui%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
 </p>
@@ -21,7 +20,6 @@
   ·
   <a href="#-适合什么人看">适合人群</a>
   ·
-  <a href="#-架构设计与实战系列长文-blog-series">系列长文</a>
   ·
   <a href="#-什么是-my-pi-agent">架构拓扑</a>
   ·
@@ -91,22 +89,6 @@
 
 #### 【第 4 层：工业评测与沙箱基建层】
 7. **宿主驱动沙箱与基准对决**：基于 Terminal-Bench 2.1 展开评测，统一采用 DeepSeek-V4.1-Flash 模型，原厂 Pi 与自研 MyPiAgent 在全量 89 题中分别通过 72 题与 71 题；评测采用宿主机驱动沙箱模式，基于 Harbor 框架将工具桥接穿透至 Docker 容器中执行。
-
----
-
-## 📖 架构设计与实战系列长文 (Blog Series)
-
-为了帮助更多对 Agent Harness 与底层机制感兴趣的开发者透彻理解本项目，作者在个人博客上撰写了 **15 篇全景源码级技术长文**，详细复盘了从 ReAct 微内核、上下文压缩、Session 树状持久化到真实 Terminal-Bench 评测大营救的每一个工程细节：
-
-👉 **博客专栏直达**：[my-pi-agent 架构设计与实战长文系列 (15 篇全集)](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)
-
-| 模块分类 | 精选文章与核心议题 | 聚焦知识点 |
-| :--- | :--- | :--- |
-| **微内核与调度** | • [`my-pi-agent--架构设计`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--模型层`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--loop微内核`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--异步支持`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 纯函数无状态微内核、ReAct 调度状态机、多提供商流式统一接入、并发与异步设计 |
-| **会话与上下文** | • [`my-pi-agent--session管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--context管理`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--memory系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 树状 DAG 增量落盘持久化、Append-Only 前缀不变性、80% 水位线离散 Epoch 块级压缩、66.3% 缓存命中 |
-| **决策与交互治理** | • [`my-pi-agent--agent类与hook系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--动态干预机制`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--todolist与background`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 五大决策拦截门禁（Hooks）、Steering 即时插话与排队追问、长时后台作业生命周期与进程树治理 |
-| **工具生态与扩展** | • [`my-pi-agent--工具系统`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--skill与plugin`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--extension机制与mcp`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)<br>• [`my-pi-agent--subagent与task委派`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | 七大核心工具与单文件互斥锁、Skills 自动发现与注入、MCP 客户端扩展与防递归子智能体 |
-| **工业基准实战** | • [`my-pi-agent--agent评估`](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/) | Terminal-Bench 2.1 89 题真实考场大营救、Scheme 1 宿主驱动 vs Scheme 2 容器安装、逼近原厂 Pi（71/89 vs 72/89）全景复盘 |
 
 ---
 
@@ -194,7 +176,7 @@ Options:
 
 ```bash
 # 1. 克隆代码仓库
-git clone https://github.com/zxj-2023/my-pi-agent.git
+git clone https://github.com/294962silent/audited-agent.git
 cd my-pi-agent
 
 # 2. 安装 Python 依赖并同步全局虚拟环境 (.venv)
@@ -347,7 +329,6 @@ npm start
 ### 6. 深度报告与报告索引
 
 完整逐题矩阵、执行耗时明细与评测系统设计详见：
-- 🌐 [个人博客专栏：my-pi-agent 架构设计与实战长文系列 (15 篇全集)](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)
 - 📄 [`my-pi-eval/results/README.md`](my-pi-eval/results/README.md)：Terminal-Bench 2.1 评测结果中心总览；
 - 📄 [`my-pi-eval/results/comparison_matrix.md`](my-pi-eval/results/comparison_matrix.md)：89 题逐题全量横向对比矩阵（状态对比、独占分析与技术反思）；
 - 📄 [`docs/eval/01-evaluation-harness-architecture.md`](docs/eval/01-evaluation-harness-architecture.md)：评测子系统架构设计与 Harbor Framework 适配规范。
@@ -396,29 +377,6 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-
----
-
-## 📚 博客专栏文章目录与全链路学习路线
-
-全套框架从零手写的工程实战笔记与技术剖析已沉淀至博客专栏：[**my-pi-agent 学习笔记与架构剖析**](https://zxj-2023.github.io/categories/agent%E5%AE%9E%E6%88%98/my-pi-agent/)：
-
-| 序号 | 模块主题 | 博客精读文章链接 | 核心技术要点 |
-| :---: | :--- | :--- | :--- |
-| 01 | **全局架构** | [架构设计](https://zxj-2023.github.io/2026/07/31/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/) | 三层解耦架构、为什么不用 LangChain、自研设计哲学与演进路线 |
-| 02 | **模型边界** | [模型层](https://zxj-2023.github.io/2026/08/05/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--%E6%A8%A1%E5%9E%8B%E5%B1%82/) | Provider 抽象、StreamAccumulator 流式聚合、ToolCall 结构化防穿帮 |
-| 03 | **工具原语** | [工具系统](https://zxj-2023.github.io/2026/07/31/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F/) | `@tool` Pydantic 提取、Never-Throw 架构保证、七阶段工具流水线 |
-| 04 | **状态机外壳** | [Agent 类与 Hook 系统](https://zxj-2023.github.io/2026/07/31/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--agent%E7%B1%BB%E4%B8%8Ehook%E7%B3%BB%E7%BB%9F/) | `prompt_stream` 事件流、`_notify` 订阅广播、五大决策拦截门禁 |
-| 05 | **调度微内核** | [Loop 微内核](https://zxj-2023.github.io/2026/08/30/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--loop%E5%BE%AE%E5%86%85%E6%A0%B8/) | 纯函数无状态 ReAct 循环、9 步时序、单向传送带队列管道 |
-| 06 | **会话持久化** | [Session 管理](https://zxj-2023.github.io/2026/08/10/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--session%E7%AE%A1%E7%90%86/) | 树状分支 DAG、原子 JSONL 追加存储、跨进程文件锁与分支回溯 |
-| 07 | **上下文优化** | [Context 管理](https://zxj-2023.github.io/2026/08/11/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--context%E7%AE%A1%E7%90%86/) | 离散 Epoch 块级压缩、Append-Only 前缀一致性与 80% 水位线管控 |
-| 08 | **技能扩展** | [Skill 与 Plugin](https://zxj-2023.github.io/2026/08/14/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--skill%E4%B8%8Eplugin/) | 声明式元数据发现、Prompt 注入、Claude Code 插件规约解构 |
-| 09 | **任务委派** | [Subagent 与 Task 委派](https://zxj-2023.github.io/2026/08/15/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--subagent%E4%B8%8Etask%E5%A7%94%E6%B4%BE/) | 子会话物理隔离、防递归保护、单任务生命周期管理与 `task` 桥接 |
-| 10 | **生态接入** | [Extension 机制与 MCP](https://zxj-2023.github.io/2026/08/15/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--extension%E6%9C%BA%E5%88%B6%E4%B8%8Emcp/) | 动态扩展加载、斜杠命令路由、AsyncExitStack MCP 客户端 |
-| 11 | **跨会话记忆** | [Memory 系统](https://zxj-2023.github.io/2026/08/27/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--memory%E7%B3%BB%E7%BB%9F/) | 冻结快照保护 Prefix Cache、原子字串修改、分段记忆维护 |
-| 12 | **任务规划** | [Todolist 与 Background](https://zxj-2023.github.io/2026/08/31/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--todolist%E4%B8%8Ebackground/) | DAG 依赖任务图、随路看板回显、BackgroundRunner 进程树强杀 |
-| 13 | **人机协作** | [动态干预机制](https://zxj-2023.github.io/2026/08/14/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--%E5%8A%A8%E6%80%81%E5%B9%B2%E9%A2%84%E6%9C%BA%E5%88%B6/) | Steer 即时转向、Follow-up 宏观任务排队、双层循环拓扑 |
-| 14 | **核心并发** | [异步支持](https://zxj-2023.github.io/2026/08/15/%E5%AD%A6%E4%B9%A0/agent%E5%AE%9E%E6%88%98/my-pi-agent/my-pi-agent--%E5%BC%82%E6%AD%A5%E6%94%AF%E6%8C%81/) | 原生协程调度、解除 Python GIL 约束、跨线程任务与取消机制 |
 
 ---
 
