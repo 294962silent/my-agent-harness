@@ -26,7 +26,7 @@ from my_coding_agent.model_catalog import (
     resolve_model_context_window,
 )
 from my_coding_agent.paths import AgentPaths
-from my_coding_agent.permissions import PermissionGate
+from my_coding_agent.permissions import DEFAULT_PERMISSION_TIMEOUT_MS, PermissionGate, PermissionRequest
 from my_coding_agent.resource_scanner import get_all_skill_dirs, scan_loaded_resources
 from my_coding_agent.serialization import (
     serialize_event,
@@ -62,6 +62,7 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         agent: CodingAgent | None = None,
         llm: Any | None = None,
         paths: AgentPaths | None = None,
+        permission_timeout_ms: float = DEFAULT_PERMISSION_TIMEOUT_MS,
     ):
         self.stdin = stdin or sys.stdin
         self.stdout = stdout or sys.stdout
@@ -69,6 +70,12 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         self.agent = agent
         self.llm = llm
         self.paths = paths
+        self.permission_timeout_ms = float(permission_timeout_ms)
+        # 审批往返：perm-N → 等待客户端响应的 Future；id 自增（进程内唯一）
+        self._permission_requests: dict[str, asyncio.Future[Any]] = {}
+        self._permission_seq = 0
+        # 当前生效的门禁（initialize 时创建，供 scope=session 回写白名单）
+        self._permission_gate: PermissionGate | None = None
         self.macro_engine: MacroEngine = MacroEngine(
             workspace=agent.workspace if agent else None,
             paths=paths,
@@ -152,6 +159,118 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         self.emit_json(resp)
         return resp
 
+    # ── 工具审批（server → client 的 permission_request 往返） ──
+
+    def _next_permission_id(self) -> str:
+        """生成进程内自增的审批 id：``perm-1``、``perm-2`` …"""
+        self._permission_seq += 1
+        return f"perm-{self._permission_seq}"
+
+    def _current_permission_gate(self) -> PermissionGate | None:
+        """返回当前 agent 实际使用的门禁（会话重建后可能已替换）。"""
+        if self.agent is not None and self.agent.permission_gate is not None:
+            return self.agent.permission_gate
+        return self._permission_gate
+
+    def _resolve_permission_response(self, req: dict[str, Any]) -> bool:
+        """把客户端的审批响应投递给对应 Future；未知 id 返回 False。"""
+        raw_id = req.get("id")
+        if raw_id is None:
+            return False
+        perm_id = raw_id if isinstance(raw_id, str) else str(raw_id)
+        future = self._permission_requests.get(perm_id)
+        if future is None:
+            return False
+        if not future.done():
+            if "error" in req:
+                error = req.get("error")
+                message = error.get("message") if isinstance(error, dict) else str(error)
+                future.set_result({"approved": False, "reason": f"审批失败：{message}"})
+            else:
+                future.set_result(req.get("result"))
+        return True
+
+    def _reject_pending_permission_requests(self, reason: str) -> None:
+        """把仍在等待的审批全部按拒绝收尾（客户端断开 / 服务端关闭）。"""
+        for future in list(self._permission_requests.values()):
+            if not future.done():
+                future.set_result({"approved": False, "reason": reason})
+
+    def _apply_permission_result(self, request: PermissionRequest, result: Any) -> bool:
+        """解析客户端响应；任何非法结构都按拒绝处理（fail-closed）。"""
+        if isinstance(result, bool):
+            return result
+        if not isinstance(result, dict):
+            request.deny_reason = "审批响应格式无效，已自动拒绝"
+            return False
+
+        approved = result.get("approved") is True
+        if not approved:
+            reason = result.get("reason")
+            if isinstance(reason, str) and reason.strip():
+                request.deny_reason = reason.strip()
+            return False
+
+        scope = str(result.get("scope") or "once").strip().lower()
+        if scope == "session":
+            gate = self._current_permission_gate()
+            if gate is not None:
+                gate.approve_for_session(request.tool_name or request.action)
+        return True
+
+    async def _request_permission(self, request: PermissionRequest) -> bool:
+        """向客户端发送一行 ``permission_request`` 并等待响应。
+
+        超时 / 响应异常 / 客户端断开一律返回 ``False``（fail-closed），
+        绝不因为客户端缺失或无响应而放行工具。
+        """
+        perm_id = self._next_permission_id()
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future[Any] = loop.create_future()
+        self._permission_requests[perm_id] = future
+        timeout_ms = max(float(self.permission_timeout_ms), 0.0)
+        timeout_s = timeout_ms / 1000
+        timeout_label = int(timeout_ms)
+        try:
+            # 写侧全部经由 emit_json（内部持 threading.Lock 串行化 stdout 写入）
+            self.emit_json(
+                {
+                    "jsonrpc": "2.0",
+                    "id": perm_id,
+                    "method": "permission_request",
+                    "params": {
+                        "request_id": perm_id,
+                        "tool_call_id": request.tool_call_id,
+                        "tool_name": request.tool_name or request.action,
+                        "action": request.action,
+                        "target": request.target,
+                        "preview": request.preview,
+                        "risk": request.risk,
+                        "reason": request.reason,
+                        "details": request.details,
+                        "timeout_ms": timeout_label,
+                    },
+                }
+            )
+            try:
+                result = await asyncio.wait_for(future, timeout=timeout_s)
+            except asyncio.TimeoutError:
+                request.deny_reason = "审批超时，已自动拒绝"
+                logger.warning("工具 [%s] 审批超时（%dms），按拒绝处理", request.tool_name, timeout_label)
+                return False
+            except asyncio.CancelledError:
+                request.deny_reason = "审批已取消，已自动拒绝"
+                raise
+            except Exception:
+                logger.exception("工具 [%s] 审批等待异常，按拒绝处理", request.tool_name)
+                request.deny_reason = "审批通道异常，已自动拒绝"
+                return False
+            return self._apply_permission_result(request, result)
+        finally:
+            self._permission_requests.pop(perm_id, None)
+            if not future.done():
+                future.cancel()
+
     def _get_current_model_name(self) -> str:
         if not self.agent:
             return "default"
@@ -180,6 +299,11 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
 
         explicit_model = params.get("model")
         mode = params.get("mode", settings.default_permission_mode)
+        if (timeout_param := params.get("permission_timeout_ms")) is not None:
+            try:
+                self.permission_timeout_ms = float(timeout_param)
+            except (TypeError, ValueError):
+                logger.warning("忽略非法的 permission_timeout_ms: %r", timeout_param)
 
         llm = self.llm
         if llm is None:
@@ -217,7 +341,16 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         if bool(params.get("no_session", False)):
             target_session.save = lambda: None  # type: ignore[method-assign]
 
-        gate = PermissionGate(mode=mode) if mode else None
+        gate = (
+            PermissionGate(
+                mode=mode,
+                confirm_callback=self._request_permission,
+                workspace=workspace_path,
+            )
+            if mode
+            else None
+        )
+        self._permission_gate = gate
         skill_dirs = get_all_skill_dirs(workspace_path, paths)
         self.agent = CodingAgent(
             workspace=workspace_path,
@@ -428,6 +561,8 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
 
     async def _handle_shutdown(self, req_id: Any, params: dict[str, Any] | None = None) -> dict[str, Any]:
         self.is_shutting_down = True
+        # 关闭时仍在等待审批的工具必须立刻按拒绝收尾，避免 prompt 挂到超时
+        self._reject_pending_permission_requests("服务端正在关闭，已自动拒绝")
         if self.tracer:
             self.tracer.close()
             self.tracer = None
@@ -442,6 +577,10 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         req_id = req.get("id", 0)
         method = req.get("method", "")
         params = req.get("params", {})
+
+        # 客户端对 permission_request 的响应：只 resolve Future，不产生任何响应
+        if not method and self._resolve_permission_response(req):
+            return {"jsonrpc": "2.0", "id": req_id, "result": {"status": "ok"}}
 
         dispatch = {
             "initialize": self._handle_initialize,
@@ -503,7 +642,8 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
                 break
 
             if not line:
-                # 管道关闭 (EOF)
+                # 管道关闭 (EOF)：仍在等待的审批一律拒绝
+                self._reject_pending_permission_requests("客户端已断开，已自动拒绝")
                 break
 
             line_str = line.strip()
@@ -519,11 +659,26 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
                 )
                 continue
 
+            if not isinstance(req, dict):
+                self.send_response(
+                    0,
+                    error={"code": -32600, "message": "Invalid Request"},
+                )
+                continue
+
+            # 「没有 method 但有 id」的入站消息是客户端对 permission_request 的响应：
+            # resolve 对应 Future 即可，绝不能当成请求处理，也不能回 -32601。
+            if not req.get("method") and "id" in req:
+                if not self._resolve_permission_response(req):
+                    logger.warning("收到未知 id 的审批响应，已忽略: %r", req.get("id"))
+                continue
+
             # 并发派发请求，保证在 prompt 执行期间仍可实时处理 abort / steer / followup
             task = asyncio.create_task(self.handle_request(req))
             self._background_tasks.add(task)
             task.add_done_callback(self._background_tasks.discard)
 
+        self._reject_pending_permission_requests("服务端正在关闭，已自动拒绝")
         if self._background_tasks:
             await asyncio.gather(*list(self._background_tasks), return_exceptions=True)
 
