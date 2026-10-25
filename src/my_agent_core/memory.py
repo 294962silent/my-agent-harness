@@ -6,14 +6,19 @@ utf-8-sig 编码容错、唯原子串定位增删改、字符上限约束与原�
 
 from __future__ import annotations
 
-import json
 import os
 import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Literal
 
-from my_agent_core.memory_index import Fact, MemoryIndex, parse_fact_line
+from my_agent_core.memory_index import (
+    Fact,
+    MemoryIndex,
+    load_facts_from_dir,
+    parse_fact_line,
+    save_fact,
+)
 from my_agent_core.tools import Tool, tool
 
 ENTRY_DELIMITER = "\n§\n"
@@ -43,7 +48,8 @@ class MemoryStore:
         }
         self._entries: dict[str, list[str]] = {"memory": [], "user": []}
         self._snapshot: dict[str, str] = {"memory": "", "user": ""}
-        self.facts_path = self.mem_dir / "FACTS.jsonl"
+        self.facts_path = self.mem_dir / "FACTS.jsonl"  # 旧格式，仅用于迁移
+        self.facts_dir = self.mem_dir / "facts"
         self._facts: list[Fact] = []
         self._index: MemoryIndex | None = None
 
@@ -182,36 +188,38 @@ class MemoryStore:
     # ── 结构化事实（带时序有效性） ────────────────────────────────────────────
 
     def _load_facts(self) -> list[Fact]:
-        """从 FACTS.jsonl 读取事实，忽略损坏行。"""
+        """读取事实：Markdown 目录是真相源；旧 FACTS.jsonl 自动迁移一次。"""
+        facts = load_facts_from_dir(self.facts_dir)
+        if facts:
+            return facts
         if not self.facts_path.exists():
             return []
-        facts: list[Fact] = []
+
+        legacy: list[Fact] = []
         try:
             for line in self.facts_path.read_text(encoding="utf-8").splitlines():
                 fact = parse_fact_line(line) if line.strip() else None
                 if fact is not None:
-                    facts.append(fact)
+                    legacy.append(fact)
         except Exception:
-            return facts
-        return facts
+            return legacy
+
+        for fact in legacy:
+            save_fact(self.facts_dir, fact)
+        try:
+            self.facts_path.rename(self.facts_path.with_suffix(".jsonl.bak"))
+        except OSError:
+            pass
+        return legacy
 
     def _save_facts(self) -> None:
-        """全量原子重写 FACTS.jsonl（事实条数远小于对话，成本可忽略）。"""
-        self.mem_dir.mkdir(parents=True, exist_ok=True)
-        text = "\n".join(json.dumps(f.as_dict(), ensure_ascii=False) for f in self._facts)
-        tmp_fd, tmp_path = tempfile.mkstemp(prefix=".FACTS.", dir=str(self.mem_dir))
-        try:
-            with os.fdopen(tmp_fd, "w", encoding="utf-8") as fh:
-                fh.write(text)
-                fh.flush()
-                os.fsync(fh.fileno())
-            os.replace(tmp_path, str(self.facts_path))
-        except Exception:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
-            raise
+        """把事实写回 Markdown（每条约一文件；内容未变则不落盘）。"""
+        for fact in self._facts:
+            try:
+                save_fact(self.facts_dir, fact)
+            except OSError:
+                continue
         self._index = MemoryIndex(self._entries, self._facts)
-
     def remember(
         self,
         key: str,
@@ -219,6 +227,7 @@ class MemoryStore:
         subject: str = "user",
         valid_from: str | None = None,
         importance: float = 0.6,
+        source: str | None = None,
     ) -> str:
         """写入一条结构化事实；同 (subject, key) 的旧事实自动失效。"""
         clean_key = key.strip()
@@ -231,6 +240,7 @@ class MemoryStore:
             value=clean_value,
             valid_from=(valid_from or "").strip() or date.today().isoformat(),
             importance=importance,
+            source=source,
         )
         superseded = []
         for old in self._facts:
@@ -241,6 +251,17 @@ class MemoryStore:
                 and old.value.strip().lower() != fact.value.strip().lower()
             ):
                 old.valid_to = fact.valid_from
+                # 旧值压进新事实的 history，Markdown 里能直接看到变更链
+                fact.history.insert(
+                    0,
+                    {
+                        "value": old.value,
+                        "valid_from": old.valid_from,
+                        "valid_to": old.valid_to,
+                        "source": old.source,
+                    },
+                )
+                fact.history.extend(old.history)
                 superseded.append(old)
         self._facts.append(fact)
         self._index = MemoryIndex(self._entries, self._facts)

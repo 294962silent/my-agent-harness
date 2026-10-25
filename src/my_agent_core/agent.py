@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import asyncio
 import contextlib
 import inspect
@@ -57,6 +59,38 @@ from my_agent_core.tools.builtin.task_tools import (  # pyright: ignore[reportMi
 from my_agent_llm import LLM, Message, MessageContent, TextContent  # pyright: ignore[reportMissingImports]
 
 
+def _parse_distilled_facts(payload: str) -> list[dict[str, str]]:
+    """从模型输出里抠出 JSON 数组；容忍 ```json 包裹与前后噪声。"""
+    import json
+    import re as _re
+
+    text = payload.strip()
+    fenced = _re.search(r"```(?:json)?\s*(.+?)```", text, _re.S)
+    if fenced:
+        text = fenced.group(1).strip()
+    start, end = text.find("["), text.rfind("]")
+    if start == -1 or end <= start:
+        return []
+    try:
+        data = json.loads(text[start : end + 1])
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(data, list):
+        return []
+    out: list[dict[str, str]] = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        key = str(item.get("key") or "").strip()
+        value = str(item.get("value") or "").strip()
+        if key and value:
+            out.append({"key": key, "value": value})
+    return out[:5]
+
+
+_LOG = logging.getLogger(__name__)
+
+
 class Agent:
     """单层 Agent：持有 llm / 工具注册表 / 消息，内联 ReAct 异步循环。"""
 
@@ -77,6 +111,7 @@ class Agent:
         extension_dirs: Sequence[str | Path] | None = None,
         plugin_dirs: Sequence[str | Path] | None = None,
         memory_dir: str | Path | None | Literal[False] = None,
+        memory_autodistill: bool = False,
         task_store: TaskStore | Path | str | None | Literal[False] = None,
         steering_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
         followup_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
@@ -123,6 +158,10 @@ class Agent:
         )  # 三态同 skill_dirs
 
         self.memory_store = self._init_memory_store(memory_dir)  # memory 装配与快照冻结
+        # 会话结束时的记忆蒸馏（sleep-time）：默认关闭，打开后每轮结束抽取稳定事实
+        self.memory_autodistill = bool(memory_autodistill)
+        self._distill_cursor = 0
+
         self.task_store = self._init_task_store(task_store)  # 任务看板仓库装配
         self.retry_policy = retry_policy or AutoRetryPolicy()  # 大模型自动重试策略
         self.message_queue = MessageQueue(
@@ -434,7 +473,49 @@ class Agent:
                 if event.stop_reason == "error":
                     raise RuntimeError(event.final_text or "Error during model stream")
                 final_text = event.final_text
+
+        if self.memory_autodistill and self.memory_store is not None:
+            await self._maybe_distill_memory()
         return final_text
+
+    async def _maybe_distill_memory(self) -> None:
+        """会话边界蒸馏：把最近对话里的稳定事实写进长期记忆。
+
+        失败一律静默——记忆是增强，不能因为抽取失败让主流程报错。
+        """
+        store = self.memory_store
+        if store is None:
+            return
+        transcript = [m for m in self.messages if m.role in ("user", "assistant")]
+        new_messages = len(transcript) - self._distill_cursor
+        if new_messages < 4:
+            return
+        self._distill_cursor = len(transcript)
+
+        recent = transcript[-12:]
+        lines = [f"{m.role}: {str(m.content)[:600]}" for m in recent]
+        prompt = (
+            "Extract durable facts about the user from this conversation.\n"
+            "Return ONLY a JSON array, each item {\"key\": \"...\", \"value\": \"...\"}.\n"
+            "Rules: key is short snake_case; value is a short concrete string; "
+            "only stable preferences, constraints, or facts; skip anything uncertain; max 5 items.\n\n"
+            + "\n".join(lines)
+        )
+        try:
+            response = await self.llm.achat(
+                [Message(role="user", content=prompt)], tools=None, model=self.model
+            )
+            payload = str(getattr(response, "content", "") or "")
+            items = _parse_distilled_facts(payload)
+        except Exception:
+            _LOG.debug("memory distillation failed (extract)", exc_info=True)
+            return
+        for item in items:
+            try:
+                store.remember(item["key"], item["value"], subject="user", source="distill")
+            except Exception:
+                _LOG.debug("memory distillation failed (store %s)", item.get("key"), exc_info=True)
+                continue
 
     async def invoke_skill(self, name: str, instructions: str = "") -> str | None:
         """显式调用：skill_manager.format_invocation 包装（未知名 ValueError）→
