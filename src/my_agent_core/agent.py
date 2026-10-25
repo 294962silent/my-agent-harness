@@ -334,6 +334,23 @@ class Agent:
         elif not text_parts and fallback_part["text"]:
             prompt.content.insert(0, fallback_part)
 
+        # 每轮按当前输入检索相关记忆，只注入命中的片段。
+        # 系统提示里的 <MEMORY_CONTEXT> 保持冻结（前缀稳定、KV-Cache 友好），
+        # 这里补的是"这一轮用得上"的部分，避免整份记忆每轮重复注入。
+        if self.memory_store is not None:
+            if isinstance(prompt.content, str):
+                memory_query = prompt.content
+            else:
+                memory_query = " ".join(
+                    str(part.get("text", "")) for part in prompt.content if isinstance(part, dict)
+                )
+            retrieved_memory = self.memory_store.retrieve(memory_query)
+            if retrieved_memory:
+                if isinstance(prompt.content, str):
+                    prompt.content = f"{retrieved_memory}\n\n{prompt.content}"
+                else:
+                    prompt.content = [{"type": "text", "text": retrieved_memory}, *prompt.content]
+
         # 同步到 session 当前指针：rewind 后同 Agent 续跑时，内存 transcript 以文件为准。
         system = [m for m in self.messages if m.role == "system"]
         restored = system + self.session.get_full_history_messages()

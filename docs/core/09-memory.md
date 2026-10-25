@@ -82,3 +82,49 @@ def memory(
    - 保证当前会话的 System Prompt 全程绝对静止，大模型的 Prompt Prefix Cache 命中率保持 100%。
 2. **子代理沙箱隔离**：
    - 派发子代理时强制设置 `memory_dir=False` 并在工具列表中剔除 `memory` 工具，防止子代理发生工具冲突或意外修改主 Agent 记忆。
+
+
+---
+
+## 四、检索层（v2，2026-10 新增）
+
+冻结快照解决的是"前缀稳定"，但有一个代价：**记忆一旦超过字符上限就只能删，且每轮都在重复注入同一份内容**。v2 在不破坏快照的前提下补了一层按需检索。
+
+### 4.1 存储
+
+| 文件 | 内容 | 上限 |
+| --- | --- | --- |
+| `MEMORY.md` / `USER.md` | 自由文本条目（原有） | 2200 / 1375 字符 |
+| `FACTS.jsonl` | 结构化事实 `{subject, key, value, valid_from, valid_to, importance}` | 无硬上限（按条检索） |
+
+### 4.2 时序有效性（supersede）
+
+同 `(subject, key)` 写入新值时，旧值的 `valid_to` 被置为新值的 `valid_from`：
+
+```text
+{key: "wifi_password", value: "1234", valid_from: "2023-01-01", valid_to: "2023-06-01"}
+{key: "wifi_password", value: "9876", valid_from: "2023-06-01", valid_to: null}
+```
+
+旧事实保留在文件里可审计，但**检索只返回仍然有效的那条**——这让模型不必在"旧值 vs 新值"之间猜。
+
+### 4.3 检索注入
+
+- `MemoryStore.retrieve(query, budget_chars=1200)`：BM25（自由文本 + 事实）打分，
+  叠加 `importance` 权重，在字符预算内取 top-k；
+- Agent 在 `prompt_stream` 里按**本轮用户输入**检索，把命中结果包成
+  `<RETRIEVED_MEMORY>` 追加到用户消息前；
+- 系统提示里的 `<MEMORY_CONTEXT>`（冻结快照）**保持不变**，前缀依旧稳定。
+
+### 4.4 工具
+
+`memory` 工具新增 `action="remember"`，参数 `key` / `value`，写入结构化事实并自动处理覆盖。
+原有 `add` / `replace` / `remove` 行为不变。
+
+### 4.5 验证
+
+- `tests/core/test_memory_retrieval.py`：覆盖 supersede、跨实例恢复、预算截断、
+  无关查询不注入、Agent 注入位置、工具 `remember` 动作；
+- LongMemEval 实测（96 题）：注入 token 105,316 → 11,983（−88.6%），总准确率持平
+  （71.9% vs 69.8%，CI 重叠），Knowledge Updates 子项 68.8% → 81.2%。
+  详见 `experiments/longmemeval/RESULTS.md`。

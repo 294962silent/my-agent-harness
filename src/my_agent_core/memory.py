@@ -6,11 +6,14 @@ utf-8-sig 编码容错、唯原子串定位增删改、字符上限约束与原�
 
 from __future__ import annotations
 
+import json
 import os
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Literal
 
+from my_agent_core.memory_index import Fact, MemoryIndex, parse_fact_line
 from my_agent_core.tools import Tool, tool
 
 ENTRY_DELIMITER = "\n§\n"
@@ -40,6 +43,9 @@ class MemoryStore:
         }
         self._entries: dict[str, list[str]] = {"memory": [], "user": []}
         self._snapshot: dict[str, str] = {"memory": "", "user": ""}
+        self.facts_path = self.mem_dir / "FACTS.jsonl"
+        self._facts: list[Fact] = []
+        self._index: MemoryIndex | None = None
 
     def load_from_disk(self) -> None:
         """从磁盘读取 MEMORY.md 和 USER.md，解析并冻结 System Prompt 快照。"""
@@ -58,6 +64,9 @@ class MemoryStore:
                     entries = []
             self._entries[target] = entries
             self._snapshot[target] = ENTRY_DELIMITER.join(entries) if entries else ""
+
+        self._facts = self._load_facts()
+        self._index = MemoryIndex(self._entries, self._facts)
 
     def _atomic_save(self, target: str) -> None:
         """将指定 target 的 entries 原子写入对应文件。"""
@@ -170,6 +179,83 @@ class MemoryStore:
         curr_len = len(ENTRY_DELIMITER.join(candidate)) if candidate else 0
         return f"Removed from {target} ({curr_len}/{limit} chars used)."
 
+    # ── 结构化事实（带时序有效性） ────────────────────────────────────────────
+
+    def _load_facts(self) -> list[Fact]:
+        """从 FACTS.jsonl 读取事实，忽略损坏行。"""
+        if not self.facts_path.exists():
+            return []
+        facts: list[Fact] = []
+        try:
+            for line in self.facts_path.read_text(encoding="utf-8").splitlines():
+                fact = parse_fact_line(line) if line.strip() else None
+                if fact is not None:
+                    facts.append(fact)
+        except Exception:
+            return facts
+        return facts
+
+    def _save_facts(self) -> None:
+        """全量原子重写 FACTS.jsonl（事实条数远小于对话，成本可忽略）。"""
+        self.mem_dir.mkdir(parents=True, exist_ok=True)
+        text = "\n".join(json.dumps(f.as_dict(), ensure_ascii=False) for f in self._facts)
+        tmp_fd, tmp_path = tempfile.mkstemp(prefix=".FACTS.", dir=str(self.mem_dir))
+        try:
+            with os.fdopen(tmp_fd, "w", encoding="utf-8") as fh:
+                fh.write(text)
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp_path, str(self.facts_path))
+        except Exception:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+            raise
+        self._index = MemoryIndex(self._entries, self._facts)
+
+    def remember(
+        self,
+        key: str,
+        value: str,
+        subject: str = "user",
+        valid_from: str | None = None,
+        importance: float = 0.6,
+    ) -> str:
+        """写入一条结构化事实；同 (subject, key) 的旧事实自动失效。"""
+        clean_key = key.strip()
+        clean_value = value.strip()
+        if not clean_key or not clean_value:
+            return "key and value cannot be empty."
+        fact = Fact(
+            subject=subject or "user",
+            key=clean_key,
+            value=clean_value,
+            valid_from=(valid_from or "").strip() or date.today().isoformat(),
+            importance=importance,
+        )
+        superseded = []
+        for old in self._facts:
+            if (
+                old.active
+                and old.subject == fact.subject
+                and old.key == fact.key
+                and old.value.strip().lower() != fact.value.strip().lower()
+            ):
+                old.valid_to = fact.valid_from
+                superseded.append(old)
+        self._facts.append(fact)
+        self._index = MemoryIndex(self._entries, self._facts)
+        self._save_facts()
+        if superseded:
+            return f"Remembered {fact.key}={fact.value}; superseded {len(superseded)} older value(s)."
+        return f"Remembered {fact.key}={fact.value}."
+
+    def retrieve(self, query: str, budget_chars: int = 1200) -> str | None:
+        """按当前输入检索相关记忆；无命中返回 None。"""
+        if not query.strip():
+            return None
+        if self._index is None:
+            self._index = MemoryIndex(self._entries, self._facts)
+        return self._index.retrieve(query, budget_chars=budget_chars)
     def format_for_system_prompt(self, target: str) -> str | None:
         """获取冻结的快照字符串（返回 None 代表无内容）。"""
         snapshot = self._snapshot.get(target, "")
@@ -210,12 +296,22 @@ def make_memory_tool(store: MemoryStore) -> Tool:
     )
     def memory(
         target: Literal["memory", "user"],
-        action: Literal["add", "replace", "remove"],
+        action: Literal["add", "replace", "remove", "remember"],
         content: str | None = None,
         old_text: str | None = None,
         new_content: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
     ) -> str:
-        """执行记忆的增删改操作。"""
+        """执行记忆的增删改操作。
+
+        - add/replace/remove：维护 MEMORY.md / USER.md 的自由文本条目；
+        - remember：写入结构化事实（带时序有效性），同 key 的新值会让旧值失效。
+        """
+        if action == "remember":
+            if not key or not value:
+                raise ValueError("`key` and `value` are required when action is 'remember'.")
+            return store.remember(key, value, subject=target if target else "user")
         if action == "add":
             if not content:
                 raise ValueError("`content` is required when action is 'add'.")
