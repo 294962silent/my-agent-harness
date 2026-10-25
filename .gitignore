@@ -50,3 +50,7 @@ fix_local_install.ps1
 !my-pi-tui/dist/
 my-pi-tui/dist/*
 !my-pi-tui/dist/.gitkeep
+
+# LongMemEval 数据集与逐题结果（体积大、可重新生成）
+experiments/longmemeval/data/
+experiments/longmemeval/results/
