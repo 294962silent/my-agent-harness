@@ -1,4 +1,4 @@
-# audited-agent
+# my-agent-harness
 
 <p align="center">
   <img src="docs/assets/banner.png" alt="my-pi-agent — a minimalist Python coding-agent harness with 1:1 Pi-TUI terminal presentation" width="100%" />
@@ -92,7 +92,7 @@
 
 ---
 
-## 📖 什么是 audited-agent？
+## 📖 什么是 my-agent-harness？
 
 **`my-pi-agent` 是一个驻留在你的终端里的全功能编程智能体（Coding Agent）。**
 
@@ -176,7 +176,7 @@ Options:
 
 ```bash
 # 1. 克隆代码仓库
-git clone https://github.com/294962silent/audited-agent.git
+git clone https://github.com/294962silent/my-agent-harness.git
 cd my-pi-agent
 
 # 2. 安装 Python 依赖并同步全局虚拟环境 (.venv)
@@ -198,7 +198,7 @@ npm start
 
 ---
 
-## ✨ 核心特性全景 (What audited-agent can do)
+## ✨ 核心特性全景 (What my-agent-harness can do)
 
 - **100% 像素级 Pi 原厂终端体验 (`my-pi-tui/`)**：
   - **`CustomEditor` 顶部嵌入动效**：在模型思考或工具执行期间，输入框顶部边框实时挖槽嵌入 Braille 10 帧高频旋转指示器（`── ⠸ Working ──`），完成时平滑自愈；
