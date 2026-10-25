@@ -52,6 +52,8 @@ addopts = "-ra -q --import-mode=importlib"
 [tool.ruff]
 target-version = "py311"
 line-length = 120
+# 官方判分脚本原样保留，不做风格改造
+extend-exclude = ["experiments/longmemeval/official_evaluate_qa.py"]
 
 [tool.ruff.lint]
 select = ["E", "F"]
