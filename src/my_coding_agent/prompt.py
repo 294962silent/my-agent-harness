@@ -16,7 +16,7 @@ from my_agent_core.tools import (
 logger = logging.getLogger(__name__)
 
 DEFAULT_PREAMBLE = (
-    "You are an expert coding assistant operating inside my-pi-agent, a coding agent harness. "
+    "You are an expert coding assistant operating inside my-agent-harness, a coding agent harness. "
     "You help users by reading files, executing commands, editing code, and writing new files."
 )
 

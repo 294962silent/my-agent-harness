@@ -165,11 +165,11 @@ export class PythonKernelClient extends EventEmitter {
         reject(
           new Error(
             `无法启动 Python 内核 (${cmd}): ${err.message}。\n` +
-              `my-pi-agent 采用双核驱动体系（Node.js TUI + Python 异步内核）。\n` +
+              `my-agent-harness 采用双核驱动体系（Node.js TUI + Python 异步内核）。\n` +
               `请安装推荐的 Python 极速环境管理工具 uv（安装后全自动自愈配置）：\n` +
               `  macOS / Linux: curl -LsSf https://astral.sh/uv/install.sh | sh\n` +
               `  Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"\n` +
-              `安装 uv 后重新运行 my-pi-agent 即可自动运行！`,
+              `安装 uv 后重新运行 my-agent-harness 即可自动运行！`,
           ),
         );
       }

@@ -27,7 +27,7 @@ export function renderSessionHistory(
     mode.chatContainer.addChild(bannerComp);
   } else if (!messages || messages.length === 0) {
     const welcome = new Text(
-      theme.fg("muted", "欢迎使用 my-pi-agent！输入需求或按 / 开启命令菜单。"),
+      theme.fg("muted", "欢迎使用 my-agent-harness！输入需求或按 / 开启命令菜单。"),
       1,
       0,
     );

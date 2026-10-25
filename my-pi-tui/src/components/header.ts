@@ -8,7 +8,7 @@ export class HeaderComponent extends Container {
     this.addChild(new Spacer(1));
 
     const logo =
-      theme.bold(theme.fg("accent", "my-pi-agent")) +
+      theme.bold(theme.fg("accent", "my-agent-harness")) +
       theme.fg("dim", ` v${version}`);
 
     const hints = [
