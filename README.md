@@ -1,7 +1,7 @@
 # my-agent-harness
 
 <p align="center">
-  <img src="docs/assets/banner.png" alt="my-pi-agent — a minimalist Python coding-agent harness with 1:1 Pi-TUI terminal presentation" width="100%" />
+  <img src="docs/assets/banner.png" alt="my-agent-harness — a minimalist Python coding-agent harness with 1:1 Pi-TUI terminal presentation" width="100%" />
 </p>
 
 <p align="center">
@@ -21,11 +21,11 @@
   <a href="#-适合什么人看">适合人群</a>
   ·
   ·
-  <a href="#-什么是-my-pi-agent">架构拓扑</a>
+  <a href="#-什么是-my-agent-harness">架构拓扑</a>
   ·
   <a href="#-快速开始-quickstart">快速开始</a>
   ·
-  <a href="#-核心特性全景-what-my-pi-agent-can-do">核心特性</a>
+  <a href="#-核心特性全景-what-my-agent-harness-can-do">核心特性</a>
   ·
   <a href="#-工业级基准评测对决-evaluation--benchmark">基准对决 (Benchmark)</a>
   ·
@@ -37,7 +37,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="my-pi-agent terminal demo" width="100%" />
+  <img src="docs/assets/demo.gif" alt="my-agent-harness terminal demo" width="100%" />
 </p>
 
 ---
@@ -72,7 +72,7 @@
 
 ### 📚 核心设计与工程掌握要点：
 
-> **My-Pi-Agent：深度践行 Pi 极简内核与高可扩展性的 Harness 设计哲学**  
+> **My-Agent-Harness：深度践行 Pi 极简内核与高可扩展性的 Harness 设计哲学**  
 > 自主研发 Coding Agent 运行时并在 Terminal-Bench 2.1 达成 71/89
 
 #### 【第 1 层：调度微内核层】
@@ -94,7 +94,7 @@
 
 ## 📖 什么是 my-agent-harness？
 
-**`my-pi-agent` 是一个驻留在你的终端里的全功能编程智能体（Coding Agent）。**
+**`my-agent-harness` 是一个驻留在你的终端里的全功能编程智能体（Coding Agent）。**
 
 你可以像使用资深工程师伙伴一样向它提问：“解释这个代码库”、“编写自动化测试”、“定位并修复此异常日志”。它会在受控权限内自主读取源码、外科手术式精准修改、执行测试命令、通过树状 DAG 会话持久化上下文，并以 **100% 像素级对齐 Pi 原厂终端** 的极速 TUI 将模型思考过程与工具调用动态流式呈现。
 
@@ -135,20 +135,20 @@ my-pi-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent  →
 
 ### 途径 A：npm 全球一键安装（推荐，面向终端用户）
 
-无需克隆代码仓库，只需确保电脑安装了 Node.js (>=18) 与 Python 极速工具 [uv](https://docs.astral.sh/uv/)（`my-pi-agent` 会通过 `uv run` 全自动接管依赖与内核，用户**无需手动配置虚拟环境**）：
+无需克隆代码仓库，只需确保电脑安装了 Node.js (>=18) 与 Python 极速工具 [uv](https://docs.astral.sh/uv/)（`my-agent` 会通过 `uv run` 全自动接管依赖与内核，用户**无需手动配置虚拟环境**）：
 
 ```bash
 # 全局安装 CLI
 npm install -g my-pi-agent
 
 # 在任意项目目录下直接启动终端
-my-pi-agent
-# 或使用快捷别名
 my-agent
 
 # 亦可免安装秒级拉起体验
 npx my-pi-agent
 ```
+
+> 说明：npm 包名仍为 `my-pi-agent`（已发布名，未改以免破坏安装）；安装后可用 `my-agent` 启动。数据目录 `~/.my-pi-agent/` 亦保持不变，改动会导致既有登录态与设置失效。
 
 ### 命令行常用参数 (CLI Options)
 
@@ -177,7 +177,7 @@ Options:
 ```bash
 # 1. 克隆代码仓库
 git clone https://github.com/294962silent/my-agent-harness.git
-cd my-pi-agent
+cd my-agent-harness
 
 # 2. 安装 Python 依赖并同步全局虚拟环境 (.venv)
 uv sync
@@ -337,7 +337,7 @@ npm start
 
 ## 🎯 设计哲学 (Philosophy)
 
-参考业界标杆 Tau 与 Pi 的内核工程原则，`my-pi-agent` 严格贯彻以下架构不变式：
+参考业界标杆 Tau 与 Pi 的内核工程原则，`my-agent-harness` 严格贯彻以下架构不变式：
 
 1. **Small layers beat magic（小而专胜过黑盒魔法）**：每个模块只专注一件事情，代码直白可读，绝不引入冗余的元编程包装或不可控的隐式黑盒；
 2. **Events are the contract（事件即契约）**：模型层、内核层、RPC 桥接层与 TUI 终端表现层通过强类型流式事件解耦，内核保持 100% 纯无头；
@@ -349,7 +349,7 @@ npm start
 
 ## 💻 作为 Python 库使用 (Use as a Library)
 
-`my-pi-agent` 的框架内核（`my_agent_core`）与模型边界（`my_agent_llm`）完全解耦，可直接作为独立 SDK 嵌入任意 Python 自动化管线：
+`my-agent-harness` 的框架内核（`my_agent_core`）与模型边界（`my_agent_llm`）完全解耦，可直接作为独立 SDK 嵌入任意 Python 自动化管线：
 
 ```python
 import asyncio
@@ -383,7 +383,7 @@ if __name__ == "__main__":
 ## 🗂 仓库目录结构
 
 ```text
-my-pi-agent/
+my-agent-harness/
 ├── pyproject.toml                  # ⭐ 全局统一的 Python 构建与依赖配置 (uv)
 ├── uv.lock                         # 全局唯一的 Python 依赖锁定文件
 ├── .venv/                          # 全局唯一的 Python 虚拟环境
