@@ -23,7 +23,7 @@ def test_coding_agent_system_prompt_has_tools_and_rules(tmp_path: Path):
     content = sys_msg.content
 
     # 1. 验证 Preamble
-    assert "You are an expert coding assistant operating inside my-pi-agent" in content
+    assert "You are an expert coding assistant operating inside my-agent-harness" in content
 
     # 2. 验证 <tools> 包含 7 大核心工具
     assert "<tools>" in content

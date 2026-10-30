@@ -10,7 +10,7 @@ from my_coding_agent.prompt import (
 
 def test_build_prompt_contains_core_guidelines(tmp_path: Path):
     prompt = build_default_coding_prompt(tmp_path)
-    assert "expert coding assistant operating inside my-pi-agent" in prompt
+    assert "expert coding assistant operating inside my-agent-harness" in prompt
     assert "<tools>" in prompt
     assert "- read: Read file contents" in prompt
     assert "- edit: Make precise file edits" in prompt
