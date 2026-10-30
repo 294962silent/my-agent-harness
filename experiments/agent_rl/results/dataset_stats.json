@@ -1,0 +1,19 @@
+{
+  "episodes": 256,
+  "tasks": 45,
+  "success_rate": 1.0,
+  "samples_per_task": [
+    4,
+    5,
+    9
+  ],
+  "pairs": 45,
+  "pairs_by_rule": {
+    "fewer_steps": 44,
+    "fewer_tokens": 1
+  },
+  "tasks_with_variation": 0,
+  "total_steps": 2305,
+  "total_tokens_in": 533115,
+  "total_tokens_out": 305720
+}
