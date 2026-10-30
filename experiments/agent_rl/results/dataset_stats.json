@@ -1,19 +1,18 @@
 {
-  "episodes": 256,
-  "tasks": 45,
+  "episodes": 532,
+  "tasks": 100,
   "success_rate": 1.0,
   "samples_per_task": [
-    4,
     5,
     9
   ],
-  "pairs": 45,
+  "pairs": 100,
   "pairs_by_rule": {
-    "fewer_steps": 44,
+    "fewer_steps": 99,
     "fewer_tokens": 1
   },
   "tasks_with_variation": 0,
-  "total_steps": 2305,
-  "total_tokens_in": 533115,
-  "total_tokens_out": 305720
+  "total_steps": 5602,
+  "total_tokens_in": 1385211,
+  "total_tokens_out": 963164
 }
