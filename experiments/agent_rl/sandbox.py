@@ -149,7 +149,9 @@ class Sandbox:
             raise SandboxError("docker daemon 不可用；改用 backend='host' 或先启动 Docker Desktop")
         exe = _docker_exe()
         image = self.image if image_exists(self.image) else FALLBACK_IMAGE
-        name = f"arl-{self.task_id}-{self.attempt}-{uuid.uuid4().hex[:6]}".replace("_", "-").lower()[:60]
+        # 容器名只允许 [a-zA-Z0-9_.-]：把任务 id 里的 @ / 空格等一律替换掉
+        safe_task = "".join(ch if (ch.isalnum() or ch in "_.-") else "-" for ch in self.task_id)
+        name = f"arl-{safe_task}-{self.attempt}-{uuid.uuid4().hex[:6]}".lower()[:60]
 
         args = [
             exe,
