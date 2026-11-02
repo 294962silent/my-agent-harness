@@ -1,21 +1,21 @@
 {
   "mode": "nopressure",
-  "samples": 3,
-  "runs": 3,
-  "successes": 1,
-  "success_rate": 0.333,
-  "ci_low": 0.061,
-  "ci_high": 0.792,
+  "samples": 5,
+  "runs": 5,
+  "successes": 4,
+  "success_rate": 0.8,
+  "ci_low": 0.376,
+  "ci_high": 0.964,
   "pass_hat_k": 0.0,
   "pass_at_k": 1.0,
   "gap": 1.0,
   "by_task": {
     "t8-001": {
-      "n": 3,
-      "c": 1,
-      "avg_steps": 39.7,
+      "n": 5,
+      "c": 4,
+      "avg_steps": 28.2,
       "avg_writes": 0.0
     }
   },
-  "duration_s": 421.7
+  "duration_s": 701.9
 }
