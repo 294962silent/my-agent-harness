@@ -17,6 +17,7 @@ dependencies = [
     "pyyaml>=6.0",
     "mcp>=2.0.0,<2.1",
     "filelock>=3.32.6",
+    "pytest>=9.1.1",
 ]
 
 [project.scripts]
