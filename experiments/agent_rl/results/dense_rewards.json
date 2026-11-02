@@ -1,0 +1,9 @@
+{
+  "trajectories": 531,
+  "success_rate": 1.0,
+  "avg_dense_total": 0.825,
+  "avg_density": 0.847,
+  "avg_steps": 10.9,
+  "avg_nonzero_steps": 9.3,
+  "dense_sparse_ratio": 0.82
+}

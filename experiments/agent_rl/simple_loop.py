@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from experiments.agent_rl.loop_breaker import LoopBreaker
 from experiments.agent_rl.sandbox import Sandbox
 from experiments.agent_rl.task import Task
 
@@ -57,6 +58,7 @@ class Rollout:
     duration_s: float = 0.0
     total_tokens: int = 0
     error: str | None = None
+    interventions: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -66,6 +68,7 @@ class Rollout:
             "num_steps": len(self.steps),
             "duration_s": round(self.duration_s, 1),
             "total_tokens": self.total_tokens,
+            "interventions": self.interventions,
             "error": self.error,
             "trajectory": [
                 {"thought": s.thought, "action": s.action, "observation": s.observation[:500]}
@@ -204,6 +207,7 @@ def run_rollout(
     started = time.time()
     rollout = Rollout(task_id=task.task_id, success=False, reward=0.0)
 
+    breaker = LoopBreaker()
     with _temp_ws() as workspace:
         task.materialize(workspace)
         history: list[str] = []
@@ -244,6 +248,15 @@ def run_rollout(
                 observation = _exec_action(box, workspace, action)
                 rollout.steps.append(Step(thought=text[:300], action=action, observation=observation, tokens=ntok))
 
+                # 循环打断：检测重复动作并干预
+                signature = json.dumps(action, sort_keys=True, ensure_ascii=False)[:200]
+                level, hint = breaker.observe(action.get("name", "?"), signature)
+                if level == "terminate":
+                    rollout.interventions = breaker.stats()
+                    rollout.error = "loop_terminated"
+                    history.append(f"[observation] {observation[:600]}\n{hint}")
+                    break
+
                 # 卡住检测：同一动作连续重复 2 次，或观察里出现 ERROR，就给出更强提示
                 signature = json.dumps(action, sort_keys=True, ensure_ascii=False)[:200]
                 repeated = step_index > 0 and signatures and signatures[-1] == signature
@@ -261,7 +274,8 @@ def run_rollout(
                         "\n[SYSTEM] Your last action failed. Read the file again and copy oldText EXACTLY "
                         "from the shown content."
                     )
-                history.append(f"[assistant] {text[:400]}\n[observation] {observation[:1200]}{hint}")
+                extra = ("\n" + hint) if hint else ""
+                history.append(f"[assistant] {text[:400]}\n[observation] {observation[:1200]}{extra}")
                 # 控制上下文长度
                 if sum(len(h) for h in history) > 12000:
                     history = history[-4:]
@@ -273,6 +287,8 @@ def run_rollout(
             rollout.error = None if rollout.success else result.tail(300)
 
     rollout.duration_s = time.time() - started
+    if not rollout.interventions:
+        rollout.interventions = breaker.stats()
     return rollout
 
 
