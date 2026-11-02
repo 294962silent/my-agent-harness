@@ -1,21 +1,51 @@
 {
   "mode": "nopressure",
-  "samples": 5,
-  "runs": 5,
-  "successes": 4,
-  "success_rate": 0.8,
-  "ci_low": 0.376,
-  "ci_high": 0.964,
-  "pass_hat_k": 0.0,
+  "samples": 2,
+  "runs": 12,
+  "successes": 10,
+  "success_rate": 0.833,
+  "ci_low": 0.552,
+  "ci_high": 0.953,
+  "pass_hat_k": 0.667,
   "pass_at_k": 1.0,
-  "gap": 1.0,
+  "gap": 0.333,
   "by_task": {
     "t8-001": {
-      "n": 5,
-      "c": 4,
-      "avg_steps": 28.2,
+      "n": 2,
+      "c": 1,
+      "avg_steps": 48.0,
+      "avg_writes": 0.0
+    },
+    "t8-002": {
+      "n": 2,
+      "c": 2,
+      "avg_steps": 27.0,
+      "avg_writes": 0.0
+    },
+    "t8-003": {
+      "n": 2,
+      "c": 2,
+      "avg_steps": 33.5,
+      "avg_writes": 0.0
+    },
+    "t8-004": {
+      "n": 2,
+      "c": 2,
+      "avg_steps": 19.5,
+      "avg_writes": 0.0
+    },
+    "t8-005": {
+      "n": 2,
+      "c": 1,
+      "avg_steps": 30.0,
+      "avg_writes": 0.0
+    },
+    "t8-006": {
+      "n": 2,
+      "c": 2,
+      "avg_steps": 9.5,
       "avg_writes": 0.0
     }
   },
-  "duration_s": 701.9
+  "duration_s": 1434.0
 }
