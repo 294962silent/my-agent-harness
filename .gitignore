@@ -65,3 +65,6 @@ experiments/agent_rl/results/real/*.jsonl
 
 # 长程任务结果（体积大、可重新生成）
 experiments/agent_rl/results/long_*.jsonl
+
+# Windows 上 ssh -o UserKnownHostsFile=/dev/null 会误建这个文件
+nul
