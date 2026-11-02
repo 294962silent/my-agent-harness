@@ -1,0 +1,107 @@
+{
+  "task_pass_rates": {
+    "t8-001": 0.25,
+    "t8-005": 0.75,
+    "t8e-001": 0.5,
+    "t8e-002": 0.5,
+    "t8f-001": 0.5,
+    "t8f-002": 0.25,
+    "t8g-001": 0.5,
+    "t8g-002": 0.5,
+    "t8g-003": 0.5,
+    "t8g-004": 0.5
+  },
+  "failure_config": {
+    "config": {
+      "num_prompts": 2,
+      "num_generations": 2,
+      "max_steps": 30
+    },
+    "label": "prompts=2, G=2, steps=30",
+    "max_steps": 30,
+    "nonzero_gradient_steps": 18,
+    "zero_gradient_steps": 12,
+    "effective_step_ratio": 0.6,
+    "theoretical_nonzero_prob": 0.463,
+    "reward_mean": 0.467
+  },
+  "grid": [
+    {
+      "config": {
+        "num_prompts": 10,
+        "num_generations": 1,
+        "max_steps": 30
+      },
+      "label": "prompts=10, G=1, steps=30",
+      "max_steps": 30,
+      "nonzero_gradient_steps": 0,
+      "zero_gradient_steps": 30,
+      "effective_step_ratio": 0.0,
+      "theoretical_nonzero_prob": 0.0,
+      "reward_mean": 0.433
+    },
+    {
+      "config": {
+        "num_prompts": 10,
+        "num_generations": 2,
+        "max_steps": 30
+      },
+      "label": "prompts=10, G=2, steps=30",
+      "max_steps": 30,
+      "nonzero_gradient_steps": 18,
+      "zero_gradient_steps": 12,
+      "effective_step_ratio": 0.6,
+      "theoretical_nonzero_prob": 0.463,
+      "reward_mean": 0.467
+    },
+    {
+      "config": {
+        "num_prompts": 10,
+        "num_generations": 4,
+        "max_steps": 30
+      },
+      "label": "prompts=10, G=4, steps=30",
+      "max_steps": 30,
+      "nonzero_gradient_steps": 25,
+      "zero_gradient_steps": 5,
+      "effective_step_ratio": 0.833,
+      "theoretical_nonzero_prob": 0.816,
+      "reward_mean": 0.492
+    },
+    {
+      "config": {
+        "num_prompts": 10,
+        "num_generations": 8,
+        "max_steps": 30
+      },
+      "label": "prompts=10, G=8, steps=30",
+      "max_steps": 30,
+      "nonzero_gradient_steps": 28,
+      "zero_gradient_steps": 2,
+      "effective_step_ratio": 0.933,
+      "theoretical_nonzero_prob": 0.964,
+      "reward_mean": 0.446
+    },
+    {
+      "config": {
+        "num_prompts": 10,
+        "num_generations": 16,
+        "max_steps": 30
+      },
+      "label": "prompts=10, G=16, steps=30",
+      "max_steps": 30,
+      "nonzero_gradient_steps": 30,
+      "zero_gradient_steps": 0,
+      "effective_step_ratio": 1.0,
+      "theoretical_nonzero_prob": 0.997,
+      "reward_mean": 0.479
+    }
+  ],
+  "min_g_for_80pct": {
+    "0.1": 16,
+    "0.25": 6,
+    "0.5": 4,
+    "0.75": 6,
+    "0.9": 16
+  }
+}
