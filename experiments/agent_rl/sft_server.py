@@ -11,7 +11,6 @@
 
 import argparse
 import os
-from pathlib import Path
 
 os.environ.setdefault("HF_HOME", "/root/autodl-tmp/cache")
 
@@ -57,7 +56,7 @@ def main() -> int:
     parser.add_argument("--max-len", type=int, default=2048)
     args = parser.parse_args()
 
-    print(f"=== SFT 冷启动 Qwen3.5-9B ===", flush=True)
+    print("=== SFT 冷启动 Qwen3.5-9B ===", flush=True)
     print(f"步数={args.steps} batch={args.batch} accum={args.accum} seq={args.max_len}", flush=True)
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL)

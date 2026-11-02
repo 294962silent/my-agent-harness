@@ -24,7 +24,6 @@
 import argparse
 import json
 import os
-import sys
 
 os.environ.setdefault("HF_HOME", "/root/autodl-tmp/cache")
 
