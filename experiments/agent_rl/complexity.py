@@ -78,7 +78,7 @@ def main() -> int:
     avg_files = sum(len(t.files) for t in others) / len(others)
     print(f"  T1-T7 平均文件数: {avg_files:.1f}")
     print(f"  T8 平均文件数:    {sum(len(t.files) for t in tasks) / len(tasks):.1f}")
-    print(f"  T1-T7 平均实测步数: 10.9")
+    print("  T1-T7 平均实测步数: 10.9")
     print(f"  T8 预估步数:      {sum(r['est_steps_low'] for r in rows)//len(rows)}-{sum(r['est_steps_high'] for r in rows)//len(rows)}")
     return 0
 
