@@ -1,0 +1,12 @@
+{
+  "episodes": 531,
+  "success_rate": 1.0,
+  "avg_steps": 10.9,
+  "early_stop_rate": 0.0,
+  "avg_longest_loop": 4.03,
+  "loop_rate": 0.874,
+  "avg_recovery_rate": 1.0,
+  "avg_horizon": 3.2,
+  "avg_dense_reward": 1.147,
+  "dense_sparse_ratio": 1.1
+}
