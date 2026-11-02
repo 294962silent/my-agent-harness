@@ -2,26 +2,26 @@
   "mode": "nopressure",
   "samples": 4,
   "runs": 8,
-  "successes": 4,
-  "success_rate": 0.5,
-  "ci_low": 0.215,
-  "ci_high": 0.785,
+  "successes": 3,
+  "success_rate": 0.375,
+  "ci_low": 0.137,
+  "ci_high": 0.694,
   "pass_hat_k": 0.0,
   "pass_at_k": 1.0,
   "gap": 1.0,
   "by_task": {
-    "t8e-001": {
+    "t8f-001": {
       "n": 4,
       "c": 2,
-      "avg_steps": 42.0,
+      "avg_steps": 41.8,
       "avg_writes": 0.0
     },
-    "t8e-002": {
+    "t8f-002": {
       "n": 4,
-      "c": 2,
-      "avg_steps": 44.5,
+      "c": 1,
+      "avg_steps": 40.0,
       "avg_writes": 0.0
     }
   },
-  "duration_s": 1450.7
+  "duration_s": 1270.1
 }
