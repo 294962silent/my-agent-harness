@@ -13,12 +13,14 @@ from experiments.agent_rl.tasks import t6_large  # noqa: F401
 from experiments.agent_rl.tasks import t7_multi_bug  # noqa: F401
 from experiments.agent_rl.tasks import t8_long_horizon  # noqa: F401
 from experiments.agent_rl.tasks import t8b_long_more  # noqa: F401
+from experiments.agent_rl.tasks import t8c_chain_depth  # noqa: F401
 
 # t7 用运行时注册（避免与 @register 装饰器的导入顺序耦合）
 t7_multi_bug.register_template()
 # t8 长程任务同样用运行时注册
 t8_long_horizon.register_template()
 t8b_long_more.register_template()
+t8c_chain_depth.register_template()
 
 __all__ = [
     "t1_bugfix",
@@ -30,4 +32,5 @@ __all__ = [
     "t7_multi_bug",
     "t8_long_horizon",
     "t8b_long_more",
+    "t8c_chain_depth",
 ]

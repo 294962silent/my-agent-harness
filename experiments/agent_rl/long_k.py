@@ -60,7 +60,12 @@ async def main_async(args: argparse.Namespace) -> None:
     ENABLE_PRESSURE[0] = not args.no_pressure
     tag = "nopressure" if args.no_pressure else "pressure"
 
-    tasks = [t for t in generate_all() if t.template == "t8_long_horizon"][: args.limit]
+    all_long = [t for t in generate_all() if "long_horizon" in t.template]
+    if args.task_ids:
+        keep = {x.strip() for x in args.task_ids.split(",") if x.strip()}
+        tasks = [t for t in all_long if t.task_id in keep]
+    else:
+        tasks = all_long[: args.limit]
     RESULTS.mkdir(parents=True, exist_ok=True)
     out = RESULTS / f"long_k_{tag}.jsonl"
     if out.exists():
@@ -158,6 +163,7 @@ def main() -> int:
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--model", default=None)
     parser.add_argument("--no-pressure", action="store_true")
+    parser.add_argument("--task-ids", default=None, help="逗号分隔的任务 ID，只跑这些")
     args = parser.parse_args()
     asyncio.run(main_async(args))
     return 0
