@@ -14,6 +14,9 @@ sys.path.insert(0, "C:/Users/MLL/Desktop/my-agent-harness/src")
 from experiments.agent_rl.task import generate_all  # noqa: E402
 from experiments.agent_rl import tasks as _tasks  # noqa: E402,F401
 from experiments.agent_rl.tasks.t8_solutions import SOLUTIONS  # noqa: E402
+from experiments.agent_rl.tasks.t8b_solutions import T8B_SOLUTIONS  # noqa: E402
+
+ALL_SOLUTIONS = {**SOLUTIONS, **T8B_SOLUTIONS}
 
 
 def run_pytest(workspace: Path) -> tuple[int, str]:
@@ -31,7 +34,7 @@ def run_pytest(workspace: Path) -> tuple[int, str]:
 
 
 def main() -> int:
-    tasks = [t for t in generate_all() if t.template == "t8_long_horizon"]
+    tasks = [t for t in generate_all() if "long_horizon" in t.template]
     ok_count = 0
     for task in tasks:
         print(f"\n=== {task.task_id} {task.meta['num_stages']} 阶段 ===")
@@ -43,7 +46,7 @@ def main() -> int:
             print(f"  初始状态: exit={code1} {'✓失败(正确)' if code1 != 0 else '✗竟然通过'}")
 
             # 应用参考解法
-            for rel, content in SOLUTIONS[task.task_id].items():
+            for rel, content in ALL_SOLUTIONS[task.task_id].items():
                 target = ws / rel
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(content, encoding="utf-8")
