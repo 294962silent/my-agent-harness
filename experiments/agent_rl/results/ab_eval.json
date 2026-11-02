@@ -1,0 +1,61 @@
+{
+  "mode": "eval",
+  "results": [
+    {
+      "task_id": "t8e-001",
+      "success": false,
+      "steps": 20,
+      "tools": [
+        "?",
+        "?",
+        "read",
+        "?",
+        "read",
+        "read",
+        "?",
+        "read",
+        "?",
+        "?",
+        "read",
+        "?",
+        "read",
+        "read",
+        "?",
+        "read",
+        "?",
+        "?",
+        "read",
+        "?"
+      ],
+      "duration_s": 468.0
+    },
+    {
+      "task_id": "t8e-002",
+      "success": false,
+      "steps": 20,
+      "tools": [
+        "?",
+        "read",
+        "read",
+        "?",
+        "read",
+        "?",
+        "read",
+        "read",
+        "read",
+        "write",
+        "?",
+        "?",
+        "read",
+        "?",
+        "read",
+        "read",
+        "read",
+        "read",
+        "write",
+        "?"
+      ],
+      "duration_s": 468.9
+    }
+  ]
+}
