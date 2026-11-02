@@ -190,7 +190,6 @@ def main() -> int:
     path = results_dir / "long_k_nopressure.jsonl"
     if path.exists():
         rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        scores = []
         for row in rows:
             for step in row.get("test_progression", []):
                 pass
