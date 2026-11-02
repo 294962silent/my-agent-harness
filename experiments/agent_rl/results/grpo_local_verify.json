@@ -1,0 +1,10 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "steps": 50,
+  "final_loss": 0.2528,
+  "peak_vram_gb": 2.78,
+  "adapter_saved": true,
+  "sample_output": "To read the `mod.py` file from the current directory in Python using Qwen (a language model), you can use the following JSON action:\n\n```json\n{\n  \"action\": {\n    \"file_path\": \"/path/to/your/project/mo",
+  "sample_structure_score": -0.5,
+  "verdict": "PASS"
+}
