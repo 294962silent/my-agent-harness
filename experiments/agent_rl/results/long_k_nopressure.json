@@ -1,0 +1,33 @@
+{
+  "mode": "nopressure",
+  "samples": 3,
+  "runs": 9,
+  "successes": 6,
+  "success_rate": 0.667,
+  "ci_low": 0.354,
+  "ci_high": 0.879,
+  "pass_hat_k": 0.667,
+  "pass_at_k": 0.667,
+  "gap": 0.0,
+  "by_task": {
+    "t8-001": {
+      "n": 3,
+      "c": 0,
+      "avg_steps": 30.0,
+      "avg_writes": 0.0
+    },
+    "t8-002": {
+      "n": 3,
+      "c": 3,
+      "avg_steps": 26.7,
+      "avg_writes": 0.0
+    },
+    "t8-003": {
+      "n": 3,
+      "c": 3,
+      "avg_steps": 19.3,
+      "avg_writes": 0.0
+    }
+  },
+  "duration_s": 721.3
+}
