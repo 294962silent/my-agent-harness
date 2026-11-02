@@ -10,18 +10,18 @@
   "pass_at_k": 1.0,
   "gap": 1.0,
   "by_task": {
-    "t8-001": {
+    "t8e-001": {
       "n": 4,
-      "c": 1,
-      "avg_steps": 40.5,
+      "c": 2,
+      "avg_steps": 42.0,
       "avg_writes": 0.0
     },
-    "t8-005": {
+    "t8e-002": {
       "n": 4,
-      "c": 3,
-      "avg_steps": 42.5,
+      "c": 2,
+      "avg_steps": 44.5,
       "avg_writes": 0.0
     }
   },
-  "duration_s": 1313.1
+  "duration_s": 1450.7
 }
