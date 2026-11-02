@@ -58,3 +58,7 @@ experiments/longmemeval/results/
 # Agent RL 逐条轨迹（体积大、可重新生成）；报告与统计入库存
 experiments/agent_rl/results/*.jsonl
 !experiments/agent_rl/results/REPORT.md
+
+# 真实任务采集结果（含仓库快照，体积大、可重新生成）
+experiments/agent_rl/results/real/*.jsonl
+!experiments/agent_rl/results/real/REAL_TASKS.md
