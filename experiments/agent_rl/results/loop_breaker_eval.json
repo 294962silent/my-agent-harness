@@ -1,0 +1,11 @@
+{
+  "trajectories": 531,
+  "triggered": 5,
+  "trigger_rate": 0.009,
+  "terminated": 0,
+  "terminate_rate": 0.0,
+  "total_saved_steps": 0,
+  "avg_saved_per_terminated": 0.0,
+  "success_triggered": 5,
+  "success_edit_before_trigger": 5
+}

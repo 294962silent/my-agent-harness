@@ -72,6 +72,12 @@ class LoopBreaker:
 
         count = self.consecutive[signature]
 
+        # 周期循环检测：最近 6 步内是否有 ABAB / ABCABC 模式
+        # 这类循环比"连续相同"更常见（read→bash→read→bash）
+        cycle_len = self._detect_cycle()
+        if cycle_len >= 3:
+            count = max(count, cycle_len)
+
         if count >= self.terminate_at:
             if self.terminated:
                 # 已终止过：不再重复记录干预
@@ -102,6 +108,24 @@ class LoopBreaker:
             return "hint", msg
 
         return "none", ""
+
+    def _detect_cycle(self) -> int:
+        """检测最近动作的周期重复，返回重复次数（不重复返回 0）。
+
+        例：[read, bash, read, bash, read, bash] → 周期 2，重复 3 次 → 返回 3
+        """
+        sigs = [s for _, s in self.recent]
+        if len(sigs) < 4:
+            return 0
+        for period in (1, 2, 3):
+            need = period * 3
+            if len(sigs) < need:
+                continue
+            tail = sigs[-need:]
+            pattern = tail[:period]
+            if all(tail[i] == pattern[i % period] for i in range(need)):
+                return need // period
+        return 0
 
     def is_banned(self, tool: str) -> bool:
         """该工具当前是否被禁用。"""

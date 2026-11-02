@@ -103,6 +103,17 @@ def parse_pytest_counts(output: str) -> tuple[int, int]:
     return passed, failed
 
 
+def action_signature(tool: str, args: dict | None) -> str:
+    """动作签名 = 工具名 + 关键参数。
+
+    关键修正：只看工具名会把 `bash(ls)` 和 `bash(pytest)` 当成同一个动作，
+    那是正常的探索，不是循环。
+    """
+    args = args or {}
+    key = args.get("path") or args.get("command") or args.get("pattern") or ""
+    return f"{tool}::{key}"[:200]
+
+
 def detect_loop(tools: list[str], min_len: int = 2) -> int:
     """检测最长的重复动作序列长度（循环次数）。
 
@@ -137,8 +148,14 @@ def compute_process_metrics(
     """
     task_id = episode.get("task_id", "?")
     success = bool(episode.get("success"))
-    calls = [c for c in episode.get("tool_calls", episode.get("trajectory", [])) if isinstance(c, dict)]
-    tools = [c.get("tool") or c.get("name") or "?" for c in calls if c.get("phase", "start") == "start"]
+    raw_calls = [c for c in episode.get("tool_calls", episode.get("trajectory", [])) if isinstance(c, dict)]
+    calls = [c for c in raw_calls if c.get("phase", "start") == "start"]
+    tools = [c.get("tool") or c.get("name") or "?" for c in calls]
+    # 用「工具+关键参数」作为签名，避免把 bash(ls) 和 bash(pytest) 当成重复
+    signatures = [
+        action_signature(c.get("tool") or c.get("name") or "?", c.get("args") or c.get("arguments") or {})
+        for c in calls
+    ]
     steps_used = len(tools)
     sparse = 1.0 if success else 0.0
 
@@ -146,7 +163,7 @@ def compute_process_metrics(
     early_stop = (not success) and steps_used < max_steps * 0.5
 
     # 循环检测
-    longest_loop = detect_loop(tools)
+    longest_loop = detect_loop(signatures)
 
     # 稠密奖励：基于测试通过数增量
     dense = 0.0
@@ -197,14 +214,18 @@ def compute_process_metrics(
     recovery_rate = recovered / len(errors) if errors else 1.0
 
     # 时间视界：连续有效（非重复、非错误）步数的最长长度
+    # 时间视界：连续「签名不重复」的最长步数（衡量能否持续产生新信息）
     horizon = 0
     current = 0
-    for s in step_metrics:
-        if not s.is_error and not s.is_repeat:
+    seen: set[str] = set()
+    for sig in signatures:
+        if sig in seen:
+            current = 0
+            seen = {sig}
+        else:
+            seen.add(sig)
             current += 1
             horizon = max(horizon, current)
-        else:
-            current = 0
 
     return ProcessMetrics(
         task_id=task_id,
