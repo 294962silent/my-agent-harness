@@ -48,53 +48,76 @@ def load_grpo_dataset(path: str) -> Dataset:
 
 
 def make_reward_fn(tokenizer, task_lookup):
-    """可验证奖励函数。
+    """可验证奖励：基于格式正确性 + 动作合理性。
 
-    TRL 的 reward_fn 签名：fn(completions, **kwargs) -> list[float]
-
-    这里实现**规则奖励**（不需要沙盒）：
-    - 输出是否是合法 JSON 动作 → +0.5
-    - 动作类型是否合理（先 read 再 edit）→ +0.3
-    - 是否包含 done 且有实际进展 → +0.2
-    - 格式错误（多余文字、markdown code fence）→ -0.5
+    权重设计原则（关键）：
+    - 让**大部分正确输出拿到正分**，只有明显错误才负分
+    - 保证组内有区分度（不能全正或全负）
     """
+
+    import json as _json
+    import re as _re
+
+    VALID_TOOLS = {"read", "write", "edit", "bash", "ls", "done", "find", "grep"}
+
+    def score_one(text: str) -> float:
+        s = text.strip()
+        if not s:
+            return -1.0
+
+        # 去掉 think 块
+        s = _re.sub(r"<think>.*?</think>", "", s, flags=_re.S).strip()
+        if not s:
+            return -0.8
+
+        # 提取第一个 JSON 对象
+        action = None
+        for cand in _re.findall(r"\{.*?\}", s, _re.S):
+            try:
+                data = _json.loads(cand)
+            except _json.JSONDecodeError:
+                continue
+            if isinstance(data, dict) and "name" in data:
+                action = data
+                break
+
+        if action is None:
+            # 没有合法 JSON：给很少的分（不是 -1，避免全部同分）
+            return 0.1 if "{" in s else -0.5
+
+        r = 0.5  # 有合法 JSON 动作 → 基础正分
+        name = action.get("name")
+        args = action.get("arguments") or action
+
+        if name in VALID_TOOLS:
+            r += 0.3
+
+        # 参数完整性
+        if name in ("read", "write", "edit", "ls") and isinstance(args, dict) and args.get("path"):
+            r += 0.2
+        if name == "bash" and isinstance(args, dict) and args.get("command"):
+            r += 0.2
+        if name == "edit" and isinstance(args, dict) and args.get("oldText") and args.get("newText"):
+            r += 0.1
+        if name == "done":
+            r -= 0.2  # 太早说 done 要扣分
+
+        # 格式噪音
+        if "```" in s:
+            r -= 0.15
+        if len(s) > 1200:
+            r -= 0.2
+
+        return max(-1.0, min(1.0, r))
 
     def reward_fn(completions, **kwargs):
         rewards = []
-        for completion in completions:
-            text = completion if isinstance(completion, str) else str(completion)
-            r = 0.0
-            stripped = text.strip()
-
-            # 1. 合法 JSON 动作
-            try:
-                start = stripped.find("{")
-                end = stripped.rfind("}") + 1
-                if start >= 0 and end > start:
-                    action = json.loads(stripped[start:end])
-                    if isinstance(action, dict) and "name" in action:
-                        r += 0.5
-                        name = action.get("name")
-                        if name in ("read", "write", "edit", "bash", "ls", "done"):
-                            r += 0.3
-                    else:
-                        r -= 0.3
-                else:
-                    r -= 0.5
-            except json.JSONDecodeError:
-                r -= 0.5
-
-            # 2. 惩罚格式噪音
-            if "```" in text:
-                r -= 0.2
-            if len(stripped) > 800:
-                r -= 0.3  # 过于啰嗦
-
-            # 3. 只有 JSON，没有多余说明（理想格式）
-            if stripped.startswith("{") and stripped.endswith("}"):
-                r += 0.2
-
-            rewards.append(max(-1.0, min(1.0, r)))
+        for c in completions:
+            text = c if isinstance(c, str) else str(c)
+            # chat 格式：取最后一条 assistant 内容
+            if isinstance(c, list):
+                text = " ".join(m.get("content", "") for m in c if isinstance(m, dict))
+            rewards.append(score_one(text))
         return rewards
 
     return reward_fn
@@ -160,7 +183,6 @@ def main() -> int:
         per_device_train_batch_size=args.batch,
         gradient_accumulation_steps=4,
         num_generations=args.num_generations,
-        max_prompt_length=args.max_prompt_len,
         max_completion_length=args.max_completion_len,
         learning_rate=args.lr,
         lr_scheduler_type="cosine",

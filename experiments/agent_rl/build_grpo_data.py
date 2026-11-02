@@ -46,9 +46,10 @@ def build_prompts(sft_path: Path) -> list[dict]:
             # 截断，避免 prompt 过长
             if len(prompt_text) > 3000:
                 prompt_text = prompt_text[:3000] + "\n...(truncated)"
+            # GRPO 需要 chat messages 格式，否则模型看不到对话结构
             rows.append(
                 {
-                    "prompt": prompt_text,
+                    "prompt": [{"role": "user", "content": prompt_text}],
                     "task_id": sample.get("task_id", "?"),
                     "num_steps": sample.get("num_steps", 0),
                 }
@@ -68,7 +69,7 @@ def main() -> int:
         for row in rows:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    lens = [len(r["prompt"]) for r in rows]
+    lens = [len(r["prompt"][0]["content"]) for r in rows]
     print(f"GRPO 数据集: {len(rows)} 条")
     print(f"prompt 长度: min={min(lens)} avg={sum(lens)//len(lens)} max={max(lens)}")
     print(f"输出: {out}")
