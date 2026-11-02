@@ -16,6 +16,7 @@ from experiments.agent_rl.tasks import t8b_long_more  # noqa: F401
 from experiments.agent_rl.tasks import t8c_chain_depth  # noqa: F401
 from experiments.agent_rl.tasks import t8d_single_complexity  # noqa: F401
 from experiments.agent_rl.tasks import t8e_boundary  # noqa: F401
+from experiments.agent_rl.tasks import t8f_boundary2  # noqa: F401
 
 # t7 用运行时注册（避免与 @register 装饰器的导入顺序耦合）
 t7_multi_bug.register_template()
@@ -25,6 +26,7 @@ t8b_long_more.register_template()
 t8c_chain_depth.register_template()
 t8d_single_complexity.register_template()
 t8e_boundary.register_template()
+t8f_boundary2.register_template()
 
 __all__ = [
     "t1_bugfix",
@@ -39,4 +41,5 @@ __all__ = [
     "t8c_chain_depth",
     "t8d_single_complexity",
     "t8e_boundary",
+    "t8f_boundary2",
 ]

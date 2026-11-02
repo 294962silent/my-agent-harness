@@ -18,8 +18,9 @@ from experiments.agent_rl.tasks.t8b_solutions import T8B_SOLUTIONS  # noqa: E402
 from experiments.agent_rl.tasks.t8c_solutions import T8C_SOLUTIONS  # noqa: E402
 from experiments.agent_rl.tasks.t8d_solutions import T8D_SOLUTIONS  # noqa: E402
 from experiments.agent_rl.tasks.t8e_solutions import T8E_SOLUTIONS  # noqa: E402
+from experiments.agent_rl.tasks.t8f_solutions import T8F_SOLUTIONS  # noqa: E402
 
-ALL_SOLUTIONS = {**SOLUTIONS, **T8B_SOLUTIONS, **T8C_SOLUTIONS, **T8D_SOLUTIONS, **T8E_SOLUTIONS}
+ALL_SOLUTIONS = {**SOLUTIONS, **T8B_SOLUTIONS, **T8C_SOLUTIONS, **T8D_SOLUTIONS, **T8E_SOLUTIONS, **T8F_SOLUTIONS}
 
 
 def run_pytest(workspace: Path) -> tuple[int, str]:
