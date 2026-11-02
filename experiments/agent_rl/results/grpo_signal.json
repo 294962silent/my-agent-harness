@@ -1,0 +1,9 @@
+{
+  "tasks": 10,
+  "sparse_no_gradient": 0,
+  "dense_with_gradient": 10,
+  "mean_pass_rate": 0.475,
+  "std_pass_rate": 0.135,
+  "ideal_band_tasks": 10,
+  "note": "10 个任务全部 gap=1.0，可直接用于 GRPO"
+}
