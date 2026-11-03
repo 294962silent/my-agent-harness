@@ -22,8 +22,9 @@ from experiments.agent_rl.tasks.t8d_solutions import T8D_SOLUTIONS  # noqa: E402
 from experiments.agent_rl.tasks.t8e_solutions import T8E_SOLUTIONS  # noqa: E402
 from experiments.agent_rl.tasks.t8f_solutions import T8F_SOLUTIONS  # noqa: E402
 from experiments.agent_rl.tasks.t8g_solutions import T8G_SOLUTIONS  # noqa: E402
+from experiments.agent_rl.tasks.t9_solutions import T9_SOLUTIONS  # noqa: E402
 
-ALL_SOLUTIONS = {**SOLUTIONS, **T8B_SOLUTIONS, **T8C_SOLUTIONS, **T8D_SOLUTIONS, **T8E_SOLUTIONS, **T8F_SOLUTIONS, **T8G_SOLUTIONS}
+ALL_SOLUTIONS = {**SOLUTIONS, **T8B_SOLUTIONS, **T8C_SOLUTIONS, **T8D_SOLUTIONS, **T8E_SOLUTIONS, **T8F_SOLUTIONS, **T8G_SOLUTIONS, **T9_SOLUTIONS}
 
 
 def run_pytest(workspace: Path) -> tuple[int, str]:
@@ -73,7 +74,7 @@ def run_pytest(workspace: Path) -> tuple[int, str]:
 
 
 def main() -> int:
-    tasks = [t for t in generate_all() if "long_horizon" in t.template]
+    tasks = [t for t in generate_all() if "long_horizon" in t.template or "simple" in t.template]
     ok_count = 0
     for task in tasks:
         print(f"\n=== {task.task_id} {task.meta['num_stages']} 阶段 ===")

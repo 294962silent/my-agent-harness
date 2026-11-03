@@ -168,6 +168,10 @@ async def run_one(task, max_steps: int, temperature: float, model: str | None) -
         breaker = LoopBreaker()
         pressure = ProdPressure(max_steps=max_steps) if ENABLE_PRESSURE[0] else _NullPressure()
         history: list[str] = []
+        # 保存完整对话，用于 SFT 数据构造（含真实工具输出）
+        conversations: list[dict] = []
+        record["conversations"] = conversations
+        record["prompt_base"] = prompt_base
 
         from my_agent_llm import Message
 
@@ -214,6 +218,17 @@ async def run_one(task, max_steps: int, temperature: float, model: str | None) -
                 break
 
             history.append(f"[observation] {observation[:900]}\n[tests] {tail}{extra}")
+            conversations.append(
+                {
+                    "step": step,
+                    "convo": convo,
+                    "assistant": text,
+                    "tool": tool,
+                    "action": action,
+                    "observation": observation[:1500],
+                    "tests_tail": tail,
+                }
+            )
 
         record["interventions"] = breaker.stats()
         record["pressure"] = pressure.stats()
@@ -232,8 +247,8 @@ async def main_async(args: argparse.Namespace) -> None:
     tasks = [all_tasks[args.task]] if args.task else list(all_tasks.values())[: args.limit]
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    out = RESULTS / "long_horizon.jsonl"
-    if out.exists():
+    out = Path(args.out) if args.out else RESULTS / "long_horizon.jsonl"
+    if out.exists() and not args.append:
         out.unlink()
 
     for index, task in enumerate(tasks, 1):
@@ -260,6 +275,8 @@ def main() -> int:
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--model", default=None)
     parser.add_argument("--no-pressure", action="store_true")
+    parser.add_argument("--out", default=None)
+    parser.add_argument("--append", action="store_true")
     _args = parser.parse_args()
     ENABLE_PRESSURE[0] = not _args.no_pressure
     asyncio.run(main_async(_args))
