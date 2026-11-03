@@ -653,3 +653,106 @@ GRPO 拿到 = 一坨多动作文本，无法单步评估
 **结论：GRPO 训练本身没有问题，卡在 SFT 数据质量上。**
 这不是「任务太难」——9B 模型在 25 步内一个测试都没通过，
 是因为它的输出格式就无法被解析成动作。
+
+---
+
+## 十二、根因确定：SFT 的 label 覆盖了整个序列
+
+> 上一节说「SFT 数据是完整轨迹」——**不准确**。
+> 数据是干净的（每条 assistant 内容都是纯 JSON）。
+> 真正的根因在**训练脚本**。
+
+### 数据本身没问题
+
+```json
+[0] user      956 字符   ← 任务描述 + 动作说明
+[1] assistant 52 字符    '{"name": "bash", "arguments": {"command": "ls -la"}}'
+[2] user      29 字符    '[observation] (tool executed)'
+[3] assistant 110 字符   '{"name": "bash", "arguments": {"command": "find ..."}}'
+```
+
+**每条 assistant 内容都是纯 JSON，没有思考过程。**
+
+### 训练脚本的两个 bug
+
+#### Bug 1：`labels` 缺失导致全序列训练
+
+```python
+def tokenize(batch):
+    enc = tokenizer(batch["text"], truncation=True, ...)
+    return {"input_ids": ..., "attention_mask": ...}    # ← 没有 labels
+
+collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+```
+
+`DataCollatorForLanguageModeling` 在**没有 labels** 时把 `input_ids` 复制成 `labels`，
+于是整个序列都在被训练。
+
+| 部分 | token 数 | 是否应训练 |
+| --- | --- | --- |
+| 第 1 条 user（任务描述） | 956 字符 ≈ 299 token | ❌ |
+| 8 条 `[observation]` 占位符 | 29 字符 × 8 | ❌ |
+| 8 条 assistant 动作 | 52–124 字符 × 8 | ✅ |
+
+**约一半的训练信号用在「学习怎么写任务描述」上。**
+
+实测修正后：总计 708,580 token，其中**只有 369,335（52.1%）** 是 assistant 内容。
+
+#### Bug 2：Qwen3.5 的 chat_template 自动插入空思考标记
+
+```python
+tok.apply_chat_template([user, assistant], tokenize=True)
+# 解码出来是：
+'<|im_start|>assistant\n<think>\n\n</think>\n\n{"name": "bash", ...}<|im_end|>\n'
+```
+
+**模板自动在 assistant 内容前塞了 `<think></think>`。**
+
+所以即使 v1 用了 `apply_chat_template`（实际上没用，它手动拼了 `<|im_start|>`），
+模型在推理时也倾向于先输出思考过程——因为 Qwen3.5 的模板教会它这样做。
+
+### v2 的修正
+
+```python
+def build_example(messages, tokenizer):
+    for msg in messages:
+        head = _tok("<|im_start|>" + role + "\n")
+        body = _tok(content)
+        tail = _tok("<|im_end|>\n")
+        if role == "assistant":
+            labels += [-100]*len(head) + body + [-100]*len(tail)   # ← 只训练 body
+        else:
+            labels += [-100]*len(head+body+tail)
+```
+
+**验证结果**（dry-run）：
+
+```
+总 token: 708,580, 有 label 的 token: 369,335 (52.1%)
+第一条样本被训练的部分:
+'{"name": "bash", "arguments": {"command": "ls -la"}}{"name": "bash", ...}'
+```
+
+**全部是纯 JSON 动作，一句思考文字都没有。**
+
+### 踩过的三个坑（调试记录）
+
+| # | 现象 | 原因 |
+| --- | --- | --- |
+| 1 | 总 token 只有 631 | `apply_chat_template(tokenize=True)` 返回 BatchEncoding，`isinstance(x, dict)` 判断失败，`list(x)` 拿到的是 key 名 |
+| 2 | 内容开头被切掉 `{"name": ` | 子序列查找命中上一轮的同名 token |
+| 3 | 注释里的 `<|im_start|>` 被当三元运算符 | Python 把 `<` 解析成比较 |
+
+**最终改用最笨但最可控的办法：手动按字符串拼接。**
+
+### 三个概念要分清
+
+之前我把三件事混在一起，导致误判：
+
+| 概念 | 实际情况 |
+| --- | --- |
+| **数据** | ✅ 干净，纯 JSON 动作 |
+| **脚本 label** | ❌ 覆盖整个序列，52% 在学 prompt |
+| **模型输出** | ❌ 复现 prompt 风格 + 思考过程 |
+
+**修 label 是唯一需要做的事。**
