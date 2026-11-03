@@ -563,3 +563,93 @@ v3 加了「只评估第一个动作」「多动作重罚」「对话标记重�
 **未完成的原因不是服务器或显存，而是训练任务太简单**——
 9B 模型对 t1–t5/t7 已经饱和，没有可学习的空间。
 这是本轮最重要的发现，也是「边界任务」价值的直接证据。
+
+---
+
+## 十一、关键诊断：SFT adapter 并没有教会模型输出 JSON
+
+> 这一节推翻了本文档第三节的结论。**之前的「SFT 让模型学会动作格式」是错的。**
+
+### 直接证据
+
+同一个 SFT adapter，在不同 prompt 上的输出：
+
+**A. SFT 训练时用过的 prompt 格式**
+
+```
+"The user wants me to fix a bug in `mod.py` where subtraction is written as
+addition. I need to:\n1. First read the test file to understand what's expected\n
+2. Read the current mod.py to see the bug\n3. F..."
+```
+
+**纯思考文本，一个 JSON 都没有。**
+
+**B. 边界任务的 prompt**
+
+```
+'The user wants me to fix code in a Python repository. I need to output exactly
+ONE JSON action per turn, nothing else.\n\nLet me first explore the repository
+structure to understand what's already there.\n</think>\n{"name": "ls",
+"arguments": {"path": "."}}\nuser\n[observation] (tool executed)\nassistant\n{'
+```
+
+**先输出一大段思考，然后才是 JSON，而且继续编造 `user`/`assistant` 对话。**
+
+### 之前为什么误判
+
+我看的是某一个样本（特定 prompt + 特定 seed），恰好输出了规范 JSON。
+**没有系统验证**，就写进了文档。
+
+### 这个错误导致了什么
+
+| 连锁反应 | 说明 |
+| --- | --- |
+| 训练时的识别 | 模型输出「思考 + JSON + 伪造对话」，第一版奖励给 +0.9 |
+| 奖励失效 | 4 个采样的前半段几乎相同 → reward_std ≈ 0.01 |
+| 评测时的 `?` | 120 token 内经常还没输出到 JSON，解析失败 |
+| 9B 看起来「完全不会做」 | 实际上是「不会按格式输出动作」，不是「不会写代码」 |
+
+### 真正的根因
+
+**SFT 数据（`sft_train.jsonl` 631 条）的质量问题。**
+数据里的 assistant 回复可能包含：
+- 思考过程（`<think>` 块）
+- 完整多轮轨迹
+- 而不只是「一条 JSON 动作」
+
+模型学到的是「模仿整条轨迹的文本」，不是「输出一条动作」。
+
+### 与之前发现的关系
+
+这和第十节发现的「模型一次输出整条对话」是同一个问题的两面：
+
+```
+SFT 数据 = 完整轨迹（含 user/assistant 标签）
+    ↓
+模型学到 = 复现整条轨迹
+    ↓
+GRPO 拿到 = 一坨多动作文本，无法单步评估
+```
+
+### 修正方向（如果要继续）
+
+| 问题 | 修法 |
+| --- | --- |
+| SFT 数据含多轮轨迹 | 重新构造：每条样本 = **一条** 动作 |
+| 模型不遵守单动作格式 | 用**严格前缀约束**（如 `assistant\n{`）或 grammar 约束解码 |
+| 长 prompt 下退化 | 缩短 prompt，或用 few-shot 示例 |
+| 奖励看到多动作 | 已用 v3 奖励惩罚，但治标不治本 |
+
+### 诚实的状态
+
+| 项 | 状态 |
+| --- | --- |
+| GRPO 训练流程 | ✅ 跑通（60 步，9.39 GB） |
+| 沙盒执行奖励 | ✅ 实现并工作 |
+| 边界任务 | ✅ 10 个，DeepSeek Flash 上有 gap=1.0 |
+| **SFT 质量** | ❌ **数据问题，模型没学会单动作格式** |
+| **GRPO 能力提升** | ❌ 上游 SFT 不合格，无法验证 |
+
+**结论：GRPO 训练本身没有问题，卡在 SFT 数据质量上。**
+这不是「任务太难」——9B 模型在 25 步内一个测试都没通过，
+是因为它的输出格式就无法被解析成动作。
