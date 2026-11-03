@@ -63,7 +63,9 @@ def build_example(messages: list[dict], tokenizer) -> dict:
 
         seg_ids = head + body + tail
         if role == "assistant":
-            seg_lab = [-100] * len(head) + list(body) + [-100] * len(tail)
+            # 关键：tail 里的 <|im_end|> 就是 eos_token，必须让模型学会输出它，
+            # 否则模型不知道何时停，会连续输出多条动作（实测 83% 的生成是多动作）。
+            seg_lab = [-100] * len(head) + list(body) + list(tail)
         else:
             seg_lab = [-100] * len(seg_ids)
         input_ids.extend(seg_ids)
@@ -82,6 +84,8 @@ def main() -> int:
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--max-len", type=int, default=3072)
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--split-single", action="store_true",
+                   help="把多轮轨迹拆成单轮样本，只学一条动作后停止")
     args = p.parse_args()
 
     print("=== SFT v2（只训练 assistant 部分）===", flush=True)
@@ -91,7 +95,19 @@ def main() -> int:
         tok.pad_token = tok.eos_token
 
     raw = [json.loads(line) for line in open(args.data, encoding="utf-8") if line.strip()]
-    print(f"样本: {len(raw)}", flush=True)
+    print(f"原始样本: {len(raw)}", flush=True)
+
+    if args.split_single:
+        # 把多轮轨迹拆成单轮样本：每个 assistant 回复配上前文，单独成一个样本。
+        # 这样模型只学「输出一条动作然后停」，不会学「连续输出整条轨迹」。
+        split = []
+        for sample in raw:
+            msgs = sample["messages"]
+            for i, msg in enumerate(msgs):
+                if msg["role"] == "assistant":
+                    split.append({"messages": msgs[: i + 1]})
+        raw = split
+        print(f"拆成单轮后: {len(raw)}", flush=True)
 
     examples = [build_example(s["messages"], tok) for s in raw]
 
