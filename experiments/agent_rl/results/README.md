@@ -9,7 +9,7 @@
 | 方向 | 权重 | 完成度 | 状态 |
 | --- | --- | --- | --- |
 | **方向一：长程 Harness 工程** | 60% | **100%** | ✅ 完整交付 |
-| **方向二：Agentic RL** | 40% | **75%** | ⚠️ 组件齐全，缺最后的能力提升验证 |
+| **方向二：Agentic RL** | 40% | **75%** | ⚠️ SFT 突破（80%），GRPO 未产生正收益 |
 
 ### 逐条核对
 
@@ -161,3 +161,40 @@ python experiments/agent_rl/grpo_ab_test.py --mode train
 | `DENSE_REWARD.md` | 稠密奖励设计 |
 | `CORRECTION.md` | 指标口径修正 |
 | `INFORMATION.md` | 信息可得性实验 |
+
+---
+
+## 八、最新进展（阶段二）
+
+阶段二做出的最大突破与如实记录，详见 **[DIRECTION_2_FINAL.md](DIRECTION_2_FINAL.md)**。
+
+### 核心成果
+
+| 项 | 结果 |
+| --- | --- |
+| **9B 完成多步 agent 任务** | ✅ **4/5 通过（80%）** |
+| 关键突破 | 真实反馈轨迹（83 种唯一 observation vs 旧数据 1 种） |
+| GRPO 训练机制 | ✅ 跑通（88% 的步有梯度） |
+| GRPO 能力提升 | ❌ 未达成（80% → 40%，奖励设计问题） |
+
+### 最有说服力的对比
+
+| 配置 | 表现 |
+| --- | --- |
+| 旧 SFT（`[observation] (tool executed)` 占位符） | **0/2，`ls` × 20 死循环** |
+| 新 SFT（真实执行反馈） | **4/5 通过，能自我纠正** |
+
+**t9-002 的轨迹**：`read → write → write → read → edit → write`
+（发现前两个写错，回来修正 —— 这是真正的 agent 行为）
+
+### 新增资产
+
+| 文件 | 内容 |
+| --- | --- |
+| `tasks/t9_simple.py` | 5 个简单任务（2-3 模块） |
+| `tasks/t9_solutions.py` | 参考解法 |
+| `collect_exec_trajectories.py` | 带真实反馈的轨迹采集 |
+| `build_sft_t9.py` / `prepare_sft_t9.py` | SFT 数据构造 |
+| `sft_masked.py` | 只训练 assistant 的 SFT 脚本 |
+| `grpo_t9_v2.py` | 多步 rollout 终局奖励 |
+| `results/DIRECTION_2_FINAL.md` | 完整交付文档 |
