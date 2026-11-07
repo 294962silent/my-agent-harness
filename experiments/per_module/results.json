@@ -492,5 +492,89 @@
     "metric_name": "成环拦截",
     "conclusion": "成环被拒=True，正常依赖接受=True",
     "verified": true
+  },
+  {
+    "exp_id": "API-1",
+    "module": "真实 API / KV cache",
+    "hypothesis": "全新内容首次请求无缓存，重复请求应高命中；且 provider 缓存跨 session 共享",
+    "method": "用随机 UUID 构造全新前缀，连续请求 4 次（每次换 session）",
+    "variants": {
+      "第1次_冷启动_%": 0.0,
+      "第2次_%": 90.1,
+      "第3次_%": 90.1,
+      "第4次_%": 90.1,
+      "prompt_tokens": 2416,
+      "第1次_cache_read": 0,
+      "第4次_cache_read": 2176,
+      "session是否变化": "每次都换",
+      "模型": "glm-5.3-flash"
+    },
+    "metric_name": "cache 命中率",
+    "conclusion": "冷启动 0.0%（cache_read=0），重复请求 90.1%（cache_read=2176）。冷启动确实无缓存",
+    "verified": true
+  },
+  {
+    "exp_id": "API-2",
+    "module": "真实 API / KV cache",
+    "hypothesis": "篡改历史中段会破坏 prefix，导致 cache 命中率骤降",
+    "method": "建立缓存后，对比「相同请求」与「篡改中段一条消息」的命中率",
+    "variants": {
+      "首次建立_%": 97.0,
+      "相同请求_%": 97.0,
+      "篡改中段_%": 83.1,
+      "篡改后cache_read": 3264,
+      "相同请求cache_read": 4352,
+      "模型": "glm-5.3-flash"
+    },
+    "metric_name": "cache 命中率",
+    "conclusion": "相同请求命中 97.0%，篡改中段后降到 83.1%（cache_read 4352 → 3264）",
+    "verified": true
+  },
+  {
+    "exp_id": "API-3",
+    "module": "真实 API / KV cache",
+    "hypothesis": "Append-Only 策略的 cache 命中率显著高于滑动窗口",
+    "method": "6 轮对话，独立 session，对比「只追加」vs「每轮丢弃最旧一轮」",
+    "variants": {
+      "Append_Only_平均命中率_%": 53.5,
+      "滑动窗口_平均命中率_%": 17.9,
+      "差值_百分点": 35.6,
+      "Append_Only_逐轮": [
+        0.0,
+        61.3,
+        46.0,
+        73.5,
+        61.2,
+        78.7
+      ],
+      "滑动窗口_逐轮": [
+        0.0,
+        61.2,
+        45.9,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "Append_Only_prompt": [
+        1183,
+        1774,
+        2367,
+        2960,
+        3553,
+        4147
+      ],
+      "滑动窗口_prompt": [
+        1184,
+        1777,
+        2371,
+        2372,
+        2373,
+        2372
+      ],
+      "模型": "glm-5.3-flash"
+    },
+    "metric_name": "平均 cache 命中率",
+    "conclusion": "Append-Only 53.5% vs 滑动窗口 17.9%（差 35.6 个百分点）。滑动窗口从第 3 轮起命中率归零——一旦丢弃最旧消息，前缀被完全破坏。",
+    "verified": true
   }
 ]
