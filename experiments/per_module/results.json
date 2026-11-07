@@ -50,6 +50,42 @@
     "verified": true
   },
   {
+    "exp_id": "11-A",
+    "module": "MCP 客户端",
+    "hypothesis": "连接池复用把握手开销从 O(n) 降到 O(1)",
+    "method": "20 次工具调用，握手 20ms，对比每次重连 vs 复用",
+    "variants": {
+      "每次重连_总耗时_ms": 437.6,
+      "复用连接_总耗时_ms": 51.4,
+      "加速倍数": 8.5,
+      "握手次数_重连": 20,
+      "握手次数_复用": 1
+    },
+    "metric_name": "总耗时 / 握手次数",
+    "conclusion": "握手从 20 次降到 1 次，总耗时 438ms → 51ms（8.5×）",
+    "verified": true
+  },
+  {
+    "exp_id": "12-A",
+    "module": "Plugin",
+    "hypothesis": "插件目录约定能被正确发现（skills / agents / mcp 三类资源）",
+    "method": "构造标准插件目录，检查三类资源的发现结果",
+    "variants": {
+      "发现率": 1.0,
+      "skills": 1,
+      "agents": 1,
+      "mcp配置": 1,
+      "明细": {
+        "skills目录": true,
+        "agents目录": true,
+        "mcp配置": true
+      }
+    },
+    "metric_name": "资源发现完整度",
+    "conclusion": "三类资源发现率 100%（skills=1, agents=1, mcp=1）",
+    "verified": true
+  },
+  {
     "exp_id": "2-A",
     "module": "工具执行与并发",
     "hypothesis": "批级门控：全只读批次能并发（快），含写批次强制串行（正确）",
@@ -346,74 +382,33 @@
   },
   {
     "exp_id": "7-A",
-    "module": "权限门禁",
-    "hypothesis": "fail-closed 在缺少回调时阻断，fail-open 静默放行",
-    "method": "不传 confirm_callback，对比两种默认策略",
+    "module": "子代理",
+    "hypothesis": "子代理能压缩主代理上下文，但总 token 未必更省（需付双份成本）",
+    "method": "20 个 2000 字符文件，对比「主代理直接读」vs「子代理读+只回总结」",
     "variants": {
-      "fail-open_是否放行": true,
-      "fail-closed_是否放行": false
+      "主代理直接读_上下文token": 11178,
+      "子代理方案_主代理token": 109,
+      "子代理方案_子代理token": 10362,
+      "子代理方案_总token": 10471,
+      "主上下文节省比例_%": 99.0,
+      "总token变化_%": -6.3
     },
-    "metric_name": "危险操作放行率",
-    "conclusion": "fail-open 放行=True，fail-closed 阻断=True",
+    "metric_name": "主代理上下文 / 总 token",
+    "conclusion": "主代理上下文从 11178 降到 109 token（省 99%），但总 token 从 11178 变成 10471（-6%）——子代理省的是主上下文的压力，不是总成本",
     "verified": true
   },
   {
     "exp_id": "7-B",
-    "module": "权限门禁",
-    "hypothesis": "路径越界检测能正确区分工作区内外的路径",
-    "method": "9 种路径（相对/绝对/父目录），检查判定是否与预期一致",
+    "module": "子代理",
+    "hypothesis": "子代理使用独立 system，不继承父代理的历史（含错误结论）",
+    "method": "父上下文含「错误结论」，检查子代理上下文是否受影响",
     "variants": {
-      "正确率": 1.0,
-      "明细": {
-        "C:\\Users\\MLL\\Desktop\\my-agent-harness\\etc\\passwd": {
-          "预期越界": true,
-          "实际": true,
-          "正确": true
-        },
-        "C:\\Users\\MLL\\Desktop\\secret": {
-          "预期越界": true,
-          "实际": true,
-          "正确": true
-        },
-        "/etc/passwd": {
-          "预期越界": true,
-          "实际": true,
-          "正确": true
-        },
-        "C:/Windows/System32": {
-          "预期越界": true,
-          "实际": true,
-          "正确": true
-        },
-        "C:\\Users\\MLL\\Desktop\\my-agent-harness\\_tmp_ws\\a.txt": {
-          "预期越界": false,
-          "实际": false,
-          "正确": true
-        },
-        "C:\\Users\\MLL\\Desktop\\my-agent-harness\\_tmp_ws\\sub\\b.txt": {
-          "预期越界": false,
-          "实际": false,
-          "正确": true
-        },
-        "C:\\Users\\MLL\\Desktop\\my-agent-harness\\_tmp_ws\\c.txt": {
-          "预期越界": false,
-          "实际": false,
-          "正确": true
-        },
-        "C:\\Users\\MLL\\Desktop\\my-agent-harness\\_tmp_ws\\sub\\d.txt": {
-          "预期越界": false,
-          "实际": false,
-          "正确": true
-        },
-        "C:\\Users\\MLL\\Desktop\\my-agent-harness": {
-          "预期越界": true,
-          "实际": true,
-          "正确": true
-        }
-      }
+      "父上下文含错误结论": true,
+      "子代理上下文含错误结论": false,
+      "子代理system来源": "Subagent.content（独立）"
     },
-    "metric_name": "越界判定正确率",
-    "conclusion": "9/9 路径判定正确（100%）",
+    "metric_name": "错误信息是否传染",
+    "conclusion": "隔离成功：父代理的错误结论未进入子代理上下文",
     "verified": true
   },
   {
@@ -429,6 +424,41 @@
     },
     "metric_name": "组合风险识别",
     "conclusion": "确认缺陷：read(.env)=l、write(public)=m，均非阻断级；但二者组合构成密钥泄漏，而当前门禁无跨调用状态分析能力",
+    "verified": true
+  },
+  {
+    "exp_id": "8-A",
+    "module": "转录本自愈",
+    "hypothesis": "三阶段各自处理不同脏数据，且对干净历史零动作",
+    "method": "4 种输入分别测修复动作分布",
+    "variants": {
+      "断头调用": {
+        "合成数": 1,
+        "丢弃孤儿": 0,
+        "丢弃重复": 0,
+        "重排": 1
+      },
+      "孤儿结果": {
+        "合成数": 0,
+        "丢弃孤儿": 1,
+        "丢弃重复": 0,
+        "重排": 0
+      },
+      "混合交错": {
+        "合成数": 0,
+        "丢弃孤儿": 1,
+        "丢弃重复": 0,
+        "重排": 1
+      },
+      "干净对照": {
+        "合成数": 0,
+        "丢弃孤儿": 0,
+        "丢弃重复": 0,
+        "重排": 0
+      }
+    },
+    "metric_name": "各阶段的修复动作数",
+    "conclusion": "断头调用触发合成=True、孤儿结果触发丢弃=True、干净历史零动作=True",
     "verified": true
   },
   {
