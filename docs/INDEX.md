@@ -18,6 +18,8 @@
 | **05** | [**05_VALIDATION.md**](05_VALIDATION.md) | **验证闭环与缺陷档案**（14 项 bug） | **工程严谨性** |
 | **06** | [**06_INTERROGATION.md**](06_INTERROGATION.md) | **简历盘问 + 创新点** | 面试准备 |
 | **07** | [**07_AUTHOR_BLOG.md**](07_AUTHOR_BLOG.md) | **原作者博客核对**（10 篇，含数字争议澄清） | **溯源权威性** |
+| **08** | [08_EXPERIMENT_DESIGN.md](08_EXPERIMENT_DESIGN.md) | 28 个实验的设计（对照/指标/复现） | 实验方法论 |
+| **09** | [**09_EXPERIMENTS.md**](09_EXPERIMENTS.md) | **23 个实验的实测报告** | **量化证据** |
 
 原始调研材料：
 - [`raw/landscape_raw.md`](raw/landscape_raw.md)（1213 行，10 产品）
