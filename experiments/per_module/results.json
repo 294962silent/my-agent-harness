@@ -576,5 +576,78 @@
     "metric_name": "平均 cache 命中率",
     "conclusion": "Append-Only 53.5% vs 滑动窗口 17.9%（差 35.6 个百分点）。滑动窗口从第 3 轮起命中率归零——一旦丢弃最旧消息，前缀被完全破坏。",
     "verified": true
+  },
+  {
+    "exp_id": "API-4",
+    "module": "真实 API / KV cache",
+    "hypothesis": "provider 缓存存在最小 prompt 长度阈值",
+    "method": "构造 50-1200 单位（约 500-12000 token）的 prompt，各请求两次看是否命中",
+    "variants": {
+      "阈值下界_prompt_tokens": 1082,
+      "阈值上界_prompt_tokens": 1093,
+      "推定阈值_prompt_tokens": "约 1088（1024 + 系统开销）",
+      "命中时cache_read恒定值": 1088,
+      "稳定性验证": "97/100 单位各重复 3 次，cache_read 均为 1088",
+      "逐点探测": {
+        "580": false,
+        "796": false,
+        "906": false,
+        "961": false,
+        "1016": false,
+        "1071": false,
+        "1082": false,
+        "1092": true,
+        "1104": true,
+        "1115": true,
+        "1127": true
+      }
+    },
+    "metric_name": "触发缓存的最小 prompt 长度",
+    "conclusion": "阈值锁定在 1082~1093 token 之间（推定 1088）。命中时 cache_read 恒为 1088，说明缓存按固定块（1024+开销）计算。低于此长度请求完全不产生缓存——短对话做 cache 优化无意义。",
+    "verified": true
+  },
+  {
+    "exp_id": "API-5",
+    "module": "真实 API / KV cache",
+    "hypothesis": "cache_write_5m/1h 记录缓存写入量；TTL 内命中率应保持稳定",
+    "method": "建立缓存后，在 0/60/120/180 秒各请求一次，观察命中率与 write 字段",
+    "variants": {
+      "建立时_write_5m": 0,
+      "建立时_write_1h": 0,
+      "观测序列": [
+        {
+          "elapsed_s": 2,
+          "cache_read": 3264,
+          "hit_rate_%": 98.1,
+          "write_5m": 0,
+          "write_1h": 0
+        },
+        {
+          "elapsed_s": 64,
+          "cache_read": 3264,
+          "hit_rate_%": 98.1,
+          "write_5m": 0,
+          "write_1h": 0
+        },
+        {
+          "elapsed_s": 127,
+          "cache_read": 3264,
+          "hit_rate_%": 98.1,
+          "write_5m": 0,
+          "write_1h": 0
+        },
+        {
+          "elapsed_s": 189,
+          "cache_read": 3264,
+          "hit_rate_%": 98.1,
+          "write_5m": 0,
+          "write_1h": 0
+        }
+      ],
+      "3分钟时命中率_%": 98.1
+    },
+    "metric_name": "TTL 内的命中率稳定性",
+    "conclusion": "cache_write_5m=0、cache_write_1h=0；180 秒后命中率 98.1%（仍有效）",
+    "verified": true
   }
 ]
