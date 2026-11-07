@@ -1,0 +1,2547 @@
+功能设计
+
+在初始设计中，委派执行逻辑（make_task_tool）曾放在 subagents.py 中。但在 2026-08-16 的设计迭代
+ （subagent-task-manager-design.md）中，架构进行了清晰分层：
+
+subagents.py（定义与仓储）：收窄职责，只负责 Subagent 声明与 SubagentManager 发现管理。
+
+subagent_tasks.py（任务生命周期，对标 OpenHands）：
+
+引入 SubagentTask（拥有 id、status、result、error）与 TaskStatus（RUNNING、COMPLETED、ERROR）；
+
+SubagentTaskManager 负责任务生命周期的推进（创建任务 → 过滤工具并剔除 task → 装配子 System Prompt → 独立 Session 落盘到 subagents/ → 驱动子 Agent 运行 → 标记状态）。
+
+tools/builtin/task.py（工具桥）：
+
+make_task_tool 移入内置工具包，仅作为连接大模型工具调用与 SubagentTaskManager 的轻量转换层。
+
+子agent调用机制
+
+调用机制：一个内建工具
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+主 agent（allowedTools 里含 "Agent"）
+
+  │ 模型根据 description 自动决定，或 prompt 里显式点名
+
+  ▼
+
+调 "Agent" 工具：&#123; subagent_type: "code-reviewer", prompt: "..." &#125;
+
+  │ -------------------------------
+
+  ▼  运行时（harness）接管，模型看不到这层
+
+查定义（程序式 agents dict / .claude/agents/*.md / 内置 general-purpose）
+
+  │
+
+spawn 子代理（新 context window，只收：自己的 prompt + Agent 工具的 prompt 字符串 + 项目 CLAUDE.md + 工具定义）
+
+  │
+
+父逐字收到子代理的【最终消息】作为 Agent 工具结果
+
+关键点：对模型而言，这就是一个普通 tool_use——block.name == “Agent”，block.input.subagent_type 是代理名。模型根本不知道背后是”又起了一个 agent”，harness 负责创建子会话/执行/回收。
+
+子agent包含的字段
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+name（默认值：文件名主干名）
+
+description
+
+tools（默认值：[]）：单个工具名称或工具名称列表
+
+skills（默认值：[]）：逗号分隔的字符串或技能名称列表
+
+model（默认值：inherit）：inherit 表示复用父级 LLM；其他值将作为 LLM 配置方案（profile）名称从 profile_store_dir 或默认 profile 存储区加载
+
+color（可选）
+
+max_iteration_per_run（可选，正整数）
+
+max_budget_per_run（可选，以美元计的正数）
+
+hooks（可选的 hook 配置）
+
+profile_store_dir（可选的自定义 LLM profile 目录）
+
+mcp_config（可选的 MCP 服务器映射表）；mcp_servers 为已弃用的别名
+
+permission_mode（可选）：always_confirm、never_confirm 或 confirm_risky；省略则继承父级的确认策略
+
+condenser（可选）：省略则使用默认的摘要压缩器（summarizing condenser）；none 或 false 禁用压缩；传入字典映射则用于配置特定压缩器
+
+流程
+
+1
+
+2
+
+3
+
+4
+
+5
+
+agents/*.md ──发现──► SubagentManager ──get(name)──► Subagent 定义
+
+                                                        │ spawn
+
+model 调 task(prompt, agent_type) ──────────────────► 子 Agent 实例
+
+        ▲                                              │ run(prompt)
+
+        └──────────── 只回最终文本 ◄────────────────────┘
+
+subagents.py
+
+数据模型 Subagent
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+@dataclass(
+frozen=
+True
+
+)
+
+class
+ 
+Subagent
+:
+
+    name: 
+str
+                           
+# 子代理唯一标识
+
+    description: 
+str
+                    
+# 描述：主模型根据此意图决定何时委派
+
+    content: 
+str
+                        
+# 正文：子代理独立的 System Prompt
+
+    file_path: Path                     
+# 来源文件路径（内置则为 <builtin>）
+
+    model: 
+str
+ | 
+None
+ = 
+None
+            
+# 模型覆盖：None 表示继承父 Agent 的模型
+
+    effort: 
+str
+ | 
+None
+ = 
+None
+           
+# 推理深度（预留字段）
+
+    max_turns: 
+int
+ | 
+None
+ = 
+None
+        
+# 最大轮数限制（对应 maxTurns）
+
+    tools: 
+tuple
+[
+str
+, ...] | 
+None
+ = 
+None
+       
+# 工具白名单：None 表示继承父级所有可用工具
+
+    disallowed_tools: 
+tuple
+[
+str
+, ...] = ()     
+# 工具黑名单
+
+    skills: 
+tuple
+[
+str
+, ...] | 
+None
+ = 
+None
+      
+# 允许该子代理使用的 skill 名称列表
+
+流程演示
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+27
+
+[启动阶段]
+
+Agent.__init__(subagent_dirs=...)
+
+  ├── SubagentManager 发现并解析所有 .agents/agents/*.md
+
+  ├── format_prompt() 将 <available_agents> 拼入 Agent 的 system_prompt 尾部
+
+  └── Agent 自动注册内置工具 make_task_tool (即 task 工具)
+
+[运行阶段 - ReAct 循环]
+
+1. 用户提问："帮我审查一下最新的提交"
+
+2. 主 Agent 决定派发：
+
+   -> tool_call: task(prompt="审查最新 commit", subagent_type="code-reviewer")
+
+3. TaskManager.start_task():
+
+   ├── 从 SubagentManager 中检索 "code-reviewer" 的 Subagent 实体
+
+   ├── 工具过滤：按 tools/disallowed_tools 过滤，强制剔除 task 工具（硬防线：禁止子代理调 task）
+
+   ├── System Prompt 装配：仅包含 Subagent.content + 声明的 skills 清单（不继承父 Prompt）
+
+   ├── 会话隔离：在父会话目录下创建 subagents/agent-task_00000001.jsonl 独立存储子对话
+
+   ├── 实例化子 Agent：
+
+   │     Agent(
+
+   │         llm=parent.llm,
+
+   │         tools=filtered_tools,
+
+   │         session=child_session,
+
+   │         system_prompt=sub_system_prompt,
+
+   │         model=sub.model or parent.model,
+
+   │         max_iterations=sub.max_turns or parent.max_iterations,
+
+   │         subagent_dirs=[],   # 禁用子代理再去扫描子代理
+
+   │         skill_dirs=[],
+
+   │     )
+
+   └── 执行子 Agent.run()，将子 Agent 的最终总结字符串作为 tool_result 返回给主 Agent
+
+SubagentManager
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+[磁盘文件]
+
+.agents/agents/
+
+   ├── code-reviewer.md
+
+   └── researcher.md
+
+          │
+
+          ▼ 扫描、过滤、解析 (utf-8-sig + parse_frontmatter)
+
+┌──────────────────────────────────────────────────────────┐
+
+│                   SubagentManager                        │
+
+│  - self.subagents: &#123;"code-reviewer": Subagent(...), ...&#125; │
+
+└──────────────┬────────────────────────────┬──────────────┘
+
+               │ 1. format_prompt()          │ 2. manager.get("code-reviewer")
+
+               ▼                             ▼
+
+   [Agent.system_prompt 拼装]         [TaskManager._run 委派派生]
+
+   <available_agents>                - 拿到 Subagent 定义
+
+     <agent>...</agent>               - 取 sub.content 作为子 Agent system_prompt
+
+   </available_agents>               - 裁剪 tools / model / maxTurns 启动子 Agent
+
+核心方法format_prompt
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+def
+ 
+format_prompt
+(
+self
+) -> 
+str
+:
+
+    
+"""全部 agents → XML 清单块（名字 + description）；空 → 空串（进 system）。"""
+
+    
+if
+ 
+not
+ 
+self
+.subagents:
+
+        
+return
+ 
+""
+
+    parts = [
+"<available_agents>"
+]
+
+    
+for
+ s 
+in
+ 
+self
+.subagents.values():
+
+        parts.append(
+"  <agent>"
+)
+
+        parts.append(
+f"    <name>
+&#123;s.name&#125;
+</name>"
+)
+
+        parts.append(
+f"    <description>
+&#123;s.description&#125;
+</description>"
+)
+
+        parts.append(
+"  </agent>"
+)
+
+    parts.append(
+"</available_agents>"
+)
+
+    
+return
+ 
+"\n"
+.join(parts)
+
+低 Token 占用设计：
+格式化生成的 XML 仅包含 name 和 description 两个核心字段，不会将子代理的详细 System Prompt 正文塞入父 Agent。
+
+自动拼接进 System Prompt：
+在 Agent.
+init
+ 中，如果 SubagentManager 包含有效子代理，format_prompt() 输出的内容会被用 \n\n 自动拼接在父 Agent
+的 system_prompt 尾部：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+<
+available_agents
+>
+
+  
+<
+agent
+>
+
+    
+<
+name
+>
+code-reviewer
+</
+name
+>
+
+    
+<
+description
+>
+审查代码提交与潜在缺陷
+</
+description
+>
+
+  
+</
+agent
+>
+
+  
+<
+agent
+>
+
+    
+<
+name
+>
+researcher
+</
+name
+>
+
+    
+<
+description
+>
+只读模式调研技术文档和架构
+</
+description
+>
+
+  
+</
+agent
+>
+
+</
+available_agents
+>
+
+父模型据此便能知道当前拥有哪些子代理可以委派。
+
+subagent_tasks.py（子代理委派引擎）
+
+架构命名解耦注记（阶段 8 演进）
+：为了彻底消除子代理运行时生命周期与项目工程待办看板（
+TaskItem / TaskStore
+）的命名撞车与概念歧义，本模块由早期的 
+tasks.py
+ 全面重命名为 
+
+subagent_tasks.py
+
+，核心类统一命名为 
+
+SubagentTask
+ / 
+SubagentTaskStatus
+ / 
+SubagentTaskManager
+
+，界限分明。
+
+核心数据结构：SubagentTaskStatus 与 SubagentTask
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+class
+ 
+SubagentTaskStatus
+(
+StrEnum
+):
+
+    
+"""委派任务三态。"""
+
+    RUNNING = 
+"running"
+
+    COMPLETED = 
+"completed"
+
+    ERROR = 
+"error"
+
+@dataclass
+
+class
+ 
+SubagentTask
+:
+
+    
+"""一次子代理委派任务：有 id/状态/结果，可查询、可追踪、可动态干预。"""
+
+    
+id
+: 
+str
+
+    status: SubagentTaskStatus
+
+    result: 
+str
+ | 
+None
+ = 
+None
+
+    error: 
+str
+ | 
+None
+ = 
+None
+
+    
+def
+ 
+set_result
+(
+self, result: 
+str
+
+) -> 
+None
+:
+
+        
+self
+.result = result
+
+        
+self
+.error = 
+None
+
+        
+self
+.status = SubagentTaskStatus.COMPLETED
+
+    
+def
+ 
+set_error
+(
+self, error: 
+str
+
+) -> 
+None
+:
+
+        
+self
+.error = error
+
+        
+self
+.result = 
+None
+
+        
+self
+.status = SubagentTaskStatus.ERROR
+
+Prompt 与权限隔离
+
+ 在实例化子 Agent 之前，必须对子代理的 Prompt 边界 与 工具权限 进行精准裁剪：
+
+1. 子代理 System Prompt 装配（_system_for）
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+def
+ 
+_system_for
+(
+sub: Subagent, parent: 
+"Agent"
+
+) -> 
+str
+:
+
+    
+"""子代理 system = 正文 + （若有 skills）子集清单；不收父 system prompt（Claude 官方语义）。"""
+
+    parts = [sub.content]
+
+    
+if
+ sub.skills:
+
+        block = parent.skill_manager.format_prompt(sub.skills)
+
+        
+if
+ block:
+
+            parts.append(block)
+
+    
+return
+ 
+"\n\n"
+.join(p 
+for
+ p 
+in
+ parts 
+if
+ p)
+
+正文即人设：子代理仅使用自身的 sub.content 作为基础人设，绝不继承父 Agent 的 system_prompt（遵循 Claude 官方语义，防
+止父级复杂指令干扰子任务）。
+
+按需注入 Skill 清单：如果子代理定义了 skills: [“git-diff”, “python-eval”]，则利用父级 SkillManager 过滤出对应子集的
+XML 清单并拼入 System Prompt 尾部。
+
+2. 工具过滤与防递归硬防线（_filter_tools）
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+def
+ 
+_filter_tools
+(
+parent: 
+"Agent"
+, sub: Subagent
+) -> 
+list
+:
+
+    
+"""父工具集按白/黑名单过滤；task 永不出现（防递归）。"""
+
+    tools = [t 
+for
+ t 
+in
+ parent.registry.
+list
+() 
+if
+ t.name != 
+"task"
+]
+
+    
+if
+ sub.tools 
+is
+ 
+not
+ 
+None
+:
+
+        allowed = 
+set
+(sub.tools)
+
+        tools = [t 
+for
+ t 
+in
+ tools 
+if
+ t.name 
+in
+ allowed]
+
+    black = 
+set
+(sub.disallowed_tools)
+
+    tools = [t 
+for
+ t 
+in
+ tools 
+if
+ t.name 
+not
+ 
+in
+ black]
+
+    
+return
+ tools
+
+权限裁剪：先支持白名单 tools 筛选，再进行黑名单 disallowed_tools 剔除。
+
+强制剔除 task 工具（硬防线）：无论配置文件的白名单写了什么，task 工具一律从子工具集中强制剥离，防止子 Agent 在运行中
+再次委派产生死循环。
+
+TaskManager
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+class
+ 
+TaskManager
+:
+
+   
+"""委派任务的生命周期管理器（对标 OpenHands TaskManager）。"""
+
+   
+def
+ 
+__init__
+(
+self, manager: SubagentManager, parent: 
+"Agent"
+
+):
+
+       
+self
+._manager = manager     
+# 查 agent 定义
+
+       
+self
+._parent = parent       
+# 供 llm/工具集/skill_manager/max_iterations
+
+       
+self
+._counter = 
+0
+
+   
+def
+ 
+start_task
+(
+self, prompt: 
+str
+, subagent_type: 
+str
+ = 
+"default"
+
+) -> Task:
+
+       
+"""同步阻塞：建 Task(RUNNING) → spawn → run → 更新状态 → 返回。"""
+
+       task = 
+self
+._create_task(subagent_type)
+
+       
+try
+:
+
+           task.set_result(
+self
+._run(prompt, subagent_type, task.
+id
+))
+
+       
+except
+ Exception 
+as
+ exc:
+
+           task.set_error(
+str
+(exc))
+
+       
+return
+ task
+
+ start_task 是对外的核心方法，它通过 try…except 兜住整个派生与执行流程。无论是子代理找不到、大模型报错、还是子 Agent
+ 抛出异常，都会被捕获并转换为 task.set_error(…)，返回包含错误描述的 Task 对象，绝不让未处理异常打崩父 ReAct 循环。
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+27
+
+28
+
+29
+
+30
+
+31
+
+32
+
+33
+
+34
+
+35
+
+36
+
+37
+
+38
+
+39
+
+40
+
+41
+
+42
+
+43
+
+44
+
+45
+
+46
+
+47
+
+48
+
+49
+
+50
+
+51
+
+52
+
+53
+
+54
+
+55
+
+56
+
+57
+
+58
+
+59
+
+60
+
+61
+
+62
+
+63
+
+64
+
+65
+
+66
+
+67
+
+68
+
+69
+
+70
+
+71
+
+72
+
+73
+
+74
+
+75
+
+76
+
+77
+
+78
+
+79
+
+80
+
+81
+
+82
+
+  ┌────────────────────────────────────────────────────────┐
+
+  │    TaskManager._run(prompt, subagent_type, task_id)    │
+
+  └───────────────────────────┬────────────────────────────┘
+
+                              │
+
+                              ▼
+
+               ┌──────────────────────────────┐
+
+               │ 1. 查阅子代理定义 (Lookup)   │
+
+               │    sub = manager.get(type)   │
+
+               └──────────────┬───────────────┘
+
+                              │
+
+           ┌──────────────────┴──────────────────┐
+
+           │ 是否找到 Subagent 定义？             │
+
+           └─────────┬───────────────────┬───────┘
+
+        [未找到]     │                   │ [找到]
+
+                     ▼                   │
+
+        ┌─────────────────────────┐      │
+
+        │ subagent_type=="default"│      │
+
+        └────┬───────────────┬────┘      │
+
+      [是]   │               │ [否]      │
+
+             ▼               ▼           │
+
+┌─────────────────┐   ┌────────────────┐ │
+
+│使用内置默认定义 │   │抛出 ValueError │ │
+
+│DEFAULT_SUBAGENT │   │列出可用 agents │ │
+
+└────────────┬────┘   └───────┬────────┘ │
+
+             │                │ (失败)   │
+
+             └─────────┬──────┴──────────┘
+
+                       │
+
+                       ▼
+
+    ┌──────────────────────────────────────┐
+
+    │ 2. 创建子代理独立 Session            │
+
+    │    - 路径: subagents/agent-&#123;id&#125;.jsonl│
+
+    │    - 注入 Header 元数据:             │
+
+    │      * agent_type                    │
+
+    │      * parent_session_id             │
+
+    │    - child_session.save()            │
+
+    └──────────────────┬───────────────────┘
+
+                       │
+
+                       ▼
+
+    ┌──────────────────────────────────────┐
+
+    │ 3. 准备隔离环境与权限 (Sanitize)      │
+
+    │    ├─ _system_for(sub, parent)       │
+
+    │    │   正文 + (若有) 声明 skills 清单│
+
+    │    └─ _filter_tools(parent, sub)     │
+
+    │        按白/黑名单过滤，强制剔除 task│
+
+    └──────────────────┬───────────────────┘
+
+                       │
+
+                       ▼
+
+    ┌──────────────────────────────────────┐
+
+    │ 4. 实例化子 Agent (Spawn)            │
+
+    │    Agent(                            │
+
+    │      llm = parent.llm,               │
+
+    │      tools = 过滤后工具集,           │
+
+    │      session = child_session,        │
+
+    │      system_prompt = 子专属 Prompt,  │
+
+    │      model = sub.model 覆盖/继承,    │
+
+    │      max_iterations = 轮数覆盖/继承, │
+
+    │      skill_dirs = [],                │
+
+    │      subagent_dirs = []  <-- 防递归! │
+
+    │    )                                 │
+
+    └──────────────────┬───────────────────┘
+
+                       │
+
+                       ▼
+
+    ┌──────────────────────────────────────┐
+
+    │ 5. 驱动子 Agent 独立运行             │
+
+    │    result = child.run(prompt)        │
+
+    └──────────────────┬───────────────────┘
+
+                       │
+
+           ┌───────────┴───────────┐
+
+           │ 执行是否发生未捕获异常?│
+
+           └─────┬───────────┬─────┘
+
+        [成功]   │           │ [抛出异常]
+
+                 ▼           ▼
+
+  ┌───────────────────────┐ ┌────────────────────────────┐
+
+  │ 结果判空兜底:         │ │ 捕获并包装为:              │
+
+  │ result or "(no summary│ │ RuntimeError("Subagent...  │
+
+  └──────────────┬────────┘ │   failed: ...")            │
+
+                 │          └─────────────┬──────────────┘
+
+                 │                        │
+
+                 ▼                        ▼
+
+  ┌───────────────────────────────────────────────────────┐
+
+  │   返回最终文本摘要字符串 / 异常冒泡给 start_task 捕获  │
+
+  └───────────────────────────────────────────────────────┘
+
+关键技术细节亮点：
+
+循环导入解解（Circular Import Resolution）：
+Agent 在初始化时需要 import make_task_tool（依赖 TaskManager），而 TaskManager._run 需要实例化 Agent。
+这里采用了 TYPE_CHECKING + _run 内部延迟 import Agent 的标准方案，优雅消解了循环依赖。
+
+子代理独立持久化（对齐 Claude Code 目录规范）：
+子代理拥有专属的 Session 文件，落盘在父 Session 所在目录下的 subagents/agent-task_00000001.jsonl 中，且在 Header 的
+metadata 中记录了：
+
+agent_type：子代理类型；
+
+parent_session_id：关联的父会话 ID（通过父子会话拓扑指针关联，保证可溯源且不引入死状态）。
+这使得子代理的交互全流程都可以溯源复盘，同时完全不污染父会话的消息历史。
+
+Fresh Context（全新上下文）：
+子 Agent 拥有全新的消息队列，仅接收当前的 prompt 作为单条 user 消息输入，不携带父 Agent 之前的长历史，大幅节省
+Token 并提升模型注意力。
+
+task工具
+
+ 在 tools/builtin/task.py 中，make_task_tool 充当了 Agent 与 TaskManager 之间的适配层：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+def
+ 
+make_task_tool
+(
+manager: SubagentManager, parent: 
+"Agent"
+
+) -> Tool:
+
+    task_manager = TaskManager(manager, parent)
+
+    
+def
+ 
+task
+(
+prompt: 
+str
+, agent_type: 
+str
+ = 
+"default"
+
+) -> 
+str
+:
+
+        t = task_manager.start_task(prompt, agent_type)
+
+        
+return
+ t.result 
+if
+ t.status 
+is
+ TaskStatus.COMPLETED 
+else
+ (t.error 
+or
+ 
+"(no summary)"
+)
+
+    
+return
+ Tool(func=task, name=
+"task"
+)
+
+大模型发起工具调用 task(prompt=”…”, agent_type=”…”)；
+
+工具桥将调用转交给 task_manager.start_task；
+
+工具桥根据 Task.status 提取 t.result 或 t.error，作为字符串直接喂回父模型的 ReAct 观察管道（Observation）。
+
+如何防止子代理中再次调用 task 委派导致无限递归
+
+在框架设计中，防止子代理（Subagent）再次调用 
+task
+ 委派导致无限递归死循环（Anti-Recursion Loop），采用的是 
+“切断继承 + 抑制自生成” 的双重硬防线设计
+，并辅以 
+认知层隔离
+。
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+                 子代理派生请求 (TaskManager._run)
+
+                                │
+
+        ┌───────────────────────┴───────────────────────┐
+
+        │                                               │
+
+        ▼ 【第一道防线：防继承】                          ▼ 【第二道防线：防自生】
+
+_filter_tools(parent, sub)                     Agent(..., subagent_dirs=[])
+
+        │                                               │
+
+        ▼                                               ▼
+
+强制过滤 t.name != "task"                      SubagentManager 为空 (len == 0)
+
+        │                                               │
+
+        ▼                                               ▼
+
+传入子 Agent 的 tools 参数无 task               bool(subagent_manager) == False
+
+        │                                               │
+
+        │                                               ▼
+
+        │                                      Agent._register_tools
+
+        │                                      跳过 make_task_tool 注册
+
+        │                                               │
+
+        └───────────────────────┬───────────────────────┘
+
+                                │
+
+                                ▼
+
+                   【子 Agent ToolRegistry】
+
+                   物理上彻底不存在 task 工具
+
+                                │
+
+                                ▼
+
+                   【第三道防线：Prompt 认知隔离】
+
+                   System Prompt 无 <available_agents>
+
+1. 第一道防线：切断引用继承 —— 
+_filter_tools
+ 强制剔除 8 大内置敏感工具（对标 learn-claude-code）
+
+在 
+subagent_tasks.py
+ 中，当 
+SubagentTaskManager
+ 从父 Agent 提取可用工具准备传递给子 Agent 时，在工具过滤的最源头就进行了物理级硬剥离：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+def
+ 
+_filter_tools
+(
+parent: 
+"Agent"
+, sub: Subagent
+) -> 
+list
+[Tool]:
+
+    
+"""父工具集按白/黑名单过滤；内置敏感工具永不出现（防递归与脏写）。"""
+
+    
+# 核心：必须同时剔除委派、长期记忆与 Todo 看板工具，防止子代理篡改全局状态或递归衍生
+
+    builtins = (
+
+        
+"task"
+, 
+"memory"
+, 
+"todo"
+,
+
+        
+"task_create"
+, 
+"task_update"
+, 
+"task_get"
+, 
+"task_list"
+, 
+"todo_write"
+,
+
+    )
+
+    tools = [t 
+for
+ t 
+in
+ parent.registry.
+list
+() 
+if
+ t.name 
+not
+ 
+in
+ builtins]
+
+    
+if
+ sub.tools 
+is
+ 
+not
+ 
+None
+:
+
+        allowed = 
+set
+(sub.tools)
+
+        tools = [t 
+for
+ t 
+in
+ tools 
+if
+ t.name 
+in
+ allowed]
+
+    black = 
+set
+(sub.disallowed_tools)
+
+    tools = [t 
+for
+ t 
+in
+ tools 
+if
+ t.name 
+not
+ 
+in
+ black]
+
+    
+return
+ tools
+
+无视白名单声明
+：即使开发者在 
+.agents/agents/xxx.md
+ 的 Frontmatter 中写了 
+tools: read, bash, task
+，由于第一步 
+t.name not in builtins
+ 已经把 
+task
+、
+memory
+、
+todo
+ 从列表中彻底过滤掉，后续的白名单判定也绝不可能拿到它们。
+
+解决的问题
+：
+不仅防止子 Agent 拿到 
+task
+ 工具发生递归委派，更防止子 Agent 误调用 
+memory
+ 或 
+todo
+ 污染全局项目状态。
+
+2. 第二道防线：抑制自发生装配 —— 5 大隔离参数触发注册短路（对标 OpenHands 工厂隔离）
+
+仅仅从父级工具列表中剔除敏感工具还不够，因为 
+Agent
+ 自身在初始化时具备
+自动探测本地技能、插件、记忆、工单并自动装配的能力
+。
+
+因此，在 
+SubagentTaskManager._run
+ 中实例化子 Agent 时，显式传入了全套 5 大隔离参数（禁用态）：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+child = Agent(
+
+    llm=
+self
+._parent.llm,
+
+    tools=_filter_tools(
+self
+._parent, sub),
+
+    session=child_session,
+
+    system_prompt=_system_for(sub, 
+self
+._parent),
+
+    model=sub.model 
+or
+ 
+self
+._parent.model,
+
+    max_iterations=sub.max_iterations 
+or
+ 
+self
+._parent.max_iterations,
+
+    skill_dirs=[],       
+# 1. 禁用技能自探测 (仅按需继承声明的技能清单)
+
+    subagent_dirs=[],    
+# 2. 禁用子代理自探测 (防递归衍生)
+
+    plugin_dirs=[],      
+# 3. 禁用插件自探测 (防插件重新注册 task 工具)
+
+    memory_dir=
+False
+,    
+# 4. 显式禁用长期记忆共享
+
+    task_store=
+False
+,    
+# 5. 显式禁用项目看板工单共享
+
+)
+
+内部连锁反应机制：
+
+空仓储生成
+：
+SubagentManager([])
+ 收到空列表，不会扫描任何目录，
+self.subagents
+ 为空字典 
+&#123;&#125;
+。
+
+利用 Python 容器协议 
+__len__
+ 实现布尔截断
+：
+在 
+subagents.py
+ 中，
+SubagentManager
+ 实现了 
+__len__
+：
+
+1
+
+2
+
+def
+ 
+__len__
+(
+self
+) -> 
+int
+:
+
+    
+return
+ 
+len
+(
+self
+.subagents)
+
+当对象实现了 
+__len__
+ 时，
+bool(obj)
+ 会依据 
+len(obj) > 0
+ 来判定。因为 
+len == 0
+，所以 
+bool(subagent_manager)
+ 严格为 
+False
+。
+
+Agent._register_tools
+ 自动短路
+：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+def
+ 
+_register_tools
+(
+self, tools: 
+list
+[Tool]
+) -> 
+None
+:
+
+    
+for
+ t 
+in
+ tools:
+
+        
+self
+.registry.register(t)
+
+    
+# 因为 self.subagent_manager 为 False，以下整个代码块直接跳过！
+
+    
+if
+ 
+self
+.subagent_manager:
+
+        
+if
+ 
+self
+.registry.get(
+"task"
+) 
+is
+ 
+not
+ 
+None
+:
+
+            
+raise
+ ValueError(
+"Tool name &#x27;task&#x27; conflicts..."
+)
+
+        
+self
+.registry.register(make_task_tool(
+self
+.subagent_manager, 
+self
+))
+
+解决的问题
+：
+防止子 Agent 在初始化时“自发生成”并注册一个新的 
+task
+ 工具。
+
+3. 第三道防线：认知层隔离 —— 抑制 
+<available_agents>
+ 清单注入
+
+大模型发起工具调用的前提是“知道存在这项能力”。
+
+由于第二道防线中 
+SubagentManager
+ 为空，在拼接子代理的 System Prompt 时：
+
+1
+
+2
+
+3
+
+def
+ 
+format_prompt
+(
+self
+) -> 
+str
+:
+
+    
+if
+ 
+not
+ 
+self
+.subagents:
+
+        
+return
+ 
+""
+  
+# 仓储为空时直接返回空字符串
+
+子 Agent 的 System Prompt 尾部
+不会被注入任何 
+<available_agents>
+ XML 块
+；
+
+子模型在认知层面根本不知道系统具备“子代理委派”功能
+，从源头消除了产生“尝试调用子代理”的幻觉可能。
+
+如何跟踪task状态
+
+在设计任务跟踪与生命周期管理时，我们借鉴了 
+OpenHands（
+openhands/tools/task/manager.py
+）
+ 的任务状态机体系与会话拓扑设计，实现了结构化、可落盘且零死状态的状态跟踪体系。
+
+1. Task 状态机与生命周期模型
+
+将传统的单次函数返回值升级为具备明确生命周期的 
+Task
+ 实体与三态状态机：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+class
+ 
+TaskStatus
+(
+StrEnum
+):
+
+    RUNNING = 
+"running"
+      
+# 任务正在由子 Agent 独立执行
+
+    COMPLETED = 
+"completed"
+  
+# 任务执行成功并返回了有效的文本总结
+
+    ERROR = 
+"error"
+          
+# 任务因未知名 agent_type、异常或超轮数终止
+
+@dataclass
+
+class
+ 
+Task
+:
+
+    
+id
+: 
+str
+                  
+# 格式为 task_00000001 的递增唯一标识
+
+    status: TaskStatus
+
+    result: 
+str
+ | 
+None
+ = 
+None
+
+    error: 
+str
+ | 
+None
+ = 
+None
+
+    
+def
+ 
+set_result
+(
+self, result: 
+str
+
+) -> 
+None
+:
+
+        
+self
+.result = result
+
+        
+self
+.error = 
+None
+
+        
+self
+.status = TaskStatus.COMPLETED
+
+    
+def
+ 
+set_error
+(
+self, error: 
+str
+
+) -> 
+None
+:
+
+        
+self
+.error = error
+
+        
+self
+.result = 
+None
+
+        
+self
+.status = TaskStatus.ERROR
+
+原子互斥更新
+：
+set_result
+ 与 
+set_error
+ 确保 
+result
+ 与 
+error
+ 状态严格互斥；
+
+同步与异步一致性
+：在当前的同步阻塞执行模式下，
+Task
+ 从 
+RUNNING
+ 启动，并在 
+TaskManager.start_task
+ 返回时即确定为 
+COMPLETED
+ 或 
+ERROR
+；同时为未来演进至 
+async
+ / 
+background
+ 后台异步委派留出了统一接口。
+
+2. 基于“会话拓扑指针”的溯源跟踪（对齐 OpenHands）
+
+在追踪一个任务会话时，我们摒弃了容易造成冗余死状态的局部深度计数器（如 
+spawn_depth
+），改为采用与 OpenHands / Anthropic SDK 一致的 
+“父子拓扑指针（Parent Linkage）”
+ 方案：
+
+子会话独立物理隔离
+：
+子会话保存在父会话目录下的 
+subagents/agent-&#123;task_id&#125;.jsonl
+ 中，完全不污染父会话的对话历史。
+
+JSONL Header 元数据溯源
+：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+&#123;
+
+  
+"id"
+
+:
+ 
+"20260816-220000-abcd1234"
+
+,
+
+  
+"created_at"
+
+:
+ 
+"2026-08-16T22:00:00.000000"
+
+,
+
+  
+"cwd"
+
+:
+ 
+"D:/code/project"
+
+,
+
+  
+"metadata"
+
+:
+ 
+&#123;
+
+    
+"agent_type"
+
+:
+ 
+"code-reviewer"
+
+,
+
+    
+"parent_session_id"
+
+:
+ 
+"20260816-215000-efgh5678"
+
+  
+&#125;
+
+&#125;
+
+parent_session_id
+
+：天然标明当前会话是一个子代理任务，且精确指向派生它的父会话 ID；
+
+agent_type
+
+：标明当前子代理执行时所使用的角色定义。
+
+3. 全链路容错与结果回传
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+主模型调 task 工具
+
+  │
+
+  ▼
+
+TaskManager.start_task
+
+  ├── 创建 Task(id="task_00000001", status=RUNNING)
+
+  ├── 尝试执行 _run(...)
+
+  │     ├── 成功 ──► task.set_result(summary) ──► status = COMPLETED
+
+  │     └── 失败 ──► task.set_error(err_msg)  ──► status = ERROR
+
+  ▼
+
+make_task_tool 工具桥
+
+  ├── COMPLETED ──► 返回 task.result
+
+  └── ERROR     ──► 返回 task.error
+
+  │
+
+  ▼
+
+作为 Observation 喂回主模型 ReAct 循环（永不抛未捕获异常）
+
+通过这一闭环，无论子代理成功完成还是中途遇到未知角色/运行报错，任务状态都能被完整捕获并平滑反馈给主模型，主模型据此可继续自我纠错或汇总最终答复。
+
+4. 动态干预通道与异步生命周期追踪
+
+在 
+SubagentTaskManager
+ 内部维护了 
+_active_agents: dict[str, Agent]
+ 字典，提供以下原生异步干预方法：
+
+async def start_task(prompt: str, agent_type: str = "default") -> SubagentTask
+: 异步拉起子代理任务；
+
+def steer_task(task_id: str, message: str) -> None
+: 对正在运行的子代理实例进行定向转向（Steer 即时插队）；
+
+def follow_up_task(task_id: str, message: str) -> None
+: 对子代理追加排队消息（Follow-up 任务衔接）。
+
+子agent的异常处理流程
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+步骤 ①：子 Agent 运行崩溃
+
+       │  child.run(prompt) 抛出底层异常 (例如: TimeoutError)
+
+       ▼
+
+步骤 ②：TaskManager._run 捕获并包装
+
+       │  except Exception as exc:
+
+       │      raise RuntimeError("Subagent &#x27;code-reviewer&#x27; failed: TimeoutError") from exc
+
+       ▼
+
+步骤 ③：TaskManager.start_task 捕获并沉淀为状态（不再往上抛异常！）
+
+       │  # tasks.py -> start_task
+
+       │  task = self._create_task(...)
+
+       │  try:
+
+       │      task.set_result(self._run(...))
+
+       │  except Exception as exc:
+
+       │      task.set_error(str(exc))   <-- 错误字符串存入 task.error, status 切为 ERROR
+
+       │  return task                   <-- 返回 Task 实体对象给工具桥
+
+       ▼
+
+步骤 ④：make_task_tool 工具桥解包为文本返回给大模型
+
+       │  # tools/builtin/task.py -> make_task_tool
+
+       │  t = task_manager.start_task(...)
+
+       │  return t.result if t.status is COMPLETED else (t.error or "(no summary)")
+
+       │  # 此处返回纯文本: "Subagent &#x27;code-reviewer&#x27; failed: TimeoutError"
+
+       ▼
+
+步骤 ⑤：父 Agent 的 ReAct 循环接收为工具执行结果 (Observation)
+
+       │  作为一条 role="tool" 的消息写进父 Agent 的 messages 历史，
+
+       │  父模型看到这行报错，开始思考并自我修正（换工具重试或向用户报告）。

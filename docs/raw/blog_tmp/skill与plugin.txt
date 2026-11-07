@@ -1,0 +1,1962 @@
+skill机制
+
+SkillManager
+
+ SkillManager 是 skill 资源的”仓库管理员”——发现、存储、查询、格式化全部收敛到一个有状态对象里，让外面的代码（Agent）不需要知道 skill 来自文件系统。
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+class SkillManager:
+
+    """skill 仓储（Repository）：发现 + 按名索引 + 清单/调用文本生成。"""
+
+    def __init__(self, dirs: list[str | Path] | None = None):
+
+        """构造即发现：None → 探测 <cwd>/.agents/skills；[] → 禁用；非空 → 显式目录。"""
+
+    def _discover_dir(self, root: Path) -> None:
+
+        """扫单一来源目录的一层子目录（不递归、不认根级 .md、跳过隐藏目录）。"""
+
+    def _load_one(self, path: Path) -> Skill | None:
+
+        """读单个 SKILL.md → Skill；任何失败/缺 description → None（静默）。"""
+
+    def get(self, name: str) -> Skill | None:
+
+        """按名查询（Repository 主查询）。"""
+
+    def list(self) -> list[Skill]:
+
+        """全部 skills，发现顺序。"""
+
+        
+
+    def format_prompt(self) -> str:
+
+        """全部 skills → XML 清单块；空 → 空串（进 system prompt）。"""
+
+    def format_invocation(self, name: str, instructions: str = "") -> str:
+
+        """按名取正文 → <skill> 包装 + 可选附言；未知名 → ValueError（列可用名字）。"""
+
+如何加载skill
+
+你传什么决定扫哪：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+class SkillManager:
+
+    def __init__(self, dirs=None):
+
+        self.skills: dict[str, Skill] = &#123;&#125;          # 先建空巢
+
+        if dirs is None:
+
+            dirs = [Path.cwd() / ".agents" / "skills"]  # None → 探测默认目录
+
+        for root in dirs:
+
+            self._discover_dir(Path(root))              # 逐目录发现
+
+┌─────────────────────────────────┬───────────────────────────────────────┐
+
+│              传参               │                 行为                  │
+
+├─────────────────────────────────┼───────────────────────────────────────┤
+
+│ Agent(skill_dirs=None)（默认）  │ 探测 <cwd>/.agents/skills，不存在则空 │
+
+├─────────────────────────────────┼───────────────────────────────────────┤
+
+│ Agent(skill_dirs=["my_skills"]) │ 只扫 my_skills/ 这一个目录            │
+
+├─────────────────────────────────┼───────────────────────────────────────┤
+
+│ Agent(skill_dirs=[])            │ 显式禁用，空 dict                     │
+
+└─────────────────────────────────┴───────────────────────────────────────┘
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+27
+
+28
+
+29
+
+30
+
+31
+
+32
+
+33
+
+Agent(skill_dirs=["my_skills"])   ← 触发点：Agent 构造一次
+
+  │
+
+  ▼
+
+SkillManager(["my_skills"])
+
+  │  self.skills = &#123;&#125;
+
+  │
+
+  ├── 来源目录: my_skills/
+
+  │   │
+
+  │   ▼ _discover_dir(my_skills)
+
+  │   │
+
+  │   ├─ my_skills/code-review/
+
+  │   │   │  is_dir ✓, 非隐藏 ✓
+
+  │   │   │  code-review/SKILL.md 存在 ✓
+
+  │   │   ▼ _load_one(SKILL.md)
+
+  │   │   │  read utf-8-sig ──OSError──→ None (丢弃)
+
+  │   │   │  parse_frontmatter ──坏/无 YAML──→ (&#123;&#125;, 全文)
+
+  │   │   │  description? ──缺──→ None (守门跳过)
+
+  │   │   │  description="Perform thorough code reviews..." ✓
+
+  │   │   ▼
+
+  │   │   Skill(code-review, 正文, path) ──► skills["code-review"]
+
+  │   │
+
+  │   ├─ my_skills/pdf/
+
+  │   │   └─ ... ──► skills["pdf"]
+
+  │   │
+
+  │   ├─ my_skills/README.md        ✗ 不是目录 → 跳过
+
+  │   ├─ my_skills/.hidden/         ✗ 隐藏目录 → 跳过
+
+  │   └─ my_skills/notes/           ✗ 无 SKILL.md → 跳过
+
+  │
+
+  ▼
+
+self.skills = &#123;"code-review": Skill, "pdf": Skill&#125;
+
+  │
+
+  ▼（下一步，非加载）
+
+agent 组装 system = 用户 prompt + SkillManager.format_prompt() 清单块
+
+何时会加载 skill
+
+发现加载（读文件到内存）只在 Agent 初始化时发生一次：
+
+1
+
+2
+
+3
+
+# agent.py
+
+self
+.skill_manager = SkillManager(skill_dirs, extra_dirs=
+self
+.plugin_manager.get_skill_dirs())
+
+self
+.skills: 
+list
+[Skill] = 
+self
+.skill_manager.
+list
+()
+
+也就是说：
+
+Agent(skill_dirs=[…]) 或 Agent()（默认 None 探测 .agents/skills）构造的那一刻，扫描目录、解析 frontmatter、构建 self.skills 列表
+
+之后不再刷新——你改了某个 SKILL.md，要新开会话/新建 Agent 才生效（这正是设计决策 4：skill 配置变更新会话生效，刻意不做动态刷新）
+
+正文进入模型上下文则是另一个时机：初始化只把清单放进去，正文完全不会在初始化时加载——只有宿主显式 invoke_skill 的时刻才进模型。所以”何时加载”的准确答案是：发现=初始化一次；正文=按需、宿主显式注入时才出现。
+
+skill 的哪些内容会加入上下文
+
+分两个阶段，内容完全不同：
+
+阶段一：初始化，只加清单（很小）——每个 skill 只贡献 name + description，拼成 XML 块追加到 system prompt 尾部：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+<available_skills>
+
+  <skill>
+
+    <name>code-review</name>
+
+    <description>Perform thorough code reviews...</description>
+
+  </skill>
+
+  <skill>...</skill>
+
+</available_skills>
+
+正文（content）不进，frontmatter 其他字段（name、tags 等）不进。每个 skill 大约几十 token，这是渐进式披露的 token 经济学。
+
+阶段二：invoke_skill 时，加正文（wholesale）——整个 
+正文
+ 作为一个 user 消息进入上下文：
+
+1
+
+2
+
+3
+
+<skill name="code-review" location="D:\...\code-review\SKILL.md">
+
+  完整正文（frontmatter 以下的全部 markdown 指令）
+
+</skill>
+
+注意：附件文件（skill 目录里的 references/ scripts/ 等）从不加载——v1 只认 SKILL.md 正文本身。frontmatter 里除 description 外的键（比如 name、tags）也从不进上下文。
+
+如何调用某个 skill
+
+唯一的调用入口是 Agent.invoke_skill(name, instructions=””)：
+
+1
+
+2
+
+3
+
+# agent.py: 原生异步显式调用入口
+
+async
+ 
+def
+ 
+invoke_skill
+(
+self, name: 
+str
+, instructions: 
+str
+ = 
+""
+
+) -> 
+str
+ | 
+None
+:
+
+    
+return
+ 
+await
+ 
+self
+.run(
+self
+.skill_manager.format_invocation(name, instructions))
+
+调用方式（宿主侧代码）：
+
+1
+
+2
+
+3
+
+4
+
+agent = Agent(llm=llm, tools=[...], skill_dirs=["my_skills"])
+
+agent.invoke_skill("code-review", "重点看并发安全")
+
+# run(&#x27;<skill name="code-review" ...>正文</skill>\n\n重点看并发安全&#x27;)
+
+# → 模型按正文干活，返回最终文本
+
+skill生命周期
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+27
+
+28
+
+29
+
+30
+
+31
+
+32
+
+33
+
+34
+
+35
+
+36
+
+37
+
+38
+
+39
+
+40
+
+41
+
+42
+
+43
+
+44
+
+45
+
+46
+
+47
+
+48
+
+49
+
+50
+
+51
+
+52
+
+53
+
+54
+
+55
+
+56
+
+57
+
+58
+
+59
+
+60
+
+61
+
+62
+
+63
+
+64
+
+65
+
+66
+
+67
+
+68
+
+69
+
+70
+
+71
+
+72
+
+73
+
+74
+
+75
+
+76
+
+77
+
+78
+
+79
+
+80
+
+① 落地（用户/宿主写文件）
+
+   my_skills/code-review/SKILL.md
+
+   │  ┌── frontmatter ──────────┐
+
+   │  │ description: ...        │ ← 唯一读取字段，缺了被守门跳过
+
+   │  └─────────────────────────┘
+
+   │  ┌── 正文 markdown ────────┐
+
+   │  │ 完整操作指令             │ ← 将来注入模型的 content
+
+   │  └─────────────────────────┘
+
+   ▼
+
+② 发现（Agent 构造时，只此一次）
+
+   Agent(skill_dirs=["my_skills"])
+
+     └─► self.skill_manager = SkillManager(["my_skills"])
+
+            │  dirs 三态：None 探测 .agents/skills / [] 禁用 / 显式目录
+
+            ▼
+
+          _discover_dir(my_skills)
+
+            │  iterdir 一层
+
+            │  ① 非目录 → 跳过     ② 隐藏目录(.开头) → 跳过
+
+            │  ③ 无 SKILL.md → 跳过
+
+            ▼
+
+③ 解析 + 守门（_load_one）
+
+① 落地（用户/宿主写文件）
+
+   my_skills/code-review/SKILL.md
+
+   │  ┌── frontmatter ──────────┐
+
+   │  │ description: ...        │ ← 唯一读取字段，缺了被守门跳过
+
+   │  └─────────────────────────┘
+
+   │  ┌── 正文 markdown ────────┐
+
+   │  │ 完整操作指令             │ ← 将来注入模型的 content
+
+   │  └─────────────────────────┘
+
+   ▼
+
+② 发现（Agent 构造时，只此一次）
+
+   Agent(skill_dirs=["my_skills"])
+
+     └─► self.skill_manager = SkillManager(["my_skills"])
+
+            │  dirs 三态：None 探测 .agents/skills / [] 禁用 / 显式目录
+
+            ▼
+
+          _discover_dir(my_skills)
+
+            │  iterdir 一层
+
+            │  ① 非目录 → 跳过     ② 隐藏目录(.开头) → 跳过
+
+            │  ③ 无 SKILL.md → 跳过
+
+            ▼
+
+③ 解析 + 守门（_load_one）
+
+   read_text(utf-8-sig) ────读失败(OSError)───► None（静默丢弃）
+
+        │
+
+        ▼
+
+   parse_frontmatter(text)
+
+        │  无 --- 头 / 闭合缺失 / 坏 YAML / 非 dict → 全部降级为 (&#123;&#125;, 全文)
+
+        ▼
+
+   meta.get("description") ────缺失 / 空────► None（守门跳过）
+
+        │ description 存在
+
+        ▼
+
+   Skill(name="code-review", description="...", content="正文", file_path=...)
+
+   │
+
+   ▼
+
+④ 入巢 + 清单可见
+
+   self.skills["code-review"] = Skill        # key = 目录名，dict 保持发现顺序
+
+        │
+
+        ├─► format_prompt() ──► XML 清单（name+description）
+
+        │        如 <available_skills><skill><name>... ──► 进 system prompt（常驻）
+
+        │
+
+        ▼
+
+⑤ 调用（宿主显式，模型无自助通道）
+
+   agent.invoke_skill("code-review", "重点看并发")
+
+        │
+
+        ▼
+
+   skill_manager.format_invocation("code-review", "重点看并发")
+
+        │  get("code-review")
+
+        │    ──── 未知名 ────► ValueError（列可用名字）★ 唯一显式失败
+
+        ▼
+
+   <skill name="code-review" location="D:\...\SKILL.md">
+
+     正文 markdown
+
+   </skill>
+
+   重点看并发
+
+        │  包装成一个 user 消息
+
+        ▼
+
+⑥ 执行（进入模型上下文）
+
+   Agent.run(包装文本)
+
+        │  user 消息追加进 messages
+
+        ▼
+
+   llm.chat(messages, tools) ──► 模型看到正文指令 ──► 干活（可再调工具）──► 返回最终文本
+
+阶段 ①②③ 合称”加载”——磁盘 → 内存 Skill 对象。只在 Agent 构造时发生一次。每个失败点都静默（丢弃 None），不阻塞 Agent 启动。
+
+阶段 ④ 是”渐进式披露”第一层——模型此刻只看到 name+description（清单），看不到正文。这是 token 经济学：每个 skill 在 system 里只占几十 token。
+
+阶段 ⑤⑥ 合称”调用”——正文从内存进模型上下文。触发者是宿主（应用层代码 / 未来的 REPL），不是模型。format_invocation 是唯一”查不到就报错”的地方。
+
+阶段 ⑦ 是关键边界：skill 生命周期不随会话走——Agent.reset() 清 messages 不清 skills；改文件必须重开 Agent。skill 是代码级配置（构造时定死），不是会话状态。
+
+plugin
+
+标准plugin的结构
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+my-plugin/
+
+├── .claude-plugin/
+
+│   └── plugin.json          # Plugin 清单（可选，不需要它也能自动发现组件）
+
+├── skills/                   # Agent Skills（自主调用或通过 /skill-name）
+
+│   └── my-skill/
+
+│       └── SKILL.md
+
+├── commands/                 # 旧版：改用 skills/ 代替
+
+│   └── custom-cmd.md
+
+├── agents/                   # 自定义 agents
+
+│   └── specialist.md
+
+├── hooks/                    # 事件处理程序
+
+│   └── hooks.json
+
+└── .mcp.json                # MCP 服务器定义
+
+目录
+
+位置
+
+目的
+
+.claude-plugin/
+
+插件根
+
+包含 
+plugin.json
+ 清单（如果组件使用默认位置，则可选）
+
+skills/
+
+插件根
+
+Skills 作为 
+<name>/SKILL.md
+ 目录
+
+commands/
+
+插件根
+
+Skills 作为平面 Markdown 文件。为新插件使用 
+skills/
+
+agents/
+
+插件根
+
+自定义 agent 定义
+
+hooks/
+
+插件根
+
+hooks.json
+ 中的事件处理程序
+
+.mcp.json
+
+插件根
+
+MCP server 配置
+
+.lsp.json
+
+插件根
+
+用于代码智能的 LSP server 配置
+
+monitors/
+
+插件根
+
+monitors.json
+ 中的后台监视器配置
+
+bin/
+
+插件根
+
+在启用插件时添加到 Bash tool 的 
+PATH
+ 的可执行文件
+
+settings.json
+
+插件根
+
+启用插件时应用的默认
+设置
+
+架构全景
+
+在我们的框架中，底层的 SkillManager（技能）、SubagentManager（子代理）以及 MCP 客户端已经非常成熟。
+ 因此，PluginManager 的定位不是重写一套执行引擎，而是作为一个“标准插件包的扫描、校验与解构分发器”：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+               Claude Code 格式插件目录包 (例如 .agents/plugins/my-plugin/)
+
+               ├── .claude-plugin/plugin.json (或 .plugin/plugin.json)
+
+               ├── skills/ (或根目录 SKILL.md 单技能简写)
+
+               ├── agents/
+
+               └── .mcp.json
+
+                                     │
+
+                                     ▼
+
+                           ┌───────────────────┐
+
+                           │   PluginManager   │ (扫描目录、解析 Manifest、提取组件路径)
+
+                           └─────────┬─────────┘
+
+                                     │
+
+         ┌───────────────────────────┼───────────────────────────┐
+
+         │                           │                           │
+
+         ▼                           ▼                           ▼
+
+  get_skill_dirs()           get_subagent_dirs()        get_mcp_config_paths()
+
+  [Path(".../skills")]       [Path(".../agents")]       [Path(".../.mcp.json")]
+
+         │                           │                           │
+
+         ▼                           ▼                           ▼
+
+┌───────────────────┐       ┌───────────────────┐       ┌───────────────────┐
+
+│   SkillManager    │       │  SubagentManager  │       │   MCP 客户端扩展   │
+
+│ (通过 extra_dirs) │       │ (通过 extra_dirs) │       │  (按需加载 MCP)   │
+
+└───────────────────┘       └───────────────────┘       └───────────────────┘
+
+PluginManifest和PluginAuthor
+
+1. PluginAuthor：格式抹平器与作者归属元数据
+
+地位：细粒度值对象（Value Object）；
+
+核心作用：抹平社区中 “Name 
+“、”Name” 以及字典对象等不同写法的差异，对外提供统一的 .name、.email、.url 属性。在向用户展
+示插件作者归属时提供精确支持。
+
+2. PluginManifest：插件的法定身份证
+
+地位：插件元数据的核心领域实体（Core Entity）；
+
+三大核心作用：
+
+确定唯一命名空间（Namespace Anchor）：
+
+在 Claude Code 生态中，manifest.name 是最核心的字段。它决定了这个插件带来的所有技能在提示词里的命名空间（例如
+/code-quality:lint），防止多个插件之间产生技能重名冲突；
+
+版本控制与兼容性（Version Tracking）：
+
+保存 version（默认 “1.0.0”）。未来做插件热更新、版本依赖检查时，它是唯一权威依据；
+
+插件市场与用户界面展示（Marketplace & UI Representation）：
+
+在终端输入 /plugins list 或在 Web 界面查看已安装插件时，界面展示的名称、版本、简介、作者、开源协议（License）、主页链
+接，全量来源于 PluginManifest。
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+磁盘上的 .claude-plugin/plugin.json
+
+&#123;
+
+  "name": "code-quality",
+
+  "version": "1.2.0",
+
+  "author": "OpenHands <dev@openhands.dev>"
+
+&#125;
+
+               │
+
+               ▼ json.loads() 读取
+
+               │
+
+               ▼ PluginAuthor.from_value() 弹性解析
+
+               │
+
+               ▼ 封装为强类型对象
+
+PluginManifest(
+
+    name="code-quality",
+
+    version="1.2.0",
+
+    author=PluginAuthor(name="OpenHands", email="dev@openhands.dev")
+
+)
+
+               │
+
+               ▼
+
+供 PluginManager、Agent 以及上层 CLI 随时安全读取！
+
+Plugin对象
+
+一、Plugin 在系统中的定位
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+┌────────────────────────────────────────────────────────┐
+
+│                 Plugin 实体对象                        │
+
+├────────────────────────────────────────────────────────┤
+
+│                                                        │
+
+│  1. 插件名称 (name)                                    │
+
+│  2. 物理目录 (path: Path(".../my-plugin"))             │
+
+│  3. 插件身份证 (manifest: PluginManifest)              │
+
+│  4. 启用开关 (enabled: True/False)                     │
+
+│                                                        │
+
+│  【动态资源探测器 (计算属性 Properties)】              │
+
+│  • skills_dir       ──► 自动探测 skills/ 或 SKILL.md   │
+
+│  • agents_dir       ──► 自动探测 agents/ 目录          │
+
+│  • mcp_config_path  ──► 自动探测 .mcp.json 配置文件    │
+
+│                                                        │
+
+└────────────────────────────────────────────────────────┘
+
+两个核心任务
+
+ Plugin 这个类主要完成了两件极其关键的工作：
+
+任务 1：从文件夹一键加载插件（Plugin.from_directory 工厂方法）
+
+ 你只要给它传一个文件夹路径（比如 Path(“.agents/plugins/code-review”)），它会自动完成一整套容错加载流程：
+
+多级查找 Manifest：
+先看有没有 .claude-plugin/plugin.json ➔ 再看 .plugin/plugin.json ➔ 最后看根目录 plugin.json；
+
+安全读取与解析：
+采用 utf-8-sig 编码读取（不怕 Windows BOM 乱码），解析成 PluginManifest 对象；
+
+智能兜底（Fallback）：
+如果这个文件夹里根本没有 plugin.json（比如用户随手建的本地测试目录），它绝不报错罢工，而是自动以文件夹名作为插件名，生成一个
+默认的 PluginManifest。
+
+任务 2：子资源动态解构与路由（三个属性探测器）
+
+它不需要在内存里把所有文件都读出来，而是提供了三个极其轻量、即用即算的属性：
+
+属性名称
+
+作用与探测逻辑
+
+返回结果
+
+plugin.skills_dir
+
+技能目录探测器
+①优先找 
+skills/
+ 子目录；
+②若没有，找旧版兼容的 
+commands/
+ 目录；
+③若根目录直接有 
+SKILL.md
+（单技能插件简写），直接返回插件根目录。
+
+Path
+ 或 
+None
+
+plugin.agents_dir
+
+子代理目录探测器
+探测是否存在 
+agents/
+ 子目录。
+
+Path
+ 或 
+None
+
+plugin.mcp_config_path
+
+MCP 配置文件探测器
+探测是否存在 
+.mcp.json
+ 配置文件。
+
+Path
+ 或 
+None
+
+为什么要把这三个资源做成属性（Property）？
+
+@property 的作用是什么？
+
+ 简单一句话：@property 把一个“方法（函数）”，伪装成一个“只读属性（变量）”。
+
+1. 没有 @property 时的写法（普通方法）
+
+ 如果你不用 @property，你必须这样定义和调用：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+class
+ 
+Plugin
+:
+
+    
+def
+ 
+get_skills_dir
+(
+self
+):
+
+        
+# 逻辑...
+
+        
+return
+ path
+
+# 外部调用时，必须加上圆括号 ()
+
+p = Plugin(...)
+
+dir_path = p.get_skills_dir()  
+# 必须带 () 调用
+
+2. 加上 @property 后的写法（计算属性）
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+class
+ 
+Plugin
+:
+
+    @property
+
+    
+def
+ 
+skills_dir
+(
+self
+):
+
+        
+# 逻辑...
+
+        
+return
+ path
+
+# 外部调用时，像访问普通变量一样，不需要写 ()！
+
+p = Plugin(...)
+
+dir_path = p.skills_dir  
+# 像读变量一样直观：p.skills_dir
+
+3. 为什么不直接在 
+init
+ 里存一个普通变量，非要用 @property？
+
+方案
+
+__init__
+ 直接存变量 (
+self.skills_dir = ...
+)
+
+用 
+@property
+ 计算属性（我们的方案）
+
+计算时机
+
+在创建对象时写死了一次，如果磁盘文件后来变动，变量值就过时了。
+
+即用即算（
+On-Demand
+）。每次有人访问 
+p.skills_dir
+ 时，现场去磁盘快速探测一次，保证结果永远是最新的。
+
+可读性
+
+容易被外部代码不小心修改：
+p.skills_dir = "xxx"
+
+只读保护。外部代码如果试图修改 
+p.skills_dir = 123
+，Python 会直接报错拒绝，防止属性被意外污染。
+
+PluginManager
+
+第一阶段：三态扫描与路径判断
+
+ 这一步的核心任务是：搞清楚用户想怎么加载插件，并找到所有候选文件夹。
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+               Agent 启动: Agent(plugin_dirs=...)
+
+                               │
+
+                               ▼
+
+               【检查 plugin_dirs 三态参数】
+
+                               │
+
+       ┌───────────────────────┼───────────────────────┐
+
+       ▼ (plugin_dirs is None) ▼ (plugin_dirs == [])   ▼ (plugin_dirs 为路径列表)
+
+┌──────────────┐        ┌──────────────┐        ┌────────────────────────┐
+
+│ 默认自动探测 │           │ 显式完全禁用 │        │ 遍历每个传入路径 p     │
+
+│ .agents/     │        │ 插件字典保持 │        └───────────┬────────────┘
+
+│ plugins/     │        │ 为空，直接结 │                    │
+
+└──────┬───────┘        │ 束装配       │                    ▼
+
+       │                └──────────────┘        【_is_single_plugin(p)?】
+
+       │                                                    │
+
+       │                                     ┌──────────────┴──────────────┐
+
+       │                                 ▼ (是单个插件)          ▼ (是包含多个插件的目录)
+
+       │                              直接作为单个目标       调用 _discover_from_dir(p)
+
+       │                                     │                   遍历其下所有子文件夹
+
+       │                                     │                             │
+
+       └─────────────────────────────────────┼─────────────────────────────┘
+
+                                             │
+
+                                             ▼
+
+                               进入【第二阶段：单插件加载】
+
+第二阶段：单插件加载与防爆安检（_load_one_plugin）
+
+ 这一步的核心任务是：把每一个找到的文件夹变成合法的 Plugin 对象，坏了也不崩。
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+27
+
+28
+
+29
+
+              接收到目标文件夹路径: p
+
+                        │
+
+                        ▼
+
+            ┌─────────────────────────┐
+
+            │ 调用 Plugin.from_dir(p) │
+
+            │ 尝试读取 plugin.json    │
+
+            └───────────┬─────────────┘
+
+                        │
+
+        ┌───────────────┴───────────────┐
+
+        ▼ (读取成功)                    ▼ (文件缺失或 JSON 损坏)
+
+ 解析并提取 Manifest                     触发智能兜底机制:
+
+ (name, version, author...)             用目录名自动推断默认 Manifest
+
+        │                                       │
+
+        └───────────────┬───────────────────────┘
+
+                        │
+
+                        ▼ 组装成 Plugin 实体
+
+         ┌─────────────────────────────┐
+
+         │ 放入 try...except 安全沙箱  │
+
+         └──────────────┬──────────────┘
+
+                        │
+
+        ┌───────────────┴───────────────┐
+
+        ▼ (无致命错误)                  ▼ (发生异常/坏插件)
+
+┌────────────────────────┐      ┌────────────────────────┐
+
+│ 登记入库:              │      │ 【单点故障隔离】       │
+
+│ self.plugins[name] = p │      │ 打印 Warning 日志      │
+
+└───────────┬────────────┘      │ 自动跳过，绝不崩溃主程序│
+
+            │                   └────────────────────────┘
+
+            ▼
+
+   该插件加载完毕，等待分发
+
+第三阶段：资源解构与管家分发
+
+ 这一步的核心任务是：把已加载的所有插件拆包，分给各个专业管家。
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+              所有插件已登记在 self.plugins 字典中
+
+                                │
+
+    ┌───────────────────────────┼───────────────────────────┐
+
+    │ 1. 提取技能               │ 2. 提取子代理             │ 3. 提取 MCP 配置
+
+    ▼                           ▼                           ▼
+
+get_skill_dirs()            get_subagent_dirs()         get_mcp_config_paths()
+
+收集所有 skills/ 路径       收集所有 agents/ 路径       收集所有 .mcp.json 路径
+
+    │                           │                           │
+
+    ▼                           ▼                           ▼
+
+注入 SkillManager           注入 SubagentManager        注入 MCP 客户端扩展
+
+(System Prompt              (自动注册 task 委派         (自动建立 Stdio 进程
+
+ 自动呈现技能清单)           工具，支持调用专员)         桥接外部工具)
+
+    │                           │                           │
+
+    └───────────────────────────┼───────────────────────────┘
+
+                                │
+
+                                ▼
+
+                    主 Agent 获得所有插件能力，
+
+                         装配完成，正式就绪！
+
+plugin.json
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+               ┌────────────────────────────────────────────────────────┐
+
+               │         一个下载或手写的插件文件夹: my-plugin/          │
+
+               └───────────────────────────┬────────────────────────────┘
+
+                                           │
+
+         ┌─────────────────────────────────┼─────────────────────────────────┐
+
+         ▼                                 ▼                                 ▼
+
+【第 1 优先级：官方标准】          【第 2 优先级：社区通用】          【第 3 优先级：极简根级】
+
+ .claude-plugin/plugin.json        .plugin/plugin.json               ./plugin.json
+
+ (Claude Code 官方最新规范)        (OpenHands/开源社区通用标准)       (本地快速手写极简风格)
+
+plugin.json 的标准格式是怎样的？
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+&#123;
+
+  
+"name"
+
+:
+ 
+"code-quality"
+
+,
+
+  
+"version"
+
+:
+ 
+"1.2.0"
+
+,
+
+  
+"description"
+
+:
+ 
+"一套用于代码审查、格式化和 Lint 检查的开发质量插件套件"
+
+,
+
+  
+"author"
+
+:
+ 
+&#123;
+
+    
+"name"
+
+:
+ 
+"Anthropic"
+
+,
+
+    
+"email"
+
+:
+ 
+"support@anthropic.com"
+
+,
+
+    
+"url"
+
+:
+ 
+"https://anthropic.com"
+
+  
+&#125;
+
+,
+
+  
+"homepage"
+
+:
+ 
+"https://github.com/example/code-quality"
+
+,
+
+  
+"repository"
+
+:
+ 
+"https://github.com/example/code-quality.git"
+
+,
+
+  
+"license"
+
+:
+ 
+"MIT"
+
+,
+
+  
+"keywords"
+
+:
+ 
+[
+
+    
+"lint"
+
+,
+
+    
+"code-review"
+
+,
+
+    
+"python"
+
+,
+
+    
+"quality"
+
+  
+]
+
+&#125;
+
+字段名称
+
+类型
+
+是否必填
+
+作用与含义
+
+例子
+
+name
+
+string
+
+强烈建议
+
+插件的唯一代号。在 Claude Code 中它同时是技能的命名空间前缀（防止与其他插件重名）。
+
+"code-quality"
+
+version
+
+string
+
+可选
+
+版本号（默认 
+"1.0.0"
+）。遵循语义化版本规范。
+
+"1.2.0"
+
+description
+
+string
+
+可选
+
+插件功能简介。在列出插件清单时展示给用户看。
+
+"代码质量检查工具集"
+
+author
+
+object
+ / 
+string
+
+可选
+
+作者信息。
+既可以写成对象：
+&#123;"name": "...", "email": "..."&#125;
+
+也可以写成纯字符串：
+"OpenHands <dev@openhands.dev>"
+
+"Anthropic <support@anthropic.com>"
+
+homepage
+
+string
+
+可选
+
+插件的官方主页或文档网址。
+
+"https://example.com"
+
+repository
+
+string
+
+可选
+
+插件的开源 Git 代码仓库地址。
+
+"https://github.com/..."
+
+license
+
+string
+
+可选
+
+开源许可证类型。
+
+"MIT"
+ 或 
+"Apache-2.0"
+
+keywords
+
+array
+
+可选
+
+标签列表
+
+["test", "review"]

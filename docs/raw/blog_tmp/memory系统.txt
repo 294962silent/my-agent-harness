@@ -1,0 +1,1981 @@
+hermes agent的记忆系统
+
+双层记忆架构全景
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+┌────────────────────────────────────────────────────────────────────────┐
+
+│                          Hermes Agent 记忆体系                          │
+
+├────────────────────────────────────────────────────────────────────────┤
+
+│                                                                        │
+
+│  【第一层：内置精选文件记忆 (Builtin Curated Memory)】                  │
+
+│    • 定位：持久化、高信号、强控制、极低 Token 消耗                      │
+
+│    • 载体：MEMORY.md (Agent 笔记) + USER.md (用户画像)                   │
+
+│    • 机制：启动时冻结快照注入 System Prompt + 运行时受控 memory 工具维护 │
+
+│  ────────────────────────────────────────────────────────────────────  │
+
+│                                                                        │
+
+│  【第二层：可插拔外部提供商 (Pluggable Memory Providers)】              │
+
+│    • 定位：开放生态、大规模语义检索、跨设备云同步 (Honcho / Mem0 等)    │
+
+│    • 机制：MemoryManager 单例控制 (一次只开一个)，提供 per-turn prefetch │
+
+│                                                                        │
+
+└────────────────────────────────────────────────────────────────────────┘
+
+ 对于单机本地 Agent 而言，第一层（内置精选文件记忆） 是 Hermes 最核心的灵魂所在。
+
+内置文件记忆的工程设计
+
+1. 核心不变式：Frozen Snapshot（冻结快照）与 Prefix Cache 保护
+
+ 大模型 API（如 Claude Prompt Caching、OpenAI/DeepSeek Prefix Caching）能够极大降低推理延迟与成本，但前提是 System
+ Prompt 和开头的历史消息必须严格保持不变（哈希一致）。
+
+ 传统的做法是：Agent 一旦学到新知识，就立刻修改 System Prompt。这会导致整条上下文的前缀缓存全部失效，下一轮必须重新
+ Prefill。
+
+ Hermes 的解法：双状态并行（Parallel States）
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+                启动时: 读磁盘 ──► 捕获 Frozen Snapshot (冻结快照)
+
+                                         │
+
+                                         ▼ 注入 System Prompt (本会话全程静止!)
+
+                                ┌─────────────────┐
+
+                                │  System Prompt  │ (KV Cache 命中率 100%)
+
+                                └─────────────────┘
+
+                                         ▲
+
+                                         │ 绝不修改快照!
+
+LLM 调用 memory(action="add") ───────────┴──► 立即落盘 MEMORY.md (持久化)
+
+                                                │
+
+                                                ▼
+
+                                     下次启动/新会话时才加载最新快照
+
+System Prompt 快照冻结：会话进行中，无论调用多少次 memory 工具写入，当前会话的 System Prompt 绝对静止，Prefix Cache
+绝不失效；
+
+磁盘实时持久化：新写入的记忆立即原子落盘，下一次开启新会话时自动生效。
+
+2. 双 Store 与字符预算硬限制（Character Budget Limits）
+
+Hermes 将长期记忆严格拆分为两个 Markdown 文件，并且采用字符数（Characters）而非 Token 数作为预算硬约束（因为字符计算是
+模型无关且 100% 确定的）：
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+┌───────────┬────────────┬────────────────────────────────────────────────────────────┐
+
+│ 记忆载体  │ 预算上限   │ 存储内容与语义                                             │
+
+├───────────┼────────────┼────────────────────────────────────────────────────────────┤
+
+│ MEMORY.md │ 2,200 字符 │ Agent 自己的笔记（环境事实、项目规范、工具踩坑、业务结论） │
+
+├───────────┼────────────┼────────────────────────────────────────────────────────────┤
+
+│ USER.md   │ 1,375 字符 │ 用户画像（偏好风格、语言习惯、角色设定、禁忌事项）         │
+
+└───────────┴────────────┴────────────────────────────────────────────────────────────┘
+
+为什么设置严格的字符上限？
+
+ 防止长期使用后记忆无界膨胀冲垮大模型上下文。当总字符即将超过上限时，系统会拒绝追加写入，并把当前所有条目打印给模型，迫
+ 使模型在当前轮次内调用 replace 合并精简旧记忆（Consolidation）或 remove 删除过时记忆。
+
+3. 单工具多 Action (memory) 与唯原子串定位
+
+ Hermes 没有提供零散的 remember / recall / search_memory 工具，而是收敛为一个高度紧凑的单工具：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+&#123;
+
+  
+"name"
+
+:
+ 
+"memory"
+
+,
+
+  
+"parameters"
+
+:
+ 
+&#123;
+
+    
+"target"
+
+:
+ 
+"memory | user"
+
+,
+
+    
+"action"
+
+:
+ 
+"add | replace | remove"
+
+,
+
+    
+"content"
+
+:
+ 
+"新条目内容 (用于 add)"
+
+,
+
+    
+"old_text"
+
+:
+ 
+"唯原子串定位 (用于 replace / remove)"
+
+,
+
+    
+"new_content"
+
+:
+ 
+"替换后的内容 (用于 replace)"
+
+  
+&#125;
+
+&#125;
+
+① 特殊条目分隔符：\n§\n
+
+ Hermes 选用 §（Section Sign）作为条目分隔符，条目内部允许包含多行 Markdown，避免普通换行造成切分歧义。
+
+② 唯原子串定位（Unique Substring Match）
+
+ 在 replace 和 remove 操作中，模型不需要记住数字 ID（如 id=12），也不需要复制整段冗长的原始文本，只需传入一段具有唯一性
+ 的文本子串（old_text）：
+
+歧义拦截（Ambiguity Guard）：如果 old_text 同时匹配了多条记录，系统会直接拦截并报错，把命中的多条记录全部列出，要求
+模型给出更精确的关键词，彻底杜绝误删误改；
+
+精准替换：只命中唯一样本时才执行替换/删除并原子写盘。
+
+一、特殊条目分隔符：\n§\n
+
+1. 它要解决什么痛点？
+
+如果我们把长期记忆存成一个 Markdown 文本文件（MEMORY.md），程序该如何区分“条目 1”和“条目 2”？
+
+如果按普通换行（\n）切分：
+如果某一条记忆是多行的（比如包含代码片段、列表或换行说明），程序就会错误地把它切成好几条碎片！
+
+如果存成 JSON：
+人类打开 MEMORY.md 直接阅读或手工编辑时很不友好，而且大模型写 JSON 容易出现转义符号错误。
+
+2. Hermes 的解法：用 § 做切分线
+
+§（Section Sign，章节符）是一个在日常代码和自然语言中极少出现的特殊字符。Hermes 规定两条记忆之间必须用 \n§\n 隔开。
+
+实际效果示例：
+
+ 假设你的 MEMORY.md 里面存了 2 条记忆，文件内容长这样：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+项目构建规范：
+
+1.
+ 必须使用 uv 管理依赖
+
+2.
+ 运行测试命令为 
+`uv run pytest`
+
+§
+
+数据库配置备忘：
+
+-
+ 本地端口为 5432
+
+-
+ 用户名 postgres，密码在 .env 中
+
+ 程序怎么读写？
+
+读取解析：entries = file_text.split(“\n§\n”) ➔ 稳稳当当地拿到 2 个完整的字符串列表，哪怕每个条目内部换了 10 行，也不
+会被切碎！
+
+保存写盘：”\n§\n”.join(entries) ➔ 重新拼装成漂亮的 Markdown 文件。
+
+二、唯一子串定位（Unique Substring Match）
+
+│ （注：前面文档里的“唯原子串”是 唯一子串（Unique Substring） 的意思）
+
+1. 它要解决什么痛点？
+
+当大模型想要
+修改（replace）或删除（remove）
+某条旧记忆时，它该如何告诉程序“我要改哪一条”？
+
+方案 A（按数字编号 ID=1, 2, 3 定位）：
+
+❌ 缺点：大模型特别容易记错 ID；而且一旦删除了第 1 条，后面的编号全变了，很容易误删其它记忆。
+
+方案 B（必须 100% 完整复制原句）：
+
+❌ 缺点：极费 Token，而且大模型只要漏复制一个标点或空格，程序就报错“找不到该内容”。
+
+2. Hermes 的解法：只要提供一段“唯一的特征片段”
+
+大模型只需要传入旧记忆里独一无二的一小段关键词（old_text），程序在后台进行子串匹配：
+
+1
+
+2
+
+# 找到所有包含 old_text 的记忆条目
+
+matches = [i 
+for
+ i, entry 
+in
+ 
+enumerate
+(entries) 
+if
+ old_text 
+in
+ entry]
+
+3. 运行时的三种情况：
+
+✅ 情况 1：精准唯一命中（执行修改）
+
+现有记忆条目：
+
+条目 A：”用户偏好使用 Python 3.11 编写代码”
+
+条目 B：”项目部署在阿里云 K8s 集群”
+
+模型调用工具：
+
+memory(action=”replace”, old_text=”Python 3.11”, new_content=”用户偏好使用 Python 3.12”)
+
+系统判定：只有条目 A 包含 “Python 3.11”（命中数量 = 1）➔ 精准定位，替换成功！
+
+⚠️ 情况 2：歧义多处命中（主动拦截报警，防止误删！）
+
+现有记忆条目：
+
+条目 A：”用户在前端偏好使用 Vue3”
+
+条目 B：”用户在后端偏好使用 FastAPI”
+
+模型调用工具：
+
+memory(action=”remove”, old_text=”偏好使用”)
+
+系统判定：old_text=”偏好使用” 同时出现在了条目 A 和条目 B 里（命中数量 = 2）！
+
+系统的防误删保护触发：
+系统立刻拒绝删除，并给模型报错返回：
+│ “Ambiguous match: found 2 entries matching ‘偏好使用’. Please provide a more specific old_text.”
+│ （匹配到多条记录，存在歧义！请提供更精准的特征词，比如 ‘前端偏好’ 或 ‘后端偏好’）
+
+❌ 情况 3：未命中
+
+模型传入了一个不存在的词 ➔ 系统返回 Text ‘xxx’ not found in memory，提示模型检查现有清单。
+
+什么该保存，什么该跳过
+
+主动保存这些内容
+
+Agent 会自动保存——无需你主动要求。当它学到以下内容时会保存：
+
+用户偏好：
+ “我更喜欢 TypeScript 而非 JavaScript” → 保存到 
+user
+
+环境事实：
+ “此服务器运行 Debian 12，安装了 PostgreSQL 16” → 保存到 
+memory
+
+纠正信息：
+ “Docker 命令不要用 
+sudo
+，用户已在 docker 组中” → 保存到 
+memory
+
+约定：
+ “项目使用 tab 缩进、120 字符行宽、Google 风格 docstring” → 保存到 
+memory
+
+已完成的工作：
+ “2026-01-15 将数据库从 MySQL 迁移到 PostgreSQL” → 保存到 
+memory
+
+明确请求：
+ “记住我的 API 密钥每月轮换一次” → 保存到 
+memory
+
+跳过这些内容
+
+琐碎/显而易见的信息：
+ “用户询问了 Python”——太模糊，没有实用价值
+
+容易重新发现的事实：
+ “Python 3.12 支持 f-string 嵌套”——可以网络搜索
+
+原始数据转储：
+ 大型代码块、日志文件、数据表——对记忆来说太大
+
+会话特定的临时内容：
+ 临时文件路径、一次性调试上下文
+
+已在上下文文件中的信息：
+ SOUL.md 和 AGENTS.md 的内容
+
+提示词与 Schema 中是如何定义的？
+
+ 在 Hermes 和 my-agent-core 中，大模型在开始思考前，能同时看到两处关键指引：
+
+1. 工具描述里的执行契约（memory Tool Schema）
+
+ 在每个工具注册到大模型时，memory 工具的 description 字段里写满了具体的触发条件：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+【WHEN 触发时机】
+
+- 当用户表达偏好、纠正你的错误或提供个人信息时，主动保存；
+
+- 当你了解到关于用户开发环境、项目规范或工作流的稳定事实时，主动保存；
+
+- 优先级排序：用户偏好与纠错 > 环境与项目事实 > 流程经验。
+
+- 黄金准则：最优秀的记忆，是让用户永远不需要重复说第二遍。
+
+【TARGETS 存储目标】
+
+- &#x27;user&#x27;：用户画像（姓名、角色、代码偏好、沟通风格、忌讳事项）；
+
+- &#x27;memory&#x27;：Agent 自己的笔记（环境事实、项目规范、依赖怪癖、踩坑教训）。
+
+【SKIP 明确禁止记录的内容】
+
+- 严禁记录临时任务进度、已完成工作日志、临时 TODO 待办（用 session 或 todo 管理）；
+
+- 严禁记录容易随时重新发现的事实或大段原始数据；
+
+- 严禁记录多步骤可复用的操作流程（操作流程应写进 Skill，而非 Memory）。
+
+2. System Prompt 里的持久化上下文块（
+）
+
+ 在 System Prompt 首条消息中，会动态注入当前已有的记忆，并给模型明确的角色定位：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+<
+MEMORY_CONTEXT
+>
+
+以下是你跨会话保留的长期记忆。
+
+当你从对话中学习到新的事实、用户偏好或被用户纠错时，请主动调用 
+`memory`
+ 工具进行更新维护。
+
+## MEMORY.md (Agent 笔记)
+
+-
+ 项目使用 uv 管理依赖，测试命令为 uv run pytest
+
+-
+ Python 版本为 3.11+，禁止使用 3.10 以下废弃语法
+
+## USER.md (用户画像)
+
+-
+ 用户偏好简洁、强类型的代码风格
+
+-
+ 拒绝过度设计，单函数尽量保持在 50 行以内
+
+</
+MEMORY_CONTEXT
+>
+
+如何发现并触发“更新记忆”
+
+通道一：大模型主动识别与实时更新（主通道）
+
+ 在正常对话交互中，大模型是记忆更新的第一责任人。Hermes 通过在 工具 Schema Description 与 System Prompt 中注入极度明确
+ 的 “触发信号指引（WHEN / PRIORITY / SKIP）”，让大模型在 ReAct 循环中主动调用 memory 工具。
+
+1. 触发场景与优先级规则（WHEN & PRIORITY）
+
+ Hermes 在 MEMORY_SCHEMA 描述中规定了清晰的记忆更新等级：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+┌──────────────────────────────────────────────────────────────┐
+
+│  最高优先级：用户纠错与偏好声明 (User Preferences & Corrections) │
+
+│  - 用户纠正你："记住，以后不要用 xxx" / "改成用 pnpm"           │
+
+│  - 用户分享个人画像：技术栈、时区、命名习惯、禁忌事项           │
+
+│  => 立即调用: memory(target="user", action="add/replace")     │
+
+├──────────────────────────────────────────────────────────────┤
+
+│  次高优先级：环境事实与工具踩坑 (Environment Facts & Quirks)     │
+
+│  - 发现项目特性："这个库在 Python 3.12 下有兼容性 bug"          │
+
+│  - 部署/构建约定："发布前必须先编译静态资源"                     │
+
+│  => 立即调用: memory(target="memory", action="add/replace")   │
+
+├──────────────────────────────────────────────────────────────┤
+
+│  过滤垃圾信息 (SKIP - 绝不记录)                               │
+
+│  - 任务进度、已完成工作日志、临时 TODO (交给 session / task)   │
+
+│  - 容易随时重新获取的事实、大段原始数据 dump                   │
+
+│  - 可复用的多步骤操作流程 (应写入 Skill，而非 Memory)           │
+
+└──────────────────────────────────────────────────────────────┘
+
+2. 真实工作流示例
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+用户: "我本地没有装 Docker，所有的测试都用本地 sqlite 跑，不要去启动容器。"
+
+  │
+
+  ▼ LLM 思考 (ReAct 内部)
+
+  │ [检测到高优先级用户环境与偏好声明]
+
+  │ "这属于长期有效事实，未来所有会话都适用，必须立即持久化。"
+
+  ▼
+
+发起工具调用:
+
+  memory(target="user", action="add", content="本地无 Docker，测试均使用本地 sqlite 运行")
+
+  │
+
+  ▼ 工具执行成功落盘
+
+  │
+
+继续回答用户:
+
+  "已记住您的环境配置，后续测试将直接使用本地 sqlite 运行..."
+
+ ────────────────────────────────────────────────────────────────────────────────
+
+通道二：生命周期钩子提取与兜底（Hermes 外部理论参考与对比）
+
+ 在调研开源项目 Hermes Agent 时，Hermes 设计了生命周期的后台被动兜底机制（在会话快接近上限即将压缩前，调用外部模型自动扫描历史提取事实）：
+
+my-pi-agent 架构取舍注记
+：在我们的框架设计中，
+刻意没有引入被动的后台提取通道
+，而是纯粹采用通道一（大模型主动调用受控工具）。
+
+原因
+：被动后台提取会在运行时不可控地修改记忆文件，破坏我们严格守护的 
+Frozen Snapshot（冻结快照）
+ 机制，进而导致大模型的 Prompt Prefix Cache 频繁失效。主动维护不仅保持了前缀缓存 100% 稳定，而且将记忆的选择权完全交给了当前上下文的大模型。
+    当对话轮次过多触发 Context 压缩裁切时，如果不提前提取，早期的重要对话细节就会被压缩丢失。Hermes 会在裁切前触发
+    on_pre_compress，自动提炼有价值的偏好并持久化到文件；
+
+on_session_end(messages)（会话结束提炼）：
+在会话正常退出或保存时，对整场会话进行复盘总结。
+
+模块整体布局
+
+ memory.py 主要由两个实体组成：
+
+MemoryStore：底层的条目化存储仓储，管理 Markdown 文件持久化、字符预算与 Frozen Snapshot（冻结快照）；
+
+make_memory_tool：上层的工具工厂函数，将 MemoryStore 包装为符合 OpenAI Function Calling 标准的 memory 工具（供大模
+型调用）。
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+┌────────────────────────────────────────────────────────────────────────┐
+
+│                               memory.py                                │
+
+├────────────────────────────────────────────────────────────────────────┤
+
+│                                                                        │
+
+│  【核心常量与契约】                                                     │
+
+│    ENTRY_DELIMITER = "\n§\n"                                           │
+
+│    MEMORY_CHAR_LIMIT = 2200 (Agent 笔记上限)                            │
+
+│    USER_CHAR_LIMIT = 1375   (用户画像上限)                              │
+
+│                                                                        │
+
+│  【底层仓储：MemoryStore】                                              │
+
+│    - load_from_disk(): 读 MEMORY.md/USER.md + 保序去重 + 捕获冻结快照     │
+
+│    - _atomic_save(): mkstemp + fsync + os.replace 原子落盘              │
+
+│    - add() / replace() / remove(): 增删改 + 唯一子串匹配 + 预算超限拦截 │
+
+│    - format_all_for_system_prompt(): 渲染 <MEMORY_CONTEXT> 提示词块     │
+
+│                                                                        │
+
+│  【工具工厂：make_memory_tool(store)】                                  │
+
+│    - @tool 包装为标准 memory 工具 (target, action, content, ...)       │
+
+│    - 内部错误捕获与 Never-Throw 保证 (转换为 ToolResult 引导 LLM 自愈)    │
+
+│                                                                        │
+
+└────────────────────────────────────────────────────────────────────────┘
+
+MemoryStore
+
+内部核心状态
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+class
+ 
+MemoryStore
+:
+
+    
+def
+ 
+__init__
+(
+
+        self,
+
+        mem_dir: Path | 
+str
+,
+
+        memory_char_limit: 
+int
+ = MEMORY_CHAR_LIMIT,  
+# 默认 2200 字符
+
+        user_char_limit: 
+int
+ = USER_CHAR_LIMIT,      
+# 默认 1375 字符
+
+    
+) -> 
+None
+:
+
+        
+self
+.mem_dir = Path(mem_dir)
+
+        
+self
+.limits: 
+dict
+[
+str
+, 
+int
+] = &#123;
+
+            
+"memory"
+: memory_char_limit,
+
+            
+"user"
+: user_char_limit,
+
+        &#125;
+
+        
+self
+.files: 
+dict
+[
+str
+, 
+str
+] = &#123;
+
+            
+"memory"
+: 
+"MEMORY.md"
+,
+
+            
+"user"
+: 
+"USER.md"
+,
+
+        &#125;
+
+        
+# ① Live 实时状态：工具增删改时立即变化
+
+        
+self
+._entries: 
+dict
+[
+str
+, 
+list
+[
+str
+]] = &#123;
+"memory"
+: [], 
+"user"
+: []&#125;
+
+        
+# ② 冻结快照：启动或 reset 时捕获一次，本会话内绝对静止
+
+        
+self
+._snapshot: 
+dict
+[
+str
+, 
+str
+] = &#123;
+"memory"
+: 
+""
+, 
+"user"
+: 
+""
+&#125;
+
+核心亮点：双状态并行（Parallel States）
+
+ MemoryStore 内部最精妙的设计是维护了 _entries 和 _snapshot 两个互不干扰的字典：
+
+_entries（实时运行态）：保存当前内存中最新的记忆条目列表。当模型调用 add/replace/remove 时，它会实时增删；
+
+_snapshot（系统提示词冻结态）：在启动时把文件内容拼成纯文本固化下来。当前会话无论怎么写，_snapshot 永远不变！这就是
+为什么大模型的 System Prompt 不会频繁变动，Prefix Cache（前缀缓存）命中率能达到 100% 的根本原因。
+
+核心方法
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+                                   MemoryStore 核心方法全景
+
+                                             │
+
+           ┌─────────────────────────────────┼─────────────────────────────────┐
+
+           ▼                                 ▼                                 ▼
+
+   【启动与重置阶段】                【运行修改阶段 (写落盘)】        【提示词组装阶段 (读快照)】
+
+    load_from_disk()             - add(target, content)  -format_for_system_prompt()
+
+(读盘 -> 保序去重 -> 捕获快照)  - replace(target, old, new)    -                                                                                  format_all_for_system_prompt()
+
+                               - remove(target, old)       (生成<MEMORY_CONTEXT> XML 块)
+
+                                  - _atomic_save(target)
+
+方法名
+
+调用方
+
+核心作用与职责
+
+load_from_disk()
+
+Agent 内部（启动 / 重置时）
+
+冷启动与快照冻结：从磁盘读取 
+MEMORY.md
+ 和 
+USER.md
+，自动去重，并生成一份只读的 
+System Prompt 快照（Snapshot）
+。
+
+format_all_for_system_prompt()
+
+Agent 内部（拼装提示词时）
+
+提示词注入：把启动时冻结的快照格式化为带有 XML 标签的 
+<MEMORY_CONTEXT>
+ 提示词文本，塞进 System 消息。
+
+add(target, content)
+
+memory
+ 工具（大模型发起时）
+
+追加新事实：校验非空与重复，检查是否超过字符预算上限；若通过则追加到列表并立即写盘。
+
+replace(target, old_text, new_content)
+
+memory
+ 工具（大模型发起时）
+
+修改/更新旧记忆：通过 
+old_text
+ 关键词定位唯一条目；若匹配到多条则拦截报错（防误改）；通过后替换内容并写盘。
+
+remove(target, old_text)
+
+memory
+ 工具（大模型发起时）
+
+删除过时记忆：通过 
+old_text
+ 关键词定位唯一条目，防歧义删除，并从磁盘中移除。
+
+_atomic_save(target)
+
+MemoryStore
+ 内部私有方法
+
+崩溃安全落盘：通过“临时文件 + 物理刷盘 (fsync) + os.replace 原子替换”保存。
+
+方法调用时序全景图
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+26
+
+27
+
+28
+
+29
+
+30
+
+31
+
+32
+
+33
+
+34
+
+35
+
+36
+
+37
+
+38
+
+39
+
+40
+
+41
+
+42
+
+43
+
+44
+
+45
+
+46
+
+47
+
+48
+
+49
+
+50
+
+51
+
+52
+
+53
+
+54
+
+55
+
+56
+
+57
+
+58
+
+59
+
+60
+
+61
+
+62
+
+63
+
+64
+
+65
+
+66
+
+67
+
+68
+
+69
+
+70
+
+71
+
+72
+
+73
+
+74
+
+75
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+阶段 1：Agent 实例化冷启动（应用启动阶段）
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+ 用户代码: agent = Agent(..., memory_dir="./memory")
+
+   │
+
+   ├─► 【memory_dir 三态语义】:
+
+   │     • None: 自动探测 <cwd>/.my-pi-agent/memory，存在才开启
+
+   │     • False: 显式禁用 (子代理必须强制设为 False，实现全局记忆绝对隔离)
+
+   │     • str | Path: 显式指定存储目录并装配
+
+   │
+
+   ▼
+
+   ├─► ① 构造 MemoryStore(mem_dir)
+
+   │
+
+   ├─► ② 调用: store.load_from_disk()
+
+   │     └─ 读磁盘 MEMORY.md / USER.md ➔ 去重 ➔ 捕获 _snapshot 冻结快照
+
+   │
+
+   ├─► ③ 调用: store.format_all_for_system_prompt()
+
+   │     └─ 提取快照，拼装为 <MEMORY_CONTEXT>... 注入首条 System Message
+
+   │
+
+   └─► ④ 调用: make_memory_tool(store) ➔ 注册 memory 工具到 Agent 工具表
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+阶段 2：会话运行中（Agent.run 内联 ReAct 循环）
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+ 用户: "记住，这个项目必须用 pytest 跑测试"
+
+   │
+
+   ▼ LLM 思考后发起工具调用: memory(target="memory", action="add", content="...")
+
+   │
+
+   ├─► ⑤ 调用: store.add("memory", "项目使用 pytest 跑测试")
+
+   │     ├─ 检查是否超过 2200 字符限制
+
+   │     ├─ 触发私有: store._atomic_save("memory") ➔ 写入磁盘
+
+   │     └─ 【注意】绝不修改阶段 1 的 _snapshot（System Prompt 保持静止，保缓存）
+
+   │
+
+ (若用户说: "测试框架改成 vitest 吧")
+
+   │
+
+   ▼ LLM 发起工具调用: memory(target="memory", action="replace", old_text="pytest", ...)
+
+   │
+
+   ├─► ⑥ 调用: store.replace("memory", old_text="pytest", new_content="...")
+
+   │     ├─ 定位含 "pytest" 的唯一条目（多处命中则报错防误改）
+
+   │     └─ 触发私有: store._atomic_save("memory") ➔ 更新磁盘
+
+   │
+
+ (若用户说: "把刚才关于测试的备注删掉")
+
+   │
+
+   ▼ LLM 发起工具调用: memory(target="memory", action="remove", old_text="vitest")
+
+   │
+
+   └─► ⑦ 调用: store.remove("memory", old_text="vitest")
+
+         └─ 触发私有: store._atomic_save("memory") ➔ 磁盘删除
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+阶段 3：跨会话召回（第二天开启全新的 Session B）
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+ 用户代码: new_agent = Agent(..., memory_dir="./memory")  # 新实例
+
+   │
+
+   ├─► 重新走阶段 1 的 ① ② ③ 步 (load_from_disk 读到昨天落盘的新内容)
+
+   │
+
+   ▼ 用户提问: "这个项目用什么跑测试？"
+
+   │ (此时 System Prompt 的 <MEMORY_CONTEXT> 里已经有昨天的记忆了)
+
+   │
+
+   └─► ⑧ LLM 0 工具调用，直接回答: "根据记忆，该项目使用 vitest 运行测试。"
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+阶段 4：会话重置（调用 agent.reset() 时）
+
+══════════════════════════════════════════════════════════════════════════════════════
+
+ 用户代码: agent.reset()
+
+   │
+
+   ▼
+
+   ├─► ⑨ 重新调用: store.load_from_disk() ➔ 从磁盘重新载入最新记忆，刷新快照
+
+   └─► ⑩ 重新调用: store.format_all_for_system_prompt() ➔ 重新拼装 System Prompt
+
+add 方法：追加新记忆
+ 
+
+1
+
+def
+ 
+add
+(
+self, target: 
+str
+, content: 
+str
+
+) -> 
+str
+
+1. 核心作用
+
+ 当 Agent 发现新的长期有效事实、用户习惯或纠错信息时，将这条新记忆追加到对应的记忆库（MEMORY.md 或 USER.md）末尾并原子
+ 写盘。
+
+2. 内部执行步骤与安全防线
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+传入: target ("memory"|"user"), content ("内容...")
+
+  │
+
+  ├─► [校验 1：目标与非空检查] ── target 必须合法，content.strip() 不能为空
+
+  │
+
+  ├─► [校验 2：精确重复拦截] ── 检查 content 是否已经在已有条目中
+
+  │     └─ 若已存在: 提示 "Entry already exists"，不重复写盘，省 I/O
+
+  │
+
+  ├─► [校验 3：预算硬上限检查 (Budget Check)]
+
+  │     └─ 试算: (现有全部内容 + 新条目 + 分隔符) 的总字符数
+
+  │     └─ 若 > 上限: 【超限拦截】拒绝写入！
+
+  │           - 打印错误信息
+
+  │           - 把库里当前所有条目列出来打印给模型
+
+  │           - 引导模型先调用 replace/remove 精简或删除旧记忆 (Consolidate)
+
+  │
+
+  └─► [执行：写入与落盘]
+
+        - 追加到 live 条目列表: self._entries[target].append(content)
+
+        - 触发原子写盘: self._atomic_save(target)
+
+        - 返回成功信息: "Added to memory (120/2200 chars used)."
+
+replace 方法：修改 / 替换旧记忆
+
+1
+
+def
+ 
+replace
+(
+self, target: 
+str
+, old_text: 
+str
+, new_content: 
+str
+
+) -> 
+str
+
+1. 核心作用
+
+ 当旧记忆发生变更（如用户换了技术栈、配置更新）、或者需要将多条冗长的旧记忆合并精简为一句时，通过关键词定位旧条目并进行
+ 内容更新。
+
+2. 内部执行步骤与安全防线
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+传入: target, old_text ("旧条目特征词"), new_content ("新内容...")
+
+  │
+
+  ├─► [校验 1：参数非空检查] ── old_text 和 new_content 均不能为空
+
+  │
+
+  ├─► [步骤 2：唯一子串定位 (Unique Substring Match)]
+
+  │     └─ 扫描库中所有包含 old_text 的条目:
+
+  │        matches = [i for i, entry in enumerate(entries) if old_text in entry]
+
+  │
+
+  ├─► [分支判断 A：命中 0 条]
+
+  │     └─ 报错返回: "Text &#x27;xxx&#x27; not found"，提醒模型检查关键词
+
+  │
+
+  ├─► [分支判断 B：命中 2 条及以上 (歧义命中)]
+
+  │     └─ 🚨【歧义拦截安全网触发！】
+
+  │     └─ 拒绝执行修改！
+
+  │     └─ 把命中的多条不同记录全部列出返回给模型
+
+  │     └─ 强制要求模型提供更具区分度的特征词（彻底防止误改相邻记忆）
+
+  │
+
+  ├─► [分支判断 C：精准命中唯一样本]
+
+  │     ├─ 试算替换后的总字符数是否超过预算限制
+
+  │     ├─ 更新 live 条目列表: self._entries[target][idx] = new_content
+
+  │     └─ 触发原子写盘: self._atomic_save(target)
+
+  │     └─ 返回成功信息: "Replaced in memory (150/2200 chars used)."
+
+remove 方法：删除过时记忆
+
+1
+
+def
+ 
+remove
+(
+self, target: 
+str
+, old_text: 
+str
+
+) -> 
+str
+
+1. 核心作用
+
+ 当某些记忆已不再适用、或者库满了需要清理低价值的过期记录时，通过关键词定位并彻底从磁盘中抹除该条目。
+
+2. 内部执行步骤与安全防线
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+传入: target, old_text ("要删除的特征词")
+
+  │
+
+  ├─► [校验 1：参数非空检查] ── old_text 不能为空
+
+  │
+
+  ├─► [步骤 2：唯一子串定位]
+
+  │     └─ matches = [i for i, entry in enumerate(entries) if old_text in entry]
+
+  │
+
+  ├─► [分支 A：未找到] ── 返回 "Text &#x27;xxx&#x27; not found"
+
+  │
+
+  ├─► [分支 B：歧义多处命中]
+
+  │     └─ 🚨【防误删保护触发！】
+
+  │     └─ 拒绝删除！打印所有冲突条目，要求模型提供更精确的子串
+
+  │
+
+  └─► [分支 C：精准命中 1 条]
+
+        - 从列表中剔除该索引条目
+
+        - 触发原子写盘: self._atomic_save(target)
+
+        - 返回成功信息: "Removed from memory (90/2200 chars used)."
+
+make_memory_tool工具
+
+为什么它是一个工厂函数 make_memory_tool(store)？
+
+ 你可能会问：“为什么不直接写一个普通的 @tool def memory(…)，而要写一个 make_memory_tool(store) 工厂函数？”
+
+ 这体现了专业框架的 依赖注入（Dependency Injection） 与 闭包数据隔离（Closure Isolation） 思想：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+     Agent A 实例                       Agent B 实例
+
+          │                                  │
+
+          ▼                                  ▼
+
+MemoryStore(dir="./mem_a")         MemoryStore(dir="./mem_b")
+
+          │                                  │
+
+          ▼                                  ▼
+
+make_memory_tool(store_a)          make_memory_tool(store_b)
+
+          │                                  │
+
+          ▼                                  ▼
+
+ Tool 实例 A (绑定 store_a)         Tool 实例 B (绑定 store_b)
+
+多实例隔离：如果一个进程里同时跑了两个不同的 Agent（比如 Agent A 操作目录 A，Agent B 操作目录 B），工厂函数通过
+Python 闭包，让每个 memory 工具实例精准绑定自己专属的 MemoryStore，互不干扰；
+
+生命周期绑定：Agent 在初始化时，只用调一次 make_memory_tool(self.memory_store)，就能把工具挂载进注册表。
+
+Action 分发与人性化参数容错
+
+ 大模型在生成 JSON 参数时，偶尔会有小偏差（例如把 replace 的新内容放进 content 而不是 new_content）。make_memory_tool
+ 在分发时做了精细的校验与容错：
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+if
+ action == 
+"add"
+:
+
+    
+# 1. add 必须有 content
+
+    
+if
+ 
+not
+ content:
+
+        
+raise
+ ValueError(
+"`content` is required when action is &#x27;add&#x27;."
+)
+
+    
+return
+ store.add(target, content)
+
+elif
+ action == 
+"replace"
+:
+
+    
+# 2. replace 必须有定位关键词 old_text
+
+    
+if
+ 
+not
+ old_text:
+
+        
+raise
+ ValueError(
+"`old_text` is required when action is &#x27;replace&#x27;."
+)
+
+    
+# 【人性化容错】：模型可能传了 new_content，也可能把新内容写在 content 里
+
+    effective_new = new_content 
+or
+ content
+
+    
+if
+ 
+not
+ effective_new:
+
+        
+raise
+ ValueError(
+"`new_content` is required when action is &#x27;replace&#x27;."
+)
+
+    
+return
+ store.replace(target, old_text, effective_new)
+
+elif
+ action == 
+"remove"
+:
+
+    
+# 3. remove 必须有定位关键词 old_text
+
+    
+if
+ 
+not
+ old_text:
+
+        
+raise
+ ValueError(
+"`old_text` is required when action is &#x27;remove&#x27;."
+)
+
+    
+return
+ store.remove(target, old_text)
+
+else
+:
+
+    
+raise
+ ValueError(
+f"Unknown action &#x27;
+&#123;action&#125;
+&#x27;. Must be &#x27;add&#x27;, &#x27;replace&#x27;, or &#x27;remove&#x27;."
+)
+
+Never-Throw 架构保证（永不崩溃与自愈）
+
+ 如果模型调用时漏传了字段（例如发起了 action=”replace” 却没传 old_text），代码里抛出了 raise ValueError(…)，这会导致
+ Python 进程报错退出吗？
+
+ 绝对不会！
+
+ 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+LLM 发起错误调用: memory(action="replace") ──(漏传 old_text)──┐
+
+                                                               │
+
+                                                               ▼
+
+                make_memory_tool 内部抛出: ValueError("`old_text` is required...")
+
+                                                               │
+
+                                                               ▼
+
+           ┌────────────────────────────────────────────────────────┐
+
+           │  底层的 Tool.execute() 拦截层 (Never-Throw Guard)       │
+
+           │  捕获 ValueError 异常，包装为标准 ToolResult 结构:      │
+
+           │  ToolResult(ok=False, error="`old_text` is required...")│
+
+           └───────────────────────────┬────────────────────────────┘
+
+                                       │
+
+                                       ▼
+
+      把错误字符串塞进 Tool 消息写回对话历史: role="tool", content="Error: `old_text` is required..."
+
+                                       │
+
+                                       ▼
+
+                 下一轮 LLM 看到错误提示，立即自我修正并重新调用！
+
+ 这就是我们框架的核心设计原则：工具内部抛出的所有业务校验异常，都会被底层的 Tool.execute() 拦截转化为给大模型的结构化反
+ 馈，Agent 永远不会因为参数错误而崩溃，而是引导大模型自我纠错。
