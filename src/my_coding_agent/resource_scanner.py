@@ -1,6 +1,6 @@
 """resource_scanner: 统一扫描并提取 Context、Skills、Prompts、Extensions 资源看板。
 
-严格基于 my-pi-agent 规范管理全局用户目录 (~/.my-pi-agent/) 与项目本地资源，实现严格的项目级环境隔离。
+严格基于 my-agent-harness 规范管理全局用户目录 (~/.my-agent-harness/，兼容旧 ~/.my-pi-agent/) 与项目本地资源，实现严格的项目级环境隔离。
 """
 
 from __future__ import annotations
@@ -33,9 +33,9 @@ def get_all_skill_dirs(workspace_path: Path, paths: AgentPaths | None = None) ->
     """收集所有可供 SkillManager 扫描的技能根目录（去重且存在才收录）。
 
     覆盖：
-    1. 用户全局技能目录 (~/.my-pi-agent/skills, ~/.agents/skills)
-    2. 工作区局部技能目录 (<ws>/.skills, <ws>/skills, <ws>/.agents/skills, <ws>/.my-pi-agent/skills)
-    3. 本 Agent 包管理器声明的已安装包目录 (~/.my-pi-agent/settings.json)
+    1. 用户全局技能目录 (AgentPaths().home/skills, ~/.agents/skills)
+    2. 工作区局部技能目录 (<ws>/.skills, <ws>/skills, <ws>/.agents/skills, <ws>/.my-agent-harness/skills, <ws>/.my-pi-agent/skills)
+    3. 本 Agent 包管理器声明的已安装包目录 (AgentPaths().home/settings.json)
     """
     effective_paths = paths or AgentPaths()
     dirs: list[Path] = []
@@ -57,9 +57,10 @@ def get_all_skill_dirs(workspace_path: Path, paths: AgentPaths | None = None) ->
     add_dir(workspace_path / ".skills")
     add_dir(workspace_path / "skills")
     add_dir(workspace_path / ".agents" / "skills")
-    add_dir(workspace_path / ".my-pi-agent" / "skills")
+    add_dir(workspace_path / ".my-agent-harness" / "skills")
+    add_dir(workspace_path / ".my-pi-agent" / "skills")  # 兼容旧目录
 
-    # 3. 扫描 my-pi-agent 包管理器声明的已安装包目录
+    # 3. 扫描包管理器声明的已安装包目录
     settings_candidates = [
         effective_paths.settings_path,
         effective_paths.project_settings_path(workspace_path),
@@ -117,7 +118,7 @@ def scan_loaded_resources(
     extensions_set: set[str] = set()
 
     # ── 1. Context 文件扫描 ──
-    # 全局指令优先 (~/.my-pi-agent/AGENTS.md 或 ~/.agents/AGENTS.md)
+    # 全局指令优先 (AgentPaths().home/AGENTS.md 或 ~/.agents/AGENTS.md)
     global_agents: Path | None = None
     if (effective_paths.home / "AGENTS.md").is_file():
         global_agents = (effective_paths.home / "AGENTS.md").resolve()
@@ -149,7 +150,8 @@ def scan_loaded_resources(
         effective_paths.prompts_dir,
         effective_paths.agents_home / "prompts",
         ws / "prompts",
-        ws / ".my-pi-agent" / "prompts",
+        ws / ".my-agent-harness" / "prompts",
+        ws / ".my-pi-agent" / "prompts",  # 兼容
         ws / ".agents" / "prompts",
     ]
     for pd in prompt_scan_dirs:
@@ -245,7 +247,8 @@ def scan_loaded_resources(
     agent_scan_dirs: list[Path] = [
         ws / ".agents" / "agents",
         ws / "agents",
-        ws / ".my-pi-agent" / "agents",
+        ws / ".my-agent-harness" / "agents",
+        ws / ".my-pi-agent" / "agents",  # 兼容
         effective_paths.home / "agents",
         effective_paths.agents_home / "agents",
     ]

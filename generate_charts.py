@@ -11,7 +11,7 @@ fig = plt.figure(figsize=(18, 9), dpi=300)
 fig.patch.set_facecolor("#0B0F19")  # Ultra-clean Dark Palette (OpenAI/Anthropic style)
 
 # Colors
-C_MYPI = "#0EA5E9"  # Electric Sky Blue for MyPiAgent
+C_MYPI = "#0EA5E9"  # Electric Sky Blue for My-Agent-Harness
 C_PI = "#64748B"  # Steel Slate for Official Pi
 C_TEXT = "#F8FAFC"  # Crisp white text
 C_SUBTEXT = "#94A3B8"  # Slate grey text
@@ -29,7 +29,7 @@ ax1 = fig.add_subplot(gs[:, 0])
 ax1.set_facecolor("#0B0F19")
 
 categories = [
-    "Valid Pass Rate\n(85 tasks)",
+    "Pass Rate" + chr(10) + "(85 tasks, non-comparable)",
     "Full Pass Rate\n(89 tasks)",
     "System & DevOps\n(17 tasks)",
     "AI & Data Science\n(20 tasks)",
@@ -47,7 +47,7 @@ rects1 = ax1.bar(
     x - width / 2 - 0.02,
     mypi_acc,
     width,
-    label="MyPiAgent (Ours)",
+    label="My-Agent-Harness (Ours)",
     color=C_MYPI,
     edgecolor="none",
     zorder=3,
@@ -131,7 +131,7 @@ diff_pi = [100.0, 83.6, 73.3]
 x_diff = np.arange(len(diff_categories))
 w_diff = 0.30
 
-r1_d = ax2.bar(x_diff - w_diff / 2 - 0.02, diff_mypi, w_diff, label="MyPiAgent", color=C_MYPI, zorder=3, alpha=0.95)
+r1_d = ax2.bar(x_diff - w_diff / 2 - 0.02, diff_mypi, w_diff, label="My-Agent-Harness", color=C_MYPI, zorder=3, alpha=0.95)
 r2_d = ax2.bar(x_diff + w_diff / 2 + 0.02, diff_pi, w_diff, label="Official Pi", color=C_PI, zorder=3, alpha=0.75)
 
 ax2.set_ylabel("Pass Rate (%)", fontsize=11, fontweight="bold", color=C_TEXT)
@@ -182,10 +182,10 @@ ax3 = fig.add_subplot(gs[1, 1])
 ax3.set_facecolor("#0B0F19")
 
 outcome_labels = [
-    "Double Win (65)\nBoth Solved",
-    "Official Exclusive (7)\nPi Won",
-    "MyPi Exclusive (6)\nMyPi Won (*)",
-    "Double Fail (11)\nHardware/Assert Limit",
+    "Double Win (65)" + chr(10) + "Both Solved",
+    "Official Exclusive (7)" + chr(10) + "Pi Won",
+    "Harness Exclusive (6)" + chr(10) + "Harness Won",
+    "Double Fail (11)" + chr(10) + "Hardware/Assert Limit",
 ]
 outcome_counts = [65, 7, 6, 11]
 outcome_colors = [C_GREEN, C_PI, C_GOLD, C_RED]
@@ -221,7 +221,7 @@ ax3.tick_params(colors=C_SUBTEXT)
 
 # Global Figure Title
 fig.suptitle(
-    "Terminal-Bench 2.1: MyPiAgent vs Official Pi Coding Agent", fontsize=18, fontweight="bold", color=C_TEXT, y=0.975
+    "Terminal-Bench 2.1: My-Agent-Harness vs Official Pi Coding Agent", fontsize=18, fontweight="bold", color=C_TEXT, y=0.975
 )
 
 plt.figtext(
@@ -237,7 +237,7 @@ plt.figtext(
 plt.figtext(
     0.5,
     0.022,
-    "MyPiAgent Audited Feature: 96.7% Prompt Cache Hit Rate (Append-Only Epochs) | 41.7M Net Billed Tokens ($4.62 USD) | Pi Official: KV-Cache unmeasured in benchmark",
+    "My-Agent-Harness: 41.7M billed tokens / USD 4.62 vs Pi 122.3M / USD 18.84  |  Cache hit rate measured separately (53.5% vs 17.9%)",
     ha="center",
     fontsize=9.8,
     color=C_GOLD,

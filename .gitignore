@@ -68,3 +68,8 @@ experiments/agent_rl/results/long_*.jsonl
 
 # Windows 上 ssh -o UserKnownHostsFile=/dev/null 会误建这个文件
 nul
+
+# 个人材料（不纳入仓库）
+*.pptx
+绩效响应_*.pptx
+tutorial.md

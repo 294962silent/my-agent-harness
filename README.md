@@ -1,18 +1,19 @@
 # my-agent-harness
 
 <p align="center">
-  <img src="docs/assets/banner.png" alt="my-agent-harness — a minimalist Python coding-agent harness with 1:1 Pi-TUI terminal presentation" width="100%" />
+  <img src="docs/assets/banner.png" alt="my-agent-harness — a minimalist Python coding-agent harness with a Pi-TUI based terminal UI" width="100%" />
 </p>
 
 <p align="center">
-  <strong>基于 Python 纯原生手写的极简 Agent 框架微内核与 1:1 像素级 Pi-TUI 终端交互套件。</strong>
+  <strong>基于 Python 纯原生手写的极简 Agent 框架微内核，配套基于 Pi-TUI 的终端交互界面。</strong>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/my-pi-agent"><img src="https://img.shields.io/npm/v/my-pi-agent.svg?style=flat-square&color=cb3837" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
   <a href="#"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="python" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/tests-828%20python%20%7C%2080%20tui%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/tests-956%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/coverage-85%25-brightgreen.svg?style=flat-square" alt="coverage" /></a>
+  <a href="https://www.npmjs.com/package/my-pi-agent"><img src="https://img.shields.io/npm/v/my-pi-agent.svg?style=flat-square&color=cb3837" alt="TUI npm package (legacy name)" /></a>
 </p>
 
 <p align="center">
@@ -68,7 +69,7 @@
 >
 > 💡 **学习与精读建议**：
 > - **强烈推荐重点精读【框架核心层 (`src/my_agent_core/`)】**：这是整个项目的精髓与灵魂。为了彻底吃透每个架构不变式，框架核心层的大部分代码我都**亲自逐行 Review、推敲重构并编写了 100% 覆盖的离线测试**，代码无任何多余抽象，是学习 ReAct 状态机循环、七阶段工具流水线与会话持久化的最佳切入点；
-> - **产品业务层 (`src/my_coding_agent/`) 与 TUI 表现层 (`my-pi-tui/`)**：是我通过 AI Coding 协同结对落地实现的，并经过了端到端严格验收。它展示了如何将一个无头 Agent 大脑装配为兼具安全门禁、并发锁与原厂像素级交互质感的工业级终端产品，适合作为工程落地与全栈集成的参考示例。
+> - **产品业务层 (`src/my_coding_agent/`) 与 TUI 表现层 (`my-pi-tui/`)**：是我通过 AI Coding 协同结对落地实现的，并经过了端到端严格验收。它展示了如何将一个无头 Agent 大脑装配为兼具安全门禁、并发锁与完整终端交互的工程化产品，适合作为工程落地与全栈集成的参考示例。
 
 ### 📚 核心设计与工程掌握要点：
 
@@ -81,7 +82,7 @@
 
 #### 【第 2 层：上下文与状态管理层】
 3. **DAG 树状分支会话**：构建基于 DAG 的树状分支会话系统：采用『Entry 节点 ➔ Tree 内存拓扑 ➔ Session 磁盘管理』分层架构，支持分支派生与无损回退（/fork 与 /rewind）及可视化导航（/tree）；引入 Compaction Floor 压缩安全护栏，防止越界回退至已折叠历史。
-4. **自适应前缀保护压缩**：借鉴 NVIDIA SoL-Pi，设计三层上下文压缩管线：第一层结合历史任务轮次自适应预估剩余轮次，仅在后续读取收益大于缓存重写成本时触发压缩；第二层超大工具输出本地落盘并返回文件绝对路径；第三层执行结构化语义摘要，严格防止切断工具调用对；全链路保障前缀不变性，长程复杂任务实测斩获 66.3% 的 KV-Cache 命中率。
+4. **自适应前缀保护压缩**：借鉴 NVIDIA SoL-Pi，设计三层上下文压缩管线：第一层结合历史任务轮次自适应预估剩余轮次，仅在后续读取收益大于缓存重写成本时触发压缩；第二层超大工具输出本地落盘并返回文件绝对路径；第三层执行结构化语义摘要，严格防止切断工具调用对；全链路保障前缀不变性。真实 API 实测（6 轮对话，glm-5.3-flash）：该管线 Cache 命中率 **53.5%**，而滑动窗口策略仅 **17.9%** 且从第 4 轮起归零；详见 [KV cache 实测报告](docs/10_API_CACHE.md)。
 
 #### 【第 3 层：工具生态与执行韧性层】
 5. **两级因果并发与细粒度写锁**：设计两级工具并发执行体系：安全只读工具支持异步并发提速，一旦批次中包含非安全工具（如 Bash）则全员自动降级为严格串行；实现细粒度单文件排队锁，达成跨文件无锁并发、同文件严格时序排队写入，杜绝并发覆写冲突。
@@ -96,7 +97,7 @@
 
 **`my-agent-harness` 是一个驻留在你的终端里的全功能编程智能体（Coding Agent）。**
 
-你可以像使用资深工程师伙伴一样向它提问：“解释这个代码库”、“编写自动化测试”、“定位并修复此异常日志”。它会在受控权限内自主读取源码、外科手术式精准修改、执行测试命令、通过树状 DAG 会话持久化上下文，并以 **100% 像素级对齐 Pi 原厂终端** 的极速 TUI 将模型思考过程与工具调用动态流式呈现。
+你可以像使用资深工程师伙伴一样向它提问：“解释这个代码库”、“编写自动化测试”、“定位并修复此异常日志”。它会在受控权限内自主读取源码、外科手术式精准修改、执行测试命令、通过树状 DAG 会话持久化上下文，并以基于 Pi-TUI 的流式终端界面呈现模型思考过程与工具调用。
 
 它**不引入任何重型 Agent 框架**（LangChain / LangGraph 等），从零手写、完全透明、每一行代码均可单步调试学习，严格遵循 TDD 与 100% 离线单元测试。
 
@@ -127,7 +128,7 @@ my-pi-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent  →
 - **`my_agent_llm`**：多提供商翻译层，将 OpenAI、DeepSeek、Anthropic 与 Antigravity（Google internal SSE）统一抽象为中立的流式事件与类型安全的结构化 `ToolCall`；
 - **`my_agent_core`**：通用的便携 Agent 微内核，管理状态机循环、14 个只读生命周期事件、五大专职 Hook 决策拦截点、树状 Session 与离散 Epoch 块级压缩管线；
 - **`my_coding_agent`**：专注代码工程的产品层，封装 7 大工作区编码工具、`FileMutationQueue` 细粒度并发锁、`PermissionGate` 权限门禁与 stdio JSON-RPC 2.0 服务端；
-- **`my-pi-tui`**：独立前端展示层，基于 Mario Zechner 原厂终端引擎 `@earendil-works/pi-tui`，提供无闪烁差量渲染与高辨识度卡片视觉系统。
+- **`my-pi-tui`**：独立前端展示层，基于 Mario Zechner 原厂终端引擎 `@earendil-works/pi-tui`，提供差量渲染与卡片式视觉系统（组件为自行实现，底层渲染复用官方包）。
 
 ---
 
@@ -148,7 +149,10 @@ my-agent
 npx my-pi-agent
 ```
 
-> 说明：npm 包名仍为 `my-pi-agent`（已发布名，未改以免破坏安装）；安装后可用 `my-agent` 启动。数据目录 `~/.my-pi-agent/` 亦保持不变，改动会导致既有登录态与设置失效。
+> 说明：npm 包名仍为 `my-pi-agent`（已发布的历史名，未改以免破坏既有安装）；安装后可用 `my-agent` 启动。
+>
+> **数据目录**：全新安装使用 `~/.my-agent-harness/`；若检测到旧的 `~/.my-pi-agent/`（含既有登录态与设置），
+> 会自动沿用旧目录以保证无缝升级。也可用环境变量 `MY_AGENT_HOME` 显式指定。
 
 ### 命令行常用参数 (CLI Options)
 
@@ -187,7 +191,7 @@ npm install
 npm run build
 
 # 4. 运行全量离线自动化测试套件 (100% 绿灯全通)
-uv run python -m pytest   # 828 Python offline tests passed (828 baseline)
+uv run python -m pytest   # 956 Python offline tests passed, ~40s
 npm test                  # 80 TUI tests passed (80 passed in 81 tests)
 
 # 5. 启动开发态终端
@@ -200,7 +204,7 @@ npm start
 
 ## ✨ 核心特性全景 (What my-agent-harness can do)
 
-- **100% 像素级 Pi 原厂终端体验 (`my-pi-tui/`)**：
+- **基于 Pi-TUI 的终端体验 (`my-pi-tui/`)**：
   - **`CustomEditor` 顶部嵌入动效**：在模型思考或工具执行期间，输入框顶部边框实时挖槽嵌入 Braille 10 帧高频旋转指示器（`── ⠸ Working ──`），完成时平滑自愈；
   - **思考预算深度自适应轮转**：支持 `Shift+Tab` / `Ctrl+T` 快捷键原地切换推理深度（`off` ➔ `low` ➔ `medium` ➔ `high` ➔ `max`），并联动输入框边框颜色动态变换；
   - **三大交互模态选择器**：`ModelSelector`（支持 `Ctrl+S` 持久化默认模型）、`SessionSelector`（多级 DAG 分支线 + `Ctrl+D` 历史会话删除与活跃会话安全拦截）、`ThinkingSelector`；
@@ -227,21 +231,21 @@ npm start
 - **树状会话持久化与离散 Epoch 块级压缩管线 (`context.py`)**：
   - 树状 DAG 结构、逐条原子落盘（`fsync` + `os.replace`），崩溃永不损坏历史；
   - 支持 `/tree` 查看拓扑树、`/fork` 节点分叉、`/clone` 全量探索副本；
-  - **Append-Only 前缀一致性保证**：彻底废除旧的逐轮滚动裁切与滚动工具篡改，在未超 80% 水位线前严格只读追加（Append-Only），前缀字节 100% 保持不变，大模型 KV-Cache（Prompt Cache）实测命中率达 **66.3%**；
+  - **Append-Only 前缀一致性保证**：彻底废除旧的逐轮滚动裁切与滚动工具篡改，在未超 80% 水位线前严格只读追加（Append-Only），前缀字节保持不变。真实 API 实测（glm-5.3-flash）：该策略 KV-Cache 命中率 **53.5%**，而滑动窗口仅 **17.9%**（第 4 轮起归零）；详见 [KV cache 实测报告](docs/10_API_CACHE.md)；
   - **动态 80% 水位线门控与离散 Epoch 块级压缩**：对标 Pi 原厂机制，当且仅当上下文突破 80% 预算时才触发离散块压缩；先尝试工具输出持久化到磁盘，超预算后执行 compact 智能结构化摘要（`<analysis>` + `<summary>` 双标签防注入 + 6 Section 约束 + `<read-files>`/`<modified-files>` 全生命周期文件操作足迹累积）；
   - `retainedTail` 静态前缀快照缓存与 `compaction_floor` 指针安全护栏，确立下一周期稳定基准前缀。
 - **自动化基准评测体系与 Terminal-Bench 2.1 终局战报 (`my-pi-eval`)**：
   - **Scheme 1 宿主机编排型轻量架构**：基于 Harbor Framework 实现 `MyPiAgent` 适配，Agent 核心运行于宿主机，通过 Docker 管道桥接 7 大工具，实现沙箱零污染与秒级冷启动；
-  - **凭据物理隔离**：严格读取专属 `my-pi-eval/.env`，禁止读取宿主 `~/.my-pi-agent/auth.json`，杜绝沙箱逃逸泄露 API Key；
+  - **凭据物理隔离**：严格读取专属 `my-pi-eval/.env`，禁止读取宿主 `~/.my-agent-harness/auth.json`，杜绝沙箱逃逸泄露 API Key；
   - **Terminal-Bench 2.1 终局战报**：在 89 道真实环境 Linux 赛题中取得 **71 胜 / 79.78% 通过率**（原厂 Pi 72 胜 / 80.90%，仅差 1 题；底座大模型：DeepSeek-V4.1-Flash）；
-  - **全量 Token 采集与缓存核算**：从底层 session.jsonl 逐条提取真实 Token 与缓存指标，实测全量 89 题缓存命中率 **66.3%**（其中 `build-cython-ext` 单任务达 97.3%）。
+  - **全量 Token 采集与缓存核算**：从底层 session.jsonl 逐条提取真实 Token 与缓存指标，全量 89 题汇总缓存命中率 **66.3%**（其中 `build-cython-ext` 单任务达 97.3%）。⚠️ 该值为评测期汇总口径，原始分项明细未入库，无法从 `progress.json` 复算；可复算的实测见 [KV cache 实测报告](docs/10_API_CACHE.md)（53.5% vs 17.9%）。
 - **动态即时转向（Steering）与排队追问（Follow-up）双层调度 (`message_queue.py`)**：
   - 支持在智能体运行处理对话期间，用户直接键入文本按回车即时插话（Steering），或按 **`Ctrl+Q`** 提交排队追问（Follow-up）；
   - 严格对标 Pi 原厂 Pending 待发区呈现规范（输入框上方灰显指示 `Steering: ...` 与 `Follow-up: ...`，提示 `↳ Alt+Q to edit all queued messages`）；
   - 支持按 `Alt+Q`/`Alt+Up` 或 `Esc` 中断一键将待发消息全量弹回输入框，并同步发起 RPC `clear_queue` 清空内核排队；
   - 严格遵循**首轮工具执行完毕后交付契约**，彻底杜绝初始任务与转向词并列输入导致的复合句歧义。
 - **分会话双轨制 Debug 诊断体系 (`tracer.py`)**：
-  - 告别全局混写，在 `~/.my-pi-agent/logs/<slug>-<hash>/` 下按会话独立输出：
+  - 告别全局混写，在 `~/.my-agent-harness/logs/<slug>-<hash>/` 下按会话独立输出：
     - `<session-id>.debug.log`：人类可读的微秒级阶段耗时、工具执行状态与 Token 增量；
     - `<session-id>.events.jsonl`：对标 Pi `--mode json` 的标准不可变机器可读事件流；
   - 终端 `/debug` 命令一体化导出运行时快照并返回当前会话双轨日志绝对路径，支持会话轮转动态换绑。
@@ -275,7 +279,7 @@ npm start
 | **原厂 Pi 独占胜出** | - | **7 道** | 原厂 Pi 满分，自研 Agent 格式微差或超时 |
 | **双负赛题 (双方均未过)** | **11 道** | 11 道 | 包含单机物理算力极限与上游环境断言题 |
 | **自研实测净 Token 消耗** | **41,737,271 Tokens** | 122,295,809 Tokens (毛计) | 自研离散压缩扣除 82.3M 缓存后净计费 Token 显著压低；原厂基准未审计细分缓存 |
-| **自研实测 Prompt Cache 命中率** | **66.3%** 🌟 | 未审计 (Unmeasured) | 自研离散 Epoch 块级压缩保障 Append-Only 前缀一致性；原厂基准未单独统计 |
+| **自研实测 Prompt Cache 命中率** | **66.3%** ⚠️ | 未审计 (Unmeasured) | 评测期汇总口径（分项明细未入库）；可复算对照见 KV cache 实测报告 53.5% vs 17.9% |
 | **全量 89 题评测总开销** | **$4.62 美元** (约 33.5 元) | $18.84 美元 (未计缓存折扣) | 自研享受 DeepSeek 82.3M 缓存折扣后总成本仅 $4.62 |
 
 ### 2. 自研独占胜出高难赛题亮点 (6 道 🌟)
@@ -415,7 +419,7 @@ my-agent-harness/
 │       ├── file_reference.py       # @ 文件引用解析与快照直通注入
 │       └── rpc_server.py           # stdio JSON-RPC 2.0 服务端门面
 │
-├── tests/                          # ⭐ 全局统一测试目录 (uv run pytest 828 测试并发全通)
+├── tests/                          # ⭐ 全局统一测试目录 (uv run pytest 956 测试并发全通)
 │   ├── llm/                        # LLM 层单元测试 (91 tests)
 │   ├── core/                       # 框架内核单元测试 (392 tests)
 │   ├── coding/                     # 业务与工具测试 (276 tests)
@@ -425,12 +429,12 @@ my-agent-harness/
 │   ├── package.json                # 依赖 @earendil-works/pi-tui, chalk, marked
 │   ├── tsconfig.json
 │   ├── bin/
-│   │   └── my-agent.js             # CLI 执行文件 (支持全局命令 my-pi-agent / my-agent)
+│   │   └── my-agent.js             # CLI 执行文件 (全局命令 my-agent，历史别名 my-pi-agent)
 │   ├── src/
 │   │   ├── app.ts                  # TuiMainScreen 状态机与组件树组装
 │   │   ├── client.ts               # PythonKernelClient (管理 uv run python 子进程)
-│   │   ├── components/             # Pi 原厂 UI 组件 (CustomEditor, status-indicator, footer...)
-│   │   └── theme/                  # Pi 原厂 24-bit TrueColor dark.json 调色盘
+│   │   ├── components/             # 自研 UI 组件 (CustomEditor, status-indicator, footer...)
+│   │   └── theme/                  # 24-bit TrueColor dark.json 调色盘
 │   └── test/                       # 前端 71 个自动化测试与端到端测试套件
 │
 ├── my-pi-eval/                     # ⭐ Harbor 评测套件 (Terminal-Bench 2.1 斩获 71 胜/79.78% 胜率)
@@ -453,11 +457,11 @@ my-agent-harness/
 - [**工作区编码工具集规范**](docs/coding/01-workspace-tools.md)：7 大工具契约、截断防御、`resolve_path` 与单文件并发锁；
 - [**原生 MCP 集成规范**](docs/coding/02-mcp-integration.md)：`MCPClientManager`、stdio/SSE 通信与 Schema 扁平化展开；
 - [**CodingAgent 产品门面**](docs/coding/03-coding-agent-facade.md)：Dual API 设计、上下文自动注入与 `PermissionGate` 权限门禁；
-- [**用户主目录与凭据隔离**](docs/coding/04-user-home-and-settings.md)：`~/.my-pi-agent/` 目录拓扑、`auth.json` 强类型模型与零污染持久化；
+- [**用户主目录与凭据隔离**](docs/coding/04-user-home-and-settings.md)：`~/.my-agent-harness/` 目录拓扑（兼容旧 `~/.my-pi-agent/`）、`auth.json` 强类型模型与零污染持久化；
 - [**前后端 RPC 通信协议**](docs/coding/05-rpc-bridge-protocol.md)：29 个 stdio JSON-RPC 2.0 方法规范与 Prompt Cache 命中率核算；
 - [**Pi-TUI 终端交互表现层**](docs/coding/06-pi-tui-interactive-terminal.md)：`CustomEditor` 边框动效、思考等级自适应与三大交互选择器；
 - [**工程分发与全局 CLI 架构**](docs/coding/07-distribution-and-packaging.md)：npm 全球发布、双引擎自愈启动与跨平台打包；
-- [**上下文离散块压缩与前缀一致性规范**](docs/core/05-context-compaction.md)：动态 80% 水位线门控、Append-Only 前缀一致性与实测 66.3% Cache 命中率；
+- [**上下文离散块压缩与前缀一致性规范**](docs/core/05-context-compaction.md)：动态 80% 水位线门控与 Append-Only 前缀一致性；
 - [**自动化基准评测架构与战报**](docs/eval/01-evaluation-harness-architecture.md)：Harbor BaseAgent 适配、Scheme 1 宿主驱动与 Terminal-Bench 2.1 终局战报（71 胜 / 79.78% 胜率，逼近原厂 72 胜）。
 
 ---

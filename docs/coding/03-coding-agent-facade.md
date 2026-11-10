@@ -62,7 +62,7 @@ Pi 官方标准     已激活工具的一   各工具专属规则   POSIX 标准
 ### 1. 五大标准区块规范
 
 1. **`Preamble` 引导语**：
-   采用 Pi 官方标准定义：`"You are an expert coding assistant operating inside my-pi-agent, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files."`
+   采用 Pi 官方标准定义：`"You are an expert coding assistant operating inside my-agent-harness, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files."`
 2. **`<tools>` 动作空间清单**：
    遍历当前已激活工具，提取各个工具声明的 `prompt_snippet`，格式化为 `- name: snippet` 清单并附带第三方扩展声明，为思维链（CoT）提供极低成本（约 50 Tokens）的宏观动作索引；
 3. **`<rules>` 工具决策准则与铁律**：
@@ -72,7 +72,7 @@ Pi 官方标准     已激活工具的一   各工具专属规则   POSIX 标准
 4. **`<cwd>` 物理工作区路径**：
    使用标准 POSIX 正斜杠（`/`）格式化 `<cwd>\n/path/to/project\n</cwd>`，消除 Windows 反斜杠转义歧义，深度对齐现代模型对工作区边界的 SFT 训练特征；
 5. **`<project_context>` 项目指导文件**：
-   - 自动扫描全局 `~/.my-pi-agent/AGENTS.md` 与工作区 `AGENTS.override.md`、`AGENTS.md`、`README.md`，包裹于 `<project_instructions path="...">` 容器中。
+   - 自动扫描全局 `~/.my-agent-harness/AGENTS.md`（兼容旧 `~/.my-pi-agent/`） 与工作区 `AGENTS.override.md`、`AGENTS.md`、`README.md`，包裹于 `<project_instructions path="...">` 容器中。
 
 ---
 

@@ -1,7 +1,7 @@
-# my-pi-agent 技术设计文档与架构规范
+# my-agent-harness 技术设计文档与架构规范
 
-本项目（`my-pi-agent`）是一个从零手写、纯原生异步、零外部重依赖的 Python Agent 运行时 SDK 与产品套件。
-项目采用 **“对标 Tau 的单一 Python 核心内核 + 基于 Pi 原厂 @earendil-works/pi-tui 的独立表现层”** 双核拓扑架构。
+本项目（`my-agent-harness`）是一个从零手写、纯原生异步、零外部重依赖的 Python Agent 运行时 SDK 与产品套件。
+项目采用 **“对标 Tau 的单一 Python 核心内核 + 基于 @earendil-works/pi-tui 的独立表现层”** 双核拓扑架构。
 
 本文档库（`docs/`）详细记录了整个工程中所有核心模块的技术架构规范、类关系图、数据流转机制与关键设计不变式。
 
@@ -11,7 +11,7 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          my-pi-agent 双核架构全景                           │
+│                       my-agent-harness 双核架构全景                         │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  【终端交互表现层】: my-pi-tui/ (Node.js / TypeScript, 基于 @earendil-works/pi-tui)│
@@ -98,11 +98,11 @@
 - [01-workspace-tools.md](coding/01-workspace-tools.md)：工作区编码工具集与并发控制规范（7 大核心工具 `read` / `write` / `edit` / `bash` / `grep` / `find` / `ls` 规范、`resolve_path` 宽松 CWD 解析、`FileMutationQueue` 细粒度并发锁、`FileReferenceParser` 提示词 `@` 文件快照直通注入）。
 - [02-mcp-integration.md](coding/02-mcp-integration.md)：原生 MCP 客户端与扩展集成规范（`MCPClientManager`、stdio/SSE 子进程管理、工具自动发现与 Schema 平坦化、工作区 `.mcp.json` 按需加载）。
 - [03-coding-agent-facade.md](coding/03-coding-agent-facade.md)：CodingAgent 产品门面与提示词装配规范（Dual API: `run` / `run_stream`、`build_default_coding_prompt`、`<project_context>` 自动发现 `AGENTS.md` / `CLAUDE.md`、五大专职 Hook 拦截机制）。
-- [04-user-home-and-settings.md](coding/04-user-home-and-settings.md)：用户主目录、配置与凭据隔离体系规范（`~/.my-pi-agent/` 目录拓扑、`auth.json` 多模型凭据管理、`settings.json` 双层级联配置、`sessions/<slug>-<hash>/` 集中式零污染会话持久化、`trust.json` 项目信任安全策略）。
+- [04-user-home-and-settings.md](coding/04-user-home-and-settings.md)：用户主目录、配置与凭据隔离体系规范（`~/.my-agent-harness/` 目录拓扑（兼容旧 `~/.my-pi-agent/`）、`auth.json` 多模型凭据管理、`settings.json` 双层级联配置、`sessions/<slug>-<hash>/` 集中式零污染会话持久化、`trust.json` 项目信任安全策略）。
 - [05-rpc-bridge-protocol.md](coding/05-rpc-bridge-protocol.md)：前后端通信协议与内核桥接规范（stdio JSON-RPC 2.0 规范、`KernelBridge` 客户端驱动、会话 DAG 操作 `/tree` / `/fork` / `/clone` / `/resume` 删除防御、全量 Token 与成本动态核算公式、Prompt Cache 命中率 `CH%`）。
 - [06-pi-tui-interactive-terminal.md](coding/06-pi-tui-interactive-terminal.md)：Pi-TUI 交互式终端与表现层规范（基于 `@earendil-works/pi-tui` 的 `AgentApp` / `InteractiveMode` 架构、`CustomEditor` 顶部边框嵌入式 `── ⠸ Working ──` 动效与快捷键思考预算自适应轮转、三大交互式选择器 Model/Session/Thinking、可折叠压缩卡片、全套斜杠命令与输入宏）。
-- [07-distribution-and-packaging.md](coding/07-distribution-and-packaging.md)：工程发布、全平台分发与全局 CLI 规范（npm workspaces 与 `npm link` 全局命令 `my-pi-agent` / `my-agent`、uv 单一虚拟环境、跨平台独立分发路线）。
-- [08-observability-and-debug-mode.md](coding/08-observability-and-debug-mode.md)：可观察性与调试诊断体系规范（双模事件驱动调试、`DebugEventTracer` 毫秒级时序落盘 `~/.my-pi-agent/logs/debug.log`、终端瀑布流、交互式 `/debug` 瞬时快照与死循环看门狗）。
+- [07-distribution-and-packaging.md](coding/07-distribution-and-packaging.md)：工程发布、全平台分发与全局 CLI 规范（npm workspaces 与 `npm link` 全局命令 `my-agent`（历史别名 `my-pi-agent`）、uv 单一虚拟环境、跨平台独立分发路线）。
+- [08-observability-and-debug-mode.md](coding/08-observability-and-debug-mode.md)：可观察性与调试诊断体系规范（双模事件驱动调试、`DebugEventTracer` 毫秒级时序落盘 `~/.my-agent-harness/logs/debug.log`、终端瀑布流、交互式 `/debug` 瞬时快照与死循环看门狗）。
 - [09-session-log-debugging-cases.md](coding/09-session-log-debugging-cases.md)：会话日志故障排查实战手册与典型案例库（结合真实三轨日志 `.jsonl` / `.debug.log` / `.events.jsonl`，深度复盘 Steering 交付时序、Windows 编码乱码与 Git Bash 路由、非零退出码状态判定、Esc 中断孤儿残片清理与 CancellationToken 瞬时子进程杀死机制）。
 
 ### 4. 自动化评测层 (`docs/eval/`)

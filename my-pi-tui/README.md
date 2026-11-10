@@ -1,8 +1,8 @@
 # my-pi-tui
 
-`my-pi-agent` 的高质感交互终端表现层（基于 `@earendil-works/pi-tui` 的 Node.js / TypeScript 前端微内核）。
+`my-agent-harness` 的交互终端表现层（基于 `@earendil-works/pi-tui` 的 Node.js / TypeScript 前端）。
 
-已正式发布至 npm 全球仓库：[`my-pi-agent`](https://www.npmjs.com/package/my-pi-agent)。
+已发布至 npm：[`my-pi-agent`](https://www.npmjs.com/package/my-pi-agent)（历史包名，安装后可用 `my-agent` 启动）。
 
 ---
 
@@ -48,10 +48,10 @@ Options:
 
 ---
 
-## 核心特性（100% 像素级对齐 Pi 原厂终端）
+## 核心特性（基于 Pi-TUI 渲染引擎 + 自研交互组件）
 
-- **Pi 原厂终端渲染微内核**：
-  基于 Mario Zechner 的 `@earendil-works/pi-tui` 终端引擎（`TuiMainScreen`），以字符差量重绘驱动，保留终端原生可滚动的长历史与鼠标滚轮平滑翻看。
+- **终端渲染微内核**：
+  复用 `@earendil-works/pi-tui` 的 `TuiMainScreen` 渲染引擎（字符差量重绘），保留终端原生可滚动的长历史与鼠标滚轮平滑翻看；交互组件为自行实现。
 - **CSI 2026 同步垂直屏障**：
   在渲染前发射 `\x1b[?2026h`，渲染完成后发射 `\x1b[?2026l`，彻底根除高频输出时的字符撕裂与屏幕闪烁。
 - **输入框边框实时嵌入转圈 (`CustomEditor`)**：

@@ -1,6 +1,8 @@
-# my-pi-agent 多端分发与发布全指南 (Distribution & Publishing Guide)
+# my-agent-harness 多端分发与发布全指南 (Distribution & Publishing Guide)
 
-本文档面向 **终端用户（如何下载与使用）** 与 **开发者/维护者（如何发布至各大生态）**，详细介绍 `my-pi-agent` 的多端分发机制。
+本文档面向 **终端用户（如何下载与使用）** 与 **开发者/维护者（如何发布至各大生态）**，详细介绍 `my-agent-harness` 的多端分发机制（npm 包名沿用历史名 `my-pi-agent`）。
+
+> **命名说明**：PyPI/npm 包名为历史名 `my-pi-agent`（已发布，改名会破坏既有安装）；全局命令为 `my-agent`；数据目录 `~/.my-agent-harness/`（自动兼容旧 `~/.my-pi-agent/`）。
 
 ---
 
@@ -52,7 +54,7 @@ uv tool install my-pi-agent
 my-pi-agent
 ```
 
-> **注意**：由于 my-pi-agent 呈现层采用与 Pi 原厂 100% 像素级对齐的 `@earendil-works/pi-tui`，需要系统预先安装 Node.js 运行时。
+> **注意**：呈现层依赖 `@earendil-works/pi-tui` 渲染引擎，需要系统预先安装 Node.js 运行时（>= 18）。
 
 ---
 
@@ -72,7 +74,7 @@ my-pi-agent
   irm https://raw.githubusercontent.com/.../install.ps1 | iex
   ```
 
-脚本会自动将 `my-pi-agent` 注入用户全局 PATH，重启终端后即可直接键入 `my-pi-agent` 启动。
+脚本会自动将 CLI 注入用户全局 PATH（命令名 `my-agent`，历史别名 `my-pi-agent`），重启终端后即可直接启动。
 
 ---
 

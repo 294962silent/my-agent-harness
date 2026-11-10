@@ -18,17 +18,41 @@ def test_agent_paths_default_home(monkeypatch: pytest.MonkeyPatch, tmp_path: Pat
     monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
 
     paths = AgentPaths()
-    assert paths.home == resolved_tmp / ".my-pi-agent"
+    # 全新安装（新目录与旧目录都不存在时）：默认落到新目录名
+    assert paths.home == resolved_tmp / ".my-agent-harness"
     assert paths.agents_home == resolved_tmp / ".agents"
+    assert paths.auth_path == resolved_tmp / ".my-agent-harness" / "auth.json"
+    assert paths.auth_lock_path == resolved_tmp / ".my-agent-harness" / "auth.json.lock"
+    assert paths.settings_path == resolved_tmp / ".my-agent-harness" / "settings.json"
+    assert paths.sessions_dir == resolved_tmp / ".my-agent-harness" / "sessions"
+    assert paths.skills_dir == resolved_tmp / ".my-agent-harness" / "skills"
+    assert paths.prompts_dir == resolved_tmp / ".my-agent-harness" / "prompts"
+    assert paths.themes_dir == resolved_tmp / ".my-agent-harness" / "themes"
+    assert paths.extensions_dir == resolved_tmp / ".my-agent-harness" / "extensions"
+    assert paths.logs_dir == resolved_tmp / ".my-agent-harness" / "logs"
+
+
+def test_agent_paths_legacy_home_compat(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """老用户目录（.my-pi-agent）存在时，应继续使用它，避免登录态丢失。"""
+    resolved_tmp = tmp_path.resolve()
+    (resolved_tmp / ".my-pi-agent").mkdir()
+    monkeypatch.delenv("MY_AGENT_HOME", raising=False)
+    monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
+
+    paths = AgentPaths()
+    assert paths.home == resolved_tmp / ".my-pi-agent"
     assert paths.auth_path == resolved_tmp / ".my-pi-agent" / "auth.json"
-    assert paths.auth_lock_path == resolved_tmp / ".my-pi-agent" / "auth.json.lock"
-    assert paths.settings_path == resolved_tmp / ".my-pi-agent" / "settings.json"
-    assert paths.sessions_dir == resolved_tmp / ".my-pi-agent" / "sessions"
-    assert paths.skills_dir == resolved_tmp / ".my-pi-agent" / "skills"
-    assert paths.prompts_dir == resolved_tmp / ".my-pi-agent" / "prompts"
-    assert paths.themes_dir == resolved_tmp / ".my-pi-agent" / "themes"
-    assert paths.extensions_dir == resolved_tmp / ".my-pi-agent" / "extensions"
-    assert paths.logs_dir == resolved_tmp / ".my-pi-agent" / "logs"
+
+
+def test_agent_paths_new_beats_legacy(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """新旧目录同时存在时，新目录优先。"""
+    resolved_tmp = tmp_path.resolve()
+    (resolved_tmp / ".my-pi-agent").mkdir()
+    (resolved_tmp / ".my-agent-harness").mkdir()
+    monkeypatch.delenv("MY_AGENT_HOME", raising=False)
+    monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
+
+    assert AgentPaths().home == resolved_tmp / ".my-agent-harness"
 
 
 def test_agent_paths_custom_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

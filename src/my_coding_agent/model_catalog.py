@@ -114,7 +114,7 @@ def discover_deepseek_models_remote(
             )
 
         if models:
-            cache_file = Path.home() / ".my-pi-agent" / "deepseek-model-catalog.json"
+            cache_file = AgentPaths().home / "deepseek-model-catalog.json"
             try:
                 cache_file.parent.mkdir(parents=True, exist_ok=True)
                 try:
@@ -139,7 +139,7 @@ def get_deepseek_catalog(force: bool = False) -> list[dict[str, Any]]:
     except Exception:
         now_ms = 0
 
-    cache_file = Path.home() / ".my-pi-agent" / "deepseek-model-catalog.json"
+    cache_file = AgentPaths().home / "deepseek-model-catalog.json"
     if cache_file.exists():
         try:
             raw_text = cache_file.read_text(encoding="utf-8")
@@ -298,7 +298,7 @@ def discover_antigravity_models_remote(timeout: float = 6.0) -> list[dict[str, A
         models.sort(key=lambda x: _antigravity_model_rank(x["id"]))
 
         # 写入持久化缓存
-        cache_file = Path.home() / ".my-pi-agent" / "antigravity-model-catalog.json"
+        cache_file = AgentPaths().home / "antigravity-model-catalog.json"
         try:
             cache_file.parent.mkdir(parents=True, exist_ok=True)
             try:
@@ -323,7 +323,7 @@ def discover_antigravity_models_remote(timeout: float = 6.0) -> list[dict[str, A
 def get_antigravity_catalog(force: bool = False) -> list[dict[str, Any]]:
     """动态获取对标 pi-antigravity 的公共模型目录。
 
-    1. 优先检查本地缓存（~/.my-pi-agent/ 或 ~/.pi/agent/），若在 4 小时有效期内且未强制刷新，直接返回；
+    1. 优先检查本地缓存（AgentPaths().home，兼容旧 ~/.my-pi-agent/），若在 4 小时有效期内且未强制刷新，直接返回；
     2. 若缓存缺失或已过期，主动发起远程 fetchAvailableModels 探测并更新缓存；
     3. 若网络或探测失败，回退至 pi-antigravity 官方 ANTIGRAVITY_MODELS 权威静态表。
     """
@@ -333,7 +333,7 @@ def get_antigravity_catalog(force: bool = False) -> list[dict[str, Any]]:
         now_ms = 0
 
     # 1. 优先从本地缓存加载 (4小时TTL)
-    cache_path = Path.home() / ".my-pi-agent" / "antigravity-model-catalog.json"
+    cache_path = AgentPaths().home / "antigravity-model-catalog.json"
     if cache_path.exists():
         try:
             raw_text = cache_path.read_text(encoding="utf-8")

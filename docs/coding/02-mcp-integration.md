@@ -9,7 +9,7 @@
 ## 一、架构设计与定位
 
 Model Context Protocol (MCP) 是连接外部丰富工具生态（如 GitHub、数据库、分析引擎、本地文件系统等）的开放标准。
-在 `my-pi-agent` 中，MCP 客户端作为产品层原生扩展组件集成，负责读取工作区配置、动态启动子进程、协商协议并自动将远程工具无缝注册至内部 `ToolRegistry`：
+在 `my-agent-harness` 中，MCP 客户端作为产品层原生扩展组件集成，负责读取工作区配置、动态启动子进程、协商协议并自动将远程工具无缝注册至内部 `ToolRegistry`：
 
 ```text
                工作区 .mcp.json 配置

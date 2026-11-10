@@ -1,7 +1,7 @@
-"""my-pi-agent Python CLI entrypoint facade.
+"""my-agent-harness Python CLI entrypoint facade.
 
-This module provides the main() entrypoint when my-pi-agent is launched via
-Python (e.g. `uvx my-pi-agent`, `uv tool install my-pi-agent`, or `python -m my_coding_agent.cli`).
+This module provides the main() entrypoint when my-agent-harness is launched via
+Python (e.g. `uvx my-agent-harness`, `uv tool install my-agent-harness`, or `python -m my_coding_agent.cli`).
 It detects the system Node.js runtime and bridges to the Pi-TUI frontend.
 """
 
@@ -28,6 +28,7 @@ def find_tui_entry() -> Path | None:
         return pkg_bundled
 
     # 3. System prefix share directory: <sys.prefix>/share/my-pi-agent/my-pi-tui/bin/my-agent.js
+    # 注：share 子目录名沿用安装时写入的 "my-pi-agent"（pip 包名），改名会破坏已安装包。
     prefix_path = Path(sys.prefix) / "share" / "my-pi-agent" / "my-pi-tui" / "bin" / "my-agent.js"
     if prefix_path.exists():
         return prefix_path
@@ -43,8 +44,8 @@ def main(argv: list[str] | None = None) -> int:
     node_bin = shutil.which("node")
     if not node_bin:
         print(
-            "\n[my-pi-agent] 错误: 未检测到 Node.js 运行时环境。\n"
-            "my-pi-agent 采用像素级 Pi-TUI 呈现层，需要 Node.js (>= 18.0) 运行交互界面。\n\n"
+            "\n[my-agent-harness] 错误: 未检测到 Node.js 运行时环境。\n"
+            "my-agent-harness 采用像素级 Pi-TUI 呈现层，需要 Node.js (>= 18.0) 运行交互界面。\n\n"
             "请安装 Node.js 后重试:\n"
             "  - 官方网站下载: https://nodejs.org\n"
             "  - 或使用极速版本管理器安装: fnm (https://github.com/Schniz/fnm) 或 nvm\n",
@@ -55,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     tui_entry = find_tui_entry()
     if not tui_entry or not tui_entry.exists():
         print(
-            "\n[my-pi-agent] 错误: 未找到 TUI 启动入口脚本 (my-agent.js)。\n"
+            "\n[my-agent-harness] 错误: 未找到 TUI 启动入口脚本 (my-agent.js)。\n"
             "请确保已正确构建前端: npm run build --prefix my-pi-tui\n",
             file=sys.stderr,
         )
@@ -71,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         return 130
     except Exception as exc:
-        print(f"[my-pi-agent] 启动异常: {exc}", file=sys.stderr)
+        print(f"[my-agent-harness] 启动异常: {exc}", file=sys.stderr)
         return 1
 
 
