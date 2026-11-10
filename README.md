@@ -151,7 +151,7 @@ npx my-pi-agent
 
 > 说明：npm 包名仍为 `my-pi-agent`（已发布的历史名，未改以免破坏既有安装）；安装后可用 `my-agent` 启动。
 >
-> **数据目录**：全新安装使用 `~/.my-agent-harness/`；若检测到旧的 `~/.my-agent-harness/`（含既有登录态与设置），
+> **数据目录**：全新安装使用 `~/.my-agent-harness/`；若检测到旧的 `~/.my-pi-agent/`（含既有登录态与设置），
 > 会自动沿用旧目录以保证无缝升级。也可用环境变量 `MY_AGENT_HOME` 显式指定。
 
 ### 命令行常用参数 (CLI Options)
