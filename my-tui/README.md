@@ -1,4 +1,4 @@
-# my-pi-tui
+# my-tui
 
 `my-agent-harness` 的交互终端表现层（基于 `@earendil-works/pi-tui` 的 Node.js / TypeScript 前端）。
 

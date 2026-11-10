@@ -134,7 +134,7 @@
    - UTF-8 优先解码，一旦遇 `UnicodeDecodeError` 立即回退至 `locale.getpreferredencoding()`（如 GBK/CP936），彻底杜绝乱码；
 3. **失败退出码显式标红**：
    - 当 `exit_code != 0` 时，显式返回 `BashResult(ok=False, data=msg, error=msg)`，确保 `is_error=True`，让 TUI 渲染红色 `✗` 与 `(失败)`；
-4. **前端中断安全清理 (`my-pi-tui/src/interactive/interactive-mode.ts`)**：
+4. **前端中断安全清理 (`my-tui/src/interactive/interactive-mode.ts`)**：
    - 用户按 Esc/Ctrl+C，或收到 `stop_reason === "cancelled" / "aborted"` 时，立即从 `chatContainer` 中安全移除正在流式的 `currentStreamingAssistant`，杜绝孤儿单字污染视口。
 
 #### 4. 验证效果

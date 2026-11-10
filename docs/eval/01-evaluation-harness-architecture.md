@@ -1,6 +1,6 @@
-# 自动化评测系统架构与设计规范 (`my_pi_eval`)
+# 自动化评测系统架构与设计规范 (`my_eval`)
 
-- **定位**：基于 Harbor Framework 的标准基准评测套件与 Terminal-Bench 2.0/2.1 调度子系统 (`my-pi-eval/`)
+- **定位**：基于 Harbor Framework 的标准基准评测套件与 Terminal-Bench 2.0/2.1 调度子系统 (`my-eval/`)
 - **核心类**：`My-Agent-Harness`, `HarborToolRegistry`, `resolve_eval_llm`
 - **评测基准**：Terminal-Bench 2.0 / 2.1 (89 题全量 Linux 终端与系统工程赛题)
 
@@ -8,7 +8,7 @@
 
 ## 一、架构设计与定位
 
-为了以工业级严谨度衡量 Agent 在真实终端环境下的代码编写、依赖排错、系统运维与逆向攻坚能力，`my-agent-harness` 构建了专用的评测子系统 `my-pi-eval`。
+为了以工业级严谨度衡量 Agent 在真实终端环境下的代码编写、依赖排错、系统运维与逆向攻坚能力，`my-agent-harness` 构建了专用的评测子系统 `my-eval`。
 该系统遵循 **Harbor Framework**（Terminal-Bench 官方评测运行器）的协议标准，支持与主流 LLM 评测生态无缝对接。
 
 ```text
@@ -16,10 +16,10 @@
 │                          Harbor 评测编排微架构                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  【宿主机层 (Host Environment)】: Python 3.12 + my_pi_eval                   │
+│  【宿主机层 (Host Environment)】: Python 3.12 + my_eval                   │
 │    • My-Agent-Harness 适配器 (继承自 harbor.agents.base.BaseAgent)                 │
 │    • Agent 微内核与状态机 (my_agent_core.Agent + Session 持久化)            │
-│    • 专属凭证中心解析器 (resolve_eval_llm 隔离读取 my-pi-eval/.env)           │
+│    • 专属凭证中心解析器 (resolve_eval_llm 隔离读取 my-eval/.env)           │
 │    • 全量 Token 与前缀缓存指标采集器 (从 session.jsonl 提取 Prompt/Cache)     │
 │  ─────────────────────────────────────────────────────────────────────────  │
 │                                      │                                      │
@@ -46,7 +46,7 @@
 | 维度 | 原厂 Pi Agent (Node.js/TS) | 自研 My-Agent-Harness (Python) | 理论与工程优势 |
 | :--- | :--- | :--- | :--- |
 | **评测模式** | **Scheme 2 (容器内安装型)**<br>Harbor 在测试容器内在线下载 Node.js、npm 并编译安装 Pi | **Scheme 1 (宿主机驱动型)**<br>Agent 留在宿主机，仅通过 Docker 执行管道驱动沙箱 | **My-Agent-Harness 完胜**：测试容器无需安装任何 Node.js/npm 环境，冷启动耗时从 2.5 分钟缩减至 **< 2 秒**；彻底消除容器内网络波动导致的依赖安装失败。 |
-| **凭据安全隔离** | 需向容器内部透传 `API_KEY` 环境变量 | 宿主机本地严格隔离读取 `my-pi-eval/.env`，API Key 绝不流入容器沙箱 | **极高安全性**：即使评测任务包含恶意代码或攻击载荷，也无法窃取宿主机的 API Key。 |
+| **凭据安全隔离** | 需向容器内部透传 `API_KEY` 环境变量 | 宿主机本地严格隔离读取 `my-eval/.env`，API Key 绝不流入容器沙箱 | **极高安全性**：即使评测任务包含恶意代码或攻击载荷，也无法窃取宿主机的 API Key。 |
 | **工具映射与防御** | 容器内原生 bash/fs 进程调用 | `HarborToolRegistry` 桥接，附加 50KB 截断防御与 CRLF 规范化 | 精细化错误拦截，彻底防止 Windows 宿主机回车换行符破坏 Linux 容器脚本。 |
 | **Token 与缓存核算** | 纯客户端 session 统计 | 结合离散 Epoch 块级压缩，逐条扫描 session 转录本核算真实 Prompt Cache 命中率 | 具备超长会话防溢出保护与精准财务级成本审计能力。 |
 
@@ -58,7 +58,7 @@
 
 为保证评测环境与开发者日常环境完全解耦，防止测试逻辑误用开发配置：
 - `My-Agent-Harness` **严格禁止读取用户主目录下的 `~/.my-agent-harness/auth.json`**；
-- 评测凭据必须通过系统环境变量，或专门放置在 `my-pi-eval/.env` 文件中；
+- 评测凭据必须通过系统环境变量，或专门放置在 `my-eval/.env` 文件中；
 - 若未检测到有效 Key，系统即刻抛出明确的诊断指引并熔断，防止发生隐式空请求。
 
 ### 2. 高保真沙箱工具桥接 (`HarborToolRegistry`)
@@ -102,12 +102,12 @@
 ## 五、评测运行指令与验证
 
 ```bash
-# 1. 运行 my-pi-eval 单元测试套件 (18 offline tests)
+# 1. 运行 my-eval 单元测试套件 (18 offline tests)
 uv run python -m pytest tests/eval/ -v
 
 # 2. 运行单任务冒烟评测 (以 build-cython-ext 为例)
-python my-pi-eval/scripts/run_my_agent_harness_smoke.py
+python my-eval/scripts/run_my_agent_harness_smoke.py
 
 # 3. 运行批量评测任务
-harbor run -p <path_to_tasks> -a my_pi_eval.agent:My-Agent-Harness -m deepseek/deepseek-chat -n 4
+harbor run -p <path_to_tasks> -a my_eval.agent:My-Agent-Harness -m deepseek/deepseek-chat -n 4
 ```

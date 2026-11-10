@@ -1,4 +1,4 @@
-"""CLI runner and environment doctor for my-pi-eval."""
+"""CLI runner and environment doctor for my-eval."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def build_harbor_command(
     task_path: str,
     model: str = "deepseek/deepseek-chat",
     concurrency: int = 1,
-    agent_path: str = "my_pi_eval.agent:My-Agent-Harness",
+    agent_path: str = "my_eval.agent:My-Agent-Harness",
 ) -> list[str]:
     """Assemble the official Harbor CLI execution command."""
     return [
@@ -57,7 +57,7 @@ def build_harbor_command(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="my-pi-eval",
+        prog="my-eval",
         description="Harbor-based evaluation runner for my-agent-harness against Terminal-Bench 2.0",
     )
     parser.add_argument(

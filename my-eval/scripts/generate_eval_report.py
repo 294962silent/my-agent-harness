@@ -9,11 +9,11 @@ if hasattr(sys.stdout, "reconfigure"):
     getattr(sys.stdout, "reconfigure")(encoding="utf-8", errors="replace")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MY_PROG_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_progress.json"
-PI_PROG_FILE = REPO_ROOT / "my-pi-eval" / "results" / "official_pi_progress.json"
+MY_PROG_FILE = REPO_ROOT / "my-eval" / "results" / "my_agent_harness_progress.json"
+PI_PROG_FILE = REPO_ROOT / "my-eval" / "results" / "official_pi_progress.json"
 
-REPORT_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_terminal_bench_2.md"
-MATRIX_FILE = REPO_ROOT / "my-pi-eval" / "results" / "comparison_matrix.md"
+REPORT_FILE = REPO_ROOT / "my-eval" / "results" / "my_agent_harness_terminal_bench_2.md"
+MATRIX_FILE = REPO_ROOT / "my-eval" / "results" / "comparison_matrix.md"
 
 PHYSICAL_EXCLUDED = {
     "make-doom-for-mips",

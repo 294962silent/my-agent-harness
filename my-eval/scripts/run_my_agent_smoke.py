@@ -35,7 +35,7 @@ def main() -> None:
         "-p",
         str(TASK_DIR),
         "-a",
-        "my_pi_eval.agent:My-Agent-Harness",
+        "my_eval.agent:My-Agent-Harness",
         "-m",
         "deepseek/deepseek-chat",
         "--env-file",
@@ -47,7 +47,7 @@ def main() -> None:
     env = os.environ.copy()
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
-    env["PYTHONPATH"] = f"{REPO_ROOT / 'src'};{REPO_ROOT / 'my-pi-eval' / 'src'}"
+    env["PYTHONPATH"] = f"{REPO_ROOT / 'src'};{REPO_ROOT / 'my-eval' / 'src'}"
     if "DEEPSEEK_API_KEY" in os.environ:
         env["DEEPSEEK_API_KEY"] = os.environ["DEEPSEEK_API_KEY"]
 

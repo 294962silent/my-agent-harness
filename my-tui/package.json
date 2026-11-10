@@ -1,5 +1,5 @@
 {
-  "name": "my-pi-tui",
+  "name": "my-tui",
   "version": "0.2.0",
   "description": "High-fidelity Pi-TUI terminal presentation layer for my-agent-harness",
   "type": "module",

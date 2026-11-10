@@ -17,19 +17,19 @@ def find_tui_entry() -> Path | None:
     """Find the my-agent.js TUI entrypoint across dev and packaged locations."""
     repo_root = Path(__file__).resolve().parent.parent.parent
 
-    # 1. Development workspace tree: <repo_root>/my-pi-tui/bin/my-agent.js
-    dev_path = repo_root / "my-pi-tui" / "bin" / "my-agent.js"
+    # 1. Development workspace tree: <repo_root>/my-tui/bin/my-agent.js
+    dev_path = repo_root / "my-tui" / "bin" / "my-agent.js"
     if dev_path.exists():
         return dev_path
 
-    # 2. Package-bundled data directory: <package_dir>/my-pi-tui/bin/my-agent.js
-    pkg_bundled = Path(__file__).resolve().parent / "my-pi-tui" / "bin" / "my-agent.js"
+    # 2. Package-bundled data directory: <package_dir>/my-tui/bin/my-agent.js
+    pkg_bundled = Path(__file__).resolve().parent / "my-tui" / "bin" / "my-agent.js"
     if pkg_bundled.exists():
         return pkg_bundled
 
-    # 3. System prefix share directory: <sys.prefix>/share/my-pi-agent/my-pi-tui/bin/my-agent.js
+    # 3. System prefix share directory: <sys.prefix>/share/my-pi-agent/my-tui/bin/my-agent.js
     # 注：share 子目录名沿用安装时写入的 "my-agent-harness"（pip 包名），改名会破坏已安装包。
-    prefix_path = Path(sys.prefix) / "share" / "my-agent-harness" / "my-pi-tui" / "bin" / "my-agent.js"
+    prefix_path = Path(sys.prefix) / "share" / "my-agent-harness" / "my-tui" / "bin" / "my-agent.js"
     if prefix_path.exists():
         return prefix_path
 
@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     if not tui_entry or not tui_entry.exists():
         print(
             "\n[my-agent-harness] 错误: 未找到 TUI 启动入口脚本 (my-agent.js)。\n"
-            "请确保已正确构建前端: npm run build --prefix my-pi-tui\n",
+            "请确保已正确构建前端: npm run build --prefix my-tui\n",
             file=sys.stderr,
         )
         return 1

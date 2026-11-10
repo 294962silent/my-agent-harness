@@ -85,7 +85,7 @@
 
 ### 2.1 交互对比矩阵
 
-| 交互组件/行为 | 官方 Pi 实现机制 (`@earendil-works/pi-tui`) | 本项目实现机制 (`my-pi-tui/src/`) | 对齐状态 | 审查与修复要点 |
+| 交互组件/行为 | 官方 Pi 实现机制 (`@earendil-works/pi-tui`) | 本项目实现机制 (`my-tui/src/`) | 对齐状态 | 审查与修复要点 |
 | :--- | :--- | :--- | :---: | :--- |
 | **转圈动画 (Spinner)** | `Loader` 组件以 80ms 间隔在 Braille 10 帧间循环 | `CustomEditor` 顶部边框动态嵌入 `WorkingStatusIndicator` | **已修复** | **动效对齐**：输入框上沿 `── ⠸ Working ──` 实时旋转，模型结束自动平滑自愈恢复 |
 | **工具更新状态机** | `tool_execution_update` 仅更新局部增量，保持运行态 | 此前在 update 时误调用 `updateResult(..., false)` | **已修复** | **严重状态 Bug 修复**：新增 `updatePartialResult`，运行中展示尾部日志且保持转圈 |
@@ -144,7 +144,7 @@
    npm run build
    ```
 
-   - **结果**：`tsc` 0 报错，产出干净的 `my-pi-tui/dist/`。
+   - **结果**：`tsc` 0 报错，产出干净的 `my-tui/dist/`。
 
 ### 3.2 代码风格与极简规范检查
 

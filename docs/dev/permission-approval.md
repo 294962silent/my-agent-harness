@@ -1,7 +1,7 @@
 # 工具审批协议（Permission Approval over JSON-RPC）
 
 > 状态：待实现（本次重构的 P0）
-> 涉及：`src/my_coding_agent/permissions.py`、`src/my_coding_agent/rpc_server.py`、`my-pi-tui/src/client.ts`、`my-pi-tui/src/interactive/*`、`my-pi-tui/src/components/permission-dialog.ts`
+> 涉及：`src/my_coding_agent/permissions.py`、`src/my_coding_agent/rpc_server.py`、`my-tui/src/client.ts`、`my-tui/src/interactive/*`、`my-tui/src/components/permission-dialog.ts`
 
 ## 1. 目标与非目标
 

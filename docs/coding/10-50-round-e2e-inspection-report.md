@@ -125,7 +125,7 @@
 
 1. **`TaskStore.create` 支持原子绑定依赖 (`task_store.py` & `task_tools.py`)**：
    原有设计在 `todo(action="create")` 时未接受 `blocked_by` 参数，迫使模型分步创建后再 update。现已增加原子依赖支持并在创建时自动校验前置任务合法性。
-2. **终端模糊文件联想单测环境兼容性优化 (`my-pi-tui/test/app.test.js`)**：
+2. **终端模糊文件联想单测环境兼容性优化 (`my-tui/test/app.test.js`)**：
    对外部系统命令行工具 `fd` 的缺失增加优雅探测与容错，避免在没有预装 `fd` 的轻量 CI 或纯净系统环境下误报红灯。
 
 ---

@@ -32,13 +32,13 @@ def generate_launcher_scripts(dest_dir: Path) -> tuple[Path, Path]:
 
     cmd_file = dest_dir / "my-agent-harness.cmd"
     cmd_file.write_text(
-        '@echo off\r\nsetlocal\r\nnode "%~dp0my-pi-tui\\bin\\my-agent.js" %*\r\n',
+        '@echo off\r\nsetlocal\r\nnode "%~dp0my-tui\\bin\\my-agent.js" %*\r\n',
         encoding="utf-8",
     )
 
     sh_file = dest_dir / "my-agent-harness"
     sh_file.write_text(
-        '#!/usr/bin/env sh\nDIR="$(cd "$(dirname "$0")" && pwd)"\nexec node "$DIR/my-pi-tui/bin/my-agent.js" "$@"\n',
+        '#!/usr/bin/env sh\nDIR="$(cd "$(dirname "$0")" && pwd)"\nexec node "$DIR/my-tui/bin/my-agent.js" "$@"\n',
         encoding="utf-8",
     )
     try:
@@ -55,7 +55,7 @@ def build_tui(repo_root: Path) -> None:
     npm_cmd = shutil.which("npm")
     if not npm_cmd:
         raise RuntimeError("未在当前系统 PATH 中找到 npm，无法编译 TUI。")
-    subprocess.run([npm_cmd, "run", "build", "--prefix", "my-pi-tui"], cwd=repo_root, check=True)
+    subprocess.run([npm_cmd, "run", "build", "--prefix", "my-tui"], cwd=repo_root, check=True)
 
 
 def assemble_portable_package(repo_root: Path, dist_dir: Path, version: str) -> Path:
@@ -78,10 +78,10 @@ def assemble_portable_package(repo_root: Path, dist_dir: Path, version: str) -> 
     )
 
     # 2. 拷贝编译后的 TUI 产物
-    (staging_dir / "my-pi-tui").mkdir(parents=True, exist_ok=True)
-    shutil.copytree(repo_root / "my-pi-tui" / "dist", staging_dir / "my-pi-tui" / "dist")
-    shutil.copytree(repo_root / "my-pi-tui" / "bin", staging_dir / "my-pi-tui" / "bin")
-    shutil.copy2(repo_root / "my-pi-tui" / "package.json", staging_dir / "my-pi-tui" / "package.json")
+    (staging_dir / "my-tui").mkdir(parents=True, exist_ok=True)
+    shutil.copytree(repo_root / "my-tui" / "dist", staging_dir / "my-tui" / "dist")
+    shutil.copytree(repo_root / "my-tui" / "bin", staging_dir / "my-tui" / "bin")
+    shutil.copy2(repo_root / "my-tui" / "package.json", staging_dir / "my-tui" / "package.json")
 
     # 3. 拷贝元数据与说明文档
     shutil.copy2(repo_root / "pyproject.toml", staging_dir / "pyproject.toml")

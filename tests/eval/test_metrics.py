@@ -1,5 +1,5 @@
 # pyright: reportMissingImports=false
-from my_pi_eval.metrics import TaskMetric, calculate_summary
+from my_eval.metrics import TaskMetric, calculate_summary
 
 
 def test_calculate_summary():
@@ -43,7 +43,7 @@ def test_calculate_summary_empty():
     assert summary["total_tokens"] == 0
 
 
-def test_my_pi_eval_version():
-    import my_pi_eval
+def test_my_eval_version():
+    import my_eval
 
-    assert my_pi_eval.__version__ == "0.1.0"
+    assert my_eval.__version__ == "0.1.0"

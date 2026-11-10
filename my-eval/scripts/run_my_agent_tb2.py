@@ -25,7 +25,7 @@ try:
     load_dotenv(EVAL_DIR / ".env", override=False)
 except ImportError:
     pass
-PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_progress.json"
+PROGRESS_FILE = REPO_ROOT / "my-eval" / "results" / "my_agent_harness_progress.json"
 PROGRESS_LOCK = threading.Lock()
 
 # 4 tasks excluded due to physical single-machine bottlenecks
@@ -96,7 +96,7 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
         "-p",
         str(task_dir),
         "-a",
-        "my_pi_eval.agent:My-Agent-Harness",
+        "my_eval.agent:My-Agent-Harness",
         "-m",
         "deepseek/deepseek-chat",
         "--env-file",
@@ -108,7 +108,7 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
     env = os.environ.copy()
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
-    env["PYTHONPATH"] = f"{REPO_ROOT / 'src'};{REPO_ROOT / 'my-pi-eval' / 'src'}"
+    env["PYTHONPATH"] = f"{REPO_ROOT / 'src'};{REPO_ROOT / 'my-eval' / 'src'}"
     if "DEEPSEEK_API_KEY" in os.environ:
         env["DEEPSEEK_API_KEY"] = os.environ["DEEPSEEK_API_KEY"]
     env["PIP_INDEX_URL"] = "https://mirrors.aliyun.com/pypi/simple/"

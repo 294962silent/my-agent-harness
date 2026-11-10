@@ -1,6 +1,6 @@
-# Pi-TUI 交互式终端与表现层规范 (`my-pi-tui`)
+# Pi-TUI 交互式终端与表现层规范 (`my-tui`)
 
-- **定位**：100% 对标 Pi 原厂体验的独立终端表现层与交互状态机 (`my-pi-tui/src/`)
+- **定位**：100% 对标 Pi 原厂体验的独立终端表现层与交互状态机 (`my-tui/src/`)
 - **设计标杆**：`@earendil-works/pi-coding-agent`、`@earendil-works/pi-tui` (Mario Zechner)
 - **核心组件**：`CustomEditor` 顶部边框嵌入式转圈动效、全套全屏模态选择器、`CompactionSummaryMessage` 折叠卡片、思考深度快捷键轮转
 

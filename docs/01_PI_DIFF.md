@@ -24,7 +24,7 @@
 | --- | --- | --- | --- | --- |
 | `pi-coding-agent` | 340 | 65,603 | `my_coding_agent` | 7,410 |
 | `pi-ai` | 204 | 20,759 | `my_agent_llm` | 3,047 |
-| `pi-tui` | 46 | 16,212 | `my-pi-tui`（TypeScript，独立） | 未计入 |
+| `pi-tui` | 46 | 16,212 | `my-tui`（TypeScript，独立） | 未计入 |
 | `pi-codemode` | 16 | 2,228 | ❌ 无对应 | 0 |
 | `pi-mcp` | 18 | 2,217 | `my_coding_agent/mcp`（内嵌） | 含在 7,410 |
 | `pi-agent-core` | 6 | 1,440 | `my_agent_core` | 7,713 |

@@ -38,7 +38,7 @@
 
 ### A3「token 省 66%、费用省 75%」——怎么算的？
 
-数据来自 `my-pi-eval/results/*_progress.json` 逐任务累加：
+数据来自 `my-eval/results/*_progress.json` 逐任务累加：
 
 | | 我们 | 官方 |
 | --- | --- | --- |

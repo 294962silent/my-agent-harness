@@ -45,7 +45,7 @@ def fake_env():
 
 @pytest.mark.anyio
 async def test_harbor_bash_tool(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     registry = HarborToolRegistry(fake_env)
     res = await registry.execute("bash", {"command": "echo test"})
@@ -59,7 +59,7 @@ async def test_harbor_bash_tool(fake_env):
 @pytest.mark.anyio
 async def test_harbor_bash_strips_ansi_and_cr(fake_env):
     """对标 Pi bash-executor.ts：清洗 ANSI 颜色控制符与 \r 进度条。"""
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     fake_env.exec.side_effect = None
     exec_res = MagicMock()
@@ -80,7 +80,7 @@ async def test_harbor_bash_strips_ansi_and_cr(fake_env):
 @pytest.mark.anyio
 async def test_harbor_bash_error_merges_stdout_and_exit_code(fake_env):
     """对标 Pi bash.ts：失败时完整保留 stdout+stderr，并在末尾追加 Command exited with code {code}。"""
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     fake_env.exec.side_effect = None
     exec_res = MagicMock()
@@ -100,7 +100,7 @@ async def test_harbor_bash_error_merges_stdout_and_exit_code(fake_env):
 
 @pytest.mark.anyio
 async def test_harbor_read_tool(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     registry = HarborToolRegistry(fake_env)
     res = await registry.execute("read", {"path": "/app/main.py", "offset": 1, "limit": 10})
@@ -110,7 +110,7 @@ async def test_harbor_read_tool(fake_env):
 
 @pytest.mark.anyio
 async def test_harbor_write_tool_normalizes_crlf(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     registry = HarborToolRegistry(fake_env)
     res = await registry.execute("write", {"path": "/app/run.sh", "content": "echo 1\r\necho 2\r\n"})
@@ -120,7 +120,7 @@ async def test_harbor_write_tool_normalizes_crlf(fake_env):
 
 @pytest.mark.anyio
 async def test_harbor_edit_tool_surgical_replacement(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     registry = HarborToolRegistry(fake_env)
     res = await registry.execute(
@@ -132,7 +132,7 @@ async def test_harbor_edit_tool_surgical_replacement(fake_env):
 
 @pytest.mark.anyio
 async def test_harbor_edit_tool_uniqueness_check(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     registry = HarborToolRegistry(fake_env)
     res = await registry.execute("edit", {"path": "/app/dup.py", "edits": [{"oldText": "x = 1", "newText": "x = 2"}]})
@@ -143,7 +143,7 @@ async def test_harbor_edit_tool_uniqueness_check(fake_env):
 
 @pytest.mark.anyio
 async def test_harbor_tools_never_throw(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     fake_env.exec.side_effect = RuntimeError("Docker crashed")
     registry = HarborToolRegistry(fake_env)
@@ -154,7 +154,7 @@ async def test_harbor_tools_never_throw(fake_env):
 
 @pytest.mark.anyio
 async def test_harbor_cwd_tracking_and_relative_path(fake_env):
-    from my_pi_eval.tools import HarborToolRegistry
+    from my_eval.tools import HarborToolRegistry
 
     exec_result = MagicMock()
     exec_result.return_code = 0

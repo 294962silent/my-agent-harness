@@ -13,7 +13,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 EVAL_DIR = Path("D:/code/python/agent-eval/pi-terminal-bench")
-PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_progress.json"
+PROGRESS_FILE = REPO_ROOT / "my-eval" / "results" / "my_agent_harness_progress.json"
 TB2_TASKS_DIR = Path("D:/code/python/agent-eval/terminal-bench-2")
 
 PHYSICAL_EXCLUDED = {

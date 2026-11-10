@@ -14,7 +14,7 @@ from uuid import uuid4
 try:
     from dotenv import load_dotenv
 
-    # 优先加载 my-pi-eval 目录专属的 .env 文件
+    # 优先加载 my-eval 目录专属的 .env 文件
     _eval_root = Path(__file__).resolve().parent.parent.parent
     _eval_env = _eval_root / ".env"
     if _eval_env.exists():
@@ -29,7 +29,7 @@ from my_agent_core.session import Session
 from my_agent_llm.client import LLM
 from my_agent_llm.config import Config
 
-from my_pi_eval.tools import HarborToolRegistry
+from my_eval.tools import HarborToolRegistry
 
 try:
     from my_coding_agent.tracer import DebugEventTracer
@@ -84,7 +84,7 @@ else:
 
 
 def resolve_eval_llm(model_str: str) -> LLM:
-    """从 my-pi-eval/.env 或系统环境变量解析评测 API Key，严禁读取本地 ~/.my-agent-harness/auth.json。"""
+    """从 my-eval/.env 或系统环境变量解析评测 API Key，严禁读取本地 ~/.my-agent-harness/auth.json。"""
     provider = "openai"
     model_name = model_str
     if "/" in model_str:
@@ -115,8 +115,8 @@ def resolve_eval_llm(model_str: str) -> LLM:
         env_var = f"{provider.upper()}_API_KEY"
         raise ValueError(
             f"评测环境未检测到 {env_var}！\n"
-            f"评测模块严禁读取本地 ~/.my-agent-harness/auth.json，必须在 'my-pi-eval/.env' 中配置 API Key。\n"
-            f"请在 my-pi-eval/.env 中添加: {env_var}=sk-xxxx。"
+            f"评测模块严禁读取本地 ~/.my-agent-harness/auth.json，必须在 'my-eval/.env' 中配置 API Key。\n"
+            f"请在 my-eval/.env 中添加: {env_var}=sk-xxxx。"
         )
 
     config = Config(
@@ -165,7 +165,7 @@ class MyAgentHarness(BaseAgent):
         if logs_dir:
             session_path = Path(logs_dir) / "session.jsonl"
         else:
-            session_path = Path(tempfile.gettempdir()) / f"my_pi_eval_{uuid4().hex[:8]}.jsonl"
+            session_path = Path(tempfile.gettempdir()) / f"my_eval_{uuid4().hex[:8]}.jsonl"
 
         session = Session(path=session_path)
 

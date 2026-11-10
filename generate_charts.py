@@ -248,7 +248,7 @@ plt.subplots_adjust(top=0.865, bottom=0.10, left=0.055, right=0.96)
 
 out_paths = [
     "docs/assets/terminal_bench_comparison.png",
-    "my-pi-eval/results/terminal_bench_comparison.png",
+    "my-eval/results/terminal_bench_comparison.png",
 ]
 
 blog_asset_dir = "D:/blog/source/_posts/学习/agent实战/my-agent-harness/my-agent-harness--agent评估"

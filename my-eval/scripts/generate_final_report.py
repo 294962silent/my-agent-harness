@@ -10,8 +10,8 @@ if hasattr(sys.stdout, "reconfigure"):
     getattr(sys.stdout, "reconfigure")(encoding="utf-8", errors="replace")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-PROG_FILE = REPO_ROOT / "my-pi-eval" / "results" / "official_pi_progress.json"
-REPORT_PATH = REPO_ROOT / "my-pi-eval" / "results" / "pi_official_terminal_bench_2.md"
+PROG_FILE = REPO_ROOT / "my-eval" / "results" / "official_pi_progress.json"
+REPORT_PATH = REPO_ROOT / "my-eval" / "results" / "pi_official_terminal_bench_2.md"
 
 
 def main() -> None:

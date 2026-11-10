@@ -1,7 +1,7 @@
 # pyright: reportMissingImports=false
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from my_pi_eval.agent import MyAgentHarness
+from my_eval.agent import MyAgentHarness
 
 
 def test_mypi_metadata():
@@ -35,7 +35,7 @@ async def test_my_agent_harness_run_execution(tmp_path):
 
 
 def test_resolve_eval_llm_deepseek_env(monkeypatch):
-    from my_pi_eval.agent import resolve_eval_llm
+    from my_eval.agent import resolve_eval_llm
 
     monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-fake-deepseek-key")
     llm = resolve_eval_llm("deepseek/deepseek-chat")
@@ -46,8 +46,8 @@ def test_resolve_eval_llm_deepseek_env(monkeypatch):
 
 
 def test_resolve_eval_llm_missing_key_raises(monkeypatch):
-    from my_pi_eval.agent import resolve_eval_llm
+    from my_eval.agent import resolve_eval_llm
 
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
-    with pytest.raises(ValueError, match="my-pi-eval/.env"):
+    with pytest.raises(ValueError, match="my-eval/.env"):
         resolve_eval_llm("deepseek/deepseek-chat")

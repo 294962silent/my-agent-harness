@@ -23,7 +23,7 @@ os.environ["PYTHONUTF8"] = "1"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 TB2_DIR = Path("D:/code/python/agent-eval/terminal-bench-2")
-RESULTS_DIR = REPO_ROOT / "my-pi-eval" / "results"
+RESULTS_DIR = REPO_ROOT / "my-eval" / "results"
 PROGRESS_FILE = RESULTS_DIR / "image_pull_progress.json"
 
 

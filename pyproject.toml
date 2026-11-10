@@ -40,13 +40,13 @@ packages = [
 ]
 
 [tool.hatch.build.targets.wheel.force-include]
-# TUI assets are gitignored (my-pi-tui/dist), so `npm run build` must run before `uv build`.
-"my-pi-tui/bin" = "my_coding_agent/my-pi-tui/bin"
-"my-pi-tui/dist" = "my_coding_agent/my-pi-tui/dist"
-"my-pi-tui/package.json" = "my_coding_agent/my-pi-tui/package.json"
+# TUI assets are gitignored (my-tui/dist), so `npm run build` must run before `uv build`.
+"my-tui/bin" = "my_coding_agent/my-tui/bin"
+"my-tui/dist" = "my_coding_agent/my-tui/dist"
+"my-tui/package.json" = "my_coding_agent/my-tui/package.json"
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "my-pi-eval/src", "."]
+pythonpath = ["src", "my-eval/src", "."]
 testpaths = ["tests"]
 addopts = "-ra -q --import-mode=importlib"
 
@@ -61,4 +61,4 @@ select = ["E", "F"]
 ignore = ["E501"]
 
 [tool.pyright]
-extraPaths = ["src", "my-pi-eval/src", "."]
+extraPaths = ["src", "my-eval/src", "."]

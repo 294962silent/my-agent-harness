@@ -17,7 +17,7 @@
 | --- | --- | --- | --- | --- |
 | **L1 单元测试** | `pytest tests/` | **956 项** | 40.3 s | 每个模块的行为契约 |
 | **L2 集成实验** | `experiments/runtime_ab/` | 40 例 × 2 组 | < 10 s | 故障注入 A/B |
-| **L3 端到端评测** | `my-pi-eval/` + Terminal-Bench 2.1 | 89 任务 | 22 h | 真实工程任务 |
+| **L3 端到端评测** | `my-eval/` + Terminal-Bench 2.1 | 89 任务 | 22 h | 真实工程任务 |
 | **L4 真实使用** | 日常自用 | — | — | 长程会话、真实仓库 |
 
 **为什么需要四层**：单测证明「函数行为对」，集成实验证明「机制有效」，
@@ -115,7 +115,7 @@ def repair_tool_history(messages) -> ToolHistoryRepair:
 
 ### 数据源与真实性
 
-**文件**：`my-pi-eval/results/{my_agent_harness,official_pi}_progress.json`（各 89 条逐任务记录）
+**文件**：`my-eval/results/{my_agent_harness,official_pi}_progress.json`（各 89 条逐任务记录）
 
 > ⚠️ **这是 P0-3 质疑的核心**：评测数据是否与官方 Pi 逐位相同？
 > **核实结论**：见下方「逐任务差异」，存在双向差异，**不是复制**。
@@ -447,7 +447,7 @@ P0-1（拒绝不生效）和 P1-1（usage 恒为 0）都属于这一类——
 | --- | --- | --- | --- |
 | 全量单测 | `.venv/Scripts/python.exe -m pytest tests/` | 40 s | 0 |
 | 运行时自愈 A/B | `uv run python experiments/runtime_ab/run_ab.py` | <10 s | 0 |
-| Terminal-Bench | `my-pi-eval/`（见其 README） | 22 h | ~$5 |
+| Terminal-Bench | `my-eval/`（见其 README） | 22 h | ~$5 |
 | LongMemEval | `uv run python -m experiments.longmemeval.run` | 待测 | 待测 |
 | lint | `uv run ruff check src tests` | 秒级 | 0 |
 
