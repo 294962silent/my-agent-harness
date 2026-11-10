@@ -32,9 +32,9 @@ docs/archive/
 *.pid
 *.flag
 jobs/
-my-pi-eval/jobs/
-my-pi-eval/results/active_task_locks/
-my-pi-eval/cache/
+my-eval/jobs/
+my-eval/results/active_task_locks/
+my-eval/cache/
 .worktrees/
 .worktrees
 
@@ -47,9 +47,9 @@ PRODUCT_STRATEGY.md
 fix_local_install.ps1
 
 # 保留 dist 占位：hatch 的 force-include 在干净 clone 下需要一个存在的目录
-!my-pi-tui/dist/
-my-pi-tui/dist/*
-!my-pi-tui/dist/.gitkeep
+!my-tui/dist/
+my-tui/dist/*
+!my-tui/dist/.gitkeep
 
 # LongMemEval 数据集与逐题结果（体积大、可重新生成）
 experiments/longmemeval/data/
