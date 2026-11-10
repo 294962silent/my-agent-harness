@@ -1,6 +1,6 @@
-# my-pi-agent 架构参考溯源与设计复盘
+# my-agent-harness 架构参考溯源与设计复盘
 
-本项目（`my-pi-agent`）从零手写了一个最小但完整的 Python Agent 框架与编码智能体。
+本项目（`my-agent-harness`）从零手写了一个最小但完整的 Python Agent 框架与编码智能体。
 为了保持极简、清晰、高内聚，我们在设计每一个核心模块时，深入研读并对比了开源领域中的多个顶级标杆项目（包括 **Pi**、**Tau (`tau-ai`)**、**Hermes Agent**、**OpenHands (software-agent-sdk)**、**Learn-Claude-Code**、**pig-mono** 等）。
 
 本文档对全套 14 个核心模块进行系统的溯源复盘，详细记录：
@@ -30,7 +30,7 @@
 - [十五、Antigravity OAuth 鉴权与零硬编码自省 (`my_agent_llm.auth.antigravity`)](#十五antigravity-oauth-鉴权与零硬编码自省-my_agent_llmauthantigravity)
 - [十六、Accept-on-Diff 权限审查门禁与词级差异增强 (`my_coding_agent.permissions`)](#十六accept-on-diff-权限审查门禁与词级差异增强-my_coding_agentpermissions)
 - [十七、提示词 @ 文件引用与工作区 Turnkey MCP (`my_coding_agent.file_reference` & `mcp`)](#十七提示词--文件引用与工作区-turnkey-mcp-my_coding_agentfile_reference--mcp)
-- [十八、Pi 原厂 TUI 独立表现层与 stdio JSON-RPC 双核架构 (`my-pi-tui/`)](#十八pi-原厂-tui-独立表现层与-stdio-json-rpc-双核架构-my-pi-tui)
+- [十八、Pi 原厂 TUI 独立表现层与 stdio JSON-RPC 双核架构 (`my-tui/`)](#十八pi-原厂-tui-独立表现层与-stdio-json-rpc-双核架构-my-tui)
 - [十九、Tau 式单工程拓扑与统一测试最佳实践 (`pyproject.toml` & `tests/`)](#十九tau-式单工程拓扑与统一测试最佳实践-pyprojecttoml--tests)
 
 ---
@@ -405,7 +405,7 @@
 
 ---
 
-## 十八、Pi 原厂 TUI 独立表现层与 stdio JSON-RPC 双核架构 (`my-pi-tui/`)
+## 十八、Pi 原厂 TUI 独立表现层与 stdio JSON-RPC 双核架构 (`my-tui/`)
 
 ### 1. 参考项目与源码定位
 - **主要参考**：
@@ -429,7 +429,7 @@
 ### 2. 核心机制与本土化创新
 - **彻底消灭“伪多包”分裂**：全局唯一 `pyproject.toml`、唯一 `.venv` 与 `uv.lock`；
 - **单行跑完全库测试**：根目录单行 `uv run pytest`，秒级并发跑完全部 814 个 Python 离线测试；
-- **前端独立顶层 `my-pi-tui/`**：语义清晰，根目录 `npm start` 一键拉起终端。
+- **前端独立顶层 `my-tui/`**：语义清晰，根目录 `npm start` 一键拉起终端。
 
 ---
 
@@ -453,5 +453,5 @@
 | **Tau 微内核与自愈** | `src/my_agent_core/loop.py`, `tool_history.py` | Tau (`tau-ai` / `tau_agent`) | 纯函数无状态微内核、三阶段转录本自愈、只追加模块化存储驱动 |
 | **权限门禁审查** | `src/my_coding_agent/permissions.py` | Pig-Mono, Pi | Accept-on-Diff 词级反色高亮、四种安全模式、高危写操作阻断 |
 | **Turnkey MCP** | `src/my_coding_agent/mcp.py` | Pi, MCP SDK | 工作区 `.mcp.json` 自动扫描挂载、进程生命周期绑定与工具 Schema 清理 |
-| **Pi-TUI 表现层** | `my-pi-tui/` | Pi (`@earendil-works/pi-tui`) | Mario Zechner 差量重绘引擎、CSI 2026 同步屏障、思考折叠、圆角卡片、IME 锚定 |
+| **Pi-TUI 表现层** | `my-tui/` | Pi (`@earendil-works/pi-tui`) | Mario Zechner 差量重绘引擎、CSI 2026 同步屏障、思考折叠、圆角卡片、IME 锚定 |
 | **单工程多包拓扑** | 根目录 `pyproject.toml` | Tau (`tau-ai`) | 单一工程与统一 `.venv`、hatchling 多包导出、tests/ 全量秒级并发跑测 |

@@ -6,7 +6,7 @@
 ## 当前结构（2026-09）
 
 ```text
-my-pi-agent/
+my-agent-harness/
 ├── pyproject.toml                  # ⭐ 全局统一的 Python 构建与依赖配置 (uv)
 ├── uv.lock                         # 全局唯一的 Python 依赖锁定文件
 ├── .venv/                          # 全局唯一的 Python 虚拟环境
@@ -43,7 +43,7 @@ my-pi-agent/
 │   ├── core/                       # 框架内核单元测试 (337 tests)
 │   └── coding/                     # 业务与工具测试 (252 tests)
 │
-├── my-pi-tui/                     # ⭐ 独立的终端交互表现层 (基于 @earendil-works/pi-tui)
+├── my-tui/                     # ⭐ 独立的终端交互表现层 (基于 @earendil-works/pi-tui)
 │   ├── package.json                # 依赖 @earendil-works/pi-tui, chalk, marked
 │   ├── tsconfig.json
 │   ├── bin/
@@ -541,7 +541,7 @@ my-pi-agent/
     3. 提炼 `loop.py` 纯函数微内核并暴露 `prompt_stream` 事件流；
     4. `Agent` 消除 18 参数上帝类构造。
   - `docs/core/14-codebase-cleanup-and-defect-repair.md`（新增）：基于双路并行 Subagent（Deslop Pass 与 Verbosity Pass）对抗式审查结论，形式化定义 P0-1（POSIX 进程组防自杀）、P0-2（`ExtensionAPI.on` 异步 Hook 协程包装）、P1-1（`context.py` 工具输出持久化重复写放大消除）、P1-2（`Tool.timeout` 接入 `asyncio.wait_for` 真实生效）等关键缺陷与修复规格。
-  - 博客更新：修润 `my-pi-agent--todolist与background.md`，理顺工具演进脉络与随路回显架构。
+  - 博客更新：修润 `my-agent--todolist与background.md`，理顺工具演进脉络与随路回显架构。
 - **验证**：三包全量 **304 个离线测试** 持续 100% 绿灯全通。
 
 ---
@@ -824,7 +824,7 @@ my-pi-agent/
     - 增加 `isSubmitting` 同步锁消灭毫秒级按键时间差；
     - 修复 `message_start` 无条件追加导致普通提问气泡在屏幕上渲染两次的前端 Bug。
   - **分会话双轨制 Debug 架构 (`paths.py`, `tracer.py`)**：
-    - 告别全局单文件混写，在 `~/.my-pi-agent/logs/<slug>-<hash>/` 下按会话隔离：
+    - 告别全局单文件混写，在 `~/.my-agent-harness/logs/<slug>-<hash>/` 下按会话隔离：
       - `<session-id>.debug.log`：人类可读时序耗时、工具调用状态与 Token 增量；
       - `<session-id>.events.jsonl`：对标 Pi `--mode json` 的标准机器可读不可变事件流（过滤打字机单字碎片）；
     - 实现 `tracer.rebind()`，在会话切换（`/new`, `/resume`, `/fork`, `/clone`）时自动轮转文件句柄；
@@ -889,7 +889,7 @@ my-pi-agent/
 **目标**：彻底解决大模型在握手阶段 401 报错被前端桥接层吞噬以及空数组 `[].trim()` 崩溃引发的转圈指示器永久冻结 Bug；依据 Pi 原厂规范实现 ReAct 微内核级智能退避重试体系；支持 `/reload` 与 `/login` 活跃凭据原地热更新；彻底移除 `max_iterations` 人为硬编码步数限制，正式发布 `v0.1.1`。
 
 - **改了什么**：
-  - **TUI 交互与异常防御全面加固 (`my-pi-tui/`)**：
+  - **TUI 交互与异常防御全面加固 (`my-tui/`)**：
     - `event-translator.ts`：在 `message_end` 时若未收到流式 Chunk 但服务端返回了错误正文，补齐文本块并忠实透传 `metadata` 与 `stopReason`，不再吞噬握手期报错；`agent_end` 补充透传 `final_text`；
     - `assistant-message.ts`：`setContent` 与 `appendTextDelta` 增加严格类型收敛，安全解析 `string`、`ContentBlock[]` 数组或对象，杜绝非字符串调用 `.trim()` 抛出致命异常；
     - `interactive-mode.ts`：在 `agent_end` 中引入 `try...finally`，确保转圈动效与忙碌标志 `isBusy: false` 100% 能够清场复位。
@@ -936,7 +936,7 @@ my-pi-agent/
 
 ### 阶段 34：Herdr 跨窗口端到端（E2E）全量真机测试与压缩切点 API 400 免疫自愈（2026-09-26）
 
-**目标**：通过 Herdr Multiplexer 建立左右双 Pane 真实端到端集成测试流水线；左侧作为主控与质量工程师，右侧作为真实生产态 `my-pi-agent` TUI；在真实终端与实际 API 调用环境下执行包含 10 大场景的全面体检，并就地捕获并修复历史深水区 Bug。
+**目标**：通过 Herdr Multiplexer 建立左右双 Pane 真实端到端集成测试流水线；左侧作为主控与质量工程师，右侧作为真实生产态 `my-agent` TUI；在真实终端与实际 API 调用环境下执行包含 10 大场景的全面体检，并就地捕获并修复历史深水区 Bug。
 
 - **改了什么**：
   - **完成 10 大全量端到端测试用例 (TC-01 ~ TC-10)**：
@@ -1022,17 +1022,17 @@ my-pi-agent/
 
 ---
 
-### 阶段 37：Harbor 评测子系统 `my-pi-eval` 建设与 Terminal-Bench 2.1 突破 80.90% 胜率（2026-10-09）
+### 阶段 37：Harbor 评测子系统 `my-eval` 建设与 Terminal-Bench 2.1 突破 80.90% 胜率（2026-10-09）
 
 **目标**：构建标准 Harbor 评测适配器，在真实 Docker 沙箱基准集 Terminal-Bench 2.1 上展开全量攻坚，验证框架在长任务系统工程、复杂编译排错与高频工具交互下的端到端实战性能与前缀缓存命中率。
 
 - **改了什么**：
-  - **实现 Scheme 1 宿主驱动型 `MyPiAgent` 适配器 (`my-pi-eval/src/my_pi_eval/agent.py`)**：
+  - **实现 Scheme 1 宿主驱动型 `MyAgentHarness` 适配器 (`my-eval/src/my_eval/agent.py`)**：
     - 继承 Harbor 官方 `harbor.agents.base.BaseAgent` 接口，支持原生 `harbor run` 与自定义 CLI 统一驱动；
     - 采用宿主机编排架构：Agent 内核与 LLM 直连留在宿主机，通过 Docker 管道驱动沙箱，容器免安装 Node.js/npm 环境，冷启动从 2.5 分钟缩减至 **< 2 秒**。
   - **严格评测凭据隔离 (`resolve_eval_llm`)**：
-    - 严格禁止读取本地 `~/.my-pi-agent/auth.json`，仅允许通过系统环境变量或专属 `my-pi-eval/.env` 获取 API Key，彻底杜绝沙箱逃逸泄漏风险。
-  - **高保真沙箱工具桥接层 (`my-pi-eval/src/my_pi_eval/tools.py`)**：
+    - 严格禁止读取本地 `~/.my-agent-harness/auth.json`，仅允许通过系统环境变量或专属 `my-eval/.env` 获取 API Key，彻底杜绝沙箱逃逸泄漏风险。
+  - **高保真沙箱工具桥接层 (`my-eval/src/my_eval/tools.py`)**：
     - `HarborToolRegistry` 将 7 大工作区工具桥接至容器：`bash` 超时熔断与 50KB 截断、`write` 自动 CRLF ➔ LF 规范化、`edit` 宿主单义性校验与原子替换、`read`/`grep`/`find`/`ls` 容器实时检索。
   - **Session 文件全量 Token 指标采集与缓存核算 (`agent.py`)**：
     - 从持久化 `session.jsonl` 转录本逐条提取 `prompt_tokens`、`completion_tokens` 与 `cache_read_tokens`，输出标准 `metrics.json`；
@@ -1051,9 +1051,9 @@ my-pi-agent/
 - **改了什么**：
   - **Terminal-Bench 2.1 终局战报与可视化体系定格**：
     - 严谨剔除原厂 Pi 72 胜中的自研 Agent 误统计胜场，校准原厂基准为 59 胜 / 66.29%（有效分母 85）；
-    - 自研 MyPiAgent 斩获 **71 胜 / 83.53% 胜率**（底座 DeepSeek-V4.1-Flash），全面反超原厂 Pi；
+    - 自研 MyAgentHarness 斩获 **71 胜 / 83.53% 胜率**（底座 DeepSeek-V4.1-Flash），全面反超原厂 Pi；
     - 在 README 中集成 15 篇架构与实战长文专栏导航、九大实战暗坑归纳、对比矩阵与高清战报图表资产。
-  - **彻底拔除历史兼容垫片与死代码 (`src/my_agent_core/`, `src/my_coding_agent/`, `my-pi-tui/`)**：
+  - **彻底拔除历史兼容垫片与死代码 (`src/my_agent_core/`, `src/my_coding_agent/`, `my-tui/`)**：
     - 移除 `_provider_context` 别名垫片，微内核直接使用 `clean_provider_context`；
     - 移除 `make_task_tools` 残留垫片与 6 个空壳结果子类 (`ReadResult` 等)，统一收敛为 `StringCompatibleToolResult`；
     - 移除 `edit` 工具已废弃的扁平 `old_text`/`new_text` 兼容入参；
@@ -1061,7 +1061,7 @@ my-pi-agent/
     - 移除 `CompactionEntry` 伪装成 `Message` 的 `role`/`content` 鸭子类型属性，条目回归纯净 `summary`；
     - 消除 `ModelChangeEntry` 与 `SessionInfoEntry` 镜像字段及双向同步验证器，由单一规范字段与 alias 驱动，净化 JSONL 序列化；
     - 拔除 `rpc_server.py::__all__` 中 13 个虚假重导出别名，彻底收敛为 `__all__ = ["RpcServer"]`。
-  - **TUI 交互巨石类模块化与命令分发表改造 (`my-pi-tui/`)**：
+  - **TUI 交互巨石类模块化与命令分发表改造 (`my-tui/`)**：
     - 将 1938 行巨石类 `interactive-mode.ts` 解耦拆分为 `selector-manager.ts` (457行)、`history-renderer.ts` (250行) 与 `event-dispatcher.ts` (316行)；
     - 将 500 行 switch 阶梯的 `slash-commands.ts` 彻底重构为声明式 `COMMAND_DISPATCH: Record<string, SlashCommandHandler>` 分发表模式；
     - 移除 `footer.ts` 中的 `tokensUsed` 历史冗余字段。
