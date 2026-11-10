@@ -34,7 +34,7 @@ def get_all_skill_dirs(workspace_path: Path, paths: AgentPaths | None = None) ->
 
     覆盖：
     1. 用户全局技能目录 (AgentPaths().home/skills, ~/.agents/skills)
-    2. 工作区局部技能目录 (<ws>/.skills, <ws>/skills, <ws>/.agents/skills, <ws>/.my-agent-harness/skills, <ws>/.my-pi-agent/skills)
+    2. 工作区局部技能目录 (<ws>/.skills, <ws>/skills, <ws>/.agents/skills, <ws>/.my-agent-harness/skills, <ws>/.my-agent-harness/skills)
     3. 本 Agent 包管理器声明的已安装包目录 (AgentPaths().home/settings.json)
     """
     effective_paths = paths or AgentPaths()
@@ -151,7 +151,7 @@ def scan_loaded_resources(
         effective_paths.agents_home / "prompts",
         ws / "prompts",
         ws / ".my-agent-harness" / "prompts",
-        ws / ".my-pi-agent" / "prompts",  # 兼容
+        ws / ".my-agent-harness" / "prompts",  # 兼容
         ws / ".agents" / "prompts",
     ]
     for pd in prompt_scan_dirs:
@@ -248,7 +248,7 @@ def scan_loaded_resources(
         ws / ".agents" / "agents",
         ws / "agents",
         ws / ".my-agent-harness" / "agents",
-        ws / ".my-pi-agent" / "agents",  # 兼容
+        ws / ".my-agent-harness" / "agents",  # 兼容
         effective_paths.home / "agents",
         effective_paths.agents_home / "agents",
     ]

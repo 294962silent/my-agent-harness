@@ -16,7 +16,7 @@ const hasCredential =
     process.env.OPENAI_API_KEY ||
       process.env.DEEPSEEK_API_KEY ||
       process.env.ANTHROPIC_API_KEY,
-  ) || fs.existsSync(path.join(os.homedir(), ".my-pi-agent", "auth.json"));
+  ) || fs.existsSync(path.join(os.homedir(), ".my-agent-harness", "auth.json"));
 
 const skipReason = hasCredential
   ? false

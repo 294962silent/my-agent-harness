@@ -1,4 +1,4 @@
-"""4-worker concurrent evaluation runner for self-developed MyPiAgent on Terminal-Bench 2.1 (85 tasks)."""
+"""4-worker concurrent evaluation runner for self-developed My-Agent-Harness on Terminal-Bench 2.1 (85 tasks)."""
 
 import concurrent.futures
 import json
@@ -25,7 +25,7 @@ try:
     load_dotenv(EVAL_DIR / ".env", override=False)
 except ImportError:
     pass
-PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_pi_agent_progress.json"
+PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_progress.json"
 PROGRESS_LOCK = threading.Lock()
 
 # 4 tasks excluded due to physical single-machine bottlenecks
@@ -85,7 +85,7 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
     kill_deadline = timeout_sec + 300
 
     print(
-        f"[{index}/{total}] 🚀 启动 MyPiAgent 评测: {task_name} (配时: {timeout_sec}s / {timeout_sec // 60}分钟) | "
+        f"[{index}/{total}] 🚀 启动 My-Agent-Harness 评测: {task_name} (配时: {timeout_sec}s / {timeout_sec // 60}分钟) | "
         f"{datetime.now().strftime('%H:%M:%S')}",
         flush=True,
     )
@@ -96,7 +96,7 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
         "-p",
         str(task_dir),
         "-a",
-        "my_pi_eval.agent:MyPiAgent",
+        "my_pi_eval.agent:My-Agent-Harness",
         "-m",
         "deepseek/deepseek-chat",
         "--env-file",
@@ -208,7 +208,7 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
             "tokens": tokens,
             "cache_read_tokens": cache_read,
             "cost_usd": cost,
-            "summary": "PASSED via MyPiAgent" if status == "PASSED" else "",
+            "summary": "PASSED via My-Agent-Harness" if status == "PASSED" else "",
             "finished_at": datetime.now().isoformat(),
         }
         save_progress(cur_prog)
@@ -223,7 +223,7 @@ def run_one_task(task_name: str, index: int, total: int) -> dict:
 
 def main() -> None:
     print("=" * 80, flush=True)
-    print("🏆 启动自研 MyPiAgent 在 Terminal-Bench 2.1 上的 4 并发全量评测 (85 赛题)")
+    print("🏆 启动自研 My-Agent-Harness 在 Terminal-Bench 2.1 上的 4 并发全量评测 (85 赛题)")
     print("=" * 80, flush=True)
 
     subprocess.run(["docker", "network", "prune", "-f"], capture_output=True, check=False)
@@ -242,7 +242,7 @@ def main() -> None:
                 print(f"[{tname}] 异常: {e}", flush=True)
 
     print("\n" + "=" * 80, flush=True)
-    print("🏁 MyPiAgent Terminal-Bench 2.1 全量 85 题评测圆满完成！", flush=True)
+    print("🏁 My-Agent-Harness Terminal-Bench 2.1 全量 85 题评测圆满完成！", flush=True)
     print("=" * 80, flush=True)
 
 

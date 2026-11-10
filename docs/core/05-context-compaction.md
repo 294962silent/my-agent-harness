@@ -18,7 +18,7 @@
 
 ### 2. 架构重构：Append-Only 前缀一致性 + 离散 Epoch 块级压缩 (Pi 原厂对齐)
 
-基于上述工程洞察，`my-pi-agent` 彻底废除了旧的逐轮滚动截断与滚动工具篡改，确立了**对标 Pi 原厂的“Append-Only 前缀一致性 + 80% 动态水位线离散 Epoch 块级压缩”新范式**：
+基于上述工程洞察，`my-agent-harness` 彻底废除了旧的逐轮滚动截断与滚动工具篡改，确立了**对标 Pi 原厂的“Append-Only 前缀一致性 + 80% 动态水位线离散 Epoch 块级压缩”新范式**：
 
 ```text
                未超 80% 预算门控 (tokens <= budget_threshold)

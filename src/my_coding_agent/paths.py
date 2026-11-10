@@ -92,7 +92,18 @@ class AgentPaths:
 
     # ── 项目局部路径 ──
     def project_agent_dir(self, cwd: Path) -> Path:
-        return cwd / ".my-pi-agent"
+        """项目级配置目录。
+
+        新目录 `.my-agent-harness` 优先；若项目中只存在旧的 `.my-agent-harness`，
+        则沿用旧目录，避免既有项目配置失效。
+        """
+        new_dir = cwd / ".my-agent-harness"
+        legacy_dir = cwd / ".my-pi-agent"
+        if new_dir.is_dir():
+            return new_dir
+        if legacy_dir.is_dir():
+            return legacy_dir
+        return new_dir
 
     def project_settings_path(self, cwd: Path) -> Path:
         return self.project_agent_dir(cwd) / "settings.json"

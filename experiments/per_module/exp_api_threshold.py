@@ -22,7 +22,7 @@ MODEL = "glm-5.3-flash"
 
 
 def load_creds() -> tuple[str, str]:
-    p = pathlib.Path.home() / ".my-pi-agent" / "auth.json"
+    p = pathlib.Path.home() / ".my-agent-harness" / "auth.json"
     prov = json.loads(p.read_text(encoding="utf-8"))["providers"]["openai"]["default"]
     return prov["key"], prov["base_url"].rstrip("/")
 
@@ -47,7 +47,7 @@ def chat(
             headers={
                 "Authorization": "Bearer " + KEY,
                 "Content-Type": "application/json",
-                "User-Agent": "my-pi-agent/0.1",
+                "User-Agent": "my-agent-harness/0.1",
                 "x-opencode-session": session or str(uuid.uuid4()),
             },
             method="POST",

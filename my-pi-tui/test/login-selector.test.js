@@ -84,7 +84,7 @@ test("LoginSelectorComponent shows auth.json location explanation for Antigravit
   const linesPhase2 = selector.render(80);
   const textPhase2 = linesPhase2.join("\n");
   assert.ok(textPhase2.includes("auth.json"));
-  assert.ok(textPhase2.includes("~/.my-pi-agent/auth.json"));
+  assert.ok(textPhase2.includes("~/.my-agent-harness/auth.json"));
   assert.ok(textPhase2.includes("~/.pi/agent/auth.json"));
 
   // Press Enter with empty key to automatically load from auth.json

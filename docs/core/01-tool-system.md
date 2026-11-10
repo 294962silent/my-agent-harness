@@ -104,7 +104,7 @@ class ToolResult:
 - **Never-Throw 异常强隔离**：任何参数校验失败（`ValidationError`）、超时（`TimeoutError`）或业务执行异常，统一在 `Tool.execute()` 内部被捕获，转换为 `ToolResult(ok=False, error="...")`，由模型进行下一轮自我纠错；
 - **对齐 Pi `truncate.ts` 的执行期定型截断 (commit 8f01e4c)**：
   - **截断规约**：单条输出上限为 **50KB (51,200 bytes) 或 2000 行**。超限时先按行截断（保留前 2000 行），再按字节截断并在最近的换行符处切齐，末尾附带标准 notice：`\n[Output truncated: showing X of Y lines (A KB of B KB)]`；
-  - **前缀缓存不变式（Prefix Cache Invariant）**：传统框架常在多轮滚动后去回溯修改历史工具消息（如滚动替换为占位符），但这会彻底破坏大模型的 KV-Cache 前缀。`my-pi-agent` 坚持**在工具执行期完成不可变定型截断**，输出一旦写入消息历史即成为永久确定性事实，确保全生命周期前缀一致性。
+  - **前缀缓存不变式（Prefix Cache Invariant）**：传统框架常在多轮滚动后去回溯修改历史工具消息（如滚动替换为占位符），但这会彻底破坏大模型的 KV-Cache 前缀。`my-agent-harness` 坚持**在工具执行期完成不可变定型截断**，输出一旦写入消息历史即成为永久确定性事实，确保全生命周期前缀一致性。
 
 ---
 

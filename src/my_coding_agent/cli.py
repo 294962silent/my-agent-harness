@@ -28,8 +28,8 @@ def find_tui_entry() -> Path | None:
         return pkg_bundled
 
     # 3. System prefix share directory: <sys.prefix>/share/my-pi-agent/my-pi-tui/bin/my-agent.js
-    # 注：share 子目录名沿用安装时写入的 "my-pi-agent"（pip 包名），改名会破坏已安装包。
-    prefix_path = Path(sys.prefix) / "share" / "my-pi-agent" / "my-pi-tui" / "bin" / "my-agent.js"
+    # 注：share 子目录名沿用安装时写入的 "my-agent-harness"（pip 包名），改名会破坏已安装包。
+    prefix_path = Path(sys.prefix) / "share" / "my-agent-harness" / "my-pi-tui" / "bin" / "my-agent.js"
     if prefix_path.exists():
         return prefix_path
 

@@ -135,7 +135,7 @@ class SubagentTaskManager:
             available = ", ".join(sorted(self._manager.subagents)) or "(none)"
             raise ValueError(f"Unknown subagent '{subagent_type}'. Available: {available}")
         parent_path = getattr(self._parent.session, "path", None)
-        parent_dir = parent_path.parent if parent_path else Path(tempfile.gettempdir()) / "my-pi-agent"
+        parent_dir = parent_path.parent if parent_path else Path(tempfile.gettempdir()) / "my-agent-harness"
         child_session = Session(
             path=parent_dir / "subagents" / f"agent-{task_id}.jsonl",
             cwd=self._parent.session.cwd,

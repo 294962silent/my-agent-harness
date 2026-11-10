@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "my-pi-eval"
 version = "0.1.0"
-description = "Harbor evaluation adapter and test runner for my-pi-agent"
+description = "Harbor evaluation adapter and test runner for my-agent-harness"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

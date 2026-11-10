@@ -167,7 +167,7 @@ def sync_markdown_reports(progress: dict[str, Any]) -> None:
 
     # 1. Update README.md Leaderboard
     table_lines: list[str] = [
-        "| 任务 ID (Task ID) | 原厂 Pi Agent (Official) | 自研 My-Pi-Agent | 相对效率 (Tokens / Time) | 详细报告 |",
+        "| 任务 ID (Task ID) | 原厂 Pi Agent (Official) | 自研 My-Agent-Harness | 相对效率 (Tokens / Time) | 详细报告 |",
         "|---|:---:|:---:|:---:|:---:|",
     ]
     for name, data in sorted(tasks.items()):
@@ -182,7 +182,7 @@ def sync_markdown_reports(progress: dict[str, Any]) -> None:
 
     readme_content = f"""# Terminal-Bench 2.0 评测结果对比中心 (Evaluation Results Center)
 
-本目录用于统一归档、追踪和对比 **原厂 Pi Agent** 与 **自研 My-Pi-Agent** 在 Terminal-Bench 2.0 基准测试下的实际表现。
+本目录用于统一归档、追踪和对比 **原厂 Pi Agent** 与 **自研 My-Agent-Harness** 在 Terminal-Bench 2.0 基准测试下的实际表现。
 
 ---
 
@@ -200,7 +200,7 @@ def sync_markdown_reports(progress: dict[str, Any]) -> None:
 ## 📁 目录结构说明
 
 - [`pi_official_terminal_bench_2.md`](./pi_official_terminal_bench_2.md)：**原厂 Pi 官方 Agent** 的评测记录与单题详报（基线 Baseline）。
-- [`my_pi_agent_terminal_bench_2.md`](./my_pi_agent_terminal_bench_2.md)：**自研 My-Pi-Agent** 的评测记录与单题详报。
+- [`my_agent_harness_terminal_bench_2.md`](./my_agent_harness_terminal_bench_2.md)：**自研 My-Agent-Harness** 的评测记录与单题详报。
 - [`comparison_matrix.md`](./comparison_matrix.md)：两者的**深度横向对比分析**（架构差异、Token 开销、工具调用效率、错误自愈能力）。
 """
     README_FILE.write_text(readme_content, encoding="utf-8")

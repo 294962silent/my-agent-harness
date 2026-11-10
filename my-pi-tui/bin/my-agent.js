@@ -50,7 +50,7 @@ function parseArgs() {
       options.newSession = true;
     } else if (arg === "-h" || arg === "--help") {
       console.log(`
-my-agent: High-fidelity Pi-TUI terminal shell for my-pi-agent
+my-agent: High-fidelity Pi-TUI terminal shell for my-agent-harness
 
 Usage:
   my-agent [options] [prompt]

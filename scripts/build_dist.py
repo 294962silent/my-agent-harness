@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Automated cross-platform distribution packager for my-pi-agent.
+"""Automated cross-platform distribution packager for my-agent-harness.
 
 This script compiles the TUI frontend, bundles the Python core engine,
 and generates portable standalone release packages (.zip and .tar.gz).
@@ -30,13 +30,13 @@ def generate_launcher_scripts(dest_dir: Path) -> tuple[Path, Path]:
     """Generate Windows .cmd and POSIX sh launcher scripts."""
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    cmd_file = dest_dir / "my-pi-agent.cmd"
+    cmd_file = dest_dir / "my-agent-harness.cmd"
     cmd_file.write_text(
         '@echo off\r\nsetlocal\r\nnode "%~dp0my-pi-tui\\bin\\my-agent.js" %*\r\n',
         encoding="utf-8",
     )
 
-    sh_file = dest_dir / "my-pi-agent"
+    sh_file = dest_dir / "my-agent-harness"
     sh_file.write_text(
         '#!/usr/bin/env sh\nDIR="$(cd "$(dirname "$0")" && pwd)"\nexec node "$DIR/my-pi-tui/bin/my-agent.js" "$@"\n',
         encoding="utf-8",
@@ -61,7 +61,7 @@ def build_tui(repo_root: Path) -> None:
 def assemble_portable_package(repo_root: Path, dist_dir: Path, version: str) -> Path:
     """Assemble all runtime assets into a clean staging directory."""
     print("[2/4] 收集运行时资产与依赖...")
-    pkg_name = f"my-pi-agent-v{version}-portable"
+    pkg_name = f"my-agent-harness-v{version}-portable"
     staging_dir = dist_dir / pkg_name
     if staging_dir.exists():
         try:
@@ -99,7 +99,7 @@ def assemble_portable_package(repo_root: Path, dist_dir: Path, version: str) -> 
 def create_archives(staging_dir: Path, dist_dir: Path, version: str) -> tuple[Path, Path]:
     """Compress staging directory into .zip and .tar.gz archives."""
     print("[3/4] 压缩生成发布归档包...")
-    base_name = f"my-pi-agent-v{version}-portable"
+    base_name = f"my-agent-harness-v{version}-portable"
 
     # Zip 压缩包
     zip_path = dist_dir / f"{base_name}.zip"
@@ -123,7 +123,7 @@ def create_archives(staging_dir: Path, dist_dir: Path, version: str) -> tuple[Pa
 
 def main() -> int:
     """CLI orchestrator for building distributions."""
-    parser = argparse.ArgumentParser(description="Build portable distributions for my-pi-agent")
+    parser = argparse.ArgumentParser(description="Build portable distributions for my-agent-harness")
     parser.add_argument("--skip-build-tui", action="store_true", help="Skip npm run build step")
     args = parser.parse_args()
 
@@ -132,7 +132,7 @@ def main() -> int:
     dist_dir.mkdir(parents=True, exist_ok=True)
 
     version = get_version_from_pyproject(repo_root / "pyproject.toml")
-    print(f"=== 开始打包 my-pi-agent v{version} ===")
+    print(f"=== 开始打包 my-agent-harness v{version} ===")
 
     if not args.skip_build_tui:
         build_tui(repo_root)

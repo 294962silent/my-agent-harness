@@ -35,7 +35,7 @@ def test_agent_paths_default_home(monkeypatch: pytest.MonkeyPatch, tmp_path: Pat
 def test_agent_paths_legacy_home_compat(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """老用户目录（.my-pi-agent）存在时，应继续使用它，避免登录态丢失。"""
     resolved_tmp = tmp_path.resolve()
-    (resolved_tmp / ".my-pi-agent").mkdir()
+    (resolved_tmp / ".my-pi-agent").mkdir(exist_ok=True)
     monkeypatch.delenv("MY_AGENT_HOME", raising=False)
     monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
 
@@ -47,11 +47,12 @@ def test_agent_paths_legacy_home_compat(monkeypatch: pytest.MonkeyPatch, tmp_pat
 def test_agent_paths_new_beats_legacy(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """新旧目录同时存在时，新目录优先。"""
     resolved_tmp = tmp_path.resolve()
-    (resolved_tmp / ".my-pi-agent").mkdir()
-    (resolved_tmp / ".my-agent-harness").mkdir()
+    (resolved_tmp / ".my-pi-agent").mkdir(exist_ok=True)
+    (resolved_tmp / ".my-agent-harness").mkdir(exist_ok=True)
     monkeypatch.delenv("MY_AGENT_HOME", raising=False)
     monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
 
+    assert AgentPaths().home == resolved_tmp / ".my-agent-harness"
     assert AgentPaths().home == resolved_tmp / ".my-agent-harness"
 
 
@@ -139,10 +140,29 @@ def test_default_session_path(tmp_path: Path) -> None:
 def test_project_local_paths(tmp_path: Path) -> None:
     paths = AgentPaths(home=tmp_path / "agent_home")
     cwd = tmp_path / "workspace"
-    assert paths.project_agent_dir(cwd) == cwd / ".my-pi-agent"
-    assert paths.project_settings_path(cwd) == cwd / ".my-pi-agent" / "settings.json"
-    assert paths.project_skills_dir(cwd) == cwd / ".my-pi-agent" / "skills"
+    # 项目目录不存在时，默认返回新目录名
+    assert paths.project_agent_dir(cwd) == cwd / ".my-agent-harness"
+    assert paths.project_settings_path(cwd) == cwd / ".my-agent-harness" / "settings.json"
+    assert paths.project_skills_dir(cwd) == cwd / ".my-agent-harness" / "skills"
     assert paths.project_agents_skills_dir(cwd) == cwd / ".agents" / "skills"
+
+
+def test_project_agent_dir_legacy_fallback(tmp_path: Path) -> None:
+    """项目里只有旧目录时，沿用旧目录避免配置失效。"""
+    paths = AgentPaths(home=tmp_path / "agent_home")
+    cwd = tmp_path / "workspace"
+    (cwd / ".my-pi-agent").mkdir(parents=True, exist_ok=True)
+    assert paths.project_agent_dir(cwd) == cwd / ".my-pi-agent"
+
+
+def test_project_agent_dir_new_wins(tmp_path: Path) -> None:
+    """新旧目录并存时，新目录优先。"""
+    paths = AgentPaths(home=tmp_path / "agent_home")
+    cwd = tmp_path / "workspace"
+    (cwd / ".my-pi-agent").mkdir(parents=True, exist_ok=True)
+    (cwd / ".my-agent-harness").mkdir(parents=True, exist_ok=True)
+    assert paths.project_agent_dir(cwd) == cwd / ".my-agent-harness"
+
 
 
 def test_ensure_directories(tmp_path: Path) -> None:

@@ -234,7 +234,7 @@ cache 命中率 = cache_read / prompt_tokens
 ## 7. 复现说明
 
 ```bash
-# 前提：~/.my-pi-agent/auth.json 里有 opencode go 凭据
+# 前提：~/.my-agent-harness/auth.json 里有 opencode go 凭据
 uv run python -m experiments.per_module.exp_api_cache
 ```
 

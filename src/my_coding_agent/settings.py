@@ -1,4 +1,4 @@
-"""Settings: 全局 (~/.my-pi-agent/settings.json) 与项目双层级联配置系统。"""
+"""Settings: 全局 (~/.my-agent-harness/settings.json) 与项目双层级联配置系统。"""
 
 from __future__ import annotations
 

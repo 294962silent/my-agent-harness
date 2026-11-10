@@ -173,7 +173,8 @@ class MacroEngine:
         if file_path is None:
             search_dirs = [
                 self.workspace / ".agents" / "skills",
-                self.workspace / ".my-pi-agent" / "skills",
+                self.workspace / ".my-agent-harness" / "skills",
+                self.workspace / ".my-pi-agent" / "skills",  # 兼容旧目录
                 self.workspace / "skills",
                 self.paths.skills_dir,
                 self.paths.agents_home / "skills",
@@ -246,7 +247,8 @@ class MacroEngine:
         if file_path is None:
             search_dirs = [
                 self.workspace / "prompts",
-                self.workspace / ".my-pi-agent" / "prompts",
+                self.workspace / ".my-agent-harness" / "prompts",
+                self.workspace / ".my-pi-agent" / "prompts",  # 兼容旧目录
                 self.workspace / ".agents" / "prompts",
                 self.paths.prompts_dir,
                 self.paths.agents_home / "prompts",

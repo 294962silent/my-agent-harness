@@ -12,7 +12,7 @@
 2. **缺乏 DAG 依赖与死锁防护**：简单的线性清单无法表达“任务 2 依赖任务 1 完成才能开始”的依赖关系，且容易产生环死锁；
 3. **慢命令卡死主循环**：耗时几分钟的测试或构建命令（如 `pytest` / `npm build`）同步阻塞主 Agent，无法在后台并发推进。
 
-针对以上问题，`my-pi-agent` 实现了**三位一体的统一任务子系统**：
+针对以上问题，`my-agent-harness` 实现了**三位一体的统一任务子系统**：
 
 - **DAG 依赖状态机（`TaskItem` + `TaskStore`）**：对标 Claude Code v2.1.142+ 与 `learn-claude-code` s10；
 - **上下文看板自动投影（`Task Board View`）**：对标 Pi `@juicesharp/rpiv-todo` 与 Claude Code v1 s05；

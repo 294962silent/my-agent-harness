@@ -100,7 +100,7 @@ export class SettingsSelectorComponent extends Container {
       new Text(
         theme.fg(
           "dim",
-          "  Changes are saved to ~/.my-pi-agent/settings.json · Esc to close",
+          "  Changes are saved to ~/.my-agent-harness/settings.json · Esc to close",
         ),
         0,
         0,

@@ -165,7 +165,7 @@
 
 ## 8. Terminal-Bench 2.1 完整实测数据（2026-11-07 复核）
 
-**数据源**：`my-pi-eval/results/{my_pi_agent,official_pi}_progress.json`（各 89 条任务记录）
+**数据源**：`my-pi-eval/results/{my_agent_harness,official_pi}_progress.json`（各 89 条任务记录）
 
 ### 8.1 总体对比
 

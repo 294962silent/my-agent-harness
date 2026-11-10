@@ -248,8 +248,8 @@ def make_model_client(model: str | None = None, temperature: float = 0.7) -> Any
     api_key = os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("OPENAI_API_KEY")
     base_url = os.environ.get("DEEPSEEK_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
     if not api_key:
-        # 仓库的凭据中心：~/.my-pi-agent/auth.json -> providers.<provider>.<profile>.{key, base_url}
-        auth_path = Path.home() / ".my-pi-agent" / "auth.json"
+        # 仓库的凭据中心：~/.my-agent-harness/auth.json -> providers.<provider>.<profile>.{key, base_url}
+        auth_path = Path.home() / ".my-agent-harness" / "auth.json"
         if auth_path.exists():
             data = json.loads(auth_path.read_text(encoding="utf-8"))
             providers = data.get("providers") or {}
@@ -263,7 +263,7 @@ def make_model_client(model: str | None = None, temperature: float = 0.7) -> Any
                 if api_key:
                     break
     if not api_key:
-        raise RuntimeError("缺少 API key：请设置 DEEPSEEK_API_KEY 或 ~/.my-pi-agent/auth.json")
+        raise RuntimeError("缺少 API key：请设置 DEEPSEEK_API_KEY 或 ~/.my-agent-harness/auth.json")
 
     config = Config(
         api_key=api_key,

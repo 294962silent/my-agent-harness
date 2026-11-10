@@ -190,7 +190,7 @@
 
 ---
 
-## 6. 对自研 `my-pi-agent` 评测体系的建设启示 (Implications for My-Pi-Agent)
+## 6. 对自研 `my-agent-harness` 评测体系的建设启示 (Implications for My-Agent-Harness)
 
 通过对原厂 Pi 在 Terminal-Bench 2.0 上的完整实战测评，我们为自研框架积累了极为宝贵的基础设施经验：
 
@@ -200,4 +200,4 @@
 
 3. **容器生命周期严密隔离**：Docker 虚拟网卡、临时卷挂载与僵尸进程必须在任务结束后秒级 Prune，否则极易引发连锁级联故障。
 
-4. **对决基准已经确立**：**72 题 / 80.90%** 将作为自研 `my-pi-agent` 进军 Terminal-Bench 2.0 的最高标杆与对决蓝本！
+4. **对决基准已经确立**：**72 题 / 80.90%** 将作为自研 `my-agent-harness` 进军 Terminal-Bench 2.0 的最高标杆与对决蓝本！

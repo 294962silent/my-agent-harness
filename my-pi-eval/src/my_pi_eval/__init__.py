@@ -1,3 +1,3 @@
-"""Harbor evaluation integration for my-pi-agent."""
+"""Harbor evaluation integration for my-agent-harness."""
 
 __version__ = "0.1.0"

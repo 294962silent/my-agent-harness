@@ -1,13 +1,13 @@
 # 工程发布、全平台分发与全局 CLI 规范 (`distribution`)
 
 - **定位**：工程分发体系、跨平台 CLI 绑定与多渠道安装打包规范 (`package.json`, `pyproject.toml`, `my-pi-tui/bin/`)
-- **核心能力**：全局 CLI（`my-pi-agent` 与 `my-agent` 双命令绑定）、npm workspaces 与 `npm link` 原生支持、Python 单一工程统一内核、跨平台分发路径
+- **核心能力**：全局 CLI（`my-agent-harness` 与 `my-agent` 双命令绑定）、npm workspaces 与 `npm link` 原生支持、Python 单一工程统一内核、跨平台分发路径
 
 ---
 
 ## 一、双引擎统一分发拓扑 (Dual-Engine Architecture)
 
-`my-pi-agent` 采用了 **“Python 统一业务内核 + TypeScript 独立交互前端”** 的高效融合架构：
+`my-agent-harness` 采用了 **“Python 统一业务内核 + TypeScript 独立交互前端”** 的高效融合架构：
 
 ```text
 根目录 (Tau 式单一 Python 项目与 npm monorepo)
@@ -47,7 +47,7 @@
 npm link
 ```
 
-即可将 `my-pi-agent` 与 `my-agent` 注册至全局 PATH，允许开发者在操作系统的任意工作区目录中秒级唤起体验。
+即可将 `my-agent-harness` 与 `my-agent` 注册至全局 PATH，允许开发者在操作系统的任意工作区目录中秒级唤起体验。
 
 ### 2. 双向自愈启动桥接 (Bi-directional Bootstrap)
 
@@ -74,19 +74,19 @@ npm link
 
 ```bash
 # 在指定工作区启动
-my-pi-agent -w /path/to/project
+my-agent-harness -w /path/to/project
 
 # 续接当前项目最近一次历史会话
-my-pi-agent -c
+my-agent-harness -c
 
 # 启动并直接为当前新会话命名
-my-pi-agent -n "优化数据库连接池"
+my-agent-harness -n "优化数据库连接池"
 
 # 显式指定模型与思考预算启动
-my-pi-agent -m deepseek-chat --thinking high
+my-agent-harness -m deepseek-chat --thinking high
 
 # 启动并直接提交首轮提示词
-my-pi-agent "请帮我检查当前项目的未提交代码"
+my-agent-harness "请帮我检查当前项目的未提交代码"
 ```
 
 | 参数选项 | 简写 | 描述 | 默认值 |

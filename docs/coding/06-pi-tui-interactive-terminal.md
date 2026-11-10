@@ -136,7 +136,7 @@
 
 当用户输入形如 `/skill:review target=src/` 时，`MacroEngine` 自动：
 
-1. 联动 `SkillManager` 寻址并加载项目本地或全局 `~/.my-pi-agent/skills/<name>/SKILL.md`；
+1. 联动 `SkillManager` 寻址并加载项目本地或全局 `~/.my-agent-harness/skills/<name>/SKILL.md`；
 2. 剥离 YAML Frontmatter 元数据，将主体工作流规范包装为高辨识度的标准 XML 容器：
 
    ```xml

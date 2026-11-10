@@ -1,4 +1,4 @@
-"""Run smoke test evaluating MyPiAgent on build-cython-ext via Harbor."""
+"""Run smoke test evaluating My-Agent-Harness on build-cython-ext via Harbor."""
 
 import json
 import os
@@ -26,7 +26,7 @@ except ImportError:
 
 def main() -> None:
     print("=" * 80)
-    print("🧪 启动 MyPiAgent 单题冒烟验证: build-cython-ext")
+    print("🧪 启动 My-Agent-Harness 单题冒烟验证: build-cython-ext")
     print("=" * 80)
 
     cmd = [
@@ -35,7 +35,7 @@ def main() -> None:
         "-p",
         str(TASK_DIR),
         "-a",
-        "my_pi_eval.agent:MyPiAgent",
+        "my_pi_eval.agent:My-Agent-Harness",
         "-m",
         "deepseek/deepseek-chat",
         "--env-file",

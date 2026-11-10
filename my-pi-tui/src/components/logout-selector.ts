@@ -45,7 +45,7 @@ export class LogoutSelectorComponent extends Container {
       new Text(
         theme.fg(
           "muted",
-          "Select a provider to remove its credentials from ~/.my-pi-agent/auth.json:",
+          "Select a provider to remove its credentials from ~/.my-agent-harness/auth.json:",
         ),
         0,
         0,

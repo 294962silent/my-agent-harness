@@ -1,4 +1,4 @@
-"""AuthManager: 管理 ~/.my-pi-agent/auth.json 的线程与进程安全凭据中心。"""
+"""AuthManager: 管理 ~/.my-agent-harness/auth.json 的线程与进程安全凭据中心。"""
 
 from __future__ import annotations
 
@@ -28,11 +28,11 @@ __all__ = [
 
 DEFAULT_ANTIGRAVITY_CLIENT_ID = os.environ.get(
     "ANTIGRAVITY_CLIENT_ID",
-    "my-pi-agent-desktop-client-id",
+    "my-agent-harness-desktop-client-id",
 )
 DEFAULT_ANTIGRAVITY_CLIENT_SECRET = os.environ.get(
     "ANTIGRAVITY_CLIENT_SECRET",
-    "my-pi-agent-desktop-client-secret",
+    "my-agent-harness-desktop-client-secret",
 )
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
@@ -54,7 +54,7 @@ class AuthManager:
         else:
             home = Path(
                 os.environ.get("MY_AGENT_HOME")
-                or Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~").expanduser() / ".my-pi-agent"
+                or Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~").expanduser() / ".my-agent-harness"
             ).resolve()
             self.auth_path = home / "auth.json"
 

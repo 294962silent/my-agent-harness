@@ -33,10 +33,10 @@ npx my-pi-agent
 
 # 或者全局安装，随时随地直接使用
 npm install -g my-pi-agent
-my-pi-agent
+my-agent-harness
 ```
 
-- **参数支持**：支持所有 CLI 选项，例如续接会话 `my-pi-agent -c`，指定模型 `my-pi-agent -m deepseek-chat`。
+- **参数支持**：支持所有 CLI 选项，例如续接会话 `my-agent-harness -c`，指定模型 `my-agent-harness -m deepseek-chat`。
 
 ---
 
@@ -51,7 +51,7 @@ uvx my-pi-agent
 # 或者通过 uv tool / pipx 全局持久安装
 uv tool install my-pi-agent
 # 安装后直接敲命令
-my-pi-agent
+my-agent-harness
 ```
 
 > **注意**：呈现层依赖 `@earendil-works/pi-tui` 渲染引擎，需要系统预先安装 Node.js 运行时（>= 18）。
@@ -80,9 +80,9 @@ my-pi-agent
 
 ### 途径 D: 便携免安装绿色包 (GitHub Releases)
 
-1. 在 GitHub Releases 下载对应版本的 `my-pi-agent-vX.Y.Z-portable.zip` 或 `.tar.gz`；
+1. 在 GitHub Releases 下载对应版本的 `my-agent-harness-vX.Y.Z-portable.zip` 或 `.tar.gz`；
 2. 解压到任意目录；
-3. 双击 `my-pi-agent.cmd` (Windows) 或在终端执行 `./my-pi-agent` (Linux/macOS) 即可直接启动！
+3. 双击 `my-agent-harness.cmd` (Windows) 或在终端执行 `./my-agent-harness` (Linux/macOS) 即可直接启动！
 
 ---
 
@@ -139,19 +139,19 @@ uv run python scripts/build_dist.py
 - 收集 Python 核心与前端 JS 产物；
 - 注入跨平台 `.cmd` 与 `.sh` 启动脚本；
 - 在 `dist/` 目录下生成：
-  - `dist/my-pi-agent-v0.2.0-portable.zip`
-  - `dist/my-pi-agent-v0.2.0-portable.tar.gz`
+  - `dist/my-agent-harness-v0.2.0-portable.zip`
+  - `dist/my-agent-harness-v0.2.0-portable.tar.gz`
 将这两个文件直接上传到 GitHub Releases 附件即可。
 
 ---
 
 ## 3. 环境自适应与内部桥接机制说明
 
-`my-pi-agent` 采用独特的**双核分发桥接机制**：
+`my-agent-harness` 采用独特的**双核分发桥接机制**：
 
 ```text
                ┌───────────────────────┐
-               │    my-pi-agent CLI    │
+               │    my-agent-harness CLI    │
                └───────────┬───────────┘
                            │
        ┌───────────────────┴───────────────────┐

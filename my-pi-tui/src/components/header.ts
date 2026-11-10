@@ -21,7 +21,7 @@ export class HeaderComponent extends Container {
 
     const startupHelp = theme.fg(
       "dim",
-      "Press Ctrl+O to show full startup help and loaded resources.\n\nPi can explain its own features and look up its docs. Ask it how to use or extend Pi.",
+      "Press Ctrl+O to show full startup help and loaded resources.\n\nmy-agent-harness can explain its own features and look up its docs. Ask it how to use or extend it.",
     );
 
     const content = `${logo}\n${hints}\n\n${startupHelp}`;

@@ -1,4 +1,4 @@
-"""重新生成 README banner：把 my-pi-agent 品牌替换为 my-agent-harness。
+"""重新生成 README banner：把 my-agent-harness 品牌替换为 my-agent-harness。
 
 原图是 1376x768 的 JPEG（扩展名误标为 .png）。
 这里用 PIL 重绘制一张风格一致的 PNG：

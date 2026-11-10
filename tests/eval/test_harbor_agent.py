@@ -1,18 +1,18 @@
 # pyright: reportMissingImports=false
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from my_pi_eval.agent import MyPiAgent
+from my_pi_eval.agent import MyAgentHarness
 
 
-def test_my_pi_agent_metadata():
-    agent = MyPiAgent()
-    assert agent.name() == "my-pi-agent"
+def test_mypi_metadata():
+    agent = MyAgentHarness()
+    assert agent.name() == "my-agent-harness"
     assert agent.version() == "0.2.0"
 
 
 @pytest.mark.anyio
-async def test_my_pi_agent_run_execution(tmp_path):
-    agent = MyPiAgent()
+async def test_my_agent_harness_run_execution(tmp_path):
+    agent = MyAgentHarness()
     fake_env = MagicMock()
     fake_context = MagicMock()
     fake_context.model = "fake-model"

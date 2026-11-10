@@ -32,7 +32,7 @@ def build_default_coding_prompt(
     Args:
         workspace: 工作区目录路径（支持 Path 或 str）。
         tools: 当前已激活的工具列表（用于动态生成 <tools> 与 <rules>）。若为 None，自动构建 7 大编码工具。
-        global_instructions_path: 可选的全局规则文件（如 ~/.my-pi-agent/AGENTS.md）。
+        global_instructions_path: 可选的全局规则文件（如 ~/.my-agent-harness/AGENTS.md）。
         custom_preamble: 可选的自定义前导文本（缺省使用 DEFAULT_PREAMBLE）。
 
     Returns:

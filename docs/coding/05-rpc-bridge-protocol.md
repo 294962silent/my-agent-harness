@@ -91,7 +91,7 @@
 
 | 方法名 | 入参 (Params) | 返回结果 (Result) | 业务行为与约束 |
 | :--- | :--- | :--- | :--- |
-| `login` | `{"provider": string, "key": string}` | `{"status": "ok", "message": "..."}` | 安全保存提供商凭据至 `~/.my-pi-agent/auth.json`，若当前模型正是该提供商则原地热更新活跃 LLM 客户端 |
+| `login` | `{"provider": string, "key": string}` | `{"status": "ok", "message": "..."}` | 安全保存提供商凭据至 `~/.my-agent-harness/auth.json`，若当前模型正是该提供商则原地热更新活跃 LLM 客户端 |
 | `auth_logout` | `{"provider": string}` | `{"status": "ok", "provider": "..."}` | 从凭据中心注销并移除指定提供商的凭据信息 |
 | `trust_set` | `{"path"?: string, "trusted": boolean, "parent"?: boolean}` | `{"status": "ok", "path": string, "trusted": boolean, "decision": string}` | 记录或更新对特定工作区路径的脚本执行信任授权 |
 

@@ -1,6 +1,6 @@
 # Pi 官方实现对照审查与对齐审计报告 (PI Alignment Audit)
 
-本报告基于官方 Pi 系列包（`@earendil-works/pi-coding-agent`、`@earendil-works/pi-tui`、`@earendil-works/pi-ai` 及 `pi-antigravity`）的源码架构与行为规范，对本项目（`my-pi-agent`）的全链路实现进行了逐模块的深度比对、偏差审查与修复验证。
+本报告基于官方 Pi 系列包（`@earendil-works/pi-coding-agent`、`@earendil-works/pi-tui`、`@earendil-works/pi-ai` 及 `pi-antigravity`）的源码架构与行为规范，对本项目（`my-agent-harness`）的全链路实现进行了逐模块的深度比对、偏差审查与修复验证。
 
 ---
 

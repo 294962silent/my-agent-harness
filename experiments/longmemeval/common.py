@@ -27,8 +27,8 @@ class Credential:
 
 
 def load_credential(provider: str = "openai") -> Credential:
-    """从 ~/.my-pi-agent/auth.json 读取凭据（不打印密钥）。"""
-    path = Path.home() / ".my-pi-agent" / "auth.json"
+    """从 ~/.my-agent-harness/auth.json 读取凭据（不打印密钥）。"""
+    path = Path.home() / ".my-agent-harness" / "auth.json"
     data = json.loads(path.read_text(encoding="utf-8"))
     profile = data["active_profiles"].get(provider) or "default"
     entry = data["providers"][provider][profile]

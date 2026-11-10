@@ -13,7 +13,7 @@ def test_build_harbor_command():
     assert "-p" in cmd
     assert "/path/to/task" in cmd
     assert "--agent-import-path" in cmd
-    assert "my_pi_eval.agent:MyPiAgent" in cmd
+    assert "my_pi_eval.agent:My-Agent-Harness" in cmd
     assert "-m" in cmd
     assert "deepseek/deepseek-chat" in cmd
     assert "-n" in cmd

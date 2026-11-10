@@ -30,7 +30,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-# 隔离用户目录，避免污染真实的 ~/.my-pi-agent
+# 隔离用户目录，避免污染真实的 ~/.my-agent-harness
 _HOME = Path(tempfile.mkdtemp(prefix="runtime-ab-home-"))
 os.environ["MY_AGENT_HOME"] = str(_HOME)
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")

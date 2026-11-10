@@ -15,7 +15,7 @@
 npm install -g my-pi-agent
 
 # 在任意目录下启动交互式终端
-my-pi-agent
+my-agent-harness
 # 或使用快捷别名
 my-agent
 ```

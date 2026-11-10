@@ -115,7 +115,7 @@ def repair_tool_history(messages) -> ToolHistoryRepair:
 
 ### 数据源与真实性
 
-**文件**：`my-pi-eval/results/{my_pi_agent,official_pi}_progress.json`（各 89 条逐任务记录）
+**文件**：`my-pi-eval/results/{my_agent_harness,official_pi}_progress.json`（各 89 条逐任务记录）
 
 > ⚠️ **这是 P0-3 质疑的核心**：评测数据是否与官方 Pi 逐位相同？
 > **核实结论**：见下方「逐任务差异」，存在双向差异，**不是复制**。

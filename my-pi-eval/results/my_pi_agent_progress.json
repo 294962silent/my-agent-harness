@@ -8,7 +8,7 @@
       "tests_total": 11,
       "tokens": 55835,
       "cost_usd": 0.038617,
-      "summary": "PASSED via MyPiAgent (11/11 tests)",
+      "summary": "PASSED via My-Agent-Harness (11/11 tests)",
       "finished_at": "2026-10-08T23:05:00",
       "cache_read_tokens": 2036352
     },
@@ -20,7 +20,7 @@
       "tests_total": 1,
       "tokens": 7350,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-08T23:11:00"
     },
     "build-pmars": {
@@ -31,7 +31,7 @@
       "tests_total": 1,
       "tokens": 329694,
       "cost_usd": 0.061250244,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-08T23:39:53.319844"
     },
     "break-filter-js-from-html": {
@@ -42,7 +42,7 @@
       "tests_total": 1,
       "tokens": 17177,
       "cost_usd": 0.006865,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-08T23:43:04.717664",
       "cache_read_tokens": 234112
     },
@@ -55,7 +55,7 @@
       "tokens": 37159,
       "cache_read_tokens": 772480,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T13:23:16.207983"
     },
     "build-pov-ray": {
@@ -66,7 +66,7 @@
       "tests_total": 1,
       "tokens": 34820,
       "cost_usd": 0.016519,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-08T23:47:44.467346",
       "cache_read_tokens": 761216
     },
@@ -78,7 +78,7 @@
       "tests_total": 1,
       "tokens": 33353,
       "cost_usd": 0.015455,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-08T23:54:20.065538",
       "cache_read_tokens": 534784
     },
@@ -90,7 +90,7 @@
       "tests_total": 1,
       "tokens": 55355,
       "cost_usd": 0.036306,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-08T23:58:48.435848",
       "cache_read_tokens": 1726976
     },
@@ -102,7 +102,7 @@
       "tests_total": 1,
       "tokens": 732427,
       "cost_usd": 0.123161,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:00:05.306866",
       "cache_read_tokens": 1000960
     },
@@ -138,7 +138,7 @@
       "tests_total": 1,
       "tokens": 6593,
       "cost_usd": 0.001839,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:06:30.605672",
       "cache_read_tokens": 31488
     },
@@ -151,7 +151,7 @@
       "tokens": 13212,
       "cache_read_tokens": 146560,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T13:21:51.681854"
     },
     "crack-7z-hash": {
@@ -162,7 +162,7 @@
       "tests_total": 1,
       "tokens": 6927,
       "cost_usd": 0.002044,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:13:13.530349",
       "cache_read_tokens": 61440
     },
@@ -174,7 +174,7 @@
       "tests_total": 1,
       "tokens": 7523,
       "cost_usd": 0.002044,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:15:40.748742",
       "cache_read_tokens": 51712
     },
@@ -186,7 +186,7 @@
       "tests_total": 1,
       "tokens": 18387,
       "cost_usd": 0.006261,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:15:53.602825",
       "cache_read_tokens": 199424
     },
@@ -198,7 +198,7 @@
       "tests_total": 1,
       "tokens": 12452,
       "cost_usd": 0.003649,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:18:26.571474",
       "cache_read_tokens": 69888
     },
@@ -210,7 +210,7 @@
       "tests_total": 1,
       "tokens": 6561,
       "cost_usd": 0.001854,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:18:33.328433",
       "cache_read_tokens": 45056
     },
@@ -222,7 +222,7 @@
       "tests_total": 1,
       "tokens": 38448,
       "cost_usd": 0.016157,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:23:41.469018",
       "cache_read_tokens": 536192
     },
@@ -247,7 +247,7 @@
       "tokens": 43303,
       "cache_read_tokens": 353664,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T13:25:52.271452"
     },
     "feal-linear-cryptanalysis": {
@@ -259,7 +259,7 @@
       "tokens": 65910,
       "cache_read_tokens": 1697024,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T13:41:40.150005"
     },
     "code-from-image": {
@@ -270,7 +270,7 @@
       "tests_total": 1,
       "tokens": 1662946,
       "cost_usd": 0.2609,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:31:28.759028",
       "cache_read_tokens": 1255296
     },
@@ -282,7 +282,7 @@
       "tests_total": 1,
       "tokens": 17306,
       "cost_usd": 0.007386,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:33:17.837427",
       "cache_read_tokens": 297600
     },
@@ -294,7 +294,7 @@
       "tests_total": 1,
       "tokens": 10165,
       "cost_usd": 0.003118,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:34:19.427584",
       "cache_read_tokens": 97152
     },
@@ -306,7 +306,7 @@
       "tests_total": 1,
       "tokens": 6612,
       "cost_usd": 0.001887,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:35:45.751400",
       "cache_read_tokens": 49280
     },
@@ -318,7 +318,7 @@
       "tests_total": 1,
       "tokens": 28676,
       "cost_usd": 0.012215,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:35:49.943091",
       "cache_read_tokens": 377984
     },
@@ -342,7 +342,7 @@
       "tests_total": 1,
       "tokens": 3783,
       "cost_usd": 0.001033,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:38:01.425039",
       "cache_read_tokens": 19584
     },
@@ -354,7 +354,7 @@
       "tests_total": 1,
       "tokens": 13814,
       "cost_usd": 0.005298,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:40:45.070689",
       "cache_read_tokens": 187136
     },
@@ -378,7 +378,7 @@
       "tests_total": 1,
       "tokens": 14100,
       "cost_usd": 0.005193,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:48:28.540330",
       "cache_read_tokens": 124160
     },
@@ -390,7 +390,7 @@
       "tests_total": 1,
       "tokens": 26201,
       "cost_usd": 0.010896,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:50:46.011850",
       "cache_read_tokens": 414848
     },
@@ -402,7 +402,7 @@
       "tests_total": 1,
       "tokens": 8487,
       "cost_usd": 0.002526,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:50:56.345183",
       "cache_read_tokens": 57600
     },
@@ -414,7 +414,7 @@
       "tests_total": 1,
       "tokens": 34852,
       "cost_usd": 0.020456,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:51:09.473843",
       "cache_read_tokens": 1019392
     },
@@ -426,7 +426,7 @@
       "tests_total": 1,
       "tokens": 5360,
       "cost_usd": 0.00149,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T00:52:40.693849",
       "cache_read_tokens": 33536
     },
@@ -451,7 +451,7 @@
       "tokens": 61427,
       "cache_read_tokens": 1981824,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T17:33:27.866336"
     },
     "log-summary-date-ranges": {
@@ -462,7 +462,7 @@
       "tests_total": 1,
       "tokens": 9859,
       "cost_usd": 0.002481,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:01:59.304314",
       "cache_read_tokens": 56960
     },
@@ -474,7 +474,7 @@
       "tests_total": 1,
       "tokens": 920102,
       "cost_usd": 0.164768,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:09:15.895018",
       "cache_read_tokens": 1876352
     },
@@ -486,7 +486,7 @@
       "tests_total": 1,
       "tokens": 49141,
       "cost_usd": 0.038129,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:12:03.140548",
       "cache_read_tokens": 2079488
     },
@@ -499,7 +499,7 @@
       "tokens": 5702684,
       "cache_read_tokens": 19427456,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T18:19:17.431822"
     },
     "merge-diff-arc-agi-task": {
@@ -510,7 +510,7 @@
       "tests_total": 1,
       "tokens": 22621,
       "cost_usd": 0.009079,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:22:25.574371",
       "cache_read_tokens": 329600
     },
@@ -522,7 +522,7 @@
       "tests_total": 1,
       "tokens": 16140569,
       "cost_usd": 1.529483032,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:25:47.207792"
     },
     "model-extraction-relu-logits": {
@@ -533,7 +533,7 @@
       "tests_total": 1,
       "tokens": 12693,
       "cost_usd": 0.004015,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:26:42.543552",
       "cache_read_tokens": 85760
     },
@@ -545,7 +545,7 @@
       "tests_total": 1,
       "tokens": 13572,
       "cost_usd": 0.004531,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:27:08.622907",
       "cache_read_tokens": 151808
     },
@@ -557,7 +557,7 @@
       "tests_total": 1,
       "tokens": 7698,
       "cost_usd": 0.002291,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:27:36.127501",
       "cache_read_tokens": 47232
     },
@@ -569,7 +569,7 @@
       "tests_total": 1,
       "tokens": 5966,
       "cost_usd": 0.001706,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:29:46.706255",
       "cache_read_tokens": 24832
     },
@@ -581,7 +581,7 @@
       "tests_total": 1,
       "tokens": 6052,
       "cost_usd": 0.001602,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:31:55.550433",
       "cache_read_tokens": 30720
     },
@@ -594,7 +594,7 @@
       "tokens": 3523,
       "cache_read_tokens": 16256,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T17:39:38.362586"
     },
     "openssl-selfsigned-cert": {
@@ -606,7 +606,7 @@
       "tokens": 4640,
       "cache_read_tokens": 24064,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T17:42:10.355804"
     },
     "install-windows-3.11": {
@@ -629,7 +629,7 @@
       "tests_total": 1,
       "tokens": 27960,
       "cost_usd": 0.010904,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:36:13.285347",
       "cache_read_tokens": 419200
     },
@@ -641,7 +641,7 @@
       "tests_total": 1,
       "tokens": 13602,
       "cost_usd": 0.004114,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:37:12.721072",
       "cache_read_tokens": 117760
     },
@@ -654,7 +654,7 @@
       "tokens": 25063,
       "cache_read_tokens": 228992,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T13:58:25.476254"
     },
     "polyglot-rust-c": {
@@ -677,7 +677,7 @@
       "tests_total": 1,
       "tokens": 19647,
       "cost_usd": 0.007149,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T01:49:31.769355",
       "cache_read_tokens": 186624
     },
@@ -690,7 +690,7 @@
       "tokens": 39491,
       "cache_read_tokens": 741376,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:04:44.701057"
     },
     "path-tracing": {
@@ -701,7 +701,7 @@
       "tests_total": 1,
       "tokens": 8420635,
       "cost_usd": 1.224136,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:03:46.176697",
       "cache_read_tokens": 1007744
     },
@@ -713,7 +713,7 @@
       "tests_total": 1,
       "tokens": 6021,
       "cost_usd": 0.001802,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:04:09.472874",
       "cache_read_tokens": 38400
     },
@@ -725,7 +725,7 @@
       "tests_total": 1,
       "tokens": 196158,
       "cost_usd": 0.044549824,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:11:42.685689"
     },
     "pytorch-model-cli": {
@@ -737,7 +737,7 @@
       "tokens": 16797,
       "cache_read_tokens": 185216,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:10:23.226598"
     },
     "qemu-startup": {
@@ -748,7 +748,7 @@
       "tests_total": 1,
       "tokens": 26031,
       "cost_usd": 0.011131,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:20:07.690891",
       "cache_read_tokens": 448256
     },
@@ -760,7 +760,7 @@
       "tests_total": 1,
       "tokens": 2438213,
       "cost_usd": 0.5412456720000001,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:21:13.487408"
     },
     "pytorch-model-recovery": {
@@ -771,7 +771,7 @@
       "tests_total": 1,
       "tokens": 13317,
       "cost_usd": 0.004419,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:23:21.100951",
       "cache_read_tokens": 105728
     },
@@ -795,7 +795,7 @@
       "tests_total": 1,
       "tokens": 14814,
       "cost_usd": 0.005018,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T02:28:46.931230",
       "cache_read_tokens": 105856
     },
@@ -832,7 +832,7 @@
       "tokens": 14927,
       "cache_read_tokens": 176128,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:27:21.830548"
     },
     "rstan-to-pystan": {
@@ -844,7 +844,7 @@
       "tokens": 23905,
       "cache_read_tokens": 409856,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:45:43.248607"
     },
     "sanitize-git-repo": {
@@ -868,7 +868,7 @@
       "tokens": 1334477,
       "cache_read_tokens": 6654080,
       "cost_usd": 0.290721,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T21:48:46.664760"
     },
     "sqlite-db-truncate": {
@@ -880,7 +880,7 @@
       "tokens": 16335,
       "cache_read_tokens": 112384,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:39:44.491418"
     },
     "sparql-university": {
@@ -892,7 +892,7 @@
       "tokens": 17162,
       "cache_read_tokens": 233216,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:37:26.754406"
     },
     "qemu-alpine-ssh": {
@@ -916,7 +916,7 @@
       "tokens": 13057,
       "cache_read_tokens": 148992,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T14:45:45.060832"
     },
     "train-fasttext": {
@@ -940,7 +940,7 @@
       "tokens": 29240,
       "cache_read_tokens": 645888,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T15:29:03.726014"
     },
     "vulnerable-secret": {
@@ -952,7 +952,7 @@
       "tokens": 11962,
       "cache_read_tokens": 90112,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T15:25:16.618585"
     },
     "video-processing": {
@@ -976,7 +976,7 @@
       "tokens": 31304,
       "cache_read_tokens": 705408,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T15:30:16.413470"
     },
     "write-compressor": {
@@ -988,7 +988,7 @@
       "tokens": 82638,
       "cache_read_tokens": 1925376,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T15:35:10.628222"
     },
     "torch-pipeline-parallelism": {
@@ -1012,7 +1012,7 @@
       "tokens": 26629,
       "cache_read_tokens": 406912,
       "cost_usd": 0.0,
-      "summary": "PASSED via MyPiAgent",
+      "summary": "PASSED via My-Agent-Harness",
       "finished_at": "2026-10-09T15:02:18.065745"
     },
     "make-doom-for-mips": {

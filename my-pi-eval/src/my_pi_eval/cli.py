@@ -38,7 +38,7 @@ def build_harbor_command(
     task_path: str,
     model: str = "deepseek/deepseek-chat",
     concurrency: int = 1,
-    agent_path: str = "my_pi_eval.agent:MyPiAgent",
+    agent_path: str = "my_pi_eval.agent:My-Agent-Harness",
 ) -> list[str]:
     """Assemble the official Harbor CLI execution command."""
     return [
@@ -58,7 +58,7 @@ def build_harbor_command(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="my-pi-eval",
-        description="Harbor-based evaluation runner for my-pi-agent against Terminal-Bench 2.0",
+        description="Harbor-based evaluation runner for my-agent-harness against Terminal-Bench 2.0",
     )
     parser.add_argument(
         "-p",
@@ -89,7 +89,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
-    print("=== My-Pi-Agent Evaluation Preflight ===")
+    print("=== My-Agent-Harness Evaluation Preflight ===")
     docker_ok = check_docker_environment()
     if docker_ok:
         print("[✓] Docker Engine is running and responsive.")

@@ -233,7 +233,7 @@ plt.figtext(
     color=C_SUBTEXT,
 )
 
-# Audited engineering footnote highlighting MyPiAgent's verified stats without unverified claims on Pi
+# Audited engineering footnote highlighting My-Agent-Harness's verified stats without unverified claims on Pi
 plt.figtext(
     0.5,
     0.022,
@@ -251,7 +251,7 @@ out_paths = [
     "my-pi-eval/results/terminal_bench_comparison.png",
 ]
 
-blog_asset_dir = "D:/blog/source/_posts/学习/agent实战/my-pi-agent/my-pi-agent--agent评估"
+blog_asset_dir = "D:/blog/source/_posts/学习/agent实战/my-agent-harness/my-agent-harness--agent评估"
 try:
     if os.path.exists(os.path.dirname(blog_asset_dir)):
         os.makedirs(blog_asset_dir, exist_ok=True)

@@ -1,4 +1,4 @@
-"""Real-time live status dashboard for self-developed MyPiAgent on Terminal-Bench 2.1."""
+"""Real-time live status dashboard for self-developed My-Agent-Harness on Terminal-Bench 2.1."""
 
 import json
 import subprocess
@@ -13,7 +13,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 EVAL_DIR = Path("D:/code/python/agent-eval/pi-terminal-bench")
-PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_pi_agent_progress.json"
+PROGRESS_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_progress.json"
 TB2_TASKS_DIR = Path("D:/code/python/agent-eval/terminal-bench-2")
 
 PHYSICAL_EXCLUDED = {
@@ -31,7 +31,7 @@ def get_85_tasks() -> list[str]:
 
 def main() -> None:
     print("=" * 80)
-    print("🏆 自研 MyPiAgent @ Terminal-Bench 2.1 (85 赛题) 实时看板")
+    print("🏆 自研 My-Agent-Harness @ Terminal-Bench 2.1 (85 赛题) 实时看板")
     print("=" * 80)
 
     tasks_85 = get_85_tasks()
@@ -111,7 +111,7 @@ def main() -> None:
         print(f"   {i:02d}. {badge:<22} {tname:<32} {extra}")
 
     print("\n" + "=" * 80)
-    print(f"💡 对标原厂 Pi 官方基准: 72 胜 / 80.90% | 当前 MyPiAgent 满分通过: {len(passed)} 道")
+    print(f"💡 对标原厂 Pi 官方基准: 72 胜 / 80.90% | 当前 My-Agent-Harness 满分通过: {len(passed)} 道")
     print("=" * 80)
 
 

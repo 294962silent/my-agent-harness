@@ -10,7 +10,7 @@
 ### 1. 为什么传统的断点与黑盒测试无法解决 Agent 调试痛点？
 自主 Coding Agent 与确定性传统程序存在本质差异：
 1. **多轮累积效应（Stochastic Drift）**：单个 LLM 请求与工具执行虽然均返回 `200 OK`，但在 5 轮迭代后可能发生意图偏移，陷入同一参数死循环；
-2. **终端全屏 UI 独占（TUI Isolation）**：`my-pi-agent` 表现层采用 `@earendil-works/pi-tui` 的 CSI 2026 同步渲染管道，`stdout` 被 JSON-RPC 协议完全独占，直接 `print()` 日志会引发界面撕裂或协议解析崩溃；
+2. **终端全屏 UI 独占（TUI Isolation）**：`my-agent-harness` 表现层采用 `@earendil-works/pi-tui` 的 CSI 2026 同步渲染管道，`stdout` 被 JSON-RPC 协议完全独占，直接 `print()` 日志会引发界面撕裂或协议解析崩溃；
 3. **不可变事实追溯**：当模型生成畸形代码或错误调用工具时，开发者需要“事后黑匣子”精准追溯模型当时的 Prompt、前缀缓存状态与真实工具入参。
 
 ### 2. 对标官方 Pi (`@earendil-works/pi-coding-agent`)
@@ -18,7 +18,7 @@
   - 在 `src/config.ts` 定义 `getDebugLogPath()`，指向 `~/.pi/agent/pi-debug.log`；
   - 提供隐藏命令 `/debug`，将当前终端 ANSI 渲染行与最后一次发送给模型的 `messages` 写入该文件；
   - 在子进程 RPC 模式（`rpc-client.ts`）下，仅将 `stderr` 作为辅助捕获。
-- **`my-pi-agent` 的超越与深化**：
+- **`my-agent-harness` 的超越与深化**：
   - 拥有 14 个强类型不可变生命周期事件（`events.py`）与 5 个控制流决策钩子（`hooks.py`）；
   - 建立“**全自动事件时序落盘（`debug.log`）** + **彩色终端瀑布流（`ConsoleTracer`）** + **交互式瞬时快照（`/debug`）** + **异常死循环看门狗（`Watchdog`）**”四维一体的调试架构。
 
@@ -36,11 +36,11 @@
                     【TUI / RPC 生产交互态】        【无头脚本 / 单元测试态】
                              │                             │
                              ▼                             ▼
-              ~/.my-pi-agent/logs/<slug>-<hash>/<id>.debug.log   控制台彩色时序瀑布流
+              ~/.my-agent-harness/logs/<slug>-<hash>/<id>.debug.log   控制台彩色时序瀑布流
               (支持另开终端 tail -f 实时观测)                       (标准错误流 sys.stderr 打印)
                              │
                              ▼
-              ~/.my-pi-agent/logs/<slug>-<hash>/<id>.events.jsonl
+              ~/.my-agent-harness/logs/<slug>-<hash>/<id>.events.jsonl
               (对标 Pi --mode json 的原始结构化事件流)
                              │
                              ▼
@@ -54,7 +54,7 @@
    - **TTFT (Time to First Token)**：首个流式 Token 响应延迟；
    - **Tool Execution Duration**：单工具纯执行物理耗时；
    - **Turn End-to-End Latency**：单轮循环端到端耗时。
-3. **环境隔离自愈**：统一受控于 `paths.logs_dir`（`~/.my-pi-agent/logs/`），自动创建目录，绝不污染项目工作区。
+3. **环境隔离自愈**：统一受控于 `paths.logs_dir`（`~/.my-agent-harness/logs/`），自动创建目录，绝不污染项目工作区。
 
 ---
 
@@ -89,7 +89,7 @@ class DebugEventTracer:
 [2026-09-17 16:10:01.220] [TURN_START] iteration=1
 [2026-09-17 16:10:02.450] [LLM_RESPONSE] duration=1230ms in_tokens=1250 out_tokens=38
 [2026-09-17 16:10:02.460] [TOOL_CALL_START] tool=read id=call_01 args={"path": "package.json"}
-[2026-09-17 16:10:02.482] [TOOL_CALL_END] tool=read id=call_01 status=OK duration=20ms result="{\"name\": \"my-pi-agent\"}"
+[2026-09-17 16:10:02.482] [TOOL_CALL_END] tool=read id=call_01 status=OK duration=20ms result="{\"name\": \"my-agent-harness\"}"
 [2026-09-17 16:10:02.490] [TURN_END] duration=1270ms
 [2026-09-17 16:10:03.200] [AGENT_END] stop_reason=end_turn iterations=2
 ```
@@ -107,7 +107,7 @@ class DebugEventTracer:
 ### 2. 交互式隐藏快照命令 (`/debug`)
 对标 Pi 官方设计，在 TUI 中输入 `/debug`：
 - **动作**：向 RPC 提交 `debug_dump` 请求；
-- **输出文件**：`~/.my-pi-agent/logs/debug-dump.json`；
+- **输出文件**：`~/.my-agent-harness/logs/debug-dump.json`；
 - **包含内容**：
   1. 当前完整消息列表（`messages`）；
   2. 当前系统提示词（`system_prompt`）；
@@ -117,9 +117,9 @@ class DebugEventTracer:
   6. **当前活跃会话的专属调试日志路径 (`log_file`, `events_file`)**。
 - **界面提示**：在终端弹出通知：
   ```text
-  ✓ 调试快照已导出至: ~/.my-pi-agent/logs/debug-dump.json
-    会话调试日志: ~/.my-pi-agent/logs/<slug>-<hash>/<session-id>.debug.log
-    会话事件流: ~/.my-pi-agent/logs/<slug>-<hash>/<session-id>.events.jsonl
+  ✓ 调试快照已导出至: ~/.my-agent-harness/logs/debug-dump.json
+    会话调试日志: ~/.my-agent-harness/logs/<slug>-<hash>/<session-id>.debug.log
+    会话事件流: ~/.my-agent-harness/logs/<slug>-<hash>/<session-id>.events.jsonl
   ```
 
 ### 3. 异常死循环检测看门狗 (`AnomalyWatchdog`)
@@ -142,7 +142,7 @@ class DebugEventTracer:
   ```
 - **窗口 2（实时监控事件日志）**：
   ```powershell
-  Get-Content "$HOME\.my-pi-agent\logs\debug.log" -Wait -Tail 30
+  Get-Content "$HOME\.my-agent-harness\logs\debug.log" -Wait -Tail 30
   ```
 
 ### 2. 纯 Python 脚本/单测中实时打印

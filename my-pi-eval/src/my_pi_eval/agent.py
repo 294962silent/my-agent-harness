@@ -1,4 +1,4 @@
-"""MyPiAgent adapter conforming to Harbor's BaseAgent interface."""
+"""My-Agent-Harness adapter conforming to Harbor's BaseAgent interface."""
 
 from __future__ import annotations
 
@@ -84,7 +84,7 @@ else:
 
 
 def resolve_eval_llm(model_str: str) -> LLM:
-    """从 my-pi-eval/.env 或系统环境变量解析评测 API Key，严禁读取本地 ~/.my-pi-agent/auth.json。"""
+    """从 my-pi-eval/.env 或系统环境变量解析评测 API Key，严禁读取本地 ~/.my-agent-harness/auth.json。"""
     provider = "openai"
     model_name = model_str
     if "/" in model_str:
@@ -115,7 +115,7 @@ def resolve_eval_llm(model_str: str) -> LLM:
         env_var = f"{provider.upper()}_API_KEY"
         raise ValueError(
             f"评测环境未检测到 {env_var}！\n"
-            f"评测模块严禁读取本地 ~/.my-pi-agent/auth.json，必须在 'my-pi-eval/.env' 中配置 API Key。\n"
+            f"评测模块严禁读取本地 ~/.my-agent-harness/auth.json，必须在 'my-pi-eval/.env' 中配置 API Key。\n"
             f"请在 my-pi-eval/.env 中添加: {env_var}=sk-xxxx。"
         )
 
@@ -128,8 +128,8 @@ def resolve_eval_llm(model_str: str) -> LLM:
     return LLM(config=config)
 
 
-class MyPiAgent(BaseAgent):
-    """Adapter bridging my-pi-agent to the Harbor benchmark evaluation harness."""
+class MyAgentHarness(BaseAgent):
+    """Adapter bridging my-agent-harness to the Harbor benchmark evaluation harness."""
 
     def __init__(
         self,
@@ -139,13 +139,13 @@ class MyPiAgent(BaseAgent):
         **kwargs: Any,
     ) -> None:
         if logs_dir is None:
-            logs_dir = Path(tempfile.gettempdir()) / f"my_pi_agent_{uuid4().hex[:8]}"
+            logs_dir = Path(tempfile.gettempdir()) / f"my_agent_harness_{uuid4().hex[:8]}"
             logs_dir.mkdir(parents=True, exist_ok=True)
         super().__init__(logs_dir=logs_dir, model_name=model_name, *args, **kwargs)
 
     @staticmethod
     def name() -> str:
-        return "my-pi-agent"
+        return "my-agent-harness"
 
     def version(self) -> str | None:
         return "0.2.0"

@@ -1,4 +1,4 @@
-"""Generate comprehensive Markdown evaluation report and comparison matrix for MyPiAgent."""
+"""Generate comprehensive Markdown evaluation report and comparison matrix for My-Agent-Harness."""
 
 import json
 import sys
@@ -9,10 +9,10 @@ if hasattr(sys.stdout, "reconfigure"):
     getattr(sys.stdout, "reconfigure")(encoding="utf-8", errors="replace")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MY_PROG_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_pi_agent_progress.json"
+MY_PROG_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_progress.json"
 PI_PROG_FILE = REPO_ROOT / "my-pi-eval" / "results" / "official_pi_progress.json"
 
-REPORT_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_pi_agent_terminal_bench_2.md"
+REPORT_FILE = REPO_ROOT / "my-pi-eval" / "results" / "my_agent_harness_terminal_bench_2.md"
 MATRIX_FILE = REPO_ROOT / "my-pi-eval" / "results" / "comparison_matrix.md"
 
 PHYSICAL_EXCLUDED = {
@@ -44,10 +44,10 @@ def main():
     eval_85_total = 85
     win_rate = (eval_85_passed / eval_85_total) * 100.0
 
-    # 1. Generate my_pi_agent_terminal_bench_2.md
-    md = f"""# Terminal-Bench 2.1 终局大捷报告：自研 My-Pi-Agent 83.53% 胜率超越原厂战报
+    # 1. Generate my_agent_harness_terminal_bench_2.md
+    md = f"""# Terminal-Bench 2.1 终局大捷报告：自研 My-Agent-Harness 83.53% 胜率超越原厂战报
 
-> **评测对象**：MyPiAgent (自研 Python 双层微内核 ReAct 架构 + Scheme 1 宿主驱动)  
+> **评测对象**：My-Agent-Harness (自研 Python 双层微内核 ReAct 架构 + Scheme 1 宿主驱动)  
 > **底座模型**：`deepseek/deepseek-chat` (DeepSeek-V4.1 / DS-V4.1-Flash)  
 > **评测框架**：Harbor (Terminal-Bench 2.1 官方评测运行器)  
 > **有效赛题**：85 道 (已剔除 4 道物理单机瓶颈题: make-doom-for-mips, caffe-cifar-10, extract-moves-from-video, sam-cell-seg)  
@@ -117,7 +117,7 @@ def main():
     pi_all_passed = sum(1 for v in pi_tasks.values() if v.get("status") == "PASSED")
     pi_85_passed = sum(1 for k, v in pi_tasks.items() if k not in PHYSICAL_EXCLUDED and v.get("status") == "PASSED")
 
-    cm = f"""# Terminal-Bench 2.1 终局横向对比矩阵 (MyPiAgent vs 官方 Pi)
+    cm = f"""# Terminal-Bench 2.1 终局横向对比矩阵 (My-Agent-Harness vs 官方 Pi)
 
 > **底座大模型**：DeepSeek-V4.1 (`deepseek/deepseek-chat`)  
 > **运行环境**：完全一致的本地物理机、相同 Docker 镜像与评测脚本  
@@ -128,18 +128,18 @@ def main():
 
 ## 一、 顶峰对决量化概览
 
-| 指标 | 自研 MyPiAgent | 官方 Pi Coding Agent | 胜出方与差距 |
+| 指标 | 自研 My-Agent-Harness | 官方 Pi Coding Agent | 胜出方与差距 |
 | :--- | :---: | :---: | :--- |
 | **89 题全量通过题数** | **{len(passed)} 道 ({len(passed) / 89 * 100.0:.2f}%)** | **{pi_all_passed} 道 ({pi_all_passed / 89 * 100.0:.2f}%)** | 工业基准高度逼近 |
 | **85 题常规有效通过题数** | **{eval_85_passed} 道 ({win_rate:.2f}%)** | **{pi_85_passed} 道 ({pi_85_passed / 85 * 100.0:.2f}%)** | 均展现顶级自动化能力 |
 | **双胜题目数 (两边均通过)** | **{len(both_pass)} 道** | {len(both_pass)} 道 | 67 道高难度赛题两边均满分攻克 |
-| **MyPiAgent 独占胜出题目** | **{len(my_wins)} 道** 🌟 | - | 自研 Agent 满分（官方 Pi 彻底折戟） |
+| **My-Agent-Harness 独占胜出题目** | **{len(my_wins)} 道** 🌟 | - | 自研 Agent 满分（官方 Pi 彻底折戟） |
 | **官方 Pi 独占胜出题目** | - | **{len(pi_wins)} 道** | 官方 Pi 满分（自研 Agent 格式微差） |
 | **双负题目数 (两边均未过)** | **{len(both_fail)} 道** | {len(both_fail)} 道 | 包含 4 道单机物理极限及上游环境断言题 |
 
 ---
 
-## 二、 自研 MyPiAgent 独占胜出赛题 ({len(my_wins)} 道 🌟)
+## 二、 自研 My-Agent-Harness 独占胜出赛题 ({len(my_wins)} 道 🌟)
 
 在完全相同的物理环境与模型下，自研 Agent 在以下高难度赛题上斩获满分，而官方 Pi 彻底失败：
 
@@ -161,7 +161,7 @@ def main():
 
 ## 四、 89 题全量对照表
 
-| 序号 | 任务名称 | 自研 MyPiAgent | 官方 Pi | 对比结果 |
+| 序号 | 任务名称 | 自研 My-Agent-Harness | 官方 Pi | 对比结果 |
 | :---: | :--- | :---: | :---: | :---: |
 """
     for idx, t in enumerate(sorted(my_tasks.keys()), 1):

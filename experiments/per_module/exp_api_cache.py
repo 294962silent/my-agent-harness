@@ -5,7 +5,7 @@
 - API-2：prefix 被破坏（改写历史中段）→ 命中率归零
 - API-3：三层压缩管线 vs 滑动窗口 → 实测命中率对比
 
-依赖：~/.my-pi-agent/auth.json 里的 opencode go 凭据
+依赖：~/.my-agent-harness/auth.json 里的 opencode go 凭据
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from experiments.per_module.framework import ExperimentResult, save_result
 
 
 def load_creds() -> tuple[str, str]:
-    p = pathlib.Path.home() / ".my-pi-agent" / "auth.json"
+    p = pathlib.Path.home() / ".my-agent-harness" / "auth.json"
     prov = json.loads(p.read_text(encoding="utf-8"))["providers"]["openai"]["default"]
     return prov["key"], prov["base_url"].rstrip("/")
 
@@ -50,7 +50,7 @@ def chat(
             headers={
                 "Authorization": "Bearer " + KEY,
                 "Content-Type": "application/json",
-                "User-Agent": "my-pi-agent/0.1",
+                "User-Agent": "my-agent-harness/0.1",
                 "x-opencode-session": session or SESSION,
             },
             method="POST",

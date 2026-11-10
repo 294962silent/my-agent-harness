@@ -1,6 +1,6 @@
 # my-pi-eval: Harbor & Terminal-Bench 2.0 / 2.1 评测套件
 
-`my-pi-eval` 是专为 `my-pi-agent` 打造的官方基准评测适配与调度子系统，基于标准 **Harbor Framework** 协议实现，用于在 **Terminal-Bench 2.0 / 2.1**（以及后续的 SWE-bench）真实沙箱中全自动评测 Agent 的终端解题能力。
+`my-pi-eval` 是专为 `my-agent-harness` 打造的官方基准评测适配与调度子系统，基于标准 **Harbor Framework** 协议实现，用于在 **Terminal-Bench 2.0 / 2.1**（以及后续的 SWE-bench）真实沙箱中全自动评测 Agent 的终端解题能力。
 
 ---
 
@@ -9,18 +9,18 @@
 在以真实 Linux 系统运维、混合编译与复杂调试为核心的 **Terminal-Bench 2.1** 全量评测中（底座大模型统一采用 `deepseek/deepseek-chat` / DeepSeek-V4.1-Flash）：
 
 - **赛题规模**：89 道官方全量有效赛题；
-- **自研 MyPiAgent 终局战绩**：**71 道满分通过 / 89 题全量（79.78%）**，与原厂 Pi 的 72/89（80.90%）相差 1 题；
+- **自研 My-Agent-Harness 终局战绩**：**71 道满分通过 / 89 题全量（79.78%）**，与原厂 Pi 的 72/89（80.90%）相差 1 题；
   > 注：此前曾以「85 题有效题集」为分母报 83.53%，与原厂 89 题分母不可比，已统一为 89 题口径；
 - **原厂 Pi 官方基线**：**72 道满分通过**（全量胜率 80.90%）；
 - **独占胜出亮点**：自研 Agent 在 `make-mips-interpreter`（50分钟纯手写MIPS模拟器）、`cancel-async-tasks`、`polyglot-c-py`、`pytorch-model-cli`、`git-multibranch`、`model-extraction-relu-logits` 这 6 道原厂 Pi 失败的高难赛题上斩获 1.0 满分；
 - **全量 Token 与 Prompt Cache**：89 题实测计算消耗 **41,737,271 Tokens**，KV-Cache 读取累计 **82,273,152 Tokens**，评测期汇总命中率 **66.33%**（分项明细未入库，不可从 progress.json 复算），89 题实际总花费仅 **$4.62 美元**（原厂 $18.84，省 75%）；可复算的对照实验见 [KV cache 实测报告](../docs/10_API_CACHE.md)（Append-Only 53.5% vs 滑动窗口 17.9%）；
-- 完整战报详见：[results/my_pi_agent_terminal_bench_2.md](results/my_pi_agent_terminal_bench_2.md)、[results/pi_official_terminal_bench_2.md](results/pi_official_terminal_bench_2.md) 与 [results/comparison_matrix.md](results/comparison_matrix.md)。
+- 完整战报详见：[results/my_agent_harness_terminal_bench_2.md](results/my_agent_harness_terminal_bench_2.md)、[results/pi_official_terminal_bench_2.md](results/pi_official_terminal_bench_2.md) 与 [results/comparison_matrix.md](results/comparison_matrix.md)。
 
 ---
 
 ## 核心设计与架构
 
-1. **官方标准 BaseAgent 适配**：实现 `MyPiAgent`（继承自 `harbor.agents.base.BaseAgent`），可直接被 Harbor 官方 CLI (`harbor run`) 加载与调用。
+1. **官方标准 BaseAgent 适配**：实现 `My-Agent-Harness`（继承自 `harbor.agents.base.BaseAgent`），可直接被 Harbor 官方 CLI (`harbor run`) 加载与调用。
 2. **宿主编排型（Scheme 1: Host-Orchestrated）**：Agent 核心与大模型请求运行在宿主机 Python 3.11 环境中，通过 `HarborToolRegistry` 将 7 大核心工具直连 Docker 容器沙箱，**实现对评测环境的零污染与秒级启动**。
 3. **高保真工具桥接**：
    - `bash`: 容器内隔离执行、超时熔断（默认 120s）与 50KB 输出安全截断。
@@ -42,7 +42,7 @@
    ```
 
 2. **专属评测 `.env` 凭证配置（严禁读取本地 auth.json）**：
-   为确保基准评测环境与开发者日常环境完全隔离，`my-pi-eval` **严格禁止读取本地 `~/.my-pi-agent/auth.json`**，而是专门在 `my-pi-eval/.env` 中独立配置 API Key。
+   为确保基准评测环境与开发者日常环境完全隔离，`my-pi-eval` **严格禁止读取本地 `~/.my-agent-harness/auth.json`**，而是专门在 `my-pi-eval/.env` 中独立配置 API Key。
    
    在 `my-pi-eval/` 目录下创建 `.env`（可参考同目录下的 `.env.example`）：
    ```env
@@ -66,7 +66,7 @@ python -m my_pi_eval.cli -p D:/code/python/agent-eval/terminal-bench-2/build-cyt
 # 方式 B：使用 Harbor 官方原生 CLI
 harbor run \
   -p D:/code/python/agent-eval/terminal-bench-2/build-cython-ext \
-  --agent-import-path my_pi_eval.agent:MyPiAgent \
+  --agent-import-path my_pi_eval.agent:My-Agent-Harness \
   -m deepseek/deepseek-chat
 ```
 
@@ -76,7 +76,7 @@ harbor run \
 # 并发跑 4 个沙箱容器
 harbor run \
   -p D:/code/python/agent-eval/terminal-bench-2 \
-  --agent-import-path my_pi_eval.agent:MyPiAgent \
+  --agent-import-path my_pi_eval.agent:My-Agent-Harness \
   -m deepseek/deepseek-chat \
   -n 4
 ```

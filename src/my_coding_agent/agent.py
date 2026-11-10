@@ -65,13 +65,17 @@ class CodingAgent:
         all_tools = [*extra_tools, *coding_tools]
 
         # 2. 自动生成或应用系统提示词（全量融合所有激活工具）
-        global_agents = (
-            (Path.home() / ".my-pi-agent" / "AGENTS.md")
-            if (Path.home() / ".my-pi-agent" / "AGENTS.md").is_file()
-            else (
-                (Path.home() / ".agents" / "AGENTS.md") if (Path.home() / ".agents" / "AGENTS.md").is_file() else None
-            )
-        )
+        # 依次尝试：新目录 -> 旧目录（兼容）-> .agents 共享目录
+        _home = Path.home()
+        global_agents = None
+        for _cand in (
+            _home / ".my-agent-harness" / "AGENTS.md",
+            _home / ".my-pi-agent" / "AGENTS.md",  # 兼容旧目录
+            _home / ".agents" / "AGENTS.md",
+        ):
+            if _cand.is_file():
+                global_agents = _cand
+                break
         effective_prompt = (
             system_prompt
             if system_prompt is not None
@@ -88,7 +92,7 @@ class CodingAgent:
             resolve_model_context_window(getattr(getattr(llm, "config", None), "model", None) or ""),
         )
         if "memory_dir" not in kw:
-            proj_mem = self.workspace / ".my-pi-agent" / "memory"
+            proj_mem = self.workspace / ".my-agent-harness" / "memory"
             if proj_mem.is_dir():
                 kw["memory_dir"] = proj_mem
             else:

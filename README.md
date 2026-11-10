@@ -38,7 +38,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="my-agent-harness terminal demo" width="100%" />
+  <img src="docs/assets/demo.png" alt="my-agent-harness terminal demo" width="100%" />
 </p>
 
 ---
@@ -89,7 +89,7 @@
 6. **Never-Throw 与断头自愈**：遵循 Never-Throw 异常处理原则，工具执行报错统一转译为语义化结果驱动模型自主反思纠偏；用户主动叫停或异常中断时，联动系统进程树消除僵尸进程，并自动合成中断结果闭合历史转录本，彻底杜绝孤儿工具调用引发大模型 API 400 校验死锁。
 
 #### 【第 4 层：工业评测与沙箱基建层】
-7. **宿主驱动沙箱与基准对决**：基于 Terminal-Bench 2.1 展开评测，统一采用 DeepSeek-V4.1-Flash 模型，原厂 Pi 与自研 MyPiAgent 在全量 89 题中分别通过 72 题与 71 题；评测采用宿主机驱动沙箱模式，基于 Harbor 框架将工具桥接穿透至 Docker 容器中执行。
+7. **宿主驱动沙箱与基准对决**：基于 Terminal-Bench 2.1 展开评测，统一采用 DeepSeek-V4.1-Flash 模型，原厂 Pi 与自研 My-Agent-Harness 在全量 89 题中分别通过 72 题与 71 题；评测采用宿主机驱动沙箱模式，基于 Harbor 框架将工具桥接穿透至 Docker 容器中执行。
 
 ---
 
@@ -151,7 +151,7 @@ npx my-pi-agent
 
 > 说明：npm 包名仍为 `my-pi-agent`（已发布的历史名，未改以免破坏既有安装）；安装后可用 `my-agent` 启动。
 >
-> **数据目录**：全新安装使用 `~/.my-agent-harness/`；若检测到旧的 `~/.my-pi-agent/`（含既有登录态与设置），
+> **数据目录**：全新安装使用 `~/.my-agent-harness/`；若检测到旧的 `~/.my-agent-harness/`（含既有登录态与设置），
 > 会自动沿用旧目录以保证无缝升级。也可用环境变量 `MY_AGENT_HOME` 显式指定。
 
 ### 命令行常用参数 (CLI Options)
@@ -235,7 +235,7 @@ npm start
   - **动态 80% 水位线门控与离散 Epoch 块级压缩**：对标 Pi 原厂机制，当且仅当上下文突破 80% 预算时才触发离散块压缩；先尝试工具输出持久化到磁盘，超预算后执行 compact 智能结构化摘要（`<analysis>` + `<summary>` 双标签防注入 + 6 Section 约束 + `<read-files>`/`<modified-files>` 全生命周期文件操作足迹累积）；
   - `retainedTail` 静态前缀快照缓存与 `compaction_floor` 指针安全护栏，确立下一周期稳定基准前缀。
 - **自动化基准评测体系与 Terminal-Bench 2.1 终局战报 (`my-pi-eval`)**：
-  - **Scheme 1 宿主机编排型轻量架构**：基于 Harbor Framework 实现 `MyPiAgent` 适配，Agent 核心运行于宿主机，通过 Docker 管道桥接 7 大工具，实现沙箱零污染与秒级冷启动；
+  - **Scheme 1 宿主机编排型轻量架构**：基于 Harbor Framework 实现 `My-Agent-Harness` 适配，Agent 核心运行于宿主机，通过 Docker 管道桥接 7 大工具，实现沙箱零污染与秒级冷启动；
   - **凭据物理隔离**：严格读取专属 `my-pi-eval/.env`，禁止读取宿主 `~/.my-agent-harness/auth.json`，杜绝沙箱逃逸泄露 API Key；
   - **Terminal-Bench 2.1 终局战报**：在 89 道真实环境 Linux 赛题中取得 **71 胜 / 79.78% 通过率**（原厂 Pi 72 胜 / 80.90%，仅差 1 题；底座大模型：DeepSeek-V4.1-Flash）；
   - **全量 Token 采集与缓存核算**：从底层 session.jsonl 逐条提取真实 Token 与缓存指标，全量 89 题汇总缓存命中率 **66.3%**（其中 `build-cython-ext` 单任务达 97.3%）。⚠️ 该值为评测期汇总口径，原始分项明细未入库，无法从 `progress.json` 复算；可复算的实测见 [KV cache 实测报告](docs/10_API_CACHE.md)（53.5% vs 17.9%）。
@@ -266,16 +266,16 @@ npm start
 > **评测环境**：完全一致的本地物理机（Windows 宿主机 + Docker Sandbox）、统一底座大模型采用 DeepSeek-V4.1 (`deepseek/deepseek-chat` / DS-V4.1-Flash)。
 
 <p align="center">
-  <img src="docs/assets/terminal_bench_comparison.png" alt="Terminal-Bench 2.1: MyPiAgent vs Official Pi Coding Agent Benchmark Results" width="100%" />
+  <img src="docs/assets/terminal_bench_comparison.png" alt="Terminal-Bench 2.1: My-Agent-Harness vs Official Pi Coding Agent Benchmark Results" width="100%" />
 </p>
 
 ### 1. 核心终局总榜 (Head-to-Head Overview)
 
-| 核心指标 | 自研 MyPiAgent (Python) | 原厂 Pi 官方 Agent (Node.js) | 对比与胜出分析 |
+| 核心指标 | 自研 My-Agent-Harness (Python) | 原厂 Pi 官方 Agent (Node.js) | 对比与胜出分析 |
 | :--- | :---: | :---: | :--- |
 | **89 题全量通过题数** | **71 道 (79.78%)** | **72 道 (80.90%)** | **工业基准高度逼近（双方仅差 1 题）**，均展现顶级自动化自愈能力 |
 | **双胜题目数 (双方均通过)** | **65 道** | 65 道 | 覆盖绝大多数 Linux 系统工程、复杂依赖排错与逆向赛题 |
-| **自研 MyPiAgent 独占胜出** | **6 道** 🌟 | - | 自研斩获 1.0 满分，官方 Pi 彻底折戟 |
+| **自研 My-Agent-Harness 独占胜出** | **6 道** 🌟 | - | 自研斩获 1.0 满分，官方 Pi 彻底折戟 |
 | **原厂 Pi 独占胜出** | - | **7 道** | 原厂 Pi 满分，自研 Agent 格式微差或超时 |
 | **双负赛题 (双方均未过)** | **11 道** | 11 道 | 包含单机物理算力极限与上游环境断言题 |
 | **自研实测净 Token 消耗** | **41,737,271 Tokens** | 122,295,809 Tokens (毛计) | 自研离散压缩扣除 82.3M 缓存后净计费 Token 显著压低；原厂基准未审计细分缓存 |
@@ -295,7 +295,7 @@ npm start
 
 ### 3. 架构对比优势：Scheme 1 宿主驱动 vs Scheme 2 容器安装
 
-| 维度 | 原厂 Pi Agent (Node.js/TS) | 自研 MyPiAgent (Python) | 理论与工程优势 |
+| 维度 | 原厂 Pi Agent (Node.js/TS) | 自研 My-Agent-Harness (Python) | 理论与工程优势 |
 | :--- | :--- | :--- | :--- |
 | **评测编排拓扑** | **Scheme 2 (容器内安装型)**<br>Harbor 在测试容器内在线下载 Node.js、npm 并编译安装 Pi | **Scheme 1 (宿主机驱动型)**<br>Agent 驻留宿主机，通过 Docker 管道桥接驱动沙箱 | **冷启动从 2.5 分钟缩减至 < 2 秒**；容器零污染，彻底杜绝容器内网络抖动造成的依赖安装失败。 |
 | **凭据安全隔离** | 需向容器内部注入 `API_KEY` 环境变量 | 宿主机本地严格隔离读取 `my-pi-eval/.env`，API Key 绝不流入容器沙箱 | **沙箱零凭据泄露风险**：即使评测任务包含恶意代码或攻击载荷，也无法窃取宿主机的 API Key。 |
@@ -441,7 +441,7 @@ my-agent-harness/
 │   ├── configs/                    # SWE-bench / Terminal-bench 评测声明
 │   ├── datasets/                   # 本地快速回归基准集
 │   ├── results/                    # Terminal-Bench 2.1 终局战报与对比矩阵
-│   └── src/                        # MyPiAgent 宿主适配器与 HarborToolRegistry
+│   └── src/                        # My-Agent-Harness 宿主适配器与 HarborToolRegistry
 │
 ├── docs/                           # 架构与技术设计文档中心 (涵盖 core/ 与 coding/ 7 大规范)
 ├── package.json                    # 根目录 npm 官方发布包与全局链接配置

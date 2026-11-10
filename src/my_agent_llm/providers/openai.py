@@ -32,7 +32,7 @@ def _default_headers_for(base_url: str | None) -> dict[str, str]:
         return {}
     return {
         "x-opencode-session": _opencode_session_id(),
-        "User-Agent": os.environ.get("OPENCODE_USER_AGENT") or "my-pi-agent/0.2.0",
+        "User-Agent": os.environ.get("OPENCODE_USER_AGENT") or "my-agent-harness/0.2.0",
     }
 
 

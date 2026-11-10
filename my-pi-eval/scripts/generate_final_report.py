@@ -198,7 +198,7 @@ def main() -> None:
 
     md.append("\n---\n")
 
-    md.append("## 6. 对自研 `my-pi-agent` 评测体系的建设启示 (Implications for My-Pi-Agent)\n")
+    md.append("## 6. 对自研 `my-agent-harness` 评测体系的建设启示 (Implications for My-Agent-Harness)\n")
     md.append("通过对原厂 Pi 在 Terminal-Bench 2.0 上的完整实战测评，我们为自研框架积累了极为宝贵的基础设施经验：\n")
     md.append(
         "1. **工具链韧性至关重要**：Agent 能否在长达 30 分钟的任务中不崩溃，依赖于 `bash` 工具能否容忍千万级字符的输出流截断、错误捕获与自愈能力。\n"
@@ -210,7 +210,7 @@ def main() -> None:
         "3. **容器生命周期严密隔离**：Docker 虚拟网卡、临时卷挂载与僵尸进程必须在任务结束后秒级 Prune，否则极易引发连锁级联故障。\n"
     )
     md.append(
-        "4. **对决基准已经确立**：**59 题 / 66.29%** 将作为自研 `my-pi-agent` 进军 Terminal-Bench 2.0 的最高标杆与对决蓝本！\n"
+        "4. **对决基准已经确立**：**59 题 / 66.29%** 将作为自研 `my-agent-harness` 进军 Terminal-Bench 2.0 的最高标杆与对决蓝本！\n"
     )
 
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -98,7 +98,7 @@ def test_format_rules_section_deduplication():
 
 def test_format_cwd_section():
     """测试 <cwd> 路径生成及 POSIX 斜杠规范化。"""
-    path = Path("D:/code/python/my-pi-agent") if os.name == "nt" else Path("/tmp/code/python/my-pi-agent")
+    path = Path("D:/code/python/my-agent-harness") if os.name == "nt" else Path("/tmp/code/python/my-agent-harness")
     cwd_sec = format_cwd_section(path)
     normalized_path = str(path.resolve()).replace("\\", "/")
     assert cwd_sec == f"<cwd>\n{normalized_path}\n</cwd>"

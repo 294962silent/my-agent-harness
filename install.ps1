@@ -1,17 +1,17 @@
-# my-pi-agent one-line installer for Windows PowerShell
+# my-agent-harness one-line installer for Windows PowerShell
 # Usage: irm https://raw.githubusercontent.com/.../install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
-$InstallDir = Join-Path $HOME ".my-pi-agent"
+$InstallDir = Join-Path $HOME ".my-agent-harness"
 $BinDir = Join-Path $InstallDir "bin"
 
-Write-Host "=== 安装 my-pi-agent (Windows) ===" -ForegroundColor Cyan
+Write-Host "=== 安装 my-agent-harness (Windows) ===" -ForegroundColor Cyan
 
 # 1. 检查 Node.js 运行时
 $nodeCmd = Get-Command "node" -ErrorAction SilentlyContinue
 if (-not $nodeCmd) {
-    Write-Host "提示: 未检测到 Node.js，my-pi-agent 交互界面需要 Node.js (>=18)。" -ForegroundColor Yellow
+    Write-Host "提示: 未检测到 Node.js，my-agent-harness 交互界面需要 Node.js (>=18)。" -ForegroundColor Yellow
     Write-Host "请先下载安装 Node.js: https://nodejs.org" -ForegroundColor Gray
 }
 
@@ -20,11 +20,11 @@ if (-not (Test-Path $BinDir)) {
     New-Item -ItemType Directory -Path $BinDir -Force | Out-Null
 }
 
-$cmdPath = Join-Path $BinDir "my-pi-agent.cmd"
+$cmdPath = Join-Path $BinDir "my-agent-harness.cmd"
 $cmdContent = @"
 @echo off
 setlocal
-where my-pi-agent.cmd >nul 2>nul
+where my-agent-harness.cmd >nul 2>nul
 if exist "%~dp0..\my-pi-tui\bin\my-agent.js" (
     node "%~dp0..\my-pi-tui\bin\my-agent.js" %*
 ) else (
@@ -43,5 +43,5 @@ if ($userPath -notlike "*$BinDir*") {
     Write-Host "✓ 已将 $BinDir 永久加入当前用户的 PATH 环境变量" -ForegroundColor Green
 }
 
-Write-Host "✓ my-pi-agent 安装就绪: $cmdPath" -ForegroundColor Green
-Write-Host "提示: 新开 PowerShell 窗口后直接输入 'my-pi-agent' 即可体验！" -ForegroundColor Cyan
+Write-Host "✓ my-agent-harness 安装就绪: $cmdPath" -ForegroundColor Green
+Write-Host "提示: 新开 PowerShell 窗口后直接输入 'my-agent-harness' 即可体验！" -ForegroundColor Cyan

@@ -38,7 +38,7 @@ class ModelRpcMixin:
             home = Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~").expanduser()
             pi_auth_candidates = [
                 paths.auth_path,
-                home / ".my-pi-agent" / "auth.json",
+                home / ".my-agent-harness" / "auth.json",
                 home / ".pi" / "agent" / "auth.json",
                 home / ".pi" / "auth.json",
             ]
@@ -95,7 +95,7 @@ class ModelRpcMixin:
                     req_id,
                     result={
                         "status": "error",
-                        "message": "未在 ~/.my-pi-agent/auth.json 或 ~/.pi/agent/auth.json 中检测到 antigravity 凭据。请将包含 antigravity 字段的 auth.json 放置到上述路径，或直接在登录框中粘贴 Access Token。",
+                        "message": "未在 ~/.my-agent-harness/auth.json 或 ~/.pi/agent/auth.json 中检测到 antigravity 凭据。请将包含 antigravity 字段的 auth.json 放置到上述路径，或直接在登录框中粘贴 Access Token。",
                     },
                 )
 
@@ -109,7 +109,7 @@ class ModelRpcMixin:
                 },
             )
 
-        # 凭据只写入 AuthManager（~/.my-pi-agent/auth.json），绝不注入 os.environ；
+        # 凭据只写入 AuthManager（~/.my-agent-harness/auth.json），绝不注入 os.environ；
         # 否则模型可通过 shell 工具读取该 Key。模型热更新路径见下方 switch_llm_model。
         auth_mgr.set_api_key(provider=provider, key=key)
 
@@ -133,7 +133,7 @@ class ModelRpcMixin:
             req_id,
             result={
                 "status": "ok",
-                "message": f"✓ 已成功绑定 {provider} API Key 至全局凭据中心 (~/.my-pi-agent/auth.json)！",
+                "message": f"✓ 已成功绑定 {provider} API Key 至全局凭据中心 (~/.my-agent-harness/auth.json)！",
             },
         )
 
