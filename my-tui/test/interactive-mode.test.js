@@ -556,7 +556,7 @@ test("Enter submits image-only and expanded mixed content after the editor clear
 });
 
 test("Ctrl+V reads clipboard image bytes and submits them", { skip: process.platform !== "linux" }, async () => {
-  const directory = await mkdtemp(join(tmpdir(), "my-pi-clipboard-"));
+  const directory = await mkdtemp(join(tmpdir(), "my-agent-clipboard-"));
   const originalPath = process.env.PATH;
   try {
     await writeFile(join(directory, "wl-paste"), '#!/bin/sh\nexit 1\n', { mode: 0o755 });
