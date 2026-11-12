@@ -38,7 +38,8 @@ from my_agent_core.hooks import (  # pyright: ignore[reportMissingImports]
     UserInputHook,
 )
 from my_agent_core.loop import CancellationToken, run_agent_loop
-from my_agent_core.memory import MemoryStore, make_memory_tool
+from my_agent_core.memory import MemoryStore, make_memory_tool, make_memory_read_tool
+from my_agent_core.memory_distillation import MemoryDistiller, SOURCE_TEXT, input_text, is_trivial_memory_query
 from my_agent_core.message_queue import MessageQueue, QueuedMessage
 from my_agent_core.plugins import PluginManager
 from my_agent_core.registry import ToolRegistry
@@ -113,6 +114,8 @@ class Agent:
         plugin_dirs: Sequence[str | Path] | None = None,
         memory_dir: str | Path | None | Literal[False] = None,
         memory_autodistill: bool = False,
+        memory_idle_seconds: float = 30,
+        memory_distill_timeout: float = 15,
         task_store: TaskStore | Path | str | None | Literal[False] = None,
         steering_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
         followup_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
@@ -166,6 +169,7 @@ class Agent:
         # 会话结束时的记忆蒸馏（sleep-time）：默认关闭，打开后每轮结束抽取稳定事实
         self.memory_autodistill = bool(memory_autodistill)
         self._distill_cursor = 0
+        self._memory_distiller = MemoryDistiller(self, idle_seconds=memory_idle_seconds, timeout=memory_distill_timeout)
 
         self.task_store = self._init_task_store(task_store)  # 任务看板仓库装配
         self.retry_policy = retry_policy or AutoRetryPolicy()  # 大模型自动重试策略
@@ -230,6 +234,9 @@ class Agent:
             if self.registry.get("memory") is not None:
                 raise ValueError("Tool name 'memory' conflicts with the built-in memory tool")
             self.registry.register(make_memory_tool(self.memory_store))
+            if self.registry.get("memory_read") is not None:
+                raise ValueError("Tool name 'memory_read' conflicts with the built-in memory reader")
+            self.registry.register(make_memory_read_tool(self.memory_store))
         if self.task_store:
             todo_tool = make_todo_tool(self.task_store)
             if self.registry.get(todo_tool.name) is not None:
@@ -267,6 +274,8 @@ class Agent:
             keep_recent_tokens=keep_recent_tokens,
             results_dir=self._ctx_bridge.results_dir(),
             artifact_store=self.artifact_store,
+            before_compact=self._memory_distiller.precompress if self.memory_autodistill else None,
+            before_compact_timeout=self._memory_distiller.timeout,
             **({} if context_budget is None else {"budget": context_budget}),
         )
         cache = self._ctx_bridge.restore_cache(self._ctx)
@@ -340,6 +349,7 @@ class Agent:
 
     def abort(self) -> None:
         """中止当前运行中的任务（取消流式输出，丢弃未完成半截文本并清空干预队列）。"""
+        self._memory_distiller.cancel()
         self._aborted = True
         if self._current_signal is not None:
             self._current_signal.cancel()
@@ -385,12 +395,17 @@ class Agent:
         self._aborted = False
         self._current_signal = CancellationToken()
 
+        await self._memory_distiller.stop()
+        if self._memory_distiller.closed:
+            raise RuntimeError("Agent is closed")
         if not self._extensions_loaded:
             await self.extension_manager.load()
             self._extensions_loaded = True
 
         # ── Hook 1: UserInputHook 拦截与改写（在进入 Session 和消息历史之前触发）
-        prompt = Message(role="user", content=user_input)
+        prompt = Message(role="user", content=user_input, metadata=(
+            {SOURCE_TEXT: input_text(user_input)} if self.memory_autodistill and self.memory_store is not None else None
+        ))
         # 混合输入逐个改写文字块，保留图片位置；纯图片仍触发一次空文字 Hook。
         text_parts: list[TextContent] = (
             [{"type": "text", "text": prompt.content}]
@@ -430,7 +445,7 @@ class Agent:
                 memory_query = " ".join(
                     str(part.get("text", "")) for part in prompt.content if isinstance(part, dict)
                 )
-            retrieved_memory = self.memory_store.retrieve(memory_query)
+            retrieved_memory = None if is_trivial_memory_query(memory_query) else self.memory_store.retrieve(memory_query)
             if retrieved_memory:
                 if isinstance(prompt.content, str):
                     prompt.content = f"{retrieved_memory}\n\n{prompt.content}"
@@ -530,6 +545,9 @@ class Agent:
             elif isinstance(event, ContextCompacted):
                 self._persist_compaction()
 
+            if isinstance(event, AgentEnd) and event.stop_reason == "end_turn":
+                self._memory_distiller.schedule()
+
             # 分发到订阅者
             await self._notify(event)
 
@@ -548,48 +566,15 @@ class Agent:
                     raise RuntimeError(event.final_text or "Error during model stream")
                 final_text = event.final_text
 
-        if self.memory_autodistill and self.memory_store is not None:
-            await self._maybe_distill_memory()
         return final_text
 
-    async def _maybe_distill_memory(self) -> None:
-        """会话边界蒸馏：把最近对话里的稳定事实写进长期记忆。
+    async def wait_memory_idle(self) -> None:
+        """Explicitly drain optional memory work (tests/hosts); responses do not await it."""
+        await self._memory_distiller.wait()
 
-        失败一律静默——记忆是增强，不能因为抽取失败让主流程报错。
-        """
-        store = self.memory_store
-        if store is None:
-            return
-        transcript = [m for m in self.messages if m.role in ("user", "assistant")]
-        new_messages = len(transcript) - self._distill_cursor
-        if new_messages < 4:
-            return
-        self._distill_cursor = len(transcript)
-
-        recent = transcript[-12:]
-        lines = [f"{m.role}: {str(m.content)[:600]}" for m in recent]
-        prompt = (
-            "Extract durable facts about the user from this conversation.\n"
-            "Return ONLY a JSON array, each item {\"key\": \"...\", \"value\": \"...\"}.\n"
-            "Rules: key is short snake_case; value is a short concrete string; "
-            "only stable preferences, constraints, or facts; skip anything uncertain; max 5 items.\n\n"
-            + "\n".join(lines)
-        )
-        try:
-            response = await self.llm.achat(
-                [Message(role="user", content=prompt)], tools=None, model=self.model
-            )
-            payload = str(getattr(response, "content", "") or "")
-            items = _parse_distilled_facts(payload)
-        except Exception:
-            _LOG.debug("memory distillation failed (extract)", exc_info=True)
-            return
-        for item in items:
-            try:
-                store.remember(item["key"], item["value"], subject="user", source="distill")
-            except Exception:
-                _LOG.debug("memory distillation failed (store %s)", item.get("key"), exc_info=True)
-                continue
+    async def aclose(self) -> None:
+        """Cancel and reap this Agent's in-process memory tasks."""
+        await self._memory_distiller.close()
 
     async def invoke_skill(self, name: str, instructions: str = "") -> str | None:
         """显式调用：skill_manager.format_invocation 包装（未知名 ValueError）→
@@ -598,6 +583,7 @@ class Agent:
 
     def reset(self) -> None:
         """清空对话（保留 system）。session 树清空 + 重载 memory 快照并重拼 system，清空干预队列。"""
+        self._memory_distiller.reset()
         self.message_queue.clear()
         self.session.reset()
         if self.memory_store:

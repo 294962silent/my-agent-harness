@@ -8,7 +8,10 @@
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import hashlib
+import inspect
 import json
 import re
 from pathlib import Path
@@ -307,6 +310,8 @@ class ContextManager:
         keep_recent_tokens: int | None = None,
         results_dir: Path | None = None,
         artifact_store: Any | None = None,
+        before_compact: Any | None = None,
+        before_compact_timeout: float = 15,
     ):
         self.llm = llm
         self.keep_recent_tokens = (
@@ -314,6 +319,8 @@ class ContextManager:
         )
         self.results_dir = Path(results_dir) if results_dir else None
         self.artifact_store = artifact_store
+        self.before_compact = before_compact
+        self.before_compact_timeout = before_compact_timeout
         self._canonical_messages: list[Message] | None = None
         self.set_budget(budget)
         self._summary: str | None = None
@@ -619,6 +626,15 @@ class ContextManager:
         system_msg = [messages[0]] if messages and messages[0].role == "system" else []
         summarized = messages[len(system_msg) : cut]  # 摘要输入不含 system（persona 保持原样）
         retained = messages[cut:]
+        canonical_covered = [m for m in (self._canonical_messages or messages)[:cut] if m.role != "system"]
+        if self.before_compact is not None:
+            # Optional best-effort enhancement, not a fail-closed durability gate.
+            # Both automatic and manual compaction pass the exact canonical prefix.
+            identity = {"covered_message_keys": tuple(_message_fingerprint(m) for m in canonical_covered)}
+            with contextlib.suppress(Exception):
+                result = self.before_compact(tuple(m.model_copy(deep=True) for m in canonical_covered), identity)
+                if inspect.isawaitable(result):
+                    await asyncio.wait_for(result, timeout=self.before_compact_timeout)
         try:
             summary, usage, model = await self._call_summarizer(summarized, instructions=instructions)
         except Exception:
@@ -633,7 +649,6 @@ class ContextManager:
         self._covered_count = cut
         self._retained_tail = [m.model_dump() for m in retained]
         self._end_key = _message_key(messages[cut - 1]) if cut > 0 else None
-        canonical_covered = [m for m in (self._canonical_messages or messages)[:cut] if m.role != "system"]
         # Fresh in-memory summaries need the same coverage validation as restored
         # Session caches. A matching tail alone cannot authenticate the prefix.
         self._cache_identity = {
@@ -762,7 +777,7 @@ def _chars_of(messages: list[Message]) -> int:
     """计算消息列表的等效字符数。对纯文本保持原生序列化规模，对图片排除 base64 并赋予合理等效权重。"""
     base_chars = len(
         json.dumps(
-            [m.model_dump(exclude={"content": {"__all__": {"data"}}}) for m in messages],
+            [m.model_dump(exclude={"content": {"__all__": {"data"}}, "metadata": {"memory_source_text"}}) for m in messages],
             ensure_ascii=False,
             default=str,
         )

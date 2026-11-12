@@ -12,20 +12,63 @@
 from __future__ import annotations
 
 import re
+import hashlib
+import json
+import os
+import tempfile
+from copy import deepcopy
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Any
 
+from my_agent_core.memory_safety import redact_memory_text, redact_memory_value
+
 _TOKEN_RE = re.compile(r"[a-zA-Z0-9]+|[\u4e00-\u9fff]")
 _KEY_SAFE_RE = re.compile(r"[^a-z0-9_\-]+")
 
 _STOPWORDS = frozenset(
     {
-        "a", "an", "the", "is", "are", "was", "were", "to", "of", "and", "or", "in", "on", "for",
-        "with", "at", "by", "it", "this", "that", "i", "you", "my", "me", "we", "do", "does", "did",
-        "what", "when", "which", "who", "how", "many", "much", "please", "can", "could", "would",
+        "a",
+        "an",
+        "the",
+        "is",
+        "are",
+        "was",
+        "were",
+        "to",
+        "of",
+        "and",
+        "or",
+        "in",
+        "on",
+        "for",
+        "with",
+        "at",
+        "by",
+        "it",
+        "this",
+        "that",
+        "i",
+        "you",
+        "my",
+        "me",
+        "we",
+        "do",
+        "does",
+        "did",
+        "what",
+        "when",
+        "which",
+        "who",
+        "how",
+        "many",
+        "much",
+        "please",
+        "can",
+        "could",
+        "would",
     }
 )
 
@@ -99,7 +142,7 @@ class Fact:
         return f"- [{span}] {self.key}: {self.value}"
 
     def text(self) -> str:
-        return f"{self.subject} {self.key} {self.value}"
+        return f"subject={json.dumps(self.subject, ensure_ascii=False)} key={json.dumps(self.key, ensure_ascii=False)} value={self.value}"
 
 
 class Consolidator:
@@ -116,7 +159,7 @@ class Consolidator:
                 old.active
                 and old.subject == fact.subject
                 and old.key == fact.key
-                and old.value.strip().lower() != fact.value.strip().lower()
+                and old.value != fact.value
             ):
                 cutoff = fact.valid_from or _today()
                 old.valid_to = cutoff
@@ -225,10 +268,10 @@ class MemoryIndex:
     def _rebuild(self) -> None:
         self._docs: list[tuple[str, str, float]] = []  # (kind, text, importance)
         for fact in self.consolidator.active():
-            self._docs.append(("fact", fact.text(), fact.importance))
+            self._docs.append(("fact", sanitized_fact(fact).text(), fact.importance))
         for target, items in self.entries.items():
             for item in items:
-                self._docs.append((f"entry:{target}", item, 0.5))
+                self._docs.append((f"entry:{target}", redact_memory_text(item), 0.5))
         self._bm25 = BM25([tokenize(text) for _, text, _ in self._docs])
         self._fts = FtsIndex(self._docs)
 
@@ -280,6 +323,10 @@ class MemoryIndex:
             prefix = "- " if kind == "fact" else f"- ({kind.split(':')[-1]}) "
             line = prefix + text.strip().replace("\n", " ")
             if used + len(line) + 1 > budget_chars:
+                if not lines and budget_chars > 0:
+                    suffix = " [truncated; use memory_read]" if kind == "fact" else " [truncated]"
+                    room = max(0, budget_chars - len(suffix) - 1)
+                    lines.append((line[:room] + suffix)[:budget_chars])
                 break
             lines.append(line)
             used += len(line) + 1
@@ -293,12 +340,17 @@ class MemoryIndex:
 
 
 def _yaml_scalar(value: Any) -> str:
-    text = "" if value is None else str(value)
-    return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    return json.dumps("" if value is None else str(value), ensure_ascii=False)
 
 
 def _parse_scalar(raw: str) -> str:
     text = raw.strip()
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, str):
+            return parsed
+    except (ValueError, TypeError):
+        pass
     if len(text) >= 2 and text[0] == text[-1] == '"':
         return text[1:-1].replace('\\"', '"').replace("\\\\", "\\")
     return text
@@ -322,6 +374,9 @@ def fact_to_markdown(fact: Fact) -> str:
             lines.append(f"  - value: {_yaml_scalar(item.get('value'))}")
             lines.append(f"    valid_from: {_yaml_scalar(item.get('valid_from'))}")
             lines.append(f"    valid_to: {_yaml_scalar(item.get('valid_to'))}")
+            lines.append(
+                f"    source: {_yaml_scalar(item.get('source')) if item.get('source') is not None else 'null'}"
+            )
     lines.append("---")
     lines.append("")
     lines.append(f"# {fact.key}")
@@ -334,7 +389,7 @@ def markdown_to_fact(text: str) -> Fact | None:
     """解析 frontmatter；格式不对返回 None（不抛异常，避免一条坏文件拖垮记忆）。"""
     if not text.startswith("---"):
         return None
-    parts = text.split("---", 2)
+    parts = re.split(r"(?m)^---[ \t]*$", text, maxsplit=2)
     if len(parts) < 3:
         return None
     header = parts[1]
@@ -350,11 +405,11 @@ def markdown_to_fact(text: str) -> Fact | None:
             current = {}
             history.append(current)
             key, _, val = stripped[2:].partition(":")
-            current[key.strip()] = _parse_scalar(val)
+            current[key.strip()] = None if val.strip() == "null" else _parse_scalar(val)
             continue
         if line.startswith("    ") and current is not None and ":" in line:
             key, _, val = stripped.partition(":")
-            current[key.strip()] = _parse_scalar(val)
+            current[key.strip()] = None if val.strip() == "null" else _parse_scalar(val)
             continue
         if ":" in line:
             key, _, val = line.partition(":")
@@ -379,33 +434,80 @@ def load_facts_from_dir(root: Path) -> list[Fact]:
     """从 `facts/<subject>/<key>.md` 读取全部事实（一条坏文件不影响其余）。"""
     if not root.exists():
         return []
-    facts: list[Fact] = []
+    selected: dict[tuple[str, str], tuple[bool, Fact]] = {}
     for path in sorted(root.rglob("*.md")):
         try:
             fact = markdown_to_fact(path.read_text(encoding="utf-8"))
         except OSError:
             continue
         if fact is not None:
-            facts.append(fact)
-    return facts
+            identity = (fact.subject, fact.key)
+            canonical = path == fact_path(root, sanitized_fact(fact))
+            previous = selected.get(identity)
+            if previous is None or canonical or (not previous[0] and fact.valid_from > previous[1].valid_from):
+                selected[identity] = (canonical, fact)
+    return [fact for _, fact in selected.values()]
+
+
+def sanitized_fact(fact: Fact) -> Fact:
+    """Copy and redact every string before persistence or exposure."""
+
+    def clean(value):
+        if isinstance(value, str):
+            return redact_memory_text(value)
+        if isinstance(value, dict):
+            return {redact_memory_text(str(k)): clean(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [clean(v) for v in value]
+        return value
+
+    data = clean(deepcopy(fact.as_dict()))
+    data["value"] = redact_memory_value(fact.key, data["value"])
+    for item in data["history"]:
+        if "value" in item:
+            item["value"] = redact_memory_value(fact.key, str(item["value"]))
+    return Fact.from_dict(data)
+
+
+def _identity_slug(text: str) -> str:
+    slug = slugify_key(text)
+    if slug != text:
+        slug += "-" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+    return slug
 
 
 def fact_path(root: Path, fact: Fact) -> Path:
-    return root / slugify_key(fact.subject) / f"{slugify_key(fact.key)}.md"
+    return root / _identity_slug(fact.subject) / f"{_identity_slug(fact.key)}.md"
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix="." + path.name + ".", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+        raise
 
 
 def save_fact(root: Path, fact: Fact) -> Path:
-    """写单条事实（幂等：内容相同则不写，避免污染 mtime / git diff）。"""
+    """Atomically persist one identity; never overwrite another slug collision."""
+    fact = sanitized_fact(fact)
     path = fact_path(root, fact)
     text = fact_to_markdown(fact)
     if path.exists():
-        try:
-            if path.read_text(encoding="utf-8") == text:
-                return path
-        except OSError:
-            pass
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+        existing = path.read_text(encoding="utf-8")
+        old = markdown_to_fact(existing)
+        if old is None or (old.subject, old.key) != (fact.subject, fact.key):
+            raise FileExistsError("memory fact path belongs to a different identity")
+        if existing == text:
+            return path
+    atomic_write_text(path, text)
     return path
 
 

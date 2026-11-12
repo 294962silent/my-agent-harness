@@ -256,8 +256,14 @@ class CodingAgent:
         except Exception as exc:
             logger.warning("加载工作区 .mcp.json 失败: %s", exc)
 
+    async def aclose(self) -> None:
+        """Close optional memory work and MCP resources."""
+        await self.agent.aclose()
+        await self.close_mcp()
+
     async def close_mcp(self) -> None:
         """异步关闭并回收已挂载的 MCP 连接与子进程资源。"""
+        await self.agent._memory_distiller.stop()
         if self._mcp_manager is not None:
             await self._mcp_manager.close_all()
             self._mcp_manager = None
@@ -282,7 +288,7 @@ class CodingAgent:
         exc_tb: Any,
     ) -> None:
         """异步上下文管理器出口：优雅回收 MCP 资源。"""
-        await self.close_mcp()
+        await self.aclose()
 
     async def compact(self, instructions: str | None = None):
         """手动触发智能上下文压缩。"""
@@ -337,4 +343,5 @@ class CodingAgent:
                 self.agent._current_signal.cancel()
             self.agent.message_queue.clear()
             if self._loop is not None and self._loop.is_running():
+                self._loop.call_soon_threadsafe(self.agent._memory_distiller.cancel)
                 self._loop.call_soon_threadsafe(lambda: asyncio.create_task(self.agent.background_runner.cancel_all()))

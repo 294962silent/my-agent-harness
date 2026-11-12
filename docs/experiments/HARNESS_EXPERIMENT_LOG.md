@@ -5,12 +5,12 @@
 ## 1. 实验范围与当前状态
 
 - 实验开始：2026-11-11。
-- 最近复核：2026-11-11（北京时间；缓存实验历史见 E-CACHE，本轮取消对照、切换 Sol 并收尾代码见 E-CODE-SOL）。
+- 最近复核：2026-11-12（北京时间；上下文交付见 E-GIT-CONTEXT，长期记忆改造见后续批次；缓存性能实验保持取消）。
 - 项目基线：`a04e940`。
-- 工作分支：`codex/scheduler-reliability`。
+- 本地工作分支：`codex/scheduler-reliability`；独立 GitHub 交付分支：`codex/context-memory-reliability`。
 - 目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
 - 事件、Hook、Steering / Follow-up 和双层 Loop 在基线已经存在。本批补强它们的运行边界，不把已有能力重新包装成新增功能。
-- 当前交付状态：**开发与集成验证中，尚未提交阶段提交，尚未创建 PR**。下面的“已验证”指本地明确测试通过，不等于全部功能已经交付。
+- 当前交付状态：**上下文增强已独立提交并推送 `7531dadd`；记忆改造已完成本地验收并随本节交付，调度未完成项仍留在本地工作区**。下面的“已验证”指本地明确测试通过，不等于全部功能已经交付；GitHub CI 以实际状态为准。
 - L20 工作区副本：已将 E10 时的工作区快照传至 `/data/llma/my-agent` 并完成逐文件校验；后续本地变更不自动同步。未安装服务器依赖，未据此宣称服务已启动或服务器测试通过。
 - 本批范围：进程内单执行器、唤醒与归属、运行期输入身份和撤回、轮次 / 时长预算。Redis、多进程恢复、模型请求 redirect、任意同步代码强制抢占均不在本批。
 
@@ -469,3 +469,51 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 所有本批产品源码与相关新增 / 修改测试执行 Ruff，结果 **All checks passed**；`git diff --check` 通过。已增加 README 的新工具与行为说明。
 
 参考机制仍来自既有核验：DSH 的完整动态上下文快照与请求投影、Pi / OpenCode 的摘要来源和恢复边界、Hermes / oh-my-pi 的头尾预览与原文引用。本轮实现为本项目 Python 代码，不依赖 DSH 运行时；开发执行助手已切换为 Sol。没有重新宣称上游具备本项目自定的权限、大小限制或默认值。
+
+
+### E-GIT-CONTEXT：2026-11-12 / 分离上下文交付与未完成的调度工作
+
+- 用户授权：评价长期记忆建议、自主选择实现并及时提交 GitHub。交付记忆改动前，先整理此前已验收但未提交的上下文依赖。
+- 改前状态：本地 `codex/scheduler-reliability` 包含调度中间实现、上下文增强及用户文档移动 / 删除；整文件暂存 Agent 会混入未完成调度代码。
+- 交付方法：保留本轮改造前源码副本；以 `a04e940` 为基底，只投影完整上下文 / 产物 / 请求诊断增量与相应测试。Agent 使用冻结版到增强版的差量，排除 `_prompt_active`、abort 清理等调度专用片段。其余调度、用户文档重排、取消的实验脚本 / 数据 / 源码归档未进入提交。
+- 实际范围：24 个明确路径，含 14 个产品源码文件、8 个测试文件、README 产品说明和本实验记录。没有使用 `git add .`；临时 index 与独立交付目录不改变当前 index 或工作区。
+- 验证：确认 Agent、ContextManager、CodingAgent 的实际导入路径来自独立交付树；上轮集成批次排除调度专属 `test_agent_ownership.py` 后 **269 passed, 1 deselected in 10.57s**。唯一 deselect 为已在冻结基线复现的本机 cmd / Git Bash pipefail 环境差异。主代理在该树执行 `python -m ruff check src tests` 通过；独立 index 的 `git diff --cached --check` 通过。
+- GitHub：提交 [`7531dadd64aa3f4e5a88e0a382eaafc8b505e4f0`](https://github.com/294962silent/my-agent-harness/commit/7531dadd64aa3f4e5a88e0a382eaafc8b505e4f0)，推送到自己的 `origin/codex/context-memory-reliability`。未推 upstream、未合并、未覆盖当前脏工作区。功能分支 push 本身不触发当前 CI，尚不能宣称 CI 通过。
+- 与前一版本的区别：E-CODE-SOL 的“未提交”是历史时点；本节把已完成源码单独交付，不把该提交当作调度账本、预算、跨会话后台服务或缓存性能实验的完成证据。
+
+
+### E-MEMORY-01：2026-11-12 / 长期记忆脱敏、回读删除与空闲抽取
+
+- 用户要求：评价学习文档 04A 第 11 节的六项建议，由主代理决定修改范围，完成后提交 GitHub；缓存性能实验继续取消。
+- 取舍：六项采用小接口实现。优先修补存储与检索，再接可选抽取；不引入五后端、provider 插件、远程准入、lease/heartbeat 或持久跨会话 worker。设计见 [执行计划](../handoffs/2026-11-12-memory-reliability-plan.md)，使用方式见 [长期记忆说明](../memory.md)。
+- 分工：Sol / medium 两名执行助手分别负责 MemoryStore 与 Agent/Context 生命周期，第三名助手独立复核；主代理保留设计、集成、交付树验证与提交责任。未恢复 DS/DSH。
+
+#### 修改前后与涉及文件
+
+1. **脱敏**：新增 `src/my_agent_core/memory_safety.py`，由 `memory.py`、`memory_index.py` 和抽取模块复用。原来写入、回执、检索与抽取请求无统一处理；现在落盘前、抽取外发前、读取和回执出口处理常见 provider token、Bearer、私钥块与命名凭据。结构化敏感 key 的短 value 也受保护，history 同样处理。收紧规则以保留 `max_tokens`、`token_budget`、`context_token_budget`、`secret_scanning_enabled` 等普通配置，避免仅凭子串误删语义。
+2. **全文入口**：`memory.py` 增加 `read_full(key, subject)` 与独立只读 `memory_read` 工具，Agent 注册，CodingAgent 权限将其归为只读。原来只能看到预算内检索行；现在可按精确身份获得完整 JSON（含 value、有效时间、source 与 history）。超长首条有预览和截断提示，不再直接消失；需要修改前可先核对全文。参数不是任意文件路径。
+3. **删除与写入可靠性**：扩展 `memory` 的 `delete` action，移除精确事实和替换历史，立即更新索引，持久删除标记阻止旧 JSONL 迁移复活，允许后续显式重新 remember。中文或规范化碰撞使用稳定 hash，兼容旧 untitled 文件。相同值 NOOP，不同值保留 supersede 历史；写盘失败上报并回滚内存，自由条目变更也刷新索引。冻结 system 快照不随后台写入改写。
+4. **检索门控**：`agent.py` / `memory_distillation.py` 完整匹配 hi、hello、thanks、ok、继续、done??? 等琐碎输入；实际需求如“继续修改端口 8080”继续检索。多模态内容保留。
+5. **空闲蒸馏**：新增 `memory_distillation.py`，替代 run 末尾同步模型调用；run 与 stream 的正常完成都只安排任务，不等待抽取才返回。`memory_autodistill=False` 默认保持；显式启用时 `memory_idle_seconds=30`、`memory_distill_timeout=15`，均为秒、Python 参数。任务有句柄、超时、异常回收；新输入 / abort / reset / close 使旧任务取消，落盘前核验 Session 对象、ID、路径、当前节点与 generation。`wait_memory_idle()` 允许宿主等待；Agent.aclose、CodingAgent.aclose / async with / close_mcp 及同步线程中止路径接通清理。
+6. **压缩前接缝**：`context.py` 的自动 / 手动共同入口接受可选回调，传入 canonical 待覆盖原消息副本与覆盖身份。启用自动蒸馏时接入同一事实抽取器；失败或超时为 best-effort，允许继续摘要；CancelledError 传播。不会把请求投影 / 产物预览当原文。它不同于 Hermes 的可选 fail-closed 检查点，不保证压缩前必定保存所有事实。
+
+抽取只使用带宿主来源标记的真实原始 user 文字（检索注入之前），要求每条候选有原文 evidence；不把 assistant 自述、工具结果、运行态、摘要或旧未标注历史自动提升为事实。只选择有持续价值的明确偏好 / 约束，使用有界首尾采样（最多 24 条、每条最多 1200 字符、总预算 12000 字符，条数较多时平分预算）；这不是全历史无损抽取。成功去重有界；失败、非法结果或非空但无有效 evidence 的结果不推进成功游标，合法空数组可记录本次扫描成功。
+
+#### 验证与更正
+
+- 先验证缺口：存储 6 项新增回归均失败；生命周期 / 压缩接口首轮 5 项因新参数 / 钩子缺失而失败；再实现对应行为。旧同步蒸馏断言改为“响应先返回，再显式 drain，严格检查事实与 evidence”，并在 finally 关闭任务。
+- 开发中更正：脱敏最初会误伤普通 token 配置，已补负例并收紧；首次抽取对非空但无有效 evidence 的响应仍记成功，已修正并加 3 项正 / 负例。无效响应不会妨碍后续重试。
+- 存储分批验收 64 项通过；独立复核 memory 相关 70 项通过。实现者 17 文件集成批次 265 项通过；最终独立交付树同批 **265 passed in 5.38s**。这些批次重叠，不累加为独立测试总数。
+- 主代理最终验收目录为独立交付树，实际确认 Agent、MemoryDistiller、CodingAgent 导入来自该树。该树移除了调度专属 wrapper，因此把记忆 start stop / closed 检查移到基线 prompt_stream，保留所有正常完成、abort、reset、close 与 precompress 入口；未带入调度半成品。
+- 主代理实际命令：`python -m pytest tests/core tests/coding tests/llm -q -o addopts= --import-mode=importlib -k 'not test_bash_pipefail_propagates_error'`，**1029 passed, 1 deselected in 52.18s**。排除项仍为 E-CODE-SOL 已在冻结基线复现的本机 cmd / Git Bash 差异，不是本轮新回归。
+- `python -m ruff check src tests` 通过；`npm ci`、`npm run build` 通过；`npm test` 为 **96 passed、2 skipped、0 failed**。`uv build --wheel --out-dir dist` 成功，实际检查 wheel 的 175 项内容含 TUI 入口及新 memory_distillation / memory_safety 模块。
+- 全程没有真实模型、KV cache、LongMemEval、SWE-bench 或 GPU 测试；本地实际 Agent/Context/MemoryStore 装配经假 LLM 验证，不等同生产模型质量和费用验证。未同步本批源码到 L20。
+
+#### 参考、收益与限制
+
+- oh-my-pi `fec500b7a891`：借鉴写入脱敏、空闲处理与全文回读；Hermes `5df966a97a2d`：借鉴琐碎输入闸门与 pre-compress 接缝。依据是用户提供的固定版本关键文件核验资料，保留“没有逐行全库通读”的边界；不从文件树筛选推断其他项目绝无相关能力。
+- Mem0 仅借鉴论文层面的 DELETE 操作概念，未核验其源码，不宣称移植其实现。30 秒空闲 / 15 秒超时是本项目选择，不是照抄 oh-my-pi 的 12 小时 / 30 天 / 64 会话启动管线。
+- 收益：错误事实可删除、长事实可核对、写盘失败可见；减少琐碎输入检索与响应尾部同步抽取等待；使压缩前保留事实有明确接缝。代价：显式启用抽取增加模型调用，压缩前仍可能增加等待；新增来源元数据、任务清理和兼容路径；正则存在误报 / 漏报，不给提升百分比。
+- 历史原文件不批量重写；读出脱敏不代表原盘 / JSONL 备份已清洗或安全擦除。没有跨进程写锁或多实例自动同步；memory_dir 决定记忆作用域，不自动隔离项目。旧 legacy 迁移中途失败后可能部分可见的既有问题未在本批扩展修复。
+- 进程退出可能丢弃尚未执行的 idle 任务；旧未标注 user 历史不会自动抽取；有界采样可能漏掉中段事实。best-effort 抽取失败仍可压缩，不宣称 exactly-once、持久恢复、全事实保真或强制抢占。
+- 交付：记忆代码、对应回归、说明与本节构成后续独立提交，推送自己的 `origin/codex/context-memory-reliability`；此前上下文提交为 `7531dadd`。原本未完成调度与用户文档移动 / 删除保留在本地，不纳入此次提交。GitHub PR / CI 状态以实际创建和检查结果为准，不在提交前预填成功。
