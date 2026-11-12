@@ -581,3 +581,13 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 - 最终暂存检查补充：官方原始stdout包含终端回车和尾随空格，首次staged diff check因此失败；新增 `.gitattributes` 对实验结果目录禁用autocrlf文本转换，仅对两份SWE测试stdout和Terminal原始stdout关闭whitespace检查。保留原始字节，不删除报错行；重新核对index blob与本地证据及staged diff，结果另以实际命令记录。其他源码与文档检查保持开启。
 - 暂存复核结果：对38份实验证据执行 `git show :<path>` 与本地原文件字节比较，全部一致；`git diff --cached --check`通过。JSON解析24份、16份入口文档相对链接检查无缺失；已用现有实际模型凭据进行精确匹配扫描，待提交文件中无匹配，不打印或保存凭据。两名助手额外复核104项源码hash、12项WSL原始证据与v1/v2边界，均一致。
+
+
+### E-GIT-REDESIGN：2026-11-12 / 框架重设计与实验材料交付
+
+- 已推送自己仓库的 `origin/codex/interview-harness-redesign`：运行 / 观测源码 [`9509262`](https://github.com/294962silent/my-agent-harness/commit/9509262)，实验框架 / 真实任务入口 / 原始证据 / 面试材料 [`e2181f6`](https://github.com/294962silent/my-agent-harness/commit/e2181f6)。原 checkout 的调度中间实现与用户文档修改保留，没有推 upstream。
+- PR [#2 Unify Agent runtime, model observation and reproducible evaluation](https://github.com/294962silent/my-agent-harness/pull/2)，base 为尚未合并的 #1 分支 `codex/context-memory-reliability`，只展示本批增量。两份 PR 均未自动合并。
+- GitHub 连接器创建 PR 返回403、无集成写权限；使用已能推送自己仓库的本机 Git 授权身份创建。凭据只在进程内存中使用，不输出、不落盘、不改全局认证。
+- `e2181f6` 的 [CI run 43208908713](https://github.com/294962silent/my-agent-harness/actions/runs/43208908713) 过程快照：Ubuntu / Python3.11与3.13均 completed/success，完成依赖、Ruff、TUI构建、pytest、wheel与TUI测试；Windows3.11/3.13当时仍queued，不能预填四组通过。后续文档补交会产生新head，最终状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
+- 收尾清理：确认没有运行中的Docker CLI或容器后，只删除本轮三份已经导入的官方镜像tar下载副本（逐个核绝对父目录与文件大小），共2261497856字节；Docker镜像缓存和原始实验材料保留。未同步L20，未运行GPU，未追加模型请求。
+- 本批已完成架构设计、关键接缝实现、八模块离线证据和SWE单例真实链路验证。尚未完成v2真实模型因果实验、Terminal-Bench模型评测、真实Langfuse上传、Mem0或Dream-RSI集成；这些不构成本次已交付效果。

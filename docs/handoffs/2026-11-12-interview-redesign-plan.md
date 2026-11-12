@@ -48,7 +48,7 @@
 - [x] 逐模块记录问题、替代方案、实际变化、收益 / 代价、证据与追问。
 - [x] 更新开发问题账本：复现 → 原因 → 修复 → 验证 → 未解决边界。
 - [x] 生成从原始数据读取的实验报告；主张区分历史、当次离线、当次真实模型及未验证。
-- [ ] 全量适当回归、Ruff、TUI 和 wheel；明确路径提交 / 推送自己的 origin，更新 PR。
+- [x] 全量适当回归、Ruff、TUI 和 wheel；明确路径提交 / 推送自己的 origin，创建 [PR #2](https://github.com/294962silent/my-agent-harness/pull/2)。跨平台 CI 的过程状态与证据追加到实验日志，最终状态以 PR checks 为准。
 - [x] 真实实验预算获批后执行配对小样本并追加：官方 SWE 单题两次模型 trial；Artifact 未激活，属于 v1 链路 smoke。v2 仅离线回读验证，Terminal-Bench 环境预检失败且没有模型调用。
 
 本地最终证据：Python 1112 passed / 2 skipped / 1 deselected，Ruff、TUI 构建、wheel 检查通过，TUI 96 passed / 2 skipped。GitHub 提交与 CI 以后续实验日志实际记录为准。
