@@ -10,7 +10,7 @@
 - 本地工作分支：`codex/scheduler-reliability`；独立 GitHub 交付分支：`codex/context-memory-reliability`。
 - 目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
 - 事件、Hook、Steering / Follow-up 和双层 Loop 在基线已经存在。本批补强它们的运行边界，不把已有能力重新包装成新增功能。
-- 当前交付状态：**上下文增强已独立提交并推送 `7531dadd`；记忆改造已完成本地验收并随本节交付，调度未完成项仍留在本地工作区**。下面的“已验证”指本地明确测试通过，不等于全部功能已经交付；GitHub CI 以实际状态为准。
+- 当前交付状态：**上下文 `7531dadd`、记忆 `c7cd65e` 已推送，PR #1 的四组跨平台 CI 通过；调度未完成项仍留在本地工作区**。PR 尚未合并，原调度范围不因本批交付而自动完成；最新检查结果见 PR。
 - L20 工作区副本：已将 E10 时的工作区快照传至 `/data/llma/my-agent` 并完成逐文件校验；后续本地变更不自动同步。未安装服务器依赖，未据此宣称服务已启动或服务器测试通过。
 - 本批范围：进程内单执行器、唤醒与归属、运行期输入身份和撤回、轮次 / 时长预算。Redis、多进程恢复、模型请求 redirect、任意同步代码强制抢占均不在本批。
 
@@ -27,7 +27,9 @@
 | 上下文增强：动态快照与请求诊断 | 已接入每次模型请求；仅保留指纹与有界变化记录 | 本轮未评估真实 API 缓存收益 |
 | 上下文增强：分支摘要来源 | 已校验 canonical 前缀、消息身份与指纹，接通切分支 / resume / Session 替换 | 不据此放宽有效 Floor 或声称支持未实现的原生摘要载荷 |
 | 上下文增强：稳定产物与回读 | CodingAgent 已装配稳定引用、头尾预览、受限读取 / 搜索，真实假模型闭环通过 | 受大小 / 搜索扫描上限约束；超限或失败明确报告 |
-| 四个假模型演示、GitHub PR | 尚未完成 | 最终集成、复现实验、分阶段提交、推送和 CI |
+| 长期记忆：脱敏、全文、删除、检索门控 | 本地存储与真实 Agent 装配经假 LLM 回归；跨平台 CI 通过 | 正则漏报 / 误报、旧备份未清洗、无跨进程锁 |
+| 长期记忆：空闲与压缩前抽取 | 默认关闭；启用后有取消、超时、Session/分支身份与 evidence 校验 | 当前进程任务、有界采样、旧未标注历史不自动抽取 |
+| 四个调度演示、GitHub PR | 上下文 / 记忆 PR #1 已创建并通过四组 CI；调度演示未完成 | 调度最终集成、演示及其独立交付 |
 
 ## 2. 为什么改：旧版本边界与本轮中间实现的回归
 
@@ -517,3 +519,14 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 历史原文件不批量重写；读出脱敏不代表原盘 / JSONL 备份已清洗或安全擦除。没有跨进程写锁或多实例自动同步；memory_dir 决定记忆作用域，不自动隔离项目。旧 legacy 迁移中途失败后可能部分可见的既有问题未在本批扩展修复。
 - 进程退出可能丢弃尚未执行的 idle 任务；旧未标注 user 历史不会自动抽取；有界采样可能漏掉中段事实。best-effort 抽取失败仍可压缩，不宣称 exactly-once、持久恢复、全事实保真或强制抢占。
 - 交付：记忆代码、对应回归、说明与本节构成后续独立提交，推送自己的 `origin/codex/context-memory-reliability`；此前上下文提交为 `7531dadd`。原本未完成调度与用户文档移动 / 删除保留在本地，不纳入此次提交。GitHub PR / CI 状态以实际创建和检查结果为准，不在提交前预填成功。
+
+
+### E-GIT-MEMORY：2026-11-12 / 记忆提交与 GitHub PR
+
+- 记忆代码已提交并推送：[`c7cd65e60974a305320ccae79007e417f69b70e6`](https://github.com/294962silent/my-agent-harness/commit/c7cd65e60974a305320ccae79007e417f69b70e6)，父提交为上下文增强 `7531dadd`。只更新交付分支 `codex/context-memory-reliability`，当前本地工作分支与未暂存内容保持原状。
+- PR：[#1 完善长期记忆安全与生命周期，补齐上下文来源与产物回读](https://github.com/294962silent/my-agent-harness/pull/1)，目标为用户自己仓库的 main；未自动合并、未推 upstream。
+- 创建过程：GitHub 连接器返回无创建 PR 权限，本机 gh 登录也未通过验证；使用已经能够推送该仓库的本机 Git 授权身份完成创建。没有打印或保存凭据，也没有更改全局认证配置。
+- 创建后实际观察：CI [run 43135488211](https://github.com/294962silent/my-agent-harness/actions/runs/43135488211) 已启动；Ubuntu / Python 3.11、3.13 完成成功，Windows 两组仍在运行。此处为过程快照，最终结果继续追加。
+
+- 最终复核：上述源码提交的 CI run `43135488211` 四个 job 均为 **completed / success**：Ubuntu-latest / Python 3.11、3.13，Windows-latest / Python 3.11、3.13。每组均完成依赖同步、Ruff、TUI 构建、完整 pytest、wheel 构建 / 入口检查及 TUI 测试。
+- 本批最后的实验记录更新只补交付与 CI 证据，不改变已通过检查的源码。后续检查状态以 PR 实际结果为准。
