@@ -160,3 +160,27 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 发现：运维脚本在WSL执行git rev-parse时，`.git`中Windows绝对路径`C:/...`被当成Linux相对路径，模型启动前失败；消费未增加。
 - 处理：在Windows宿主核完整提交与源码无脏改，Linux核真实包导入路径和冻结输入/源码hash。保留共享Git文件原样，避免破坏Windows工作树。
 - 边界：提交名不能替代实际导入检查，文件hash也不代表服务端模型权重版本。本轮生成版本固定c69ff37，文档和事后分析版本单独标注。
+
+## P21：Mem0 SDK close不等于全部存储客户端已关闭
+
+- 发现：真实固定2.2.1 SDK的Memory.close仅关SQLite，Qdrant本地锁仍在，关闭后同路径重建失败。
+- 修复：适配器只关闭自己拥有的SQLite、向量和HTTP客户端；显式注入默认caller-owned。SDK工作失败时也走finally清理，完成与request_close共锁；工作失败和资源关闭状态分开，避免已清理后永久False阻断会话替换。
+- 验证：生产适配器→MemoryStore→真实本地Qdrant/SQLite，假embedding、LLM拒绝调用、socket拒绝网络；关闭后同路径重建成功。单worker在途超时仍False，不声称杀掉SDK请求、内部重试或做到exactly-once。
+
+## P22：外发集成配置不能被项目文件覆盖
+
+- 发现：新增Mem0/观测配置包含服务地址和凭据环境引用，原项目级合并规则只保护proxy/trust，新块如果直接合并会越过既有特权配置边界。
+- 修复：memory_index/observation加入既有全局专属键，项目整块剥离；普通theme覆盖与受信任Python显式注入保留。示例配置放可信全局目录。
+- 验证：新增4个有/无全局×有效/畸形项目块参数例先红后绿，Settings全13项通过；主代理最终整套也通过。不新增交互审批流程。
+
+## P23：Dream名为OptimalPolicy的模板没有实现
+
+- 发现：固定官方SHA的模板solve仅reset并返回空SimResult，不能根据类名宣称实际策略已运行。
+- 修复：首版只接真实可执行的官方baseline，标记fixed_reference；删除无效beta控制项，不加载任意候选Python文件。输入必须有真实评分树，Session不能编成评分树。
+- 验证：生产CLI→隔离worker→真实固定SDK的合成三节点契约，校验决策/预算/来源/manifest；未启动在线学习、不报告策略收益。
+
+## P24：共享LLM的订阅与清理所有权
+
+- 问题：覆盖llm.observer会破坏原观察者，会话重建若保留旧sink会重复导出或向关闭的client写入。
+- 修复：每调用快照base与订阅，逐观察者隔离异常；runtime只detach/关自身。RPC四种session变更先await旧Agent关闭，未完成就不假装替换成功；直接core与CodingAgent异常/取消路径均保留清理。
+- 验证：定点生命周期/所有权回归及真实Langfuse5.2内存SpanExporter；缺字段不补零，cached输入按total-completion映射。没有真实服务上传回读证据。

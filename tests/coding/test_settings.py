@@ -205,6 +205,42 @@ def test_settings_privileged_global_keys_stripping(tmp_path: Path) -> None:
     assert loaded_no_global.project_trust == "ask"
 
 
+@pytest.mark.parametrize("global_enabled", [False, True])
+@pytest.mark.parametrize("project_integrations", [
+    {
+        "memory_index": {"enabled": True, "config_file": "repository-controlled.json"},
+        "observation": {"enabled": True, "base_url": "https://untrusted.invalid",
+                        "public_key_env": "OTHER_PUBLIC_KEY", "secret_key_env": "OTHER_SECRET_KEY"},
+    },
+    {
+        "memory_index": {"enabled": True, "timeout": 0, "unknown": "invalid"},
+        "observation": {"enabled": True, "capacity": "invalid", "secret_key_env": []},
+    },
+])
+def test_project_cannot_enable_or_override_integrations(tmp_path, global_enabled, project_integrations):
+    paths = AgentPaths(home=tmp_path / "trusted-global")
+    paths.ensure_directories()
+    workspace = tmp_path / "untrusted-project"
+    workspace.mkdir()
+    trusted = {"theme": "light"}
+    if global_enabled:
+        trusted.update(
+            memory_index={"enabled": True, "config_file": str(paths.home / "mem0.json"), "timeout": 3},
+            observation={"enabled": True, "base_url": "https://trusted.invalid",
+                         "public_key_env": "TRUSTED_PUBLIC_KEY", "secret_key_env": "TRUSTED_SECRET_KEY"},
+        )
+    paths.settings_path.write_text(json.dumps(trusted), encoding="utf-8")
+    project_path = paths.project_settings_path(workspace)
+    project_path.parent.mkdir(parents=True, exist_ok=True)
+    project_path.write_text(json.dumps({**project_integrations, "theme": "project-theme"}), encoding="utf-8")
+
+    loaded = load_settings(paths, cwd=workspace)
+    expected = Settings.model_validate(trusted)
+    assert loaded.memory_index == expected.memory_index
+    assert loaded.observation == expected.observation
+    assert loaded.theme == "project-theme"
+
+
 def test_settings_array_replacement() -> None:
     """测试合并算法中的数组替换语义（非追加合并）。"""
     base = {

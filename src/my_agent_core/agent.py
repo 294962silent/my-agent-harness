@@ -117,6 +117,9 @@ class Agent:
         extension_dirs: Sequence[str | Path] | None = None,
         plugin_dirs: Sequence[str | Path] | None = None,
         memory_dir: str | Path | None | Literal[False] = None,
+        memory_index=None,
+        memory_index_owned: bool = False,
+        memory_index_close_timeout: float = 0.1,
         memory_autodistill: bool = False,
         memory_idle_seconds: float = 30,
         memory_distill_timeout: float = 15,
@@ -175,7 +178,13 @@ class Agent:
             subagent_dirs, extra_dirs=self.plugin_manager.get_subagent_dirs()
         )  # 三态同 skill_dirs
 
+        self.memory_index = memory_index
+        self.memory_index_owned = memory_index_owned
+        self.memory_index_close_timeout = memory_index_close_timeout
+        self.memory_index_close_status: bool | None = None
         self.memory_store = self._init_memory_store(memory_dir)  # memory 装配与快照冻结
+        if self.memory_store is not None:
+            self.memory_store.memory_index = memory_index
         # 会话结束时的记忆蒸馏（sleep-time）：默认关闭，打开后每轮结束抽取稳定事实
         self.memory_autodistill = bool(memory_autodistill)
         self._distill_cursor = 0
@@ -552,7 +561,7 @@ class Agent:
                 memory_query = " ".join(
                     str(part.get("text", "")) for part in prompt.content if isinstance(part, dict)
                 )
-            retrieved_memory = None if is_trivial_memory_query(memory_query) else self.memory_store.retrieve(memory_query)
+            retrieved_memory = None if is_trivial_memory_query(memory_query) else await self.memory_store.aretrieve(memory_query)
             if retrieved_memory:
                 if isinstance(prompt.content, str):
                     prompt.content = f"{retrieved_memory}\n\n{prompt.content}"
@@ -686,24 +695,30 @@ class Agent:
 
     async def aclose(self) -> None:
         """Cancel and reap this Agent's in-process memory tasks."""
-        state = self._active_run
-        if state is not None:
-            state.abort()
-            if state.step is None:
-                # The consumer may be paused at a yielded event: no next_event is
-                # running to perform cleanup, so close the suspended inner stream.
-                if state.stream is not None:
-                    await state.stream.aclose()
-                await self._close_interrupted_tool_group(state.partial)
-                state.partial = None
-                self._queue_background_cleanup()
-                self._current_signal = None
-                self._active_run = None
-                state.finished.set()
-            elif state.owner is not asyncio.current_task():
-                await state.finished.wait()
-        await self._drain_cleanup()
-        await self._memory_distiller.close()
+        try:
+            state = self._active_run
+            if state is not None:
+                state.abort()
+                if state.step is None:
+                    # Close a stream whose consumer is paused at a yielded event.
+                    if state.stream is not None:
+                        await state.stream.aclose()
+                    await self._close_interrupted_tool_group(state.partial)
+                    state.partial = None
+                    self._queue_background_cleanup()
+                    self._current_signal = None
+                    self._active_run = None
+                    state.finished.set()
+                elif state.owner is not asyncio.current_task():
+                    await state.finished.wait()
+            await self._drain_cleanup()
+            await self._memory_distiller.close()
+        finally:
+            if self.memory_index is not None and self.memory_index_owned:
+                try:
+                    self.memory_index_close_status = await self.memory_index.aclose(timeout=self.memory_index_close_timeout)
+                except Exception:
+                    self.memory_index_close_status = False
 
     async def invoke_skill(self, name: str, instructions: str = "") -> str | None:
         """显式调用：skill_manager.format_invocation 包装（未知名 ValueError）→

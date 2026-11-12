@@ -23,6 +23,19 @@ dependencies = [
 
 [project.scripts]
 my-pi-agent = "my_coding_agent.cli:main"
+my-agent-dream = "my_coding_agent.dream_rsi_replay:main"
+
+[project.optional-dependencies]
+mem0 = [
+    "mem0ai @ git+https://github.com/mem0ai/mem0.git@f1791daa86d469249c9b002f62644d58a1eb96a0",
+]
+langfuse = ["langfuse==5.2.0"]
+dream-rsi = [
+    "dream-rsi @ git+https://github.com/google-research/dream-rsi.git@8ec35bd2538220517ce1bfca4282db21b8c518db",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [dependency-groups]
 dev = [

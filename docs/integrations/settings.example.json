@@ -1,0 +1,19 @@
+{
+  "memory_index": {
+    "enabled": false,
+    "provider": "mem0",
+    "config_file": "~/.my-agent-harness/mem0.json",
+    "timeout": 2.0,
+    "close_timeout": 0.1
+  },
+  "observation": {
+    "enabled": false,
+    "backend": "langfuse",
+    "public_key_env": "LANGFUSE_PUBLIC_KEY",
+    "secret_key_env": "LANGFUSE_SECRET_KEY",
+    "base_url": null,
+    "capacity": 1024,
+    "network_timeout": 5.0,
+    "close_timeout": 5.0
+  }
+}

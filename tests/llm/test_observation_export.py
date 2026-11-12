@@ -1,7 +1,9 @@
 """Export is bounded, metadata-only and requires no service or credentials."""
 import json
+from dataclasses import replace
 from threading import Event
 
+import pytest
 from my_agent_llm import Config, LLM
 from my_agent_llm.models import Response
 from my_agent_llm.observation import InMemoryObserver, observation_context
@@ -74,7 +76,8 @@ def test_langfuse_v5_fake_client_no_content_or_credentials():
     sink.close()
     start = calls[0][1]
     assert start["as_type"] == "generation" and len(start["trace_context"]["trace_id"]) == 32
-    assert calls[1][1]["usage_details"] == {"prompt_tokens": 7}
+    assert "usage_details" not in calls[1][1]  # prompt may mean uncached input only
+    assert calls[1][1]["metadata"]["provider_usage"] == {"prompt_tokens": 7}
     assert not any("input" in kwargs or "output" in kwargs or "model_parameters" in kwargs for _, kwargs in calls)
 
 
@@ -91,3 +94,38 @@ def test_owned_langfuse_shutdown_runs_despite_flush_failure():
     assert not exporter.is_alive  # thread stopped, but sink cleanup failed
     assert client.shutdown_calls == 1
     assert exporter.close_errors == 2 and exporter.export_errors == 2
+
+
+@pytest.mark.parametrize(
+    ("usage", "expected", "status"),
+    [
+        ({"prompt_tokens": 10, "cache_read_tokens": 100, "completion_tokens": 20, "total_tokens": 130},
+         {"input": 110, "output": 20, "total": 130}, "complete"),
+        ({"prompt_tokens": 10}, {}, "incomplete"),
+        ({"completion_tokens": 20}, {"output": 20}, "incomplete"),
+        ({"total_tokens": 130}, {"total": 130}, "incomplete"),
+        ({"completion_tokens": 20, "total_tokens": 3}, {"output": 20}, "inconsistent"),
+        ({"prompt_tokens": 99, "completion_tokens": 20, "total_tokens": 30}, {"output": 20}, "inconsistent"),
+    ],
+)
+def test_langfuse_usage_maps_total_input_without_double_counting_cached_tokens(usage, expected, status):
+    calls = []
+
+    class Span:
+        def update(self, **kwargs):
+            calls.append(kwargs)
+
+        def end(self):
+            pass
+
+    class Client:
+        def start_observation(self, **kwargs):
+            return Span()
+
+    sink = LangfuseSink(Client())
+    start, end = records()
+    sink(start)
+    sink(replace(end, usage=usage))
+    assert calls[0].get("usage_details", {}) == expected
+    assert calls[0]["metadata"]["provider_usage"] == usage
+    assert calls[0]["metadata"]["usage_mapping_status"] == status

@@ -71,6 +71,25 @@ CallRecord = CallStart | CallEnd
 Observer = Callable[[CallRecord], None]
 
 
+class ObserverSubscription:
+    """An idempotent handle removing only the observer it registered."""
+
+    def __init__(self, remove: Callable[[], None]):
+        self._remove: Callable[[], None] | None = remove
+        self._lock = Lock()
+
+    @property
+    def closed(self) -> bool:
+        with self._lock:
+            return self._remove is None
+
+    def close(self) -> None:
+        with self._lock:
+            remove, self._remove = self._remove, None
+        if remove is not None:
+            remove()
+
+
 class InMemoryObserver:
     """Thread-safe bounded recorder for tests and local evaluation."""
     def __init__(self, capacity: int = 2048):

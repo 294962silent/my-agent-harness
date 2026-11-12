@@ -28,6 +28,18 @@ from my_coding_agent.session_ops import (
 class SessionRpcMixin:
     """提供所有 _handle_session_* RPC 请求的处理能力。"""
 
+    def _integration_options(self):
+        return {
+            "memory_index_config": getattr(self.settings, "memory_index", None),
+            "observation_config": getattr(self.settings, "observation", None),
+        }
+
+    async def _close_agent_for_replacement(self):
+        if self.agent is not None:
+            close = getattr(self.agent, "aclose", None)
+            if close is not None and await close() is False:
+                raise RuntimeError("Previous agent integrations are still closing; replacement deferred")
+
     @require_agent
     def _handle_session_name(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         name = params.get("name", "").strip()
@@ -65,7 +77,7 @@ class SessionRpcMixin:
             },
         )
 
-    def _handle_session_resume(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_session_resume(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         session_id = params.get("session_id") or params.get("id") or params.get("path") or params.get("session_file")
         if not session_id:
             return self.send_response(
@@ -97,12 +109,14 @@ class SessionRpcMixin:
         gate = self.agent.permission_gate if self.agent else (PermissionGate(mode=mode) if mode else None)
         llm = self.agent.llm if self.agent else self.llm
         skill_dirs = get_all_skill_dirs(workspace_path, paths)
+        await self._close_agent_for_replacement()
         self.agent = CodingAgent(
             workspace=workspace_path,
             llm=llm,
             session=new_session,
             permission_gate=gate,
             skill_dirs=skill_dirs,
+            **self._integration_options(),
         )
         if self.debug_mode:
             self._bind_tracer_to_session(workspace_path, new_session.id)
@@ -228,7 +242,7 @@ class SessionRpcMixin:
         )
 
     @require_agent
-    def _handle_session_new(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_session_new(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         self.agent.abort()
         workspace_path = Path(self.agent.workspace).resolve()
         paths = self.paths or AgentPaths()
@@ -242,12 +256,14 @@ class SessionRpcMixin:
         gate = self.agent.permission_gate or (PermissionGate(mode=mode) if mode else None)
         skill_dirs = get_all_skill_dirs(workspace_path, paths)
 
+        await self._close_agent_for_replacement()
         self.agent = CodingAgent(
             workspace=workspace_path,
             llm=self.agent.llm,
             session=new_session,
             permission_gate=gate,
             skill_dirs=skill_dirs,
+            **self._integration_options(),
         )
 
         if self.debug_mode:
@@ -352,7 +368,7 @@ class SessionRpcMixin:
         return self.send_response(req_id, result=res_payload)
 
     @require_agent
-    def _handle_session_fork(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_session_fork(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         entry_id = params.get("entry_id") or params.get("id") or params.get("target_id")
         if not entry_id:
             return self.send_response(
@@ -380,11 +396,13 @@ class SessionRpcMixin:
 
         mode = getattr(self.settings, "default_permission_mode", None)
         gate = self.agent.permission_gate or (PermissionGate(mode=mode) if mode else None)
+        await self._close_agent_for_replacement()
         self.agent = CodingAgent(
             workspace=workspace_path,
             llm=self.agent.llm,
             session=new_session,
             permission_gate=gate,
+            **self._integration_options(),
         )
         if self.debug_mode:
             self._bind_tracer_to_session(workspace_path, new_session.id)
@@ -412,7 +430,7 @@ class SessionRpcMixin:
         )
 
     @require_agent
-    def _handle_session_clone(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_session_clone(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         self.agent.abort()
         workspace_path = Path(self.agent.workspace).resolve()
         paths = self.paths or AgentPaths()
@@ -425,11 +443,13 @@ class SessionRpcMixin:
 
         mode = getattr(self.settings, "default_permission_mode", None)
         gate = self.agent.permission_gate or (PermissionGate(mode=mode) if mode else None)
+        await self._close_agent_for_replacement()
         self.agent = CodingAgent(
             workspace=workspace_path,
             llm=self.agent.llm,
             session=new_session,
             permission_gate=gate,
+            **self._integration_options(),
         )
         if self.debug_mode:
             self._bind_tracer_to_session(workspace_path, new_session.id)

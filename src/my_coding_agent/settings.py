@@ -17,6 +17,8 @@ PRIVILEGED_GLOBAL_KEYS: set[str] = {
     "httpProxy",
     "project_trust",
     "projectTrust",
+    "memory_index",
+    "observation",
 }
 
 
@@ -28,6 +30,30 @@ class CompactionSettings(BaseModel):
     keep_recent_tokens: int = Field(default=20000, alias="keepRecentTokens")
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class MemoryIndexSettings(BaseModel):
+    """Opt-in OSS candidate cache; credentials belong in provider environment."""
+    enabled: bool = False
+    provider: Literal["mem0"] = "mem0"
+    config_file: str | None = None
+    config: dict[str, Any] = Field(default_factory=dict)
+    timeout: float = Field(default=2.0, gt=0, allow_inf_nan=False)
+    close_timeout: float = Field(default=0.1, ge=0, allow_inf_nan=False)
+    model_config = ConfigDict(extra="forbid")
+
+
+class ObservationSettings(BaseModel):
+    """Credential environment names only; never serialize credential values."""
+    enabled: bool = False
+    backend: Literal["langfuse"] = "langfuse"
+    public_key_env: str = "LANGFUSE_PUBLIC_KEY"
+    secret_key_env: str = "LANGFUSE_SECRET_KEY"
+    base_url: str | None = None
+    capacity: int = Field(default=1024, gt=0)
+    network_timeout: float = Field(default=5.0, gt=0, allow_inf_nan=False)
+    close_timeout: float = Field(default=5.0, ge=0, allow_inf_nan=False)
+    model_config = ConfigDict(extra="forbid")
 
 
 class Settings(BaseModel):
@@ -52,6 +78,8 @@ class Settings(BaseModel):
 
     # ── 会话与压缩管线 ──
     compaction: CompactionSettings = Field(default_factory=CompactionSettings)
+    memory_index: MemoryIndexSettings = Field(default_factory=MemoryIndexSettings)
+    observation: ObservationSettings = Field(default_factory=ObservationSettings)
     auto_save_session: bool = Field(default=True, alias="autoSaveSession")
 
     # ── 权限与安全 ──
@@ -109,6 +137,9 @@ def load_settings(paths: AgentPaths | None = None, cwd: Path | str | None = None
     try:
         return Settings.model_validate(merged)
     except Exception:
+        if any(isinstance(merged.get(key), dict) and merged[key].get("enabled")
+               for key in ("memory_index", "observation")):
+            raise ValueError("Invalid enabled optional integration settings") from None
         return Settings()
 
 

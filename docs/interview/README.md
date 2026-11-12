@@ -14,6 +14,7 @@
 - [长期记忆：来源、失效和受控回读](06-长期记忆.md)
 - [工具权限：副作用前的授权](07-工具权限.md)
 - [观测与成本：辅助调用也进入证据链](08-观测与成本.md)
+- [策略回放：Dream-RSI可选适配](09-策略回放.md)（新增研究入口，不计入原八模块实验）。
 
 ## 可核验材料
 
@@ -22,6 +23,7 @@
 - [v2真实SWE小样本](../experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、eligible5题、10次模型trial，on2/5、off1/5；7空补丁，费用$0.503462，11外置/0回读，不作因果提升结论。
 - [历史v1单例](../experiments/results/live-swe-20261112/REPORT.md)：1题2trial，两组通过；当时没有激活产物外置，不能替代v2证据。
 - [开发问题账本](DEVELOPMENT_PROBLEMS.md)与[主张证据边界](CLAIMS.md)。
+- [三项集成使用说明](../integrations/README.md)：Mem0、Langfuse、Dream真实SDK离线契约已验证，真实云端/语义质量/策略效果仍未测。
 - [真实模型预算](../experiments/LIVE_MODEL_BUDGET.md)：用户授权$30；官方开源任务分环境预检、参考解与模型评分，结果独立记录。
 
 ## 面试叙述边界

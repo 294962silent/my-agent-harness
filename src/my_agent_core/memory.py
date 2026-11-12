@@ -44,6 +44,7 @@ class MemoryStore:
         mem_dir: Path | str,
         memory_char_limit: int = MEMORY_CHAR_LIMIT,
         user_char_limit: int = USER_CHAR_LIMIT,
+        memory_index=None,
     ) -> None:
         self.mem_dir = Path(mem_dir)
         self.limits: dict[str, int] = {
@@ -60,6 +61,7 @@ class MemoryStore:
         self.facts_dir = self.mem_dir / "facts"
         self._facts: list[Fact] = []
         self._index: MemoryIndex | None = None
+        self.memory_index = memory_index
 
     def load_from_disk(self) -> None:
         """从磁盘读取 MEMORY.md 和 USER.md，解析并冻结 System Prompt 快照。"""
@@ -374,6 +376,52 @@ class MemoryStore:
         self._facts = [f for f in self._facts if (f.subject, f.key) != (subject, key)]
         self._index = MemoryIndex(self._entries, self._facts)
         return "Deleted memory fact and its history."
+
+    def _semantic_records(self):
+        from my_agent_core.memory_semantic import MemoryRecord
+
+        scope = hashlib.sha256(str(self.mem_dir.resolve()).encode()).hexdigest()
+        deleted = self._deleted()
+        records = {}
+        for fact in self._facts:
+            identity = self._deletion_id(fact.key, fact.subject)
+            if not fact.active or identity in deleted or fact.valid_from > date.today().isoformat():
+                continue
+            text = redact_memory_text(f"{fact.key}: {fact.value}")
+            revision = hashlib.sha256(json.dumps(
+                sanitized_fact(fact).as_dict(), sort_keys=True, ensure_ascii=False,
+            ).encode()).hexdigest()
+            records[identity] = MemoryRecord(scope=scope, identity=identity, revision=revision, text=text)
+        return scope, records
+
+    async def aretrieve(self, query: str, budget_chars: int = 1200) -> str | None:
+        """Resolve optional semantic candidates against current local facts only."""
+        if self.memory_index is None or not query.strip():
+            return self.retrieve(query, budget_chars)
+        try:
+            scope, records = self._semantic_records()
+            candidates = await self.memory_index.search(
+                scope=scope, query=redact_memory_text(query)[:2000], records=list(records.values()),
+            )
+            # Rebuild after awaiting: remember/delete may have run meanwhile.
+            scope, current = self._semantic_records()
+            lines, seen = [], set()
+            for candidate in candidates:
+                identity = candidate.get("identity")
+                record = current.get(identity)
+                if (record is None or identity in seen or candidate.get("scope") != scope
+                        or candidate.get("revision") != record["revision"]):
+                    continue
+                seen.add(identity)
+                lines.append("- " + record["text"].replace("\n", " "))
+                if len(lines) >= 8:
+                    break
+            if lines and budget_chars > 0:
+                body = "\n".join(lines)[:budget_chars]
+                return "<retrieved_memory>\n" + body + "\n</retrieved_memory>"
+        except Exception:
+            pass  # Optional candidate service must not prevent local recall.
+        return self.retrieve(query, budget_chars)
 
     def retrieve(self, query: str, budget_chars: int = 1200) -> str | None:
         """按当前输入检索相关记忆；无命中返回 None。"""

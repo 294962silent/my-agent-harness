@@ -4,10 +4,11 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
+from threading import Lock
 from typing import Any
 
 from .config import Config  # pyright: ignore[reportMissingImports]
-from .observation import CallObservation, Observer
+from .observation import CallObservation, CallRecord, Observer, ObserverSubscription
 from .events import StreamDoneEvent, StreamErrorEvent, StreamEvent  # pyright: ignore[reportMissingImports]
 from .models import (  # pyright: ignore[reportMissingImports]
     Message,
@@ -35,6 +36,44 @@ class LLM:
         self._provider: Provider = provider_cls(config)
         self.config = config
         self.observer = observer
+        self._observer_lock = Lock()
+        self._observer_subscriptions: dict[object, Observer] = {}
+
+    def add_observer(self, observer: Observer) -> ObserverSubscription:
+        """Subscribe without replacing or taking ownership of the base observer.
+
+        Removing a subscription affects future calls. Calls already started retain
+        their snapshot through their terminal record, including stream close.
+        """
+        if not callable(observer):
+            raise TypeError("observer must be callable")
+        token = object()
+        with self._observer_lock:
+            self._observer_subscriptions[token] = observer
+
+        def remove() -> None:
+            with self._observer_lock:
+                self._observer_subscriptions.pop(token, None)
+
+        return ObserverSubscription(remove)
+
+    def _observer_snapshot(self) -> Observer | None:
+        with self._observer_lock:
+            observers = ((self.observer,) if self.observer is not None else ()) + tuple(
+                self._observer_subscriptions.values()
+            )
+        if not observers:
+            return None
+
+        def emit(record: CallRecord) -> None:
+            for observer in observers:
+                try:
+                    observer(record)
+                except BaseException:
+                    # A failed observer must not suppress other subscribers.
+                    pass
+
+        return emit
 
     @property
     def model(self) -> str:
@@ -63,7 +102,7 @@ class LLM:
         """同步对话：完整历史 + 可选工具。"""
         opts = self._resolve_kwargs(kwargs)
         effective_model = model or self.model
-        call = CallObservation(self.observer, provider=self.config.provider, model=effective_model, method="chat")
+        call = CallObservation(self._observer_snapshot(), provider=self.config.provider, model=effective_model, method="chat")
         try:
             with call.scope():
                 response = self._provider.chat(messages, model=effective_model, tools=tools, **opts)
@@ -87,7 +126,7 @@ class LLM:
         """同步流式。"""
         opts = self._resolve_kwargs(kwargs)
         effective_model = model or self.model
-        call = CallObservation(self.observer, provider=self.config.provider, model=effective_model, method="stream")
+        call = CallObservation(self._observer_snapshot(), provider=self.config.provider, model=effective_model, method="stream")
         stream = None
         try:
             with call.scope():
@@ -127,7 +166,7 @@ class LLM:
         """异步对话。"""
         opts = self._resolve_kwargs(kwargs)
         effective_model = model or self.model
-        call = CallObservation(self.observer, provider=self.config.provider, model=effective_model, method="achat")
+        call = CallObservation(self._observer_snapshot(), provider=self.config.provider, model=effective_model, method="achat")
         try:
             with call.scope():
                 response = await self._provider.achat(messages, model=effective_model, tools=tools, **opts)
@@ -151,7 +190,7 @@ class LLM:
         """异步流式。调用方直接 `async for chunk in llm.achat_stream(...)` 迭代，不 await。"""
         opts = self._resolve_kwargs(kwargs)
         effective_model = model or self.model
-        call = CallObservation(self.observer, provider=self.config.provider, model=effective_model, method="achat_stream")
+        call = CallObservation(self._observer_snapshot(), provider=self.config.provider, model=effective_model, method="achat_stream")
         stream = None
         try:
             with call.scope():
@@ -192,7 +231,7 @@ class LLM:
         """异步高阶流式事件流：直接产出 StreamStartEvent/TextDeltaEvent/StreamDoneEvent/StreamErrorEvent。"""
         opts = self._resolve_kwargs(kwargs)
         effective_model = model or self.model
-        call = CallObservation(self.observer, provider=self.config.provider, model=effective_model, method="astream_events")
+        call = CallObservation(self._observer_snapshot(), provider=self.config.provider, model=effective_model, method="astream_events")
         stream = None
         try:
             with call.scope():

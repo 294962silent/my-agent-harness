@@ -25,6 +25,39 @@ from my_coding_agent.prompt import build_default_coding_prompt
 from my_coding_agent.tools import build_coding_tools
 
 logger = logging.getLogger(__name__)
+_integration_rollbacks: set[asyncio.Task] = set()
+
+
+def _rollback_memory_index(index, timeout):
+    request_close = getattr(index, "request_close", None)
+    if request_close is not None:
+        request_close()
+        return
+
+    async def close():
+        try:
+            await index.aclose(timeout=timeout)
+        except Exception:
+            logger.warning("Owned memory index rollback did not complete")
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.run(close())
+    else:
+        task = loop.create_task(close())
+        _integration_rollbacks.add(task)
+        task.add_done_callback(_integration_rollbacks.discard)
+
+
+def create_mem0_index(config, *, timeout):
+    from my_agent_core.memory_mem0 import create_mem0_index as factory
+    return factory(config, timeout=timeout)
+
+
+def create_observation_runtime(**kwargs):
+    from my_agent_llm.observation_runtime import create_observation_runtime as factory
+    return factory(**kwargs)
 
 
 class CodingAgent:
@@ -42,6 +75,10 @@ class CodingAgent:
         extra_tools: list[Tool] | tuple[Tool, ...] = (),
         permission_gate: PermissionGate | None = None,
         auto_load_mcp: bool = True,
+        memory_index=None,
+        memory_index_owned: bool = False,
+        memory_index_config=None,
+        observation_config=None,
         **kw,
     ):
         self.workspace = Path(workspace).resolve()
@@ -52,6 +89,14 @@ class CodingAgent:
         self._mcp_loaded: bool = False
         self._loop: asyncio.AbstractEventLoop | None = None
         self.thinking_level = "off"
+        self._observation_runtime = None
+        self.close_status: dict[str, bool | None] = {"memory_index": None, "observation": None}
+        from my_coding_agent.settings import MemoryIndexSettings, ObservationSettings
+        mem_config = (memory_index_config if isinstance(memory_index_config, MemoryIndexSettings)
+                      else MemoryIndexSettings.model_validate(memory_index_config or {}))
+        obs_config = (observation_config if isinstance(observation_config, ObservationSettings)
+                      else ObservationSettings.model_validate(observation_config or {}))
+        self._observation_close_timeout = obs_config.close_timeout
 
         if isinstance(session, (str, Path)):
             session = Session(path=Path(session), cwd=str(self.workspace))
@@ -105,14 +150,52 @@ class CodingAgent:
                 paths.memory_dir.mkdir(parents=True, exist_ok=True)
                 kw["memory_dir"] = paths.memory_dir
 
-        self.agent = Agent(
-            llm=llm,
-            session=session,
-            tools=all_tools,
-            system_prompt=effective_prompt,
-            artifact_store=self.artifact_store,
-            **kw,
-        )
+        if memory_index is None and mem_config.enabled and kw.get("memory_dir") is not False:
+            import json
+            sdk_config = mem_config.config
+            if mem_config.config_file:
+                if sdk_config:
+                    raise ValueError("choose memory_index.config or config_file")
+                config_path = Path(mem_config.config_file).expanduser()
+                if not config_path.is_absolute():
+                    config_path = self.workspace / config_path
+                sdk_config = json.loads(config_path.read_text(encoding="utf-8"))
+            memory_index = create_mem0_index(sdk_config, timeout=mem_config.timeout)
+            memory_index_owned = True
+
+        runtime = None
+        try:
+            self.agent = Agent(
+                llm=llm,
+                session=session,
+                tools=all_tools,
+                system_prompt=effective_prompt,
+                artifact_store=self.artifact_store,
+                memory_index=memory_index,
+                memory_index_owned=memory_index_owned,
+                memory_index_close_timeout=mem_config.close_timeout,
+                **kw,
+            )
+            if obs_config.enabled:
+                import os
+                runtime = create_observation_runtime(
+                    enabled=True,
+                    public_key=os.environ.get(obs_config.public_key_env),
+                    secret_key=os.environ.get(obs_config.secret_key_env),
+                    base_url=obs_config.base_url, capacity=obs_config.capacity,
+                    network_timeout=obs_config.network_timeout,
+                )
+                runtime.attach(self.agent.llm)
+            self._observation_runtime = runtime
+        except BaseException:
+            if runtime is not None:
+                try:
+                    runtime.close(timeout=obs_config.close_timeout)
+                except Exception:
+                    logger.warning("Observation constructor rollback did not complete")
+            if memory_index is not None and memory_index_owned:
+                _rollback_memory_index(memory_index, mem_config.close_timeout)
+            raise
 
         # 4. 若注入了权限门禁，注册到 ToolCallHook
         if self._permission_gate is not None:
@@ -256,10 +339,42 @@ class CodingAgent:
         except Exception as exc:
             logger.warning("加载工作区 .mcp.json 失败: %s", exc)
 
-    async def aclose(self) -> None:
+    async def aclose(self) -> bool:
         """Close optional memory work and MCP resources."""
-        await self.agent.aclose()
-        await self.close_mcp()
+        failure = None
+        try:
+            await self.agent.aclose()
+        except BaseException as error:
+            failure = error
+        # Preserve the original failure, but still release every owned resource.
+        if (failure is not None and self.agent.memory_index is not None
+                and self.agent.memory_index_owned):
+            try:
+                self.agent.memory_index_close_status = await self.agent.memory_index.aclose(
+                    timeout=self.agent.memory_index_close_timeout,
+                )
+            except BaseException:
+                self.agent.memory_index_close_status = False
+        self.close_status["memory_index"] = self.agent.memory_index_close_status
+        if self._observation_runtime is not None:
+            try:
+                self.close_status["observation"] = await asyncio.to_thread(
+                    self._observation_runtime.close, timeout=self._observation_close_timeout,
+                )
+            except BaseException as error:
+                self.close_status["observation"] = False
+                if isinstance(error, asyncio.CancelledError) and failure is None:
+                    failure = error
+        try:
+            await self.close_mcp()
+            self.close_status["mcp"] = True
+        except BaseException as error:
+            self.close_status["mcp"] = False
+            if failure is None:
+                failure = error
+        if failure is not None:
+            raise failure
+        return all(value is not False for value in self.close_status.values())
 
     async def close_mcp(self) -> None:
         """异步关闭并回收已挂载的 MCP 连接与子进程资源。"""

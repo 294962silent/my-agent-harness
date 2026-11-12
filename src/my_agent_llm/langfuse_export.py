@@ -13,6 +13,33 @@ import hashlib
 from .observation import CallEnd, CallRecord
 
 
+def _usage_details(usage):
+    """Map only known totals; prompt_tokens can exclude cache hits for a provider.
+
+    Cache details stay in metadata so Langfuse cannot add them to input twice.
+    Missing fields remain absent. These are provider snapshots, not invoices.
+    """
+    allowed = {"prompt_tokens", "completion_tokens", "total_tokens", "cache_read_tokens", "cache_write_tokens"}
+    numeric = {key: value for key, value in usage.items() if key in allowed and type(value) is int and value >= 0}
+    details = {}
+    output, total = numeric.get("completion_tokens"), numeric.get("total_tokens")
+    if output is not None:
+        details["output"] = output
+    status = "incomplete"
+    if total is not None:
+        details["total"] = total
+    if total is not None and output is not None:
+        input_tokens = total - output
+        parts = [numeric[key] for key in ("prompt_tokens", "cache_read_tokens", "cache_write_tokens") if key in numeric]
+        if input_tokens < 0 or any(part > input_tokens for part in parts):
+            status = "inconsistent"
+            details.pop("total", None)
+        else:
+            details["input"] = input_tokens
+            status = "complete"
+    return details, numeric, status
+
+
 class LangfuseSink:
     """Single-worker sink; injected clients are caller-owned unless specified."""
     def __init__(self, client, *, max_active: int = 1024, own_client: bool = False):
@@ -27,7 +54,7 @@ class LangfuseSink:
 
     @classmethod
     def from_credentials(cls, *, public_key: str, secret_key: str, base_url: str | None = None,
-                         timeout: int = 5, max_active: int = 1024):
+                         timeout: float = 5, max_active: int = 1024):
         """Explicit opt-in; credentials are never added to observation metadata."""
         if not public_key or not secret_key:
             raise ValueError("Explicit Langfuse public and secret keys are required")
@@ -50,7 +77,10 @@ class LangfuseSink:
                             "error_type": record.error_type}
                 options = {"metadata": metadata}
                 if record.usage is not None:
-                    options["usage_details"] = dict(record.usage)
+                    details, numeric, status = _usage_details(record.usage)
+                    metadata.update(provider_usage=numeric, usage_mapping_status=status)
+                    if details:
+                        options["usage_details"] = details
                 if record.status == "error":
                     options["level"] = "ERROR"
                 span.update(**options)

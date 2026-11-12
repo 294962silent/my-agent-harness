@@ -25,7 +25,7 @@
 - Permission：副作用前授权，默认 fail-closed；不等同完整信息流安全。
 - Observation：默认关闭的元数据记录、有界导出与可选 Langfuse 适配，导出错误不改变模型结果。
 
-本批新实现主要是 Runtime 生命周期与统一观测，保留前一批已验证的上下文 / 记忆和工具契约，并建立统一实验协议。Mem0 语义检索与 Dream-RSI 探索策略是后续可选适配，当前未接入默认运行链路。
+本批实现 Runtime 生命周期、统一观测与可选的 Mem0 / Langfuse / Dream-RSI 适配，保留既有上下文、记忆和工具契约。Mem0 接入候选检索，Langfuse 接入配置和生命周期，Dream-RSI 提供官方固定参考策略的离线回放入口；外部服务默认关闭。
 
 ## 安装与本地验证
 
@@ -84,7 +84,18 @@ async def main():
 
 轮次 / 时长上限不等同费用上限。真实基准入口另用共享账本逐请求预留与结算；同步不协作代码及已经发生的外部副作用不能被强制回滚。
 
-只需要本地观测时使用 InMemoryObserver 或 JsonlSink + BoundedExporter。Langfuse 适配延迟导入，须自行安装兼容 v5 SDK 并显式提供配置；本轮仅完成假 client 验证，尚未确认真实上传。
+只需要本地观测时使用 InMemoryObserver 或 JsonlSink + BoundedExporter。Langfuse 适配延迟导入，已通过真实5.2 SDK的内存导出契约，尚未确认真实服务上传。
+
+## Mem0、Langfuse、Dream-RSI
+
+```sh
+uv sync --frozen --extra mem0 --extra langfuse --extra dream-rsi
+uv run --extra dream-rsi my-agent-dream --help
+```
+
+[安装、全局配置与使用说明](docs/integrations/README.md)包含可复制JSON和极小合成回放输入。Mem0保留本地事实权威、infer=False避免双抽取，失败回退词法；Langfuse保留已有observer并关闭自身订阅；Dream真实调用上游TraceEnv和baseline，不启动在线RSI学习。项目settings不能改变两项外发集成的配置。
+
+本轮只做代码回归和真实SDK离线契约：Mem0本地Qdrant配假embedding、Langfuse内存SpanExporter、Dream生产CLI/worker回放。未验证语义质量、真实云端接通或策略收益；SWE及效果benchmark依用户要求暂停。
 
 ## 逐模块实验
 
@@ -103,7 +114,7 @@ PowerShell 可先设置 `$env:PYTHONPATH='src;.'`。每次输出唯一目录，�
 
 [预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)采用用户授权的 DeepSeek V4.1 Flash 总上限30美元，同一账本逐请求预留与结算，缺失用量不当零，禁用隐式重试。[本轮v2真实结果](docs/experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、5题环境可用、10次模型trial，开启组通过2/5、关闭组1/5；7次空补丁。160请求保守账本$0.503462，非供应商核账。on产生11个外置产物但没有回读，on费用$0.252843、off$0.250619，不能宣称稳定质量、费用或KV收益。
 
-通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留，不能混作本轮成绩；累计保守账本$0.572059。Terminal-Bench仍因官方依赖下载未完成环境预检，没有模型成绩。Mem0、Dream-RSI与真实Langfuse服务没有在本轮接入。
+通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留。[随后三题预算提示对照](docs/experiments/results/swe-budget-visibility-20261112/REPORT.md)双臂均1/3通过，未提供改善证据；加独立回读探针后累计保守账本$0.888355。Terminal-Bench仍没有模型成绩。上述是适配前历史结果，不能当作三个新适配器的消融；后续benchmark暂停。
 
 ## 限制与历史
 
