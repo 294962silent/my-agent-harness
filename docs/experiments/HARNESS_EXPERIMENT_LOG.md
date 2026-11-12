@@ -647,3 +647,6 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 测试修复后的[CI run43228948231](https://github.com/294962silent/my-agent-harness/actions/runs/43228948231)四组 **completed/success**：Ubuntu/Python3.11、3.13，Windows/Python3.11、3.13。此前失败平台已实际重验成功，不将本地3.12/3.13替代3.11证据。后续本节仅文档补交，最新head状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
 - 提交前复核：121个明确路径通过实际现有API凭据精确匹配扫描（无匹配）、86个JSON解析、本批新增本地链接检查无缺失；两条交付前已存在的历史档案链接保留。108份本批证据的index blob与原文件逐字节相同，staged diff check通过；没有 `git add .`、金标patch/认证缓存/大镜像入库。
 - 已完成用户授权的通用SWE入口与v2小样本。最终selected6/eligible5、10模型trial、160真实请求；on2/5/off1/5、7empty；本批保守账本$0.503462，累计$0.572059。未运行完整300题，未恢复DSH、未接Mem0/Dream-RSI或Langfuse远端，未依据五题与缺失cache字段宣称稳定提升。
+- 最终head复核补充：文档提交f0d12c1的CI run43229586859在Ubuntu3.11暴露同文件另一项30ms模型启动假设（llm.closed=False，模型可以在前置deadline前根本未启动）。此前47的四组通过是历史事实，不能替代这个新head的检查。因此没有直接重跑CI取绿，而是审计整份15项测试并统一阶段同步fixture。
+- 最后一批仅测试修订：model_wait(.03)、四stage(.08)、消费者已收到MessageUpdate的部分工具意图deadline共用deadline_at_stage，原预算值不增；120ms受控延迟分别复现旧失败。仅early-deadline保留真实30ms且允许任何前置位置耗尽；0.5s close和5s收集均是阶段同步后的watchdog。生产代码、归档、模型/评分/费用不改。
+- 这批主代理Windows定点15 passed in1.21s，作者Linux同版15 passed in1.59s，Ruff/diffcheck与另一助手整份复核无阻断；新提交矩阵仍逐项跟踪。此后不再为写入CI终态而重复文档提交触发新矩阵，最终检查证据更新在PR正文及checks，最终答复只在新head实际四组通过后报告成功。
