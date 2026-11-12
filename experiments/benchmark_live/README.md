@@ -137,6 +137,9 @@ PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign plan \
   --catalog-sha256 "$CATALOG_SHA256" --ledger-path "$SHARED_LEDGER" \
   --batch-budget-usd 3 --output "$NEW_CAMPAIGN_DIR"
 PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign run \
+  --campaign "$NEW_CAMPAIGN_DIR" --max-new-trials 2
+# Inspect the first complete pair, then resume the remaining frozen trials.
+PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign run \
   --campaign "$NEW_CAMPAIGN_DIR"
 PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign score \
   --campaign "$NEW_CAMPAIGN_DIR"
@@ -151,6 +154,9 @@ budget state. Each task has one on/off pair; first-arm assignments are balanced.
 It persists started/run IDs before paid work. Complete hashed results may be
 skipped on resume; interrupted or failed trials are retained without automatic
 retry. Unknown usage blocks continuation rather than becoming zero cost.
+`--max-new-trials N` optionally bounds this invocation's new eligible executions;
+completed and blocked entries do not count. It does not rewrite the plan or
+automatically rebalance a partially completed pair.
 
 `score` invokes SWE-bench 5.0.2 independently with the model credential removed.
 Cancellation reaps the child process group and cleans only the container matching

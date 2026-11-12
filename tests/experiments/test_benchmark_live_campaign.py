@@ -413,3 +413,40 @@ def test_growing_shared_ledger_is_not_a_frozen_input(tmp_path):
     assert summary["budget"]["global_settled_usd"] == 0.000003
     plan = json.loads((root / "plan.json").read_text())
     assert not any(Path(r["path"]) == args["ledger_path"] for r in plan["input_files"])
+
+
+@pytest.mark.anyio
+async def test_bounded_run_stops_after_one_pair_then_resumes_without_duplicate_execution(tmp_path):
+    root = campaign.plan_campaign(**make_inputs(tmp_path, n=2))
+    calls = []
+
+    async def executor(*, trial, plan, output):
+        calls.append(trial["trial_id"])
+        output.mkdir()
+        (output / "run.json").write_text(
+            json.dumps({"adapter_protocol": "v2", "run_id": trial["run_id"], "status": "end_turn", "requests": 0})
+        )
+        (output / "model_patch.jsonl").write_text("{}\n")
+
+    plan = json.loads((root / "plan.json").read_text())
+    frozen = campaign.sha(root / "plan.json")
+    first = await campaign.run_campaign(root, executor=executor, max_new_trials=2)
+    assert first["completed"] == 2 and len(calls) == 2
+    assert {t["arm"] for t in plan["trials"][:2]} == {"on", "off"}
+    assert plan["trials"][0]["instance_id"] == plan["trials"][1]["instance_id"]
+    second = await campaign.run_campaign(root, executor=executor, max_new_trials=2)
+    assert second["completed"] == 2 and second["skipped"] == 2
+    assert len(calls) == len(set(calls)) == 4 and campaign.sha(root / "plan.json") == frozen
+
+
+@pytest.mark.anyio
+async def test_run_rejects_nonpositive_new_trial_limit_before_execution(tmp_path):
+    root = campaign.plan_campaign(**make_inputs(tmp_path, n=1))
+
+    async def forbidden(**kwargs):
+        raise AssertionError("invalid limit must not execute")
+
+    for limit in (0, -1, True, 1.5):
+        with pytest.raises(ValueError, match="positive integer"):
+            await campaign.run_campaign(root, executor=forbidden, max_new_trials=limit)
+    assert not (root / "trials").exists()

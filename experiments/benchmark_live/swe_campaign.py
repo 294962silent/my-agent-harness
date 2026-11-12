@@ -247,7 +247,9 @@ async def _execute(*, trial, plan, output):
     )
 
 
-async def run_campaign(root, *, executor=None):
+async def run_campaign(root, *, executor=None, max_new_trials: int | None = None):
+    if max_new_trials is not None and (type(max_new_trials) is not int or max_new_trials <= 0):
+        raise ValueError("max_new_trials must be a positive integer")
     root, plan, plan_hash = _load(root)
     execute = executor or _execute
     result = {
@@ -263,7 +265,10 @@ async def run_campaign(root, *, executor=None):
         if any(r["cost_micro_usd"] is None for r in ledger_rows):
             result.update(requires_reconciliation=1, halted_unknown_usage=True)
             return result
+        new_trials = 0
         for trial in plan["trials"]:
+            if max_new_trials is not None and new_trials >= max_new_trials:
+                break
             path = root / "trials" / trial["trial_id"]
             state_path = path / "state.json"
             if state_path.exists():
@@ -288,6 +293,7 @@ async def run_campaign(root, *, executor=None):
                 continue
             _write(state_path, state)  # Durable identity before any chargeable action.
             try:
+                new_trials += 1
                 await execute(trial=trial, plan=plan, output=path / "agent")
                 run = _json(path / "agent/run.json")
                 if run.get("run_id") != trial["run_id"]:
@@ -603,13 +609,20 @@ def main(argv=None):
         create.add_argument("--" + name, required=True)
     create.add_argument("--batch-budget-usd", type=float, default=3)
     for action in ("run", "score", "summarize"):
-        sub.add_parser(action).add_argument("--campaign", required=True)
+        command = sub.add_parser(action)
+        command.add_argument("--campaign", required=True)
+        if action == "run":
+            command.add_argument(
+                "--max-new-trials",
+                type=int,
+                help="Stop after N new executions this invocation; completed/blocked items do not count",
+            )
     args = vars(parser.parse_args(argv))
     action = args.pop("action")
     if action == "plan":
         result = str(plan_campaign(**args))
     elif action == "run":
-        result = asyncio.run(run_campaign(args["campaign"]))
+        result = asyncio.run(run_campaign(args["campaign"], max_new_trials=args["max_new_trials"]))
     elif action == "score":
         result = asyncio.run(score_campaign(args["campaign"]))
     else:
