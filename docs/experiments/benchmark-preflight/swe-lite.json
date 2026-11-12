@@ -1,0 +1,747 @@
+{
+  "official_task_repository": "https://github.com/SWE-bench/swe-bench-tasks",
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "dataset": "SWE-bench/SWE-bench_Lite",
+  "split": "test",
+  "hf_revision": null,
+  "hf_revision_unavailable_reason": "huggingface.co direct TCP connection timeout after 20s",
+  "harness_version": "5.0.2",
+  "selection_rule": "CPU Python psf/requests tasks in official Lite test; instance_id ascending; first at most 6; no gold/test content used for selection",
+  "candidates": [
+    {
+      "base_commit": "110048f9837f8441ea536804115e80b69f400277",
+      "created_at": "2014-03-15T17:42:11Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "environment_setup_commit": "3eb69be879063de4803f7f0152b83738a1c95ca4",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-1963:latest",
+      "instance_id": "psf__requests-1963",
+      "log_parser": "parse_log_requests",
+      "repo": "psf/requests",
+      "split": "test",
+      "version": "2.3",
+      "license": {
+        "spdx": "Apache-2.0",
+        "source": "https://raw.githubusercontent.com/psf/requests/110048f9837f8441ea536804115e80b69f400277/LICENSE",
+        "sha256": "89478f1915fbb6b6585a685d071bf006ba5649d2615fab787f66e9693c622ae4"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "gpu_status_basis": "requests is a CPU HTTP library; no GPU requirement in task metadata",
+        "dockerfile_source": "https://raw.githubusercontent.com/SWE-bench/swe-bench-tasks/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d/tasks/psf__requests-1963/Dockerfile",
+        "dockerfile_sha256": "fdb201529731a22bfa2e045330b0b0b1ef63f8dada481f88155e2c86cd039db8",
+        "dockerfile_from": [
+          "FROM --platform=linux/amd64 ubuntu:jammy"
+        ]
+      },
+      "gold_validity": {
+        "status": "blocked_official_test_timeout",
+        "official_harness_required": true,
+        "evidence_path": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/gold-evidence.json",
+        "official_report_sha256": "308f7460d1bdb76a6258ed236f22d56c146ec6849ea875af030381f7f414e2b5"
+      }
+    },
+    {
+      "base_commit": "fe693c492242ae532211e0c173324f09ca8cf227",
+      "created_at": "2014-07-24T21:03:03Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "environment_setup_commit": "3eb69be879063de4803f7f0152b83738a1c95ca4",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-2148:latest",
+      "instance_id": "psf__requests-2148",
+      "log_parser": "parse_log_requests",
+      "repo": "psf/requests",
+      "split": "test",
+      "version": "2.3",
+      "license": {
+        "spdx": "Apache-2.0",
+        "source": "https://raw.githubusercontent.com/psf/requests/fe693c492242ae532211e0c173324f09ca8cf227/LICENSE",
+        "sha256": "89478f1915fbb6b6585a685d071bf006ba5649d2615fab787f66e9693c622ae4"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "gpu_status_basis": "requests is a CPU HTTP library; no GPU requirement in task metadata",
+        "dockerfile_source": "https://raw.githubusercontent.com/SWE-bench/swe-bench-tasks/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d/tasks/psf__requests-2148/Dockerfile",
+        "dockerfile_sha256": "b772d0cf33e4436aa8e9129fbdbd39b7e4b6d4ef6087037e7d82a47cd76ee528",
+        "dockerfile_from": [
+          "FROM --platform=linux/amd64 ubuntu:jammy"
+        ]
+      },
+      "gold_validity": {
+        "status": "not_run",
+        "official_harness_required": true
+      }
+    },
+    {
+      "base_commit": "091991be0da19de9108dbe5e3752917fea3d7fdc",
+      "created_at": "2014-11-01T02:20:16Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Verified",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "difficulty": "<15 min fix",
+      "environment_setup_commit": "091991be0da19de9108dbe5e3752917fea3d7fdc",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-2317:latest",
+      "instance_id": "psf__requests-2317",
+      "log_parser": "parse_log_requests",
+      "repo": "psf/requests",
+      "split": "test",
+      "version": "2.4",
+      "license": {
+        "spdx": "Apache-2.0",
+        "source": "https://raw.githubusercontent.com/psf/requests/091991be0da19de9108dbe5e3752917fea3d7fdc/LICENSE",
+        "sha256": "89478f1915fbb6b6585a685d071bf006ba5649d2615fab787f66e9693c622ae4"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "gpu_status_basis": "requests is a CPU HTTP library; no GPU requirement in task metadata",
+        "dockerfile_source": "https://raw.githubusercontent.com/SWE-bench/swe-bench-tasks/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d/tasks/psf__requests-2317/Dockerfile",
+        "dockerfile_sha256": "4c9f39a89c5a144387f1ad816bda207fc865fb3530c482874cfc964908ae40b8",
+        "dockerfile_from": [
+          "FROM --platform=linux/amd64 ubuntu:jammy"
+        ]
+      },
+      "gold_validity": {
+        "status": "not_run",
+        "official_harness_required": true
+      }
+    },
+    {
+      "base_commit": "0be38a0c37c59c4b66ce908731da15b401655113",
+      "created_at": "2015-07-17T08:33:52Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "environment_setup_commit": "bf436ea0a49513bd4e49bb2d1645bd770e470d75",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-2674:latest",
+      "instance_id": "psf__requests-2674",
+      "log_parser": "parse_log_requests",
+      "repo": "psf/requests",
+      "split": "test",
+      "version": "2.7",
+      "license": {
+        "spdx": "Apache-2.0",
+        "source": "https://raw.githubusercontent.com/psf/requests/0be38a0c37c59c4b66ce908731da15b401655113/LICENSE",
+        "sha256": "c031540c6951209351ce0b9bcf1cdf689abb277bcb07780d74f448f882a4a869"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "gpu_status_basis": "requests is a CPU HTTP library; no GPU requirement in task metadata",
+        "dockerfile_source": "https://raw.githubusercontent.com/SWE-bench/swe-bench-tasks/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d/tasks/psf__requests-2674/Dockerfile",
+        "dockerfile_sha256": "4952a21adcd977cd3f347a02cc0624e8516f20e61cd83718de8bf5b304d4edbe",
+        "dockerfile_from": [
+          "FROM --platform=linux/amd64 ubuntu:jammy"
+        ]
+      },
+      "gold_validity": {
+        "status": "not_run",
+        "official_harness_required": true
+      }
+    },
+    {
+      "base_commit": "36453b95b13079296776d11b09cab2567ea3e703",
+      "created_at": "2016-06-24T13:31:31Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "environment_setup_commit": "36453b95b13079296776d11b09cab2567ea3e703",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-3362:latest",
+      "instance_id": "psf__requests-3362",
+      "log_parser": "parse_log_requests",
+      "repo": "psf/requests",
+      "split": "test",
+      "version": "2.10",
+      "license": {
+        "spdx": "Apache-2.0",
+        "source": "https://raw.githubusercontent.com/psf/requests/36453b95b13079296776d11b09cab2567ea3e703/LICENSE",
+        "sha256": "c12dd61a3868c674312e979d0ec179ee84c82e8e63c742875238ac912fbd1bac"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "gpu_status_basis": "requests is a CPU HTTP library; no GPU requirement in task metadata",
+        "dockerfile_source": "https://raw.githubusercontent.com/SWE-bench/swe-bench-tasks/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d/tasks/psf__requests-3362/Dockerfile",
+        "dockerfile_sha256": "d96d33caa52ef974098e3c265b9609ecd54493fb793bb6963a90791d3a619890",
+        "dockerfile_from": [
+          "FROM --platform=linux/amd64 ubuntu:jammy"
+        ]
+      },
+      "gold_validity": {
+        "status": "not_run",
+        "official_harness_required": true
+      }
+    },
+    {
+      "base_commit": "a0df2cbb10419037d11d04352b3175405ab52941",
+      "created_at": "2012-09-20T15:48:00Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "environment_setup_commit": "a0df2cbb10419037d11d04352b3175405ab52941",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.psf_1776_requests-863:latest",
+      "instance_id": "psf__requests-863",
+      "log_parser": "parse_log_requests",
+      "repo": "psf/requests",
+      "split": "test",
+      "version": "0.14",
+      "license": {
+        "spdx": "ISC",
+        "source": "https://raw.githubusercontent.com/psf/requests/a0df2cbb10419037d11d04352b3175405ab52941/LICENSE",
+        "sha256": "7e9aafec05e854f32f943af2c9f4ef0da7238f498318b195f1145eb2be906f9f"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "gpu_status_basis": "requests is a CPU HTTP library; no GPU requirement in task metadata",
+        "dockerfile_source": "https://raw.githubusercontent.com/SWE-bench/swe-bench-tasks/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d/tasks/psf__requests-863/Dockerfile",
+        "dockerfile_sha256": "26b9a9fc1931bee6bfdddbc21000e1c30caa6244f1d75fc9e0642e5342d149d5",
+        "dockerfile_from": [
+          "FROM --platform=linux/amd64 ubuntu:jammy"
+        ]
+      },
+      "gold_validity": {
+        "status": "not_run",
+        "official_harness_required": true
+      }
+    }
+  ],
+  "recorded_at": "2026-11-12T10:05:16.931621+00:00",
+  "status": "one_gold_validated_solver_not_run",
+  "canonical_test_size": 300,
+  "canonical_test_size_live_verified": false,
+  "dataset_license": {
+    "status": "unavailable",
+    "reason": "HF dataset card unreachable; official task repository root LICENSE returned HTTP 404; repository code license is not assumed to license dataset"
+  },
+  "environment": {
+    "distro": "Ubuntu-20.04 (WSL)",
+    "python": "3.12.14",
+    "docker_server": "26.1.3",
+    "architecture": "x86_64",
+    "storage_driver": "overlay2 (parent preflight)",
+    "max_parallel_instances": 1
+  },
+  "gold_preflight": {
+    "instance_id": "psf__requests-1963",
+    "status": "blocked_image_pull",
+    "image": "swebench/sweb.eval.x86_64.psf_1776_requests-1963:latest",
+    "command": "env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy SWEBENCH_DOCKER_TIMEOUT=30 /home/mll/.cache/my-agent-bench/venv/bin/swebench eval /home/mll/.cache/my-agent-bench/swe-gold-preflight/gold-dataset.json --gold -i psf__requests-1963 -j 1 -t 120 --run-id preflight-gold-1963 --report-dir /home/mll/.cache/my-agent-bench/swe-gold-preflight",
+    "official_report": {
+      "total_instances": 1,
+      "submitted_instances": 1,
+      "completed_instances": 0,
+      "resolved_instances": 0,
+      "unresolved_instances": 0,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 0,
+      "empty_patch_instances": 0,
+      "error_instances": 1,
+      "completed_ids": [],
+      "incomplete_ids": [],
+      "empty_patch_ids": [],
+      "submitted_ids": [
+        "psf__requests-1963"
+      ],
+      "resolved_ids": [],
+      "unresolved_ids": [],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [],
+      "failure_reasons": {},
+      "error_ids": [
+        "psf__requests-1963"
+      ],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": [],
+      "unremoved_images": []
+    },
+    "report_path": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/gold.preflight-gold-1963.json",
+    "log_path": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/logs/run_evaluation/preflight-gold-1963/gold/psf__requests-1963/run_instance.log",
+    "log_sha256": "81804b14406630a8280236a738750e194faeaa7a600b8870ec0e201a7d92aafe",
+    "error": "500 Docker API images/create; Get https://registry-1.docker.io/v2/: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)",
+    "exit_code": 0,
+    "exit_code_warning": "official CLI exits 0 even though report has errors=1; report is authoritative"
+  },
+  "official_prebuilt_repository_check": {
+    "source": "official task.yaml image field at pinned task revision",
+    "repository": "docker.io/swebench",
+    "tag": "swebench/sweb.eval.x86_64.psf_1776_requests-1963:latest",
+    "result": "Docker registry pull timed out",
+    "alternate_registry": "No official GHCR mapping established by pinned task metadata or installed harness. Did not guess third-party mirrors or alter scoring."
+  },
+  "solver_boundary": {
+    "real_model_calls": 0,
+    "gold_and_test_patch_sent_to_solver": false,
+    "solver_input_policy": "problem_statement plus base_commit working tree only; gold.patch/test.patch/tests.json/eval.sh kept in evaluator host cache, not solver prompt or workspace"
+  },
+  "limitations": [
+    "HF dataset revision unavailable; candidates are pinned to the official task-repository commit instead.",
+    "Canonical Lite test size 300 is requested benchmark scope, not freshly counted from unreachable HF dataset.",
+    "No model usage or benchmark score has been claimed.",
+    "Only psf__requests-1963 received this one official gold attempt; remaining five candidates are not gold-validated.",
+    "Original WSL DockerHub timeout and the temporary 1GB size gate remain recorded as historical attempts; original gold_preflight is unchanged.",
+    "sympy__sympy-20590 is an explicitly authorized official quickstart supplementary candidate frozen after requests environment preflight failure and before any model outcome; this single gold pass is not a Lite test score or representative performance claim."
+  ],
+  "preflight_attempts": [
+    {
+      "recorded_at": "2026-11-12T10:24:36.928928+00:00",
+      "phase": "official_image_manifest",
+      "source": "docker.io/swebench/sweb.eval.x86_64.psf_1776_requests-1963:latest",
+      "platform": "linux/amd64",
+      "tool": "official google/go-containerregistry crane v0.22.1 (parent SHA-verified release)",
+      "transport": "Windows existing user HTTP_PROXY/HTTPS_PROXY on loopback, no new forwarding helper",
+      "manifest_success": true,
+      "compressed_layer_total_bytes": 1014875934,
+      "config_digest": "sha256:287f118ccaa9c0ba39e5f361550bd845d28933f34483861b8deaa4992f9d8d92",
+      "size_gate_limit_bytes": 1000000000,
+      "size_gate_interpretation": "decimal 1 GB",
+      "status": "not_pulled_size_gate_exceeded",
+      "prior_gold_attempt_preserved": true
+    },
+    {
+      "recorded_at": "2026-11-12T10:29:53.863624+00:00",
+      "phase": "official_gold_after_image_import",
+      "status": "blocked_official_test_timeout",
+      "official_image_download": {
+        "compressed_layer_total_bytes": 1014875934,
+        "approved_limit_bytes": 1100000000,
+        "tar_bytes": 1014892032,
+        "image_config_digest": "sha256:287f118ccaa9c0ba39e5f361550bd845d28933f34483861b8deaa4992f9d8d92",
+        "manifest_config_match": true,
+        "route": "crane official original image via Windows existing proxy; docker load original tag; no network relay"
+      },
+      "official_task_blob_verification": [
+        {
+          "name": "Dockerfile",
+          "official_git_blob_sha1": "64196d52dd31a969a120ecf27161281755620054",
+          "actual_git_blob_sha1": "64196d52dd31a969a120ecf27161281755620054",
+          "crlf_count": 0,
+          "byte_exact": true
+        },
+        {
+          "name": "eval.sh",
+          "official_git_blob_sha1": "e44a253190516dc0d8e154835e0aa3694db58d45",
+          "actual_git_blob_sha1": "e44a253190516dc0d8e154835e0aa3694db58d45",
+          "crlf_count": 0,
+          "byte_exact": true
+        },
+        {
+          "name": "gold.patch",
+          "official_git_blob_sha1": "c52bd2d28458c332d11d718a6edde56d5cf33679",
+          "actual_git_blob_sha1": "c52bd2d28458c332d11d718a6edde56d5cf33679",
+          "crlf_count": 0,
+          "byte_exact": true
+        },
+        {
+          "name": "problem_statement.md",
+          "official_git_blob_sha1": "6935f23dbfd07087010711274b6ef47720359759",
+          "actual_git_blob_sha1": "6935f23dbfd07087010711274b6ef47720359759",
+          "crlf_count": 0,
+          "byte_exact": true
+        },
+        {
+          "name": "task.yaml",
+          "official_git_blob_sha1": "6bf24d474c5f7930fa031f2d214ef5c1de4a2ffd",
+          "actual_git_blob_sha1": "6bf24d474c5f7930fa031f2d214ef5c1de4a2ffd",
+          "crlf_count": 0,
+          "byte_exact": true
+        },
+        {
+          "name": "test.patch",
+          "official_git_blob_sha1": "1ea88dd2edb3a8fdc82f25fc962d5d30d914ff8b",
+          "actual_git_blob_sha1": "1ea88dd2edb3a8fdc82f25fc962d5d30d914ff8b",
+          "crlf_count": 0,
+          "byte_exact": true
+        },
+        {
+          "name": "tests.json",
+          "official_git_blob_sha1": "dc3f3968d61d128be6176d75b4f23e857ffd1d50",
+          "actual_git_blob_sha1": "dc3f3968d61d128be6176d75b4f23e857ffd1d50",
+          "crlf_count": 0,
+          "byte_exact": true
+        }
+      ],
+      "official_report": {
+        "total_instances": 1,
+        "submitted_instances": 1,
+        "completed_instances": 0,
+        "resolved_instances": 0,
+        "unresolved_instances": 0,
+        "infra_failure_instances": 0,
+        "ambiguous_failure_instances": 1,
+        "empty_patch_instances": 0,
+        "error_instances": 1,
+        "completed_ids": [],
+        "incomplete_ids": [],
+        "empty_patch_ids": [],
+        "submitted_ids": [
+          "psf__requests-1963"
+        ],
+        "resolved_ids": [],
+        "unresolved_ids": [],
+        "infra_failure_ids": [],
+        "ambiguous_failure_ids": [
+          "psf__requests-1963"
+        ],
+        "failure_reasons": {
+          "psf__requests-1963": "tests_timed_out"
+        },
+        "error_ids": [
+          "psf__requests-1963"
+        ],
+        "schema_version": 2,
+        "unstopped_instances": 0,
+        "unstopped_containers": [],
+        "unremoved_images": [
+          "swebench/sweb.eval.x86_64.psf_1776_requests-1963:latest"
+        ]
+      },
+      "report_path": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/gold.preflight-gold-1963-loaded.json",
+      "report_sha256": "308f7460d1bdb76a6258ed236f22d56c146ec6849ea875af030381f7f414e2b5",
+      "run_id": "preflight-gold-1963-loaded",
+      "workers": 1,
+      "test_timeout_seconds": 120,
+      "gold_evidence": {
+        "instance_id": "psf__requests-1963",
+        "metadata_path": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/solver-instance.json",
+        "metadata_format": "single JSON object with solver-safe allowlisted fields",
+        "metadata_sha256": "b6fd06111899a205ba2d86604c99f43e6a66e8bbde85a3417fab151cb553f18c",
+        "official_full_metadata_sha256": "ab9ae99777ab2f98dc468ddf5618db62d533ecc6e9f9dfb836766c25f6474c83",
+        "image": "swebench/sweb.eval.x86_64.psf_1776_requests-1963:latest",
+        "image_id": "sha256:287f118ccaa9c0ba39e5f361550bd845d28933f34483861b8deaa4992f9d8d92",
+        "base_commit": "110048f9837f8441ea536804115e80b69f400277",
+        "resolved": false,
+        "official_report": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/gold.preflight-gold-1963-loaded.json",
+        "official_report_sha256": "308f7460d1bdb76a6258ed236f22d56c146ec6849ea875af030381f7f414e2b5",
+        "official_report_counts": {
+          "completed_instances": 0,
+          "resolved_instances": 0,
+          "error_instances": 1
+        },
+        "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d"
+      },
+      "real_model_calls": 0,
+      "diagnosis": {
+        "category": "official_test_timeout",
+        "test_timeout_seconds": 120,
+        "total_wall_seconds": 136.82,
+        "observed_stage": "official pytest -rA test_requests.py collected 121 items; no per-test result before timeout",
+        "cause": "unavailable: stdout does not identify a specific failing test or prove a network cause",
+        "test_output_path": "/home/mll/.cache/my-agent-bench/swe-gold-preflight/logs/run_evaluation/preflight-gold-1963-loaded/gold/psf__requests-1963/test_output.txt",
+        "test_output_sha256": "5fc6107975605efc433586b0aa38769a0dc55d2c3237696b6669b57c4a16336d",
+        "cleanup": "official report unstopped_containers=0; docker ps -a --filter name=sweb.eval.psf__requests-1963 returned no containers; downloaded official image intentionally retained",
+        "solver_eligible": false
+      }
+    },
+    {
+      "recorded_at": "2026-11-12T10:38:40.655373+00:00",
+      "phase": "supplementary_official_gold_after_environment_filter",
+      "instance_id": "sympy__sympy-20590",
+      "status": "gold_passed",
+      "official_image_download": {
+        "compressed_layer_total_bytes": 1088520303,
+        "approved_limit_bytes": 1500000000,
+        "tar_bytes": 1088536576,
+        "image_config_digest": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+        "manifest_config_match": true,
+        "route": "crane official original image via Windows existing user proxy; docker load original tag; no network relay"
+      },
+      "official_task_blob_verification": [
+        {
+          "name": "task.yaml",
+          "git_blob_sha1": "b7decd13d0f89c2e00bdd5bbc3f789197be28b2c",
+          "byte_exact": true,
+          "crlf_count": 0
+        },
+        {
+          "name": "tests.json",
+          "git_blob_sha1": "030e0ae33196aeb7d5507dff337f544cf9d17fe8",
+          "byte_exact": true,
+          "crlf_count": 0
+        },
+        {
+          "name": "problem_statement.md",
+          "git_blob_sha1": "f16522109a982031c3c43f911fd2a245107aa10e",
+          "byte_exact": true,
+          "crlf_count": 14
+        },
+        {
+          "name": "gold.patch",
+          "git_blob_sha1": "daf003e497eeb1943579dd02b9ad4e6f837d2b4c",
+          "byte_exact": true,
+          "crlf_count": 0
+        },
+        {
+          "name": "test.patch",
+          "git_blob_sha1": "7b1cb39af6b6f5cd05c562e14c446e208dcf218c",
+          "byte_exact": true,
+          "crlf_count": 0
+        },
+        {
+          "name": "eval.sh",
+          "git_blob_sha1": "e1cbaac15abff2f594ad81372a49e250ec963a30",
+          "byte_exact": true,
+          "crlf_count": 0
+        },
+        {
+          "name": "Dockerfile",
+          "git_blob_sha1": "26fb98eea0a2a08e0c3b801d5c8552af96ca38bf",
+          "byte_exact": true,
+          "crlf_count": 0
+        }
+      ],
+      "source_transport": "Pinned official task raw bytes retrieved on Windows after WSL raw GET20s timeouts; SHA-1 Git blob matches official API; binary copy into Linux cache",
+      "official_report": {
+        "total_instances": 1,
+        "submitted_instances": 1,
+        "completed_instances": 1,
+        "resolved_instances": 1,
+        "unresolved_instances": 0,
+        "infra_failure_instances": 0,
+        "ambiguous_failure_instances": 0,
+        "empty_patch_instances": 0,
+        "error_instances": 0,
+        "completed_ids": [
+          "sympy__sympy-20590"
+        ],
+        "incomplete_ids": [],
+        "empty_patch_ids": [],
+        "submitted_ids": [
+          "sympy__sympy-20590"
+        ],
+        "resolved_ids": [
+          "sympy__sympy-20590"
+        ],
+        "unresolved_ids": [],
+        "infra_failure_ids": [],
+        "ambiguous_failure_ids": [],
+        "failure_reasons": {},
+        "error_ids": [],
+        "schema_version": 2,
+        "unstopped_instances": 0,
+        "unstopped_containers": [],
+        "unremoved_images": [
+          "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest"
+        ]
+      },
+      "report_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+      "report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+      "run_id": "preflight-gold-sympy-20590",
+      "workers": 1,
+      "test_timeout_seconds": 600,
+      "total_wall_seconds": 20.4,
+      "gold_evidence": {
+        "instance_id": "sympy__sympy-20590",
+        "metadata_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/solver-instance.json",
+        "metadata_format": "single JSON object; 7 solver-safe fields",
+        "metadata_sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7",
+        "official_full_metadata_sha256": "f1540af6ab1239f63ef70b6aae0eed29a34bdccc4bee5f675927715a58fc372d",
+        "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+        "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+        "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+        "resolved": true,
+        "official_report": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+        "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+        "official_report_counts": {
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "error_instances": 0
+        },
+        "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d"
+      },
+      "real_model_calls": 0
+    }
+  ],
+  "gold_preflight_latest": {
+    "recorded_at": "2026-11-12T10:38:40.655373+00:00",
+    "phase": "supplementary_official_gold_after_environment_filter",
+    "instance_id": "sympy__sympy-20590",
+    "status": "gold_passed",
+    "official_image_download": {
+      "compressed_layer_total_bytes": 1088520303,
+      "approved_limit_bytes": 1500000000,
+      "tar_bytes": 1088536576,
+      "image_config_digest": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+      "manifest_config_match": true,
+      "route": "crane official original image via Windows existing user proxy; docker load original tag; no network relay"
+    },
+    "official_task_blob_verification": [
+      {
+        "name": "task.yaml",
+        "git_blob_sha1": "b7decd13d0f89c2e00bdd5bbc3f789197be28b2c",
+        "byte_exact": true,
+        "crlf_count": 0
+      },
+      {
+        "name": "tests.json",
+        "git_blob_sha1": "030e0ae33196aeb7d5507dff337f544cf9d17fe8",
+        "byte_exact": true,
+        "crlf_count": 0
+      },
+      {
+        "name": "problem_statement.md",
+        "git_blob_sha1": "f16522109a982031c3c43f911fd2a245107aa10e",
+        "byte_exact": true,
+        "crlf_count": 14
+      },
+      {
+        "name": "gold.patch",
+        "git_blob_sha1": "daf003e497eeb1943579dd02b9ad4e6f837d2b4c",
+        "byte_exact": true,
+        "crlf_count": 0
+      },
+      {
+        "name": "test.patch",
+        "git_blob_sha1": "7b1cb39af6b6f5cd05c562e14c446e208dcf218c",
+        "byte_exact": true,
+        "crlf_count": 0
+      },
+      {
+        "name": "eval.sh",
+        "git_blob_sha1": "e1cbaac15abff2f594ad81372a49e250ec963a30",
+        "byte_exact": true,
+        "crlf_count": 0
+      },
+      {
+        "name": "Dockerfile",
+        "git_blob_sha1": "26fb98eea0a2a08e0c3b801d5c8552af96ca38bf",
+        "byte_exact": true,
+        "crlf_count": 0
+      }
+    ],
+    "source_transport": "Pinned official task raw bytes retrieved on Windows after WSL raw GET20s timeouts; SHA-1 Git blob matches official API; binary copy into Linux cache",
+    "official_report": {
+      "total_instances": 1,
+      "submitted_instances": 1,
+      "completed_instances": 1,
+      "resolved_instances": 1,
+      "unresolved_instances": 0,
+      "infra_failure_instances": 0,
+      "ambiguous_failure_instances": 0,
+      "empty_patch_instances": 0,
+      "error_instances": 0,
+      "completed_ids": [
+        "sympy__sympy-20590"
+      ],
+      "incomplete_ids": [],
+      "empty_patch_ids": [],
+      "submitted_ids": [
+        "sympy__sympy-20590"
+      ],
+      "resolved_ids": [
+        "sympy__sympy-20590"
+      ],
+      "unresolved_ids": [],
+      "infra_failure_ids": [],
+      "ambiguous_failure_ids": [],
+      "failure_reasons": {},
+      "error_ids": [],
+      "schema_version": 2,
+      "unstopped_instances": 0,
+      "unstopped_containers": [],
+      "unremoved_images": [
+        "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest"
+      ]
+    },
+    "report_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+    "report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+    "run_id": "preflight-gold-sympy-20590",
+    "workers": 1,
+    "test_timeout_seconds": 600,
+    "total_wall_seconds": 20.4,
+    "gold_evidence": {
+      "instance_id": "sympy__sympy-20590",
+      "metadata_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/solver-instance.json",
+      "metadata_format": "single JSON object; 7 solver-safe fields",
+      "metadata_sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7",
+      "official_full_metadata_sha256": "f1540af6ab1239f63ef70b6aae0eed29a34bdccc4bee5f675927715a58fc372d",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+      "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+      "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+      "resolved": true,
+      "official_report": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+      "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+      "official_report_counts": {
+        "completed_instances": 1,
+        "resolved_instances": 1,
+        "error_instances": 0
+      },
+      "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d"
+    },
+    "real_model_calls": 0
+  },
+  "supplementary_candidates": [
+    {
+      "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+      "created_at": "2020-12-12T18:18:38Z",
+      "datasets": [
+        "SWE-bench/SWE-bench",
+        "SWE-bench/SWE-bench_Verified",
+        "SWE-bench/SWE-bench_Lite"
+      ],
+      "difficulty": "15 min - 1 hour",
+      "environment_setup_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+      "eval_type": "pass_and_fail",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+      "instance_id": "sympy__sympy-20590",
+      "log_parser": "parse_log_sympy",
+      "repo": "sympy/sympy",
+      "split": "test",
+      "version": "1.7",
+      "selection": {
+        "frozen_at": "2026-11-12T10:34:33.025350+00:00",
+        "reason": "Official SWE-bench quickstart example; replace network-dependent requests environment before any model result. Pure CPU symbolic algebra tests avoid requests HTTP integration dependency. No gold/model success used for selection.",
+        "source": "https://www.swebench.com/SWE-bench/guides/quickstart/",
+        "authorized_additional_images": 1,
+        "compressed_image_limit_bytes": 1500000000,
+        "gold_timeout_seconds": 600,
+        "workers": 1
+      },
+      "gold_validity": {
+        "status": "passed",
+        "official_harness_required": true,
+        "evidence_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold-evidence.json",
+        "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "gpu_required": false,
+        "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+        "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+        "dockerfile_sha256": "bc2f7a8cdaa697696225d732dfb091c20c3fa6ab0cee09bbf058b23f029d7c28"
+      },
+      "license": {
+        "spdx": "BSD-3-Clause",
+        "source": "https://raw.githubusercontent.com/sympy/sympy/cffd4e0f86fefd4802349a9f9b19ed70934ea354/LICENSE",
+        "sha256": "a7212a73709d040d7b932440f84c71e2334c045faaae589e9905ec1e9fbfd443"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "instance_id": "psf__requests-1963",
+      "test_stage_seconds": 120.07,
+      "cleanup_seconds_approx": 16,
+      "httpbin_probe": "same original image and default Docker network: unauthenticated GET http://httpbin.org/basic-auth/user/pass returned expected HTTP401 after8.65s. Reachable but slow; no exact stalled-test cause proven.",
+      "decision": "do not mechanically rerun requests; preserve failure and filter environment before any solver outcome"
+    }
+  ]
+}

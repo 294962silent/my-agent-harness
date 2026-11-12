@@ -1,0 +1,174 @@
+{
+  "dataset": "terminal-bench@2.0",
+  "registry_source": "https://raw.githubusercontent.com/laude-institute/harbor/main/registry.json",
+  "selection_before_model_results": true,
+  "selection_rule": "six CPU tasks spanning software, version control, text editing and log processing; oracle-preflight eligibility required before model calls",
+  "tasks": [
+    {
+      "name": "cancel-async-tasks",
+      "git_url": "https://github.com/laude-institute/terminal-bench-2.git",
+      "git_commit_id": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+      "path": "cancel-async-tasks",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/cancel-async-tasks:20251031",
+        "cpus": 1,
+        "memory": "2G",
+        "storage": "10G"
+      },
+      "metadata": {
+        "difficulty": "hard",
+        "category": "software-engineering",
+        "tags": [
+          "async",
+          "concurrency",
+          "python"
+        ]
+      }
+    },
+    {
+      "name": "large-scale-text-editing",
+      "git_url": "https://github.com/laude-institute/terminal-bench-2.git",
+      "git_commit_id": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+      "path": "large-scale-text-editing",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "cpus": 1,
+        "memory": "2G",
+        "storage": "10G"
+      },
+      "metadata": {
+        "difficulty": "medium",
+        "category": "file-operations",
+        "tags": [
+          "text-editing",
+          "large-scale-text-manipulation",
+          "vim",
+          "vim-macros"
+        ]
+      }
+    },
+    {
+      "name": "log-summary-date-ranges",
+      "git_url": "https://github.com/laude-institute/terminal-bench-2.git",
+      "git_commit_id": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+      "path": "log-summary-date-ranges",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/log-summary-date-ranges:20251031",
+        "cpus": 1,
+        "memory": "2G",
+        "storage": "10G"
+      },
+      "metadata": {
+        "difficulty": "medium",
+        "category": "data-processing",
+        "tags": [
+          "log-analysis",
+          "report-generation",
+          "data-processing"
+        ]
+      }
+    },
+    {
+      "name": "git-multibranch",
+      "git_url": "https://github.com/laude-institute/terminal-bench-2.git",
+      "git_commit_id": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+      "path": "git-multibranch",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "cpus": 1,
+        "memory": "2G",
+        "storage": "10G",
+        "docker_image": "alexgshaw/git-multibranch:20251031"
+      },
+      "metadata": {
+        "difficulty": "medium",
+        "category": "system-administration",
+        "tags": [
+          "system",
+          "version-control",
+          "web"
+        ]
+      }
+    },
+    {
+      "name": "fix-git",
+      "git_url": "https://github.com/laude-institute/terminal-bench-2.git",
+      "git_commit_id": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+      "path": "fix-git",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/fix-git:20251031",
+        "cpus": 1,
+        "memory": "2G",
+        "storage": "10G"
+      },
+      "metadata": {
+        "difficulty": "easy",
+        "category": "software-engineering",
+        "tags": [
+          "coding",
+          "version-control"
+        ]
+      }
+    },
+    {
+      "name": "regex-log",
+      "git_url": "https://github.com/laude-institute/terminal-bench-2.git",
+      "git_commit_id": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+      "path": "regex-log",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/regex-log:20251031",
+        "cpus": 1,
+        "memory": "2G",
+        "storage": "10G"
+      },
+      "metadata": {
+        "difficulty": "medium",
+        "category": "data-processing",
+        "tags": [
+          "regex",
+          "string-parsing",
+          "log-analysis"
+        ]
+      }
+    }
+  ],
+  "harbor_version": "0.25.0",
+  "status": "environment_blocked_verifier_bootstrap",
+  "model_requests": 0,
+  "official_fix_git_image_config": "sha256:b041e51b3fd55da33dc43648fcfb28f4887374a8676c77b0836923422e7fde29",
+  "canonical_blob_export": "git -c core.autocrlf=false archive; test.sh equals original Git blob and contains 0 CRLF",
+  "oracle_attempts": [
+    {
+      "job": "oracle-fix-git-20261112-v2",
+      "status": "pre_agent_environment_error",
+      "reason": "Docker Compose v2 absent; subsequently installed2.27.1"
+    },
+    {
+      "job": "oracle-fix-git-20261112-v3",
+      "status": "environment_error",
+      "reason": "CRLF shebang from Windows checkout"
+    },
+    {
+      "job": "oracle-fix-git-20261112-v4",
+      "status": "environment_error",
+      "reason": "default git archive also applied autocrlf; export then explicitly disabled it"
+    },
+    {
+      "job": "oracle-fix-git-20261112-v5",
+      "status": "oracle_reward_zero_environment_bootstrap",
+      "reason": "unchanged official verifier could not download uv0.9.5 GitHub release (HTTP2 transfer failure); uvx unavailable",
+      "model_requests": 0
+    }
+  ],
+  "limits": [
+    "No official task/test/solution files patched.",
+    "Reward0 from broken bootstrap is not a model failure.",
+    "No score or capability claim for Terminal-Bench.",
+    "Do not silently replace official evaluator or image to manufacture passing numbers."
+  ]
+}

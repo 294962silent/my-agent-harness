@@ -5,12 +5,13 @@
 ## 1. 实验范围与当前状态
 
 - 实验开始：2026-11-11。
-- 最近复核：2026-11-12（北京时间；上下文交付见 E-GIT-CONTEXT，长期记忆改造见后续批次；缓存性能实验保持取消）。
+- 最近复核：2026-11-12（北京时间；框架重设计见 E-REDESIGN，真实小样本见 E-REDESIGN-LIVE；旧DSH/缓存对照保持取消）。
 - 项目基线：`a04e940`。
-- 本地工作分支：`codex/scheduler-reliability`；独立 GitHub 交付分支：`codex/context-memory-reliability`。
-- 目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
+- 当前重设计分支：`codex/interview-harness-redesign`（独立 worktree，基于已交付 `1f150e1`）；原 `codex/scheduler-reliability` 脏工作区保留，前一交付分支为 `codex/context-memory-reliability`。
+- 最初目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
+- 当前目标：面向 Agent / 大模型应用实习，形成清楚的模块职责、可复算消融、真实任务链路与开发问题证据。
 - 事件、Hook、Steering / Follow-up 和双层 Loop 在基线已经存在。本批补强它们的运行边界，不把已有能力重新包装成新增功能。
-- 当前交付状态：**上下文 `7531dadd`、记忆 `c7cd65e` 已推送，PR #1 的四组跨平台 CI 通过；调度未完成项仍留在本地工作区**。PR 尚未合并，原调度范围不因本批交付而自动完成；最新检查结果见 PR。
+- 当前交付状态：**Runtime / 观测 `9509262` 已推送；八模块离线证据与一题真实SWE配对已完成，本批后续提交 / CI 结果按尾部实际记录更新**。前一PR #1尚未合并，原调度账本 / RPC未完成项仍保留，不因本批完成而自动交付。
 - L20 工作区副本：已将 E10 时的工作区快照传至 `/data/llma/my-agent` 并完成逐文件校验；后续本地变更不自动同步。未安装服务器依赖，未据此宣称服务已启动或服务器测试通过。
 - 本批范围：进程内单执行器、唤醒与归属、运行期输入身份和撤回、轮次 / 时长预算。Redis、多进程恢复、模型请求 redirect、任意同步代码强制抢占均不在本批。
 
@@ -546,3 +547,37 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 静态与构建：`ruff check src tests experiments/harness_eval experiments/benchmark_live`通过；`npm test` **96 passed、2 skipped、0 failed**；TUI构建与wheel构建通过，实际检查wheel含RunLifecycle、观测模块、TUI入口及 `Requires-Dist: pillow>=10`。
 - 代价与限制：协作取消不能强停同步Python/同步SDK，外部副作用不能回滚；exporter transport永久阻塞可能close超时；observer不是硬费用预算。真实API账本、官方任务预检与模型评分作为单独实验追加，不把软件回归数量当模型成功率。
 - 原始基线：本轮改前干净core/llm **630 passed in21.01s**。本节完成本地实现与验证，GitHub提交 / CI 状态以后续实际记录为准，不预填。
+
+
+### E-REDESIGN-EVAL：2026-11-12 / 八模块统一离线证据与面试材料
+
+- 新增 `experiments/harness_eval/`：统一场景、原始记录 schema、唯一运行目录、manifest、从 raw 汇总与可读报告；记录 git SHA、dirty 状态、源码 hash（运行前后核对）、实际导入路径、seed、参数、环境、许可证和失败。
+- 主代理实际运行：`PYTHONPATH=src;. python -m experiments.harness_eval --suite all --repeats 5 --output docs/experiments/results/redesign --seed 23`，保存 `docs/experiments/results/redesign/20261112T095857-2381042b458f/`。覆盖 **8 模块、12 独立场景、100 条记录、0 assertion failures**。manifest source_sha256 `19d94923b9843545da609de18225815c71e2490e1f3360db98b3fe359d8cdfd7`，运行前后相同，git基底1f150e1 + 当时未提交改造；不把它称作干净旧基线。
+- 定量观测：独立工具并发峰值1→3且均完成3个工具；故意全并行对照的写读违例1→0；线性历史投影对照的跨分支泄漏1→0；2条标注记忆查询0/2→2/2、失效事实命中0；权限夹具未授权写副作用1→0；轮次预算把脚本模型调用5次截停至2次；辅助观测场景记录主调用与摘要2/2、隐私违例0。
+- Context/Artifact：原文120019B，off视图120019B、on视图7041B，on额外产物写盘120361B；**两组 evidence_recoverable均1**。摘要来源contract中 unchanged复用1、覆盖前缀改变后旧摘要泄漏0。字节不等于token，磁盘与回读成本不能省略。
+- 消融分类：真实开关/元数据配置称ablation，无生产开关而使用有限对照wrapper的Tools依赖与Session线性投影称comparison；流取消/关闭、single owner、摘要覆盖身份称contract。off如预期暴露缺陷也可满足其夹具断言，0 assertion failures不意味着off更安全。
+- 局限：五次重复不是五个独立问题，p95/median只描述本机小样本；2条记忆查询是smoke，不是长期记忆质量评测。所有离线tokens/cache/quality为null，不给真实模型质量/吞吐/KV提升比例。默认不触碰凭据或真实模型。
+- 文档：`docs/interview/` 为八模块分别整理问题、源码、方案取舍、原始指标、开发问题、优势代价、复现与追问；新增 DEVELOPMENT_PROBLEMS / CLAIMS 对齐真实证据。README改为项目定位与可核验入口，历史README旧性能/榜单数字保留Git固定链接，不继续作为新框架效果宣传。
+- 用户新授权：真实实验使用 **DeepSeek V4.1 Flash总预算$30**，优先SWE/Terminal官方开源任务，替代旧3美元/自造任务提案；预算文件保留授权变化。未恢复DSH对照或L20 GPU实验。
+- 官方预检：WSL Docker26.1.3、Compose2.27.1、Harbor0.25.0、SWE-bench5.0.2与Python3.12已准备。Windows本地代理无法直接用于WSL，网络转发helper启动被自动策略拒绝后未重试；改为标准下载官方crane v0.22.1并核SHA、拉取原官方镜像为tar再docker load，核image config。任务Git导出显式关闭autocrlf并核blob字节，没有修改评分脚本。
+- 开发中问题：CLI exit0但trial有exception不能算通过；缺Compose、CRLF shebang、UV依赖下载失败和gold测试超时分别保留。SWE requests1963的失败未当作模型失败；官方入门sympy20590作为模型结果出现前的环境补充候选已freeze，并真实gold **completed1/resolved1/errors0，20.40s**。
+- 后续真实模型配对：共用持久预算账本，oracle/gold通过且任务/镜像/报告hash匹配才能启动；隐藏测试/solution不进入prompt。真实结果另节追加，当前离线数字不能代替它。
+
+
+### E-REDESIGN-LIVE：2026-11-12 / 官方 SWE 单例真实试验、预算与协议更正
+
+- 用户授权是总预算30美元，实际模型使用已有OpenCode Go兼容端点的 `deepseek-v4.1-flash`，不是新接官方api.deepseek.com；未索要或打印密钥。Key只经host进程环境传入，未写CLI、容器环境、任务文件或Git记录。
+- 预检：原官方SWE-bench5.0.2、固定taskrepo `3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`，sympy20590官方image config `fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2`，任务base `cffd4e0f86fefd4802349a9f9b19ed70934ea354`；7文件逐字节Git blob核对，官方gold completed1/resolved1/errors0，20.40s。requests1963镜像错误和120秒gold超时均保留，未计作模型失败。
+- 实际模型设计：**1个独立任务、2个model trial**，顺序on→off，seed23只控制活动顺序，不是provider采样seed；温度0.7、16请求/4096输出/600秒、共享30美元原子预留账本。两个run目录的r2是启动命名，不是第二个模型重复。r1因镜像HEAD不等任务base而被挡住，requests0，修复容器内先reset再核clean后才启动。
+- 原始证据：`docs/experiments/results/live-swe-20261112/`含ledger、两个原始run.json、模型预测JSONL、官方aggregate / instance report、测试stdout、金标通过证据的hash及BSD-3-Clause许可；不含gold/test patch正文。`summary.json`从请求记录计算，manifest明确事后采集源码快照和协议版本。
+- 官方非gold评分：on整体21.85s（测试4.23s），off整体21.49s（测试3.75s），各completed1/resolved1/errors0；各FAIL_TO_PASS1成功、PASS_TO_PASS21成功、0失败。补丁没有被人工读取修改来纠正答案，评分反馈没有交给另一solver。两份aggregate统计相同故SHA可相同，独立runid、日志目录和stdout分别保留。
+- 真实运行终态：两组都是 `budget_exhausted` / 各16请求，补丁已产生并经官方判分；没有将截停美化成正常end_turn。32请求usage全部成功结算，cache_read字段各仅15/16覆盖，完整命中率保留null。
+- 计量：on输入80706、输出4533 token；off输入110165、输出4902 token（输入由provider总量减输出计算）。账本按输入$0.30/M、输出$1.20/M并把cached输入也按全冷价计，on$0.029658、off$0.038939，合计 **$0.068597**。这是客户端保守计价，不是已核对的服务端账单或实际订阅余额。
+- 关键更正：本题on没有生成artifact，外置未激活，所以这只是production Agent/Runtime/预算/官方评分的真实pipeline smoke，不能把80706 vs110165 token差异归因于外置，更不能宣称成功率提升。两组trajectory随机、cache状态未控制、小样本也不足以估计因果收益。
+- 协议v1复核还发现仅注册shell但开启store，缺artifact_read/search。保留v1源快照及既有真实成绩并明确标v1/smoke；修协议v2后，两arm注册相同生产受限工具schema，off只关闭投影。SWE/Harbor的14KB输出真实handle→artifact_read中部/尾部marker回读、off全文保留和schema相等已经fake provider验证，原始4份contract存 `protocol-v2-offline/`，标零真实请求、provider_usage_synthetic；Linux独立17项通过。**v2没有重新调用真实模型，不能挪用v1成绩。**
+- Terminal-Bench2.0固定repo `69671fbaac6d67a7ef0dfec016cc38a64ef7a77c`，先于模型结果选6个CPU候选；fix-git原oracle因UV0.9.5官方依赖下载HTTP2失败而reward0，保留原JSON/stdout，未给TB发模型请求。见 `benchmark-preflight/terminal-bench.json`，不替换评分标准或隐藏环境筛选。
+- 最终本地代码验证（含v2和SWE入口）：主代理全tests **1112 passed、2 skipped、1 deselected in57.54s**；两个skip是Windows缺可选Harbor，deselect为既有cmd/cat pipefail差异。全源码 / 测试 / 新实验Ruff与diff check通过，TUI96pass/2skip、wheel新增模块/TUI/Pillow依赖检查通过。没有GPU、没有DSH、没有榜单上传。
+- 收益与边界：获得可复现的真实任务链路和费用账本，发现并修复假环境测试遗漏的镜像初始化与回读接线问题；不宣称SWE/TB全量排名、Artifact因果提升、真实Langfuse上传或Mem0接通。源码重设计9509262已推送，后续实验 / 文档提交与PR状态以实际Git记录为准。
+
+- 最终暂存检查补充：官方原始stdout包含终端回车和尾随空格，首次staged diff check因此失败；新增 `.gitattributes` 对实验结果目录禁用autocrlf文本转换，仅对两份SWE测试stdout和Terminal原始stdout关闭whitespace检查。保留原始字节，不删除报错行；重新核对index blob与本地证据及staged diff，结果另以实际命令记录。其他源码与文档检查保持开启。
+- 暂存复核结果：对38份实验证据执行 `git show :<path>` 与本地原文件字节比较，全部一致；`git diff --cached --check`通过。JSON解析24份、16份入口文档相对链接检查无缺失；已用现有实际模型凭据进行精确匹配扫描，待提交文件中无匹配，不打印或保存凭据。两名助手额外复核104项源码hash、12项WSL原始证据与v1/v2边界，均一致。

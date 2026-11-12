@@ -1,0 +1,8 @@
+# Keep experiment evidence byte-for-byte identical across checkout platforms.
+docs/experiments/results/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/experiments/benchmark-preflight/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Official stdout contains terminal control characters and trailing spaces.
+# Preserve it as evidence rather than applying source formatting rules.
+docs/experiments/results/**/test-output.txt -whitespace
+docs/experiments/benchmark-preflight/terminal-raw/verifier-bootstrap-output.txt -whitespace

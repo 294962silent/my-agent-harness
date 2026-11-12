@@ -1,0 +1,19 @@
+{
+  "adapter_protocol": "v2",
+  "mode": "offline_fake_provider",
+  "provider_requests": 0,
+  "provider_usage_synthetic": true,
+  "adapter": "harbor",
+  "arm": "on",
+  "source_utf8_bytes": 14045,
+  "artifact_read_completed": true,
+  "full_source_in_view": false,
+  "hidden_middle_marker_absent_from_preview": true,
+  "artifact_files": 1,
+  "model_turns": 3,
+  "tool_names": [
+    "artifact_read",
+    "artifact_search",
+    "shell"
+  ]
+}
