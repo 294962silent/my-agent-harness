@@ -184,3 +184,15 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 问题：覆盖llm.observer会破坏原观察者，会话重建若保留旧sink会重复导出或向关闭的client写入。
 - 修复：每调用快照base与订阅，逐观察者隔离异常；runtime只detach/关自身。RPC四种session变更先await旧Agent关闭，未完成就不假装替换成功；直接core与CodingAgent异常/取消路径均保留清理。
 - 验证：定点生命周期/所有权回归及真实Langfuse5.2内存SpanExporter；缺字段不补零，cached输入按total-completion映射。没有真实服务上传回读证据。
+
+## P25：发送SIGKILL早于进程组真正退出
+
+- 发现：ec0fcdc的Linux CI在normal-exit清理测试中观察到后代仍为R，Windows同head通过。Linux本地原样复现，返回时ShdPnd=0x100（SIGKILL排队），约1.25ms后进程消失；原实现只wait根进程。
+- 修复：生产Unix清理增加有界整组静默确认，Z/X视为不再运行，无法确认则报错；不用固定sleep延长测试，不引入全局subreaper。Windows已有Job Object active-count等待保持。
+- 验证：受控True/True/False存活序列、永不确认失败、/proc comm及Z/R解析和真实子进程回归；Linux、Windows各20项Dream测试通过，互审无阻断。
+
+## P26：后台任务可能在首轮内合法完成
+
+- 发现：同次Ubuntu/Python3.11 E2E首答为Completed而非Waiting；旧测试用0.1秒任务sleep假定首轮结束早于通知。让第2次假模型调用显式等待真实job后，Linux稳定复现旧断言失败；生产loop会在阶段末收割followup并继续同轮，是合法行为。
+- 修复：仅测试改为release文件gate，先保证后台仍running，再释放并await真实job，下一轮验证完成通知、输出与任务状态；finally取消/回收并关闭Agent。取消固定0.1/0.3秒阶段sleep，也不假定通知出现在第二轮第一次provider调用。
+- 验证：Linux/Windows定点各1项通过；生产后台调度未修改。主代理修订后24项定点（含三个真实SDK契约）通过，不是新增benchmark。

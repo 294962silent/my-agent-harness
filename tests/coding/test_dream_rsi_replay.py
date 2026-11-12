@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import sys
 import subprocess
+from types import SimpleNamespace
 
 import pytest
 
@@ -121,6 +122,68 @@ def test_worker_environment_does_not_inherit_credentials_home_or_pythonpath(monk
     env = _worker_environment()
     assert "PRIVATE" not in repr(env)
     assert "HOME" not in env and "USERPROFILE" not in env
+
+
+def test_unix_cleanup_waits_for_group_exit_ack_after_root_has_exited(monkeypatch):
+    from my_coding_agent import dream_rsi_replay as adapter
+
+    signals, observed, sleeps = [], [], []
+    clock = [0.0]
+    states = iter([True, True, False])
+
+    def alive(pgid, **kwargs):
+        observed.append(pgid)
+        return next(states)
+
+    def sleep(seconds):
+        sleeps.append(seconds)
+        clock[0] += seconds
+
+    monkeypatch.setattr(adapter.os, "killpg", lambda pid, sig: signals.append((pid, sig)), raising=False)
+    monkeypatch.setattr(adapter.signal, "SIGKILL", 9, raising=False)
+    monkeypatch.setattr(adapter, "_unix_group_alive", alive, raising=False)
+    monkeypatch.setattr(adapter.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(adapter.time, "sleep", sleep)
+    # wait() reaps only the root, whose return code was already available.
+    root = SimpleNamespace(pid=4242, wait=lambda timeout: 0)
+    adapter._stop_unix_group(root)
+    assert signals == [(4242, adapter.signal.SIGKILL)]
+    assert observed == [4242, 4242, 4242] and len(sleeps) == 2
+
+
+def test_unix_cleanup_reports_failure_when_group_never_acknowledges_exit(monkeypatch):
+    from my_coding_agent import dream_rsi_replay as adapter
+
+    clock = [0.0]
+    monkeypatch.setattr(adapter.os, "killpg", lambda *args: None, raising=False)
+    monkeypatch.setattr(adapter.signal, "SIGKILL", 9, raising=False)
+    monkeypatch.setattr(adapter, "_unix_group_alive", lambda *args, **kwargs: True, raising=False)
+    monkeypatch.setattr(adapter.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(adapter.time, "sleep", lambda seconds: clock.__setitem__(0, clock[0] + seconds))
+    root = SimpleNamespace(pid=4242, wait=lambda timeout: 0)
+    with pytest.raises(RuntimeError, match="cleanup deadline"):
+        adapter._stop_unix_group(root, timeout_seconds=0.02)
+
+
+def test_linux_group_status_ignores_zombies_but_requires_live_members_to_exit(tmp_path, monkeypatch):
+    from my_coding_agent import dream_rsi_replay as adapter
+
+    proc = tmp_path / "proc"
+    child = proc / "42"
+    child.mkdir(parents=True)
+    other = proc / "43"
+    other.mkdir()
+    (other / "stat").write_bytes(b"43 (unrelated) R 1 9999 0")
+    monkeypatch.setattr(adapter.sys, "platform", "linux")
+    monkeypatch.setattr(adapter, "Path", lambda _: proc)
+    stat = child / "stat"
+    # /proc comm can contain spaces and closing parentheses.
+    stat.write_bytes(b"42 (worker (child)) Z 1 4242 0")
+    assert not adapter._unix_group_alive(4242, timeout_seconds=1)
+    stat.write_bytes(b"42 (worker (child)) R 1 4242 0")
+    assert adapter._unix_group_alive(4242, timeout_seconds=1)
+    stat.unlink()
+    assert not adapter._unix_group_alive(4242, timeout_seconds=1)
 
 
 def test_timeout_stops_started_worker_and_descendant(tmp_path, monkeypatch):

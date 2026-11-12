@@ -14,7 +14,7 @@
 - 已完成v2固定小样本：6题中5题gold可用，on2/5、off1/5，7次空补丁、3次实际测试通过。160请求保守账本$0.503462；on11个artifact、回读0，cache_read仅158/160覆盖。支持真实投影/预算/官方评分链路，不证明稳定质量、费用或KV提升。详见[报告和原始证据](../experiments/results/swe-v2-pilot-20261112/REPORT.md)；历史v1单例另保留。该SWE批次没有观测到真实回读。
 - 后续[隔离日志探针](../experiments/results/artifact-capability-20261112/README.md)观察到两次真实回读：隐藏中段进入后续Provider输入；但四请求上限内on最终答对0/2，off为2/2。共12请求/$0.009106，SDK前元数据审计，不是wire抓包。支持回读链路可调用，不支持端到端收益，也不能替代SWE任务成绩。
 - [三题预算提示对照](../experiments/results/swe-budget-visibility-20261112/REPORT.md)两组均1/3通过、共4空补丁，96请求/$0.307190；两组投影恒on，100/100响应后工作树观察available，read/search仍0。静态提示保留为可选且默认关闭，面板没有提供成功率改善证据。累计消费$0.888355，后续benchmark依用户新指令暂停。
-- [三项可选集成](../integrations/README.md)已具备安装/配置/调用入口：Mem0候选索引经本地有效事实重验、超时熔断及owned客户端清理；Langfuse全局装配、原observer保留及缓存用量映射；Dream真实固定SDK的参考策略回放与进程树清理。主代理最终all-extras代码回归1254 passed、2 skipped、5 subtests passed，SDK契约不是效果消融，不与历史测试数累加。
+- [三项可选集成](../integrations/README.md)已具备安装/配置/调用入口：Mem0候选索引经本地有效事实重验、超时熔断及owned客户端清理；Langfuse全局装配、原observer保留及缓存用量映射；Dream真实固定SDK的参考策略回放与进程树清理。适配初版ec0fcdc的本地all-extras回归1254 passed、2 skipped、5 subtests passed；后续Linux CI修订的定点24项通过，最终跨平台状态见PR checks。SDK契约不是效果消融，重叠批次不累加。
 - 发现并修复官方empty_patch被误标为环境异常的统计问题；保留原报告和旧state，另存派生分类并提供可移植离线重算。生成版本765与事后分析修复版本分开，不通过重试或改题消除失败。
 
 ## 尚不能支持的说法

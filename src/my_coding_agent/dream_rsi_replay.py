@@ -115,6 +115,73 @@ def _worker_environment() -> dict[str, str]:
     return result
 
 
+def _unix_group_alive(pgid: int, *, timeout_seconds: float) -> bool:
+    """Observe executable group members; a zombie cannot run or retain children.
+
+    killpg() only queues a signal. In particular, reaping the root after its
+    normal exit says nothing about whether a descendant has consumed SIGKILL.
+    """
+    if sys.platform.startswith("linux"):
+        try:
+            entries = list(Path("/proc").iterdir())
+        except OSError:
+            raise RuntimeError("cannot inspect replay process group") from None
+        for entry in entries:
+            if not entry.name.isdecimal():
+                continue
+            try:
+                # comm may contain spaces and parentheses; fields after the last
+                # ')' start with state, ppid, pgrp. No argv or environment read.
+                fields = (entry / "stat").read_bytes().rsplit(b")", 1)[1].split()
+                if int(fields[2]) == pgid and fields[0] not in (b"Z", b"X"):
+                    return True
+            except (FileNotFoundError, ProcessLookupError):
+                continue
+            except (OSError, ValueError, IndexError):
+                # Unrelated /proc entries can be hidden; inability to inspect an
+                # entry belonging to this group must not become cleanup success.
+                try:
+                    if os.getpgid(int(entry.name)) == pgid:
+                        raise RuntimeError("cannot inspect replay process group member") from None
+                except ProcessLookupError:
+                    pass
+        return False
+    # A portable, conservative fallback. An unavailable/malformed process table
+    # fails closed instead of treating a successful kill() as exit confirmation.
+    try:
+        result = subprocess.run(
+            ["ps", "-eo", "pgid=,stat="], env=_worker_environment(),
+            stdin=subprocess.DEVNULL, capture_output=True, check=True,
+            timeout=min(1.0, timeout_seconds),
+        )
+        for line in result.stdout.splitlines():
+            group, state = line.split()
+            if int(group) == pgid and state[:1] not in (b"Z", b"X"):
+                return True
+        return False
+    except (OSError, ValueError, subprocess.SubprocessError):
+        raise RuntimeError("cannot verify replay process group cleanup on this platform") from None
+
+
+def _stop_unix_group(process, *, timeout_seconds: float = 5) -> None:
+    deadline = time.monotonic() + timeout_seconds
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=max(0, deadline - time.monotonic()))
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("replay process group cleanup deadline exceeded") from None
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError("replay process group cleanup deadline exceeded")
+        if not _unix_group_alive(process.pid, timeout_seconds=remaining):
+            return
+        time.sleep(min(0.01, remaining))
+
+
 def _stop_tree(process):
     if os.name == "nt":
         if process.poll() is None:
@@ -132,10 +199,8 @@ def _stop_tree(process):
                 process.wait(timeout=5)
                 raise RuntimeError("worker tree cleanup failed")
     else:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        _stop_unix_group(process)
+        return
     process.wait(timeout=5)
 
 
@@ -248,6 +313,7 @@ def _run_worker(command, *, cwd: Path, timeout_seconds: float) -> int:
         **options,
     )
     job = None
+    cleanup_started = False
     try:
         if os.name == "nt":
             job = _WindowsJob(process)
@@ -261,6 +327,7 @@ def _run_worker(command, *, cwd: Path, timeout_seconds: float) -> int:
                     process.stdin.close()
         return process.wait(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
+        cleanup_started = True
         if job is not None:
             job.close()
             process.wait(timeout=5)
@@ -268,6 +335,7 @@ def _run_worker(command, *, cwd: Path, timeout_seconds: float) -> int:
             _stop_tree(process)
         raise TimeoutError("DREAM-RSI replay deadline exceeded") from None
     except BaseException:
+        cleanup_started = True
         if job is not None:
             job.close()
             process.wait(timeout=5)
@@ -279,7 +347,7 @@ def _run_worker(command, *, cwd: Path, timeout_seconds: float) -> int:
             process.stdin.close()
         if job is not None:
             job.close()
-        if os.name != "nt" and process.poll() is not None:
+        if os.name != "nt" and not cleanup_started:
             _stop_tree(process)
 
 

@@ -700,3 +700,11 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 真实SDK层级：tests/integrations三个用例经生产适配器；Mem0为本地Qdrant/SQLite+确定性假embedding、拒绝LLM与网络；Langfuse为真实SDK内存SpanExporter+生产sink/flush，非云端收录；Dream为CLI/worker→真实SDK的合成评分树，非效果benchmark。主代理wheel build成功，6项必需模块/TUI入口、Dream console及optional metadata均核验。环境无pyright，未声称类型检查通过。
 - 本机初次全套失败为直接调用新venv Python时，工具子进程仍从PATH选全局Conda造成stdlib错配；改uv run后剩余原cmd无cat/pipefail差异，指定已存在Git Bash后用例通过、整套无排除通过。未改无关Bash产品实现或靠跳过用例取绿。最终source提交/最新head CI以本次实际PR/checks为准，此日志不预填远端成功。
 - 优势是外部能力具有真实可用接缝、配置/所有权明确、结果可解释；代价是可选SDK/向量缓存、额外embedding/导出成本和回放输入准备。借鉴Mem0的索引API、Langfuse官方SDK/OTel、Dream官方trace/policy格式，不照搬外部论文/榜单数字；新增质量/消融指标依用户要求留待后续独立计划。
+
+### E-THREE-CI：2026-11-13 / Linux退出确认与后台E2E时序
+
+- 适配ec0fcdc240a1cb2cfe9760f9bdb113db95ef181f已推送，PR2范围/说明已更新。实际[run43257245212](https://github.com/294962silent/my-agent-harness/actions/runs/43257245212)的Windows3.11/3.13均success，Linux3.11/3.13失败；不以本地1254或Windows绿灯代替Linux验收，也不简单重跑取绿。
+- Dream normal-exit后代/proc状态仍R：两Linux均失败。SOL-2原样复现并读取pending signal，证实SIGKILL已排队但约1.25ms后才退出，原代码只wait根。仅dream_rsi_replay.py补Unix整组有界退出确认（非Z/X成员），无法确认5秒报错，不引入全局subreaper/新依赖，不用sleep改测试窗口。测试覆盖受控存活序列、永不确认失败、comm/Z/R解析与真实清理；作者Linux3.12和Windows3.13各20项通过，SOL-1只读复核无阻断。
+- 另一失败仅Linux3.11：[background E2E job](https://github.com/294962silent/my-agent-harness/actions/runs/43257245212/job/131318683497)首答Completed而非Waiting。SOL-1用真实job完成事件门控第2次假模型响应，稳定复现原断言；后台完成即add_followup，loop阶段末继续同run是合法语义，没有产品逻辑缺陷证据。仅改test_coding_agent_tasks_e2e.py，用release文件控制真实子进程、await真实job、第二轮全调用范围查通知/状态，finally回收；移除小sleep阶段假定。Linux3.12和Windows3.13各1项通过，SOL-2只读复核无阻断。
+- 主代理修订后实际 `uv run --frozen --all-extras python -m pytest tests/coding/test_coding_agent_tasks_e2e.py tests/coding/test_dream_rsi_replay.py tests/integrations -q -o addopts= --import-mode=importlib --tb=short`：**24 passed in6.30s**，含三个真实SDK离线契约；Ruff与diffcheck通过。该批与旧1254/作者20有重叠，不累加。新的完整矩阵仍须由最新head实际验证，最终终态写PR/checks，不为记录绿灯再触发docs-only矩阵。
+- 这批没有模型、embedding、云上传、SWE或效果benchmark；账本仍300请求/$0.888355。WindowsJob路径、三项适配范围及默认关闭不变，旧CI失败和全部原始实验保留。
