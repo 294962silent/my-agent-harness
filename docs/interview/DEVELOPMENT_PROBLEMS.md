@@ -144,3 +144,4 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 修复：只在参数化测试中注入RunBudget虚拟clock与run_lifecycle局部asyncio.wait代理，前置事件可完成，目标await进入后再推进原0.08秒deadline。仍走生产cancel/gather/finally，断言started、stopped、budget_exhausted/max_seconds和owner释放。
 - 复核补充：独立审查指出前置阶段可能意外挂起，再加5秒测试watchdog及finally a.aclose；watchdog不是被测产品预算。
 - 验证：主代理Windows定点15 passed in1.08s，执行助手Linux同版15 passed in1.43s，Ruff与独立review通过；本地未运行Python3.11，需GitHub最终矩阵验证。实验生成源码、raw报告和费用均不改，未重跑模型。
+- 后续实际复核：47a89aa的GitHub run43228948231四组全部成功，包含原失败的Ubuntu/Python3.11。原失败run链接与复现仍保留。

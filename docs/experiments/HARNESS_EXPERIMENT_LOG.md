@@ -638,3 +638,12 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 仅改 `tests/core/test_run_lifecycle.py`：120ms前置hook确定性复现旧断言；注入已有RunBudget的虚拟clock及模块局部wait代理，在选定await开始后触发原0.08deadline，保持真实取消/gather/finally、预算终态与owner释放断言。独立复核后补5秒外层测试watchdog+finally a.aclose，不改变产品预算或全局asyncio。
 - 主代理实际命令 `pytest tests/core/test_run_lifecycle.py -q -o addopts= --import-mode=importlib`，**15 passed in1.08s**；作者Linux/Python3.12同版15 passed in1.43s，Ruff/diffcheck与另一助手只读review通过。本地不宣称运行过3.11；后续新head矩阵以实际CI记录为准。
 - 这一修复只改测试和记录，生成源码765、已归档81文件、原评分、消费$0.503462均保持。没有新模型请求、评分重跑或上游推送。
+
+
+### E-SWE-DELIVERY：2026-11-12 / v2小样本最终交付
+
+- 运行入口与分段执行已推送 `3e2d345` / `7652168`，统计修复和121文件证据提交 `2857b9c`，CI测试稳定性修复提交 `47a89aa8538b2d5d061555e0a5c4048bc0b67ce7`，均在自己的 `origin/codex/interview-harness-redesign`。原checkout修改保留，无upstream推送或自动合并。
+- PR [#2 Unify Agent runtime, observation and reproducible SWE campaigns](https://github.com/294962silent/my-agent-harness/pull/2) 已更新标题、最终实现、真实结果与限制；仍以#1的 `codex/context-memory-reliability` 为base。实际模型生成版本为765，后续统计和测试修复均未重新调用模型。
+- 测试修复后的[CI run43228948231](https://github.com/294962silent/my-agent-harness/actions/runs/43228948231)四组 **completed/success**：Ubuntu/Python3.11、3.13，Windows/Python3.11、3.13。此前失败平台已实际重验成功，不将本地3.12/3.13替代3.11证据。后续本节仅文档补交，最新head状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
+- 提交前复核：121个明确路径通过实际现有API凭据精确匹配扫描（无匹配）、86个JSON解析、本批新增本地链接检查无缺失；两条交付前已存在的历史档案链接保留。108份本批证据的index blob与原文件逐字节相同，staged diff check通过；没有 `git add .`、金标patch/认证缓存/大镜像入库。
+- 已完成用户授权的通用SWE入口与v2小样本。最终selected6/eligible5、10模型trial、160真实请求；on2/5/off1/5、7empty；本批保守账本$0.503462，累计$0.572059。未运行完整300题，未恢复DSH、未接Mem0/Dream-RSI或Langfuse远端，未依据五题与缺失cache字段宣称稳定提升。
