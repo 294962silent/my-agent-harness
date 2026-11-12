@@ -136,3 +136,11 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 本轮观察：160次请求、10个trial全部budget_exhausted；7次空补丁、3次官方测试通过。on外置11份，但read/search响应均0。两组均有空补丁，不能直接归因为Artifact。
 - 当前处理：保持本批参数、题目和原始失败，不用增加步数或重试美化结果；保留生成版本与只读重算接口。
 - 待验证：可以分别研究剩余预算提示、16/32请求上限、回读提示，每次只改变一个变量。尚未执行这些实验，不承诺它们能提高完成率。当前证据不支持直接扩成300题。
+
+## P18：80毫秒整体预算测试依赖CI机器速度
+
+- 复现：分析修复提交2857b9c的CI run43227265253，Ubuntu/Python3.11在prepare阶段的started断言失败。总0.08秒可能在初始化/文件I/O就耗尽，产品提前终止是合法行为；测试却假定目标阶段必然已经进入。
+- 确定性证据：给测试前置输入hook增加120毫秒延迟，旧测试稳定复现started=False；没有修改生产deadline语义。
+- 修复：只在参数化测试中注入RunBudget虚拟clock与run_lifecycle局部asyncio.wait代理，前置事件可完成，目标await进入后再推进原0.08秒deadline。仍走生产cancel/gather/finally，断言started、stopped、budget_exhausted/max_seconds和owner释放。
+- 复核补充：独立审查指出前置阶段可能意外挂起，再加5秒测试watchdog及finally a.aclose；watchdog不是被测产品预算。
+- 验证：主代理Windows定点15 passed in1.08s，执行助手Linux同版15 passed in1.43s，Ruff与独立review通过；本地未运行Python3.11，需GitHub最终矩阵验证。实验生成源码、raw报告和费用均不改，未重跑模型。

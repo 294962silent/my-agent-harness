@@ -100,10 +100,43 @@ async def test_generator_close_releases_owner(tmp_path):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("stage", ["prepare", "summary", "tool", "tool_hook"])
-async def test_deadline_interrupts_each_awaited_runtime_stage(tmp_path, stage):
+async def test_deadline_interrupts_each_awaited_runtime_stage(tmp_path, stage, monkeypatch):
+    from my_agent_core import run_lifecycle
     from my_agent_core.hooks import ToolCallHook
     from my_agent_core.tools import tool
     started, stopped = asyncio.Event(), asyncio.Event()
+    now = [0.0]
+
+    class StageBudget(run_lifecycle.RunBudget):
+        def __init__(self, limits):
+            super().__init__(limits, clock=lambda: now[0])
+
+    async def wait_for_stage_deadline(tasks, *, timeout):
+        # A virtual timer expires only after the selected awaited stage starts.
+        # Earlier events/setup may take arbitrary wall time without stealing the
+        # deadline this test specifically needs to exercise at that stage.
+        tasks = set(tasks)
+        entered = asyncio.create_task(started.wait())
+        try:
+            done, _ = await asyncio.wait(tasks | {entered}, return_when=asyncio.FIRST_COMPLETED)
+            if entered not in done:
+                return done & tasks, tasks - done
+            assert timeout is not None
+            now[0] += timeout
+            return await asyncio.wait(tasks, timeout=0)
+        finally:
+            entered.cancel()
+            await asyncio.gather(entered, return_exceptions=True)
+
+    class StageAsyncio:
+        wait = staticmethod(wait_for_stage_deadline)
+
+        def __getattr__(self, name):
+            return getattr(asyncio, name)
+
+    monkeypatch.setattr(run_lifecycle, "RunBudget", StageBudget)
+    monkeypatch.setattr(run_lifecycle, "asyncio", StageAsyncio())
+
     async def block():
         started.set()
         try:
@@ -125,6 +158,11 @@ async def test_deadline_interrupts_each_awaited_runtime_stage(tmp_path, stage):
     llm = LLM()
     a = Agent(llm=llm, tools=[waiter], session=Session(path=tmp_path / "s.jsonl"), memory_dir=False,
               run_limits=RunLimits(max_seconds=0.08), context_budget=100000)
+    async def slow_input(event):
+        # Deterministic reproduction: the old 80ms wall timer expires here,
+        # before prepare/summary/tool/hook has any chance to enter block().
+        await asyncio.sleep(0.12)
+    a.hooks.register(UserInputHook, slow_input)
     if stage == "prepare":
         async def prepare(messages):
             await block()
@@ -139,12 +177,20 @@ async def test_deadline_interrupts_each_awaited_runtime_stage(tmp_path, stage):
         async def hook(event):
             await block()
         a.hooks.register(ToolCallHook, hook)
-    events = [event async for event in a.prompt_stream("execute")]
-    assert started.is_set()
-    assert stopped.is_set()
-    assert events[-1].stop_reason == "budget_exhausted"
-    assert a.active_run_id is None
-    await a.aclose()
+    async def collect():
+        return [event async for event in a.prompt_stream("execute")]
+    try:
+        # Fail fast if setup never reaches the selected stage. This watchdog is
+        # separate from the unchanged 80ms virtual deadline under test.
+        events = await asyncio.wait_for(collect(), timeout=5)
+        assert started.is_set()
+        assert stopped.is_set()
+        assert events[-1].stop_reason == "budget_exhausted"
+        assert events[-1].limit_details["kind"] == "max_seconds"
+        assert events[-1].limit_details["observed"] >= events[-1].limit_details["limit"] == 0.08
+        assert a.active_run_id is None
+    finally:
+        await a.aclose()
 
 
 @pytest.mark.anyio

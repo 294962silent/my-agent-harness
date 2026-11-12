@@ -629,3 +629,12 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 数据分析脚本 `analysis/recompute_metrics.py`从plan.run_ids划分本批/历史，只解析plan/ledger，逐字段覆盖完整才给total。主代理重新执行后与 `analysis/metrics.json` 逐对象一致；同大小文件篡改、路径逃逸拒绝，换工作目录复算相同。此脚本与许可证/预检文件不改raw manifest。
 - 验证：原empty误分类回归先失败，再实现；作者Windows/Linux同版窄26项通过，另一助手三文件只读复核无阻断。主代理最终 `pytest tests/experiments -q -o addopts= --import-mode=importlib` 为 **80 passed、2 skipped、5 subtests passed in11.57s**（skip为缺可选Harbor），Ruff通过；CLI和精确费用重算已实际执行。批次数量不累加为独立测试总数。
 - 文档：更新README、面试CLAIMS/上下文/成本模块及开发问题P13–P17；完整报告见 `results/swe-v2-pilot-20261112/REPORT.md`。本批借用官方SWE任务/镜像/评分协议，调度、归档与分类为本项目实现，不将其他Harness分数混作对照；Mem0、Dream-RSI和真实Langfuse服务仍未接入。后续Git提交与CI状态以实际记录为准。
+
+
+### E-SWE-CI：2026-11-12 / 跨平台deadline测试稳定性修复
+
+- `3e2d345`交付catalog/campaign，`7652168`交付分段执行并作为本次实际生成版本；统计修复、121文件证据与面试材料已提交推送 `2857b9c`。PR #2标题/说明已按最终范围更新，未合并。
+- `2857b9c`的CI [run43227265253](https://github.com/294962silent/my-agent-harness/actions/runs/43227265253)暴露Ubuntu/Python3.11的 `test_deadline_interrupts_each_awaited_runtime_stage[prepare]`：总0.08秒deadline在前置阶段已过，started=False。先读取原失败日志定位，未只通过重跑掩盖失败。
+- 仅改 `tests/core/test_run_lifecycle.py`：120ms前置hook确定性复现旧断言；注入已有RunBudget的虚拟clock及模块局部wait代理，在选定await开始后触发原0.08deadline，保持真实取消/gather/finally、预算终态与owner释放断言。独立复核后补5秒外层测试watchdog+finally a.aclose，不改变产品预算或全局asyncio。
+- 主代理实际命令 `pytest tests/core/test_run_lifecycle.py -q -o addopts= --import-mode=importlib`，**15 passed in1.08s**；作者Linux/Python3.12同版15 passed in1.43s，Ruff/diffcheck与另一助手只读review通过。本地不宣称运行过3.11；后续新head矩阵以实际CI记录为准。
+- 这一修复只改测试和记录，生成源码765、已归档81文件、原评分、消费$0.503462均保持。没有新模型请求、评分重跑或上游推送。
