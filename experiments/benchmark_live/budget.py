@@ -45,6 +45,7 @@ class BudgetLedger:
         max_requests: int = 16,
         time_cap: float = 600,
         spend_ceiling_usd: float | None = None,
+        request_ceiling: int | None = None,
     ):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -62,6 +63,9 @@ class BudgetLedger:
                 raise ValueError("spend ceiling must be positive, finite and at most 30 USD")
             self.spend_ceiling = int(ceiling * 1_000_000)
         self.max_requests, self.time_cap = max_requests, time_cap
+        if request_ceiling is not None and (type(request_ceiling) is not int or request_ceiling <= 0):
+            raise ValueError("request ceiling must be a positive integer")
+        self.request_ceiling = request_ceiling
         with self.lock:
             if not self.path.exists():
                 self._write(
@@ -84,6 +88,11 @@ class BudgetLedger:
 
     def _read(self):
         return json.loads(self.path.read_text(encoding="utf-8"))
+
+    @property
+    def effective_request_limit(self):
+        """One read-only source for the local/root min used by reservations and hints."""
+        return min(self.max_requests, self.request_ceiling) if self.request_ceiling is not None else self.max_requests
 
     def _write(self, data):
         fd, name = tempfile.mkstemp(dir=self.path.parent, prefix=".budget-")
@@ -130,7 +139,7 @@ class BudgetLedger:
             requests = [r for r in data["requests"] if r["run_id"] == run_id]
             if run["blocked"] or any(r["status"] == "pending" for r in requests):
                 raise BudgetStop("run has unknown/inflight usage; start no further requests")
-            if len(requests) >= self.max_requests or time.time() - run["started_at"] >= self.time_cap:
+            if len(requests) >= self.effective_request_limit or time.time() - run["started_at"] >= self.time_cap:
                 raise BudgetStop("run request or time cap reached")
             charged = sum(
                 r["cost_micro_usd"] if r["cost_micro_usd"] is not None else r["held_micro_usd"]

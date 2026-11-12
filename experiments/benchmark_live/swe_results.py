@@ -34,6 +34,20 @@ ID_FIELDS = {
 KNOWN_CATEGORIES = frozenset(("empty_patch", "unresolved", "resolved"))
 
 
+def factor_metadata(plan, trial):
+    """Keep experimental condition separate from actual projection/guidance."""
+    factor = plan.get("factor", "artifact_projection")
+    arm = trial["arm"]
+    if factor not in ("artifact_projection", "budget_visibility") or arm not in ("on", "off"):
+        raise ValueError("invalid experiment factor or condition")
+    projection = arm if factor == "artifact_projection" else "on"
+    guidance = "static" if factor == "budget_visibility" and arm == "on" else "none"
+    expected = {"factor": factor, "condition_arm": arm, "artifact_projection": projection, "budget_guidance": guidance}
+    if any(key in trial and trial[key] != value for key, value in expected.items()):
+        raise ValueError("trial factor dimensions conflict with frozen condition")
+    return expected
+
+
 def _unknown(reason, category="unknown"):
     return {"category": category, "resolved": None, "test_executed": None, "reason": reason}
 
@@ -263,7 +277,8 @@ def archive_outcomes(raw_dir, *, expected_manifest_sha256=None):
                 "previous_cached_audit": None,
                 "raw_report_or_cache_modified": False,
             }
-        records.append({"trial_id": identity, "instance_id": trial["instance_id"], "arm": trial["arm"], **derived})
+        records.append({"trial_id": identity, "instance_id": trial["instance_id"], "arm": trial["arm"],
+                        **factor_metadata(plan, trial), **derived})
     summary = summarize_outcomes(records)
     by_arm = {arm: summarize_outcomes([row for row in records if row["arm"] == arm]) for arm in ("on", "off")}
     for arm in by_arm:
@@ -272,6 +287,7 @@ def archive_outcomes(raw_dir, *, expected_manifest_sha256=None):
         )
     return {
         "analysis_parser_version": PARSER_VERSION,
+        "factor": plan.get("factor", "artifact_projection"),
         "analysis_parser_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "generation_source_commit": manifest["source_commit"],
         "archive_manifest_sha256": manifest_sha,

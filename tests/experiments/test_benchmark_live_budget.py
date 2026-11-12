@@ -242,3 +242,34 @@ def test_optional_absolute_ceiling_is_atomic_without_changing_global_policy(tmp_
     )
     with pytest.raises(ValueError):
         BudgetLedger(path, spend_ceiling_usd=float("nan"))
+
+
+def test_optional_request_ceiling_is_same_lock_local_policy(tmp_path):
+    path = tmp_path / "ledger.json"
+    ledger = BudgetLedger(path, request_ceiling=4)
+
+    def reserve(i):
+        try:
+            request = BudgetLedger(path, request_ceiling=4).reserve(
+                "probe", input_bound=1, max_output=1, purpose="agent"
+            )
+            BudgetLedger(path).settle(request, usage={"prompt_tokens": 1, "completion_tokens": 1}, status="ok")
+            return True
+        except BudgetStop:
+            return False
+
+    # Independent ledger objects contend over one run, including pending-request protection.
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(reserve, range(40)))
+    while len(ledger.snapshot()["requests"]) < 4:
+        assert reserve(0)
+    assert not reserve(0)
+    assert ledger.effective_request_limit == 4 and ledger.max_requests == 16
+    with pytest.raises(AttributeError):
+        ledger.effective_request_limit = 16
+    assert ledger.snapshot()["max_requests"] == 16
+    assert "request_ceiling" not in ledger.snapshot()
+    assert BudgetLedger(path).effective_request_limit == 16
+    for invalid in (0, -1, True, 1.5):
+        with pytest.raises(ValueError):
+            BudgetLedger(path, request_ceiling=invalid)

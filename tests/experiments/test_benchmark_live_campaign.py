@@ -262,11 +262,12 @@ async def test_unknown_usage_stops_current_and_reentered_campaign(tmp_path):
 
 
 @pytest.mark.anyio
-async def test_default_scorer_uses_official_command_without_model_credentials(tmp_path, monkeypatch):
+@pytest.mark.parametrize("factor,condition",[("artifact_projection","on"),("budget_visibility","off"),("budget_visibility","on")])
+async def test_default_scorer_uses_official_command_without_model_credentials(tmp_path, monkeypatch, factor, condition):
     args = make_inputs(tmp_path, n=1)
     task = json.loads(Path(args["task_inputs"]).read_text())["tasks"][0]
     prediction = tmp_path / "prediction.jsonl"
-    prediction.write_text("{}\n")
+    prediction.write_text(json.dumps({"model_name_or_path":"my-agent-harness-"+condition})+"\n")
     output = tmp_path / "score"
     monkeypatch.setenv("LIVE_BENCH_API_KEY", "SYNTHETIC_SECRET")
     monkeypatch.setenv("OPENAI_API_KEY", "SYNTHETIC_SECRET")
@@ -275,7 +276,8 @@ async def test_default_scorer_uses_official_command_without_model_credentials(tm
 
     async def create(*command, **kwargs):
         captured.update(command=command, **kwargs)
-        (output / "official.json").write_text(json.dumps(official_summary(task["instance_id"], "resolved")))
+        name=json.loads(prediction.read_text())["model_name_or_path"]+".frozen-id.json"
+        (output / name).write_text(json.dumps(official_summary(task["instance_id"], "resolved")))
 
         class Process:
             async def wait(self):
@@ -285,18 +287,21 @@ async def test_default_scorer_uses_official_command_without_model_credentials(tm
 
     monkeypatch.setattr(campaign.asyncio, "create_subprocess_exec", create)
     report = await campaign._score(
-        trial={"instance_id": task["instance_id"], "score_run_id": "frozen-id"},
+        trial={"instance_id": task["instance_id"], "score_run_id": "frozen-id", "arm": condition,
+               **campaign.factor_metadata({"factor":factor},{"arm":condition})},
         task=task,
         output=output,
         prediction=prediction,
     )
-    assert report == output / "official.json"
+    assert report == output / ("my-agent-harness-"+condition+".frozen-id.json")
     assert captured["command"][1:3] == ("-m", "swebench.harness.run_evaluation")
     assert "--predictions_path" in captured["command"] and "--dataset_name" in captured["command"]
     assert not any(k in captured["env"] for k in ("LIVE_BENCH_API_KEY", "OPENAI_API_KEY"))
     assert "SYNTHETIC_SECRET" not in (output / "command.json").read_text()
     derived = json.loads((output / "analysis-outcome.json").read_text())
     assert derived["analysis_parser_version"] and derived["outcome"]["resolved"] is True
+    assert derived["condition_arm"]==condition and derived["factor"]==factor
+    assert derived["artifact_projection"]==("on" if factor=="budget_visibility" else condition)
 
 
 @pytest.mark.anyio
@@ -422,6 +427,31 @@ def test_growing_shared_ledger_is_not_a_frozen_input(tmp_path):
     assert summary["budget"]["global_settled_usd"] == 0.000003
     plan = json.loads((root / "plan.json").read_text())
     assert not any(Path(r["path"]) == args["ledger_path"] for r in plan["input_files"])
+
+
+@pytest.mark.anyio
+async def test_budget_visibility_factor_keeps_both_projections_on(tmp_path, monkeypatch):
+    from experiments.benchmark_live import swe_agent
+    root = campaign.plan_campaign(**make_inputs(tmp_path, n=1), factor="budget_visibility")
+    plan=json.loads((root/"plan.json").read_text())
+    assert plan["factor"]=="budget_visibility"
+    captured=[]
+    async def solve(**kwargs): captured.append(kwargs)
+    monkeypatch.setattr(swe_agent,"solve",solve)
+    for trial in plan["trials"]:
+        assert trial["artifact_projection"]=="on"
+        assert trial["budget_guidance"]==("static" if trial["arm"]=="on" else "none")
+        await campaign._execute(trial=trial,plan=plan,output=tmp_path/trial["trial_id"])
+    assert {r["condition_arm"] for r in captured}=={"on","off"}
+    assert all(r["arm"]=="on" and r["experiment_factor"]=="budget_visibility" for r in captured)
+    assert {r["budget_guidance"] for r in captured}=={"none","static"}
+
+
+def test_default_factor_preserves_legacy_projection_mapping(tmp_path):
+    root=campaign.plan_campaign(**make_inputs(tmp_path,n=1))
+    plan=json.loads((root/"plan.json").read_text())
+    assert plan["factor"]=="artifact_projection"
+    assert all(t["artifact_projection"]==t["arm"] and t["budget_guidance"]=="none" for t in plan["trials"])
 
 
 @pytest.mark.anyio

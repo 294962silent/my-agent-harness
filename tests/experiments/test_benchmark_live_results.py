@@ -14,6 +14,7 @@ from experiments.benchmark_live.swe_results import (
     derive_outcome_record,
     parse_official_outcome,
     summarize_outcomes,
+    factor_metadata,
 )
 
 INSTANCE = "pytest-dev__pytest-5103"
@@ -213,9 +214,35 @@ def test_relocated_real_archive_is_recomputed_and_tampering_is_rejected(tmp_path
     assert result["known_official_outcomes"] == 10 and result["test_executed_trials"] == 3
     assert result["complete_known_pairs"] == 5
     assert result["by_arm"]["on"]["resolved_trials"] == 2 and result["by_arm"]["off"]["resolved_trials"] == 1
+    assert result["factor"] == "artifact_projection"
+    assert all(r["artifact_projection"] == r["arm"] and r["budget_guidance"] == "none" for r in result["records"])
     patch = archive / "trials/01-pytest-dev__pytest-5103-on/official-summary.json"
     with patch.open("ab") as stream:
         stream.write(b" ")
     with pytest.raises(ValueError, match="checksum mismatch"):
         archive_outcomes(archive, expected_manifest_sha256=fingerprint)
     assert hashlib.sha256((original / "manifest.json").read_bytes()).hexdigest() == fingerprint
+
+
+def test_portable_budget_factor_preserves_condition_and_projection_dimensions(tmp_path):
+    raw=tmp_path/"raw"
+    raw.mkdir()
+    trials=[]
+    for arm in ("on","off"):
+        trial={"trial_id":"trial-"+arm,"instance_id":INSTANCE,"arm":arm}
+        trial.update(factor_metadata({"factor":"budget_visibility"},trial))
+        trials.append(trial)
+        directory=raw/"trials"/trial["trial_id"]
+        directory.mkdir(parents=True)
+        (directory/"official-summary.json").write_text(json.dumps(report("empty")))
+    plan={"factor":"budget_visibility","tasks":[{"instance_id":INSTANCE,"eligible":True}],"trials":trials}
+    (raw/"plan.json").write_text(json.dumps(plan))
+    files=[{"file":p.relative_to(raw).as_posix(),"bytes":p.stat().st_size,"sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+           for p in raw.rglob("*.json")]
+    (raw/"manifest.json").write_text(json.dumps({"source_commit":"SYNTHETIC_FIXTURE","plan_sha256":hashlib.sha256((raw/"plan.json").read_bytes()).hexdigest(),"files":files}))
+    result=archive_outcomes(raw)
+    assert result["factor"]=="budget_visibility"
+    assert all(r["artifact_projection"]=="on" and r["condition_arm"]==r["arm"] for r in result["records"])
+    assert {r["budget_guidance"] for r in result["records"]}=={"static","none"}
+    with pytest.raises(ValueError,match="conflict"):
+        factor_metadata({"factor":"budget_visibility"},{"arm":"off","artifact_projection":"off"})

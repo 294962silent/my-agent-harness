@@ -650,3 +650,22 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 最终head复核补充：文档提交f0d12c1的CI run43229586859在Ubuntu3.11暴露同文件另一项30ms模型启动假设（llm.closed=False，模型可以在前置deadline前根本未启动）。此前47的四组通过是历史事实，不能替代这个新head的检查。因此没有直接重跑CI取绿，而是审计整份15项测试并统一阶段同步fixture。
 - 最后一批仅测试修订：model_wait(.03)、四stage(.08)、消费者已收到MessageUpdate的部分工具意图deadline共用deadline_at_stage，原预算值不增；120ms受控延迟分别复现旧失败。仅early-deadline保留真实30ms且允许任何前置位置耗尽；0.5s close和5s收集均是阶段同步后的watchdog。生产代码、归档、模型/评分/费用不改。
 - 这批主代理Windows定点15 passed in1.21s，作者Linux同版15 passed in1.59s，Ruff/diffcheck与另一助手整份复核无阻断；新提交矩阵仍逐项跟踪。此后不再为写入CI终态而重复文档提交触发新矩阵，最终检查证据更新在PR正文及checks，最终答复只在新head实际四组通过后报告成功。
+
+
+### E-BUDGET-READBACK-DIAG：2026-11-12 / 空补丁与未回读的只读调查
+
+- 用户继续授权查明两项现象，并提供旧f0d12c1 CI失败邮件。两名Sol/medium继续执行，主代理负责设计/验收；子代理现场核PR2当前d437650/run43231106780四组success，旧30ms启动假设已修，不因历史邮件回退、重跑或更改通知设置。
+- 空补丁调查：10份原Session结构与原官方空/非空结果绑定。7个empty最支持未进入源码编辑，未见编辑失败/回滚/提取丢失正证据；唯一非零shell是读取/grep诊断错误。3个resolved首次可识别写入在10/13/14次模型调用附近。没有逐步git差异快照，不能绝对排除隐式修改；“均budget_exhausted”只是共同终止条件，不等于预算不足的因果证明。
+- 回读调查：相关四源码hash与765一致；11个artifact与canonical完整工具结果相同，生产只读回读全部匹配，重建预览隐藏中段合计32281字符并含完整handle/正确read指令，工具参数吻合。5个on中86个结构化调用均为shell，未见格式错误或可记录的回读意图。但Session不是原始Provider请求抓包，重建不能冒充实际传输；原SWE任务也没有“必须读隐藏中段”的标注，0回读本身不是已证实的接线缺陷。
+- 设计取舍：当前system要求实际编辑，但无16请求预算提示。首实验仅加初始静态cap信息，不增步数/其它策略，避免尚无安全追加接线时动态改写前缀。每shell后新增不入模型的只读worktree计数，改进“没有编辑”与“提取遗漏”的证据边界。隔离回读探针另测必要隐藏中段，不强制所有真实任务回读、不混作SWE成功率。
+- 方案与固定面板见 `docs/handoffs/2026-11-12-budget-visibility-readback-plan.md` 和 `results/swe-budget-visibility-20261112/SELECTION.md`。沿用原30美元账本与累计$0.572059，本批额外准入至多$2：probe阶段至多$0.25，随后SWE阶段至多$1.75。此记录时仅离线调查/方案，尚无新增模型请求或新效果结论。
+
+### E-BUDGET-READBACK-CODE：2026-11-12 / 静态预算可见性与受控回读探针
+
+- 改前 `d437650` 已修复截图所示旧 f0d12c1 的测试计时假设；主代理现场再核 run43231106780 四组 completed/success。旧失败通知仍是真实历史，不更改邮件通知或通过重跑掩盖失败。
+- `swe_agent.py` 新增默认关闭的 static guidance，初始 system 只告知真实 API 上限（含辅助），同 run 不改前缀。`budget.py` 新增本地 request_ceiling 与只读 effective_request_limit，预留和提示共用；旧账本的16请求/$30根政策保持。`swe_campaign.py` / `swe_results.py` 明确区分实验条件、artifact_projection、budget_guidance；预算实验两臂投影均开启，官方预测/评分标签仍跟随条件，旧计划默认解释为投影实验。
+- 每 shell 响应后新增宿主只读差异计数 sidecar，包含失败 shell；git --no-optional-locks 不写 index、不向模型反馈。观察或写盘失败隔离为 unavailable，不能掩盖原工具结果。指标是“响应后可见工作树差异”，新文件不自动称为源码编辑。
+- 新 `artifact_probe.py` 通过生产 Agent / Context / Artifact factory 验证隐藏中段回读，真实 Provider 入口只记元数据（SDK 前、非 wire）。四 trial、每 trial 四请求，且在原 FileLock 内执行 min(root16,local4)；提前泄漏在 reserve 前拒绝，用量未知停全批。合成输入 SHA、成功条件、费用见独立 probe README，未硬编码模型回读决策。
+- 作者 Windows/Linux 定点各17项、双方独立互审无阻断；主代理实际 `PYTHONPATH=src;.`，`python -m pytest tests/experiments -q -o addopts= --import-mode=importlib`：**114 passed、2 skipped、5 subtests passed in14.13s**。`python -m ruff check experiments/benchmark_live tests/experiments` 与 `git diff --check` 通过。CLI 实际动作为 plan/run/score/summarize（一次误用 create 的本地帮助命令被 argparse 拒绝，未发模型）。
+- 运维脚本离线准备初次按 list 读取旧任务文件，实际是 tasks 对象，已按原 schema 修正；首次冻结的 fixture 未重生、未覆盖。此时账本仍192请求/全部已结算/$0.572059；fixture SHA `e0babe0f79fa847f79eea3f42a6d0d71bdb00d75cfe6db4ac9e24fc2795c223d`，三题输入 SHA `e7cf61df7dc418648f677526e0e12bfaa19dc6bb630d21a37799ed106957c89f`。先提交冻结源码并验 CI，再发新模型请求。
+- 优势是把预算可见性与产物投影解耦，并补充真实回读/工作树证据；代价是额外观察开销和诊断脚手架。借鉴的是前批 DSH 的稳定前缀与 oh-my-pi/Hermes 的受限回读思路，本轮不调用 DSH、不将外部 Harness 成绩当基线，也未新增 Mem0/Dream-RSI/Langfuse 远端集成。尚无新模型效果结论。

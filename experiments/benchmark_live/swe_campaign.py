@@ -20,7 +20,7 @@ from uuid import uuid4, uuid5, NAMESPACE_URL
 from filelock import FileLock
 
 from .budget import BudgetLedger
-from .swe_results import PARSER_VERSION, parse_official_outcome, summarize_outcomes
+from .swe_results import PARSER_VERSION, parse_official_outcome, summarize_outcomes, factor_metadata
 
 ROOT = Path(__file__).resolve().parents[2]
 TASK_FIELDS = {"instance_id", "metadata", "gold_evidence", "evaluation_dataset", "evaluation_cwd"}
@@ -81,10 +81,13 @@ def _charged(rows):
     return sum(r["cost_micro_usd"] if r["cost_micro_usd"] is not None else r["held_micro_usd"] for r in rows)
 
 
-def plan_campaign(*, task_inputs, catalog_path, catalog_sha256, ledger_path, output, seed=23, batch_budget_usd=3):
+def plan_campaign(*, task_inputs, catalog_path, catalog_sha256, ledger_path, output, seed=23, batch_budget_usd=3,
+                  factor="artifact_projection"):
     from .swe_catalog import load_catalog
     from .swe_agent import gated_task
 
+    if factor not in ("artifact_projection", "budget_visibility"):
+        raise ValueError("unsupported experiment factor")
     if seed != 23:
         raise ValueError("this campaign protocol fixes selection/order seed 23")
     batch = Decimal(str(batch_budget_usd))
@@ -165,6 +168,7 @@ def plan_campaign(*, task_inputs, catalog_path, catalog_sha256, ledger_path, out
                     "trial_id": identity,
                     "instance_id": task["instance_id"],
                     "arm": arm,
+                    **factor_metadata({"factor": factor}, {"arm": arm}),
                     "run_id": uuid5(NAMESPACE_URL, campaign_id + "/" + identity).hex,
                     "score_run_id": f"campaign-{campaign_id[:12]}-{ordinal:02d}",
                 }
@@ -172,6 +176,7 @@ def plan_campaign(*, task_inputs, catalog_path, catalog_sha256, ledger_path, out
     plan = {
         "schema_version": 1,
         "adapter_protocol": "v2",
+        "factor": factor,
         "campaign_id": campaign_id,
         "catalog_path": str(_absolute(catalog_path)),
         "catalog_sha256": catalog_sha256,
@@ -236,11 +241,15 @@ async def _execute(*, trial, plan, output):
 
     task = next(t for t in plan["tasks"] if t["instance_id"] == trial["instance_id"])
     catalog = load_catalog(plan["catalog_path"], expected_sha256=plan["catalog_sha256"])
+    dimensions = factor_metadata(plan, trial)
     await solve(
         metadata=task["metadata"],
         gold_evidence=task["gold_evidence"],
         ledger_path=plan["ledger_path"],
-        arm=trial["arm"],
+        arm=dimensions["artifact_projection"],
+        condition_arm=dimensions["condition_arm"],
+        budget_guidance=dimensions["budget_guidance"],
+        experiment_factor=dimensions["factor"],
         output=output,
         catalog=catalog,
         spend_ceiling_usd=float(plan["spend_ceiling_usd"]),
@@ -379,6 +388,7 @@ async def _score(*, trial, task, output, prediction):
         output / "analysis-outcome.json",
         {
             "analysis_parser_version": PARSER_VERSION,
+            **factor_metadata({"factor": trial.get("factor", "artifact_projection")}, trial),
             "official_report_sha256": sha(candidates[0]),
             "outcome": parse_official_outcome(_json(candidates[0]), trial["instance_id"]),
         },
@@ -534,6 +544,7 @@ def summarize_campaign(root):
         state_path = path / "state.json"
         row = {
             **trial,
+            **factor_metadata(plan, trial),
             "generation_status": "not_started",
             "official_resolved": None,
             "score_category": "unscored",
@@ -611,6 +622,7 @@ def summarize_campaign(root):
         "schema_version": 1,
         "adapter_protocol": "v2",
         "analysis_parser_version": PARSER_VERSION,
+        "factor": plan.get("factor", "artifact_projection"),
         "plan_sha256": plan_hash,
         "selected_tasks": len(plan["tasks"]),
         "eligible_tasks": sum(t["eligible"] for t in plan["tasks"]),
@@ -650,6 +662,7 @@ def main(argv=None):
     for name in ("task-inputs", "catalog-path", "catalog-sha256", "ledger-path", "output"):
         create.add_argument("--" + name, required=True)
     create.add_argument("--batch-budget-usd", type=float, default=3)
+    create.add_argument("--factor", choices=("artifact_projection", "budget_visibility"), default="artifact_projection")
     for action in ("run", "score", "summarize"):
         command = sub.add_parser(action)
         command.add_argument("--campaign", required=True)

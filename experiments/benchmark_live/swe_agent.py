@@ -25,6 +25,7 @@ from my_coding_agent.tools.artifact import make_artifact_tools
 
 from .budget import BudgetLedger, GuardedLLM
 from .swe_catalog import Catalog, TaskSpec, load_catalog
+from .swe_results import factor_metadata
 
 INSTANCE = "psf__requests-1963"
 BASE = "110048f9837f8441ea536804115e80b69f400277"
@@ -210,6 +211,35 @@ class DockerTask:
             raise RuntimeError("model diff extraction failed")
         return result["stdout"]
 
+    async def observe_worktree(self):
+        """Observe counts against the base without refreshing or changing the index."""
+        commands = (
+            "git --no-optional-locks diff --numstat " + self.pin["base_commit"] + " --",
+            "git --no-optional-locks ls-files --others --exclude-standard -z",
+        )
+        outputs = []
+        for command in commands:
+            code, out, _ = await self.call("exec", "-w", "/testbed", self.name, "/bin/bash", "-lc", command, timeout=20)
+            if code:
+                return {"status": "unavailable", "error_code": "git_observation_failed"}
+            outputs.append(out)
+        added = deleted = binary = 0
+        lines = outputs[0].splitlines()
+        for line in lines:
+            parts = line.split("\t", 2)
+            if len(parts) != 3:
+                return {"status": "unavailable", "error_code": "invalid_numstat"}
+            if parts[0] == parts[1] == "-":
+                binary += 1
+            elif parts[0].isdigit() and parts[1].isdigit():
+                added += int(parts[0])
+                deleted += int(parts[1])
+            else:
+                return {"status": "unavailable", "error_code": "invalid_numstat"}
+        return {"status": "available", "tracked_changed_files": len(lines), "tracked_added_lines": added,
+                "tracked_deleted_lines": deleted, "tracked_binary_files": binary,
+                "untracked_files": len([name for name in outputs[1].split("\0") if name])}
+
     async def close(self):
         if self.created:
             code, _, err = await self.call("rm", "-f", self.name)
@@ -244,9 +274,20 @@ async def probe_environment(metadata, gold_evidence, output, *, catalog: Catalog
 
 
 async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environment=None, llm_factory=LLM,
-                catalog: Catalog | None = None, spend_ceiling_usd: float | None = None, run_id: str | None = None):
+                catalog: Catalog | None = None, spend_ceiling_usd: float | None = None, run_id: str | None = None,
+                budget_guidance: str = "none", condition_arm: str | None = None, experiment_factor: str | None = None):
     if arm not in ("on", "off"):
         raise ValueError("arm must be on/off")
+    if budget_guidance not in ("none", "static"):
+        raise ValueError("budget_guidance must be none/static")
+    if condition_arm is not None and condition_arm not in ("on", "off"):
+        raise ValueError("condition_arm must be on/off")
+    if experiment_factor not in (None, "artifact_projection", "budget_visibility"):
+        raise ValueError("unsupported experiment factor")
+    condition_arm = condition_arm if condition_arm is not None else arm
+    if experiment_factor is not None:
+        factor_metadata({"factor": experiment_factor}, {"arm": condition_arm, "artifact_projection": arm,
+                                                       "budget_guidance": budget_guidance})
     task, _ = gated_task(metadata, gold_evidence, catalog=catalog)
     spec = _task_spec(task, catalog)
     if run_id is not None and (not isinstance(run_id, str) or not run_id.strip()):
@@ -262,6 +303,10 @@ async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environmen
     agent = None
     terminal, status = {}, "environment_setup"
     stage, error_code, error_type = "environment_setup", None, None
+    shell_responses = 0
+    first_visible_difference = None
+    first_visible_request = None
+    observation_errors = 0
     try:
         await env.start()
         stage = "agent_setup"
@@ -278,17 +323,52 @@ async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environmen
         )
         guarded = GuardedLLM(raw, ledger, run_id)
 
+        async def observe_after_shell():
+            nonlocal shell_responses, first_visible_difference, first_visible_request, observation_errors
+            shell_responses += 1
+            try:
+                observation = await env.observe_worktree()
+                if not isinstance(observation, dict) or observation.get("status") not in ("available", "unavailable"):
+                    raise ValueError("invalid worktree observation")
+                # Only allowlisted counts/status enter the host sidecar, never file bodies.
+                observation = {key: observation[key] for key in (
+                    "status", "tracked_changed_files", "tracked_added_lines", "tracked_deleted_lines",
+                    "tracked_binary_files", "untracked_files", "error_code") if key in observation}
+            except Exception as exc:
+                observation = {"status": "unavailable", "error_type": type(exc).__name__}
+            try:
+                observation.update(shell_response_index=shell_responses, run_id=run_id,
+                                   api_requests_reserved=sum(r["run_id"] == run_id for r in ledger.snapshot()["requests"]))
+                changed = (observation["status"] == "available"
+                           and (observation.get("tracked_changed_files", 0) > 0 or observation.get("untracked_files", 0) > 0))
+                with (root / "worktree-observations.jsonl").open("a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(observation) + "\n")
+                if first_visible_difference is None and changed:
+                    first_visible_difference = shell_responses
+                    first_visible_request = observation["api_requests_reserved"]
+            except Exception:
+                # Host observation/persistence failures must not change shell feedback.
+                observation_errors += 1
+
         @tool(is_parallel_safe=False)
         async def shell(command: str) -> str:
             """Run a command in /testbed in the offline official task container (60s cap)."""
-            return json.dumps(await env.exec(command), ensure_ascii=False)
+            try:
+                return json.dumps(await env.exec(command), ensure_ascii=False)
+            finally:
+                # A failed command may still have changed files before failing.
+                await observe_after_shell()
 
         store = ArtifactStore(root / "artifacts")
+        system_prompt = "Repair the issue in /testbed using shell. The container has no network. Do not inspect benchmark gold patches, hidden tests or scoring scripts. Use the visible repository tests as appropriate. Finish after editing files; the host will extract your diff."
+        if budget_guidance == "static":
+            cap = getattr(ledger, "effective_request_limit", ledger.max_requests)
+            system_prompt += f"\nThis run allows at most {cap} API requests, including auxiliary calls."
         agent = Agent(
             llm=guarded,
             tools=[shell, *make_artifact_tools(store)],
             session=Session(path=root / "session.jsonl"),
-            system_prompt="Repair the issue in /testbed using shell. The container has no network. Do not inspect benchmark gold patches, hidden tests or scoring scripts. Use the visible repository tests as appropriate. Finish after editing files; the host will extract your diff.",
+            system_prompt=system_prompt,
             context_budget=32000,
             artifact_store=store if arm == "on" else None,
             memory_dir=False,
@@ -313,7 +393,7 @@ async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environmen
         patch = await env.patch()
         prediction = {
             "instance_id": task["instance_id"],
-            "model_name_or_path": "my-agent-harness-" + arm,
+            "model_name_or_path": "my-agent-harness-" + condition_arm,
             "model_patch": patch,
         }
         (root / "model_patch.jsonl").write_text(json.dumps(prediction) + "\n", encoding="utf-8")
@@ -355,6 +435,15 @@ async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environmen
             "run_id": run_id,
             "adapter_protocol": "v2",
             "arm": arm,
+            "condition_arm": condition_arm,
+            "experiment_factor": experiment_factor,
+            "artifact_projection": arm,
+            "budget_guidance": budget_guidance,
+            "api_request_limit": getattr(ledger, "effective_request_limit", ledger.max_requests),
+            "shell_responses": shell_responses,
+            "worktree_observation_errors": observation_errors,
+            "first_visible_worktree_difference_after_shell": first_visible_difference,
+            "first_visible_worktree_difference_after_api_request": first_visible_request,
             "status": status,
             "stage": stage,
             "error_code": error_code,
@@ -384,6 +473,9 @@ def main(argv=None):
     parser.add_argument("--catalog-sha256", help="Expected SHA256 of the approved catalog bytes")
     parser.add_argument("--spend-ceiling-usd", type=float)
     parser.add_argument("--run-id", help="Preallocated campaign association ID (default: new UUID)")
+    parser.add_argument("--budget-guidance", choices=("none", "static"), default="none")
+    parser.add_argument("--condition-arm", choices=("on", "off"))
+    parser.add_argument("--experiment-factor", choices=("artifact_projection", "budget_visibility"))
     args = parser.parse_args(argv)
     if (args.catalog is None) != (args.catalog_sha256 is None):
         parser.error("--catalog and --catalog-sha256 must be supplied together")
