@@ -19,7 +19,8 @@
 
 - [框架设计](../architecture/HARNESS_VNEXT.md)与[执行计划](../handoffs/2026-11-12-interview-redesign-plan.md)。
 - [离线汇总](../experiments/results/redesign/20261112T095857-2381042b458f/report.md)、同目录manifest与raw.jsonl。
-- [真实官方 SWE 单例结果](../experiments/results/live-swe-20261112/REPORT.md)：1题2trial，两组通过；不作因果提升结论。
+- [v2真实SWE小样本](../experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、eligible5题、10次模型trial，on2/5、off1/5；7空补丁，费用$0.503462，11外置/0回读，不作因果提升结论。
+- [历史v1单例](../experiments/results/live-swe-20261112/REPORT.md)：1题2trial，两组通过；当时没有激活产物外置，不能替代v2证据。
 - [开发问题账本](DEVELOPMENT_PROBLEMS.md)与[主张证据边界](CLAIMS.md)。
 - [真实模型预算](../experiments/LIVE_MODEL_BUDGET.md)：用户授权$30；官方开源任务分环境预检、参考解与模型评分，结果独立记录。
 

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "https://github.com/SWE-bench/swe-bench-tasks",
+    "revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d"
+  },
+  "tasks": [
+    {
+      "instance_id": "sympy__sympy-20590",
+      "repo": "sympy/sympy",
+      "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+      "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+      "metadata_sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7"
+    },
+    {
+      "instance_id": "sympy__sympy-11400",
+      "repo": "sympy/sympy",
+      "base_commit": "8dcb12a6cf500e8738d6729ab954a261758f49ca",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11400:latest",
+      "image_id": "sha256:694e41d09e3262a8e21d90f0f8ad60188a6a38bf0b2ae70c1510a9046e92edd8",
+      "metadata_sha256": "dc958547065bbfc685fd36bbc8ecb9c0071e888e05b407e7c651c4fbd9afb0b3"
+    },
+    {
+      "instance_id": "sympy__sympy-11870",
+      "repo": "sympy/sympy",
+      "base_commit": "5c2e1f96a7ff562d4a778f4ca9ffc9c81557197e",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11870:latest",
+      "image_id": "sha256:d1809dbea998c18c082722ffaec74f2d8f811aec28b36a49351b7190b0089742",
+      "metadata_sha256": "ce067fcf0915f2b00c2cdc78262bd97f4164647de33dac50778930c16b17ef2f"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "10ca84ffc56c2dd2d9dc4bd71b7b898e083500cd",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103:latest",
+      "image_id": "sha256:6685f236ddea92e412c046f1276f178d34895e4efbda2830ac3ab81903364787",
+      "metadata_sha256": "db8b862c14233abcdb1929245aeba7810942d7f047dc53c86b59498dc6525c20"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5221",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "4a2fdce62b73944030cff9b3e52862868ca9584d",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221:latest",
+      "image_id": "sha256:1718609d2c1e3a6d929eb4643f8474ee9e8f551cab77847f6c492dd0df6f1701",
+      "metadata_sha256": "851a30a537dfb2f58c6cb1696b3eecf000910be4b4503fcee9499af5fd3b8196"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5227",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "2051e30b9b596e944524ccb787ed20f9f5be93e3",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5227:latest",
+      "image_id": "sha256:6faff6caa94117d96d7f8818c812d33306d34ecd9937ba82ef0bb56faa67f664",
+      "metadata_sha256": "cf7ac733a7492a656fe0f13520edb9ff9204549856c9c76c17c069efa8ee5a7f"
+    }
+  ]
+}

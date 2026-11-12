@@ -101,7 +101,9 @@ PowerShell 可先设置 `$env:PYTHONPATH='src;.'`。每次输出唯一目录，�
 
 [真实评测入口](experiments/benchmark_live/README.md)使用生产 Agent、ContextManager、Session 和容器 shell；先运行未修改官方任务的 oracle / gold，再开始模型 trial。测试 / solution 不进入 solver prompt，缺失环境单列，结果只代表预选小样本。
 
-[预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)已更新为用户授权的 DeepSeek V4.1 Flash 总上限 30 美元。客户端账本使用保守预留，缺失用量不当零，禁用隐式重试；实际服务端账单仍需核对。[本次真实结果](docs/experiments/results/live-swe-20261112/REPORT.md)：1个官方SWE任务、2次模型trial均resolved，32次请求，保守冷价账本$0.068597（非已核账单）。该题没有触发外置产物，不证明Artifact收益；修正协议v2的回读接线只经离线验证。Terminal-Bench环境预检受UV下载阻塞，未发模型请求。
+[预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)采用用户授权的 DeepSeek V4.1 Flash 总上限30美元，同一账本逐请求预留与结算，缺失用量不当零，禁用隐式重试。[本轮v2真实结果](docs/experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、5题环境可用、10次模型trial，开启组通过2/5、关闭组1/5；7次空补丁。160请求保守账本$0.503462，非供应商核账。on产生11个外置产物但没有回读，on费用$0.252843、off$0.250619，不能宣称稳定质量、费用或KV收益。
+
+通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留，不能混作本轮成绩；累计保守账本$0.572059。Terminal-Bench仍因官方依赖下载未完成环境预检，没有模型成绩。Mem0、Dream-RSI与真实Langfuse服务没有在本轮接入。
 
 ## 限制与历史
 

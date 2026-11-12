@@ -39,9 +39,9 @@
 
 - [x] 冻结官方 taskrepo revision `3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`、选择规则与具体清单；保存环境预检失败。
 - [x] 验证原官方任务文件字节与镜像 config；先跑原 gold / oracle，通过后冻结逐题证据。六题中五题通过，一题固定窗口超时保留blocked。
-- [ ] 冻结代码和 campaign manifest，确认共享账本累计消费和 API 模型；凭据不写 CLI、容器、日志或Git。
-- [ ] 执行 v2 smoke 与冻结小样本，独立官方评分，逐 trial 保存原始结果、费用、停止原因和产物激活信息。
-- [ ] 集成适当回归、Ruff、证据hash与隐私检查；跨代理复核。源码有变则重新做相应集成验收。
+- [x] 冻结代码和 campaign manifest，确认共享账本累计消费和 API 模型；凭据不写 CLI、容器、日志或Git。
+- [x] 执行 v2 smoke 与冻结小样本，独立官方评分，逐 trial 保存原始结果、费用、停止原因和产物激活信息。
+- [x] 集成适当回归、Ruff、证据hash与隐私检查；跨代理复核。源码有变则重新做相应集成验收。最终实验集80 passed、2 skipped、5 subtests passed；纯parser/metrics复算一致，原始档案未改。
 - [ ] 追加 `HARNESS_EXPERIMENT_LOG.md` 与面试主张 / 开发问题，明确真实 / 离线 / 未验证边界；仅暂存明确路径，推自己的 origin，更新 PR #2 并核最终CI，不自动合并。
 
 ## 验收结论的边界

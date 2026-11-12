@@ -164,3 +164,27 @@ that trial's instance/run ID. Summary separates selected, eligible, execution
 attempts, actual model attempts, scored and resolved trials. Artifact activation
 and readback are reported separately; inactive interventions cannot establish
 causal savings. These commands do not run the complete 300-task benchmark.
+
+## Recompute an archived result
+
+`swe_results.py` uses the original hash-bound official report as truth. An empty
+patch is a known unresolved outcome with no tests executed; it is distinct from
+an execution error or an unknown result. Cached state categories are audit data
+and are never rewritten. `known_official_outcomes`, `test_executed_trials` and
+`complete_known_pairs` are separate; legacy `complete_pairs` continues to count
+pairs where both arms actually executed tests.
+
+```sh
+PYTHONPATH=src:. python -m experiments.benchmark_live.swe_results \
+  --archive docs/experiments/results/swe-v2-pilot-20261112/raw \
+  --manifest-sha256 7321985b32f571baa37d96361b45ab51c1a91ea5343b1dd381b6e6219f69e282
+python docs/experiments/results/swe-v2-pilot-20261112/analysis/recompute_metrics.py \
+  --raw-dir docs/experiments/results/swe-v2-pilot-20261112/raw \
+  --expected-manifest-sha256 7321985b32f571baa37d96361b45ab51c1a91ea5343b1dd381b6e6219f69e282
+```
+
+These commands require no credentials, model requests, Docker or original host
+paths. They verify archive paths and hashes before analysis, and identify the
+analysis parser separately from generation commit `7652168`. This does not relax
+the source/input checks for `run` or `score`. Raw artifacts remain immutable;
+post-experiment classification fixes do not retroactively change the generator.

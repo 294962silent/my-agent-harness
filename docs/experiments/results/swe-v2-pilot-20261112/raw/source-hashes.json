@@ -1,0 +1,535 @@
+{
+  "source_commit": "765216830b1972ba3b3c0d20171315343c63d288",
+  "files": [
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/__init__.py",
+      "sha256": "464155a7ef8a62d5e33ce443e5f4328f52ea66e0b194f3eee1b75e7b8c422d3a",
+      "bytes": 83
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/budget.py",
+      "sha256": "f34cee9827f979494fbeadf93764cc866cc64358dbdc3422056cf4524e7c5131",
+      "bytes": 12284
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/harbor_agent.py",
+      "sha256": "967fd3e251cb407e37c0bedd3d994f1f9b490302674b235c79fc54ed2a35e8b5",
+      "bytes": 5810
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/swe_agent.py",
+      "sha256": "da5c62c547dcec43171f3e2ffa881602b9cc57fde71c8c271dc7288c5e9895fb",
+      "bytes": 16503
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/swe_campaign.py",
+      "sha256": "006ef3e67607e6b6d8702eed510ea00d2a8b3b5655899e6f405129142ab7e9db",
+      "bytes": 26529
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/swe_catalog.py",
+      "sha256": "95c81f4f6f89ec831f920ca633c513ca96d418114fc102803c06a99a6d27ce48",
+      "bytes": 5194
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/experiments/benchmark_live/tasks.py",
+      "sha256": "e28c3d2762cf14995a64fc9b5bd2352caf0f7ac308b8ade106ed94a430c0a634",
+      "bytes": 3191
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/__init__.py",
+      "sha256": "1077dbeac23eb36ae1f34e7155f4894e55eb9daeaa4ae47032b92c3e9bc2614b",
+      "bytes": 3320
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/agent.py",
+      "sha256": "d10561e4baf5fa608acc6a05f67edb65690ed9bb3f9a02c74cad233fa2c418bd",
+      "bytes": 39074
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/artifacts.py",
+      "sha256": "aa2276d650bd3ad80c62a8ff142d46e22e5379639d60696fe1bc9ab97da0cd09",
+      "bytes": 13883
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/background.py",
+      "sha256": "409d225f7806047ced8c2085a4dfb924629f92dc9e82b916145e1a9f881d0d24",
+      "bytes": 4965
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/context.py",
+      "sha256": "4df6adcc60b8d386e8a7a5716aa8c49cb90fedb405b6319d526e6e7cc60cea16",
+      "bytes": 38533
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/env_filter.py",
+      "sha256": "247a3c1051cea131dabf85356c71786eb1ac0116bc1389302c4fa1d3885c68cf",
+      "bytes": 1411
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/events.py",
+      "sha256": "a9ae45d2d6d364233722ce5d31e41388169d7519a35716028be672c841b2bb84",
+      "bytes": 4376
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/extensions/__init__.py",
+      "sha256": "e91506617951ddf7ee2fbb47de05cde38f6f70a11b847c6e32772ab22e164baa",
+      "bytes": 276
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/extensions/core.py",
+      "sha256": "ad903d3f1afea3504276ccb40ecf457b3b144c24faebb863bc1c63dabab5eb53",
+      "bytes": 8050
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/hooks.py",
+      "sha256": "157648249ca13e3062470471cd440fccdde58c6637e8c1a504b57589052f769b",
+      "bytes": 4700
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/loop.py",
+      "sha256": "24298332b6df26352db292b086bd034d120d4fe20c0b5163fefbe67e93ad7973",
+      "bytes": 35396
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/main.py",
+      "sha256": "41c8a53e94dc597112373cebb57052e03595a3b1e14a09e2b617fb19a18d5b2f",
+      "bytes": 4120
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/memory.py",
+      "sha256": "27f87f1b0921573a9d846703c77c49f583078096ec7a53bd9261353eaff000a5",
+      "bytes": 20726
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/memory_distillation.py",
+      "sha256": "495b4a0dc553a36b1821608cf0e69f1a50cdf49c5b4934b3108ad0a03cdc4b54",
+      "bytes": 8955
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/memory_index.py",
+      "sha256": "4cb338c5e008f0ab0f771b54b34a85004fee271c7a08db921cf19ebe69815d41",
+      "bytes": 18641
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/memory_safety.py",
+      "sha256": "00abbe66b85bcc83b487067ac6bf1939cd4052d796d60775c11a3ddee8485c31",
+      "bytes": 2001
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/message_queue.py",
+      "sha256": "52fddaba4c752ab1502152e9c45d3ed2c676fe2f83ffaa988a50f3e21b5a1e87",
+      "bytes": 4151
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/plugins.py",
+      "sha256": "c5f7aefff42d2d7539ab1ade5546e3fe0007b4658735ada91ee9fc7a7ef596e4",
+      "bytes": 7828
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/registry.py",
+      "sha256": "99701eac678285773734bea8765d620364a51e6c39658b5834d0ffeeb47b6ac7",
+      "bytes": 8803
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/retry.py",
+      "sha256": "0fb5f0ce018f64252891d5761c1d8297681bc7428646659279fad2864061eaa7",
+      "bytes": 5263
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/run_lifecycle.py",
+      "sha256": "a1366837a7f3685ce5d99c44dd26b06d4b760e0b4f01374682f100e33930888c",
+      "bytes": 4027
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/runtime_context.py",
+      "sha256": "2327d092d206ba82629181c3ceec94a754bdc4bda5c51c39501bc9a427e18c66",
+      "bytes": 4938
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/__init__.py",
+      "sha256": "00835bb8b5c08ccde0b56aae0a818d939c99e6cdc8806109adf351ecc5822132",
+      "bytes": 1706
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/assets.py",
+      "sha256": "c070fa236c63a0c1478acd04ace924c263d181515e1917274c60417ca5ee0744",
+      "bytes": 2055
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/entries.py",
+      "sha256": "c745b43ce2a6907f0e7238d02d1b5c7adf0cdd0bc6591db0e1917086ff18ec69",
+      "bytes": 5261
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/jsonl.py",
+      "sha256": "f4bd32182fa14682652f8f0fc6e152f0d364efeaecf0db8584edf060c9bfe9ac",
+      "bytes": 3399
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/memory.py",
+      "sha256": "3f960477a6cbe40a5f1146a7bea2c9352d67a5aeb8e39307357856790f5f4ee5",
+      "bytes": 4394
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/session.py",
+      "sha256": "50375c3deb196475c428e93b92290812935af4358f2d90312922cb0a55ace739",
+      "bytes": 34643
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/storage.py",
+      "sha256": "0eef4455a5bb564e32ad0a489189acdbb2ffec2429ef51ae84f12062fd0a9237",
+      "bytes": 8549
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/store.py",
+      "sha256": "73afce7edc3b1a6380ef240577dca4c03805ad75bf689db98a12cd3e2bcafc56",
+      "bytes": 4765
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/session/tree.py",
+      "sha256": "56ab8f7ef606b3ba8fc9492ecb6050e5bd7945b640464682feaa220449e0355c",
+      "bytes": 2621
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/skills.py",
+      "sha256": "61f43451bc276a5a8056f45768b5e26534fe15cc435e26c24c420dc1f9d96974",
+      "bytes": 6115
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/subagent_tasks.py",
+      "sha256": "bdb1b09edb75014042dedc9e40d1b0f099b0687e1df5b5d93b8a6e43e94ba3fc",
+      "bytes": 6658
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/subagents.py",
+      "sha256": "1a5613063afa40b6f99b18e9889f5b6b5ef75d2cc1ec407c46219c39a6e8021d",
+      "bytes": 6025
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/task_store.py",
+      "sha256": "4b43b9e982e2b78c0e25e887bff0ed108add2894553a52c288ebd81cf7ed00fc",
+      "bytes": 9313
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tool_history.py",
+      "sha256": "2872cd681cf923a644ead1c9ac12de2604d2867bd5b779041379bdf0bba2f437",
+      "bytes": 9433
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tools/__init__.py",
+      "sha256": "06c11702b35f9aa2450f7ffa1cad02310dc9e2af99e0f43c0a8d13fe8c570b09",
+      "bytes": 528
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tools/builtin/__init__.py",
+      "sha256": "736b0a9c66f4907b181a915feefd2b5e1de5d6af59ab0d33758cb2d4877ca34b",
+      "bytes": 229
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tools/builtin/task.py",
+      "sha256": "d5652af2b6f9a5576400639ca2ef630a31686a2425f4404a1b099f94d3eb7ba8",
+      "bytes": 1238
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tools/builtin/task_tools.py",
+      "sha256": "91c6ea77cbe91f0ed8b22a6ee48e2f162a6f8bd30ce08f48e67f177a7925c04e",
+      "bytes": 8204
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tools/core.py",
+      "sha256": "9916983f7beb55055706f4d14824c188ce8d21db210bd4eda21a871ce6a28ba8",
+      "bytes": 14734
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/tools/prompt.py",
+      "sha256": "2434e636001a07574b63927e51bc90ce1fa4376954ea0bd9338c01548050fc43",
+      "bytes": 3011
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_core/types.py",
+      "sha256": "6560c873d9ec72048102eb891094f72a2576ec2a720b427e569c2f98f94a254b",
+      "bytes": 1215
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/__init__.py",
+      "sha256": "338bcca3024de4cacb3aed0660a9f50b56cc30098e36be151713d69e9ad92684",
+      "bytes": 1176
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/auth/__init__.py",
+      "sha256": "32de0210158454319a15662b209d60eba1d9563684db508f0a0c28339bcfeddd",
+      "bytes": 1237
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/auth/antigravity.py",
+      "sha256": "2d6ded594655ba4910766aae89a243df152050cf30fef8dad8aac98d16d97b35",
+      "bytes": 9268
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/auth/manager.py",
+      "sha256": "48184856c903d7bae297ca56e7127a7b17237f0575a44b99d47bcad28338808c",
+      "bytes": 12413
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/auth/quota.py",
+      "sha256": "5470c85934c689bcfea6ed705cc25e581bd0d60f3f9ba1dd0790892b099b127b",
+      "bytes": 1826
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/auth/schema.py",
+      "sha256": "bab78761660b10e5367cb7cf54b5fb98a811e805adf718216dab3daefbec3327",
+      "bytes": 2953
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/client.py",
+      "sha256": "eaa9f14d6ccfc90b9dee60a169bca662fa6bf632d749f073496cdf191508c3ff",
+      "bytes": 9262
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/config.py",
+      "sha256": "6aa4a4e965325e69eaeb5beb0b222b4806c4868f0ed6591b944c2ed89c0fda56",
+      "bytes": 611
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/events.py",
+      "sha256": "80f01f8983729bd6db4835f12d6928b2583a906c48858118092d900f365afad3",
+      "bytes": 1961
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/langfuse_export.py",
+      "sha256": "f0e45b4982eca461404ad059f42f55df0cde18d44a7eccc16e90ff6f4d34ed31",
+      "bytes": 3814
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/models.py",
+      "sha256": "a570a337c9c2f25c1457575954d54dce32671af7ebafa6c335d2816d03e0a992",
+      "bytes": 10028
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/observation.py",
+      "sha256": "5d7f3b988236b3011b261eb1e3ed97ffe18e5d5b2bda406914e8aff7dee65667",
+      "bytes": 5155
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/observation_export.py",
+      "sha256": "2ccb432fe1f09c97b5284821a70a8bbf98b3c091092ff6db4b1077e2761c9f0c",
+      "bytes": 4763
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/__init__.py",
+      "sha256": "f0687fb9a98bb722396d8adb669418d0af8f80d397af2e0c2f684f5a62ae44d2",
+      "bytes": 89
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/_base.py",
+      "sha256": "782030d2b11092c5871d21e6d5246bbf55f1ae2505ce260a4ddcc7938514044c",
+      "bytes": 2550
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/anthropic.py",
+      "sha256": "1a8f236cdf282f723651343db9d2b9478d16d48bc2d299476ad82ec6ff5efd50",
+      "bytes": 14813
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/antigravity.py",
+      "sha256": "ce6a6afc5a4313650f4327eb94b09f7ef7c21c5b42ae3e4bbbefcb2a2a90fe2f",
+      "bytes": 19576
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/deepseek.py",
+      "sha256": "83db430157da0480cc5ddee89fc513000d522fccd25029a1717724f6be51110b",
+      "bytes": 9681
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/openai.py",
+      "sha256": "e4debb68f6569e092b6d46536bbeb3fb22e17d21eaf3ac2c2bf285b68dae92c4",
+      "bytes": 20487
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/providers/registry.py",
+      "sha256": "586aea684431bab3c8c2932615d55c4d91e748f87cdc293fa1db95ce88528f28",
+      "bytes": 525
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/request_projection.py",
+      "sha256": "292d0c670ef55a9946c998da5af5969c0cbd5bfc665f52fd9a2fdfb9fb20e2b2",
+      "bytes": 7008
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_agent_llm/stream.py",
+      "sha256": "2de52c214a0ffce052819126e158ff03d62d8af806225a5cd44abadacca3f1e1",
+      "bytes": 7484
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/__init__.py",
+      "sha256": "fe8dfd24f4bddd262bd6126820709148196e2e2d7576938c316bf520b1b683a8",
+      "bytes": 1560
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/agent.py",
+      "sha256": "87d4dcf50b2f08d9a144653e110cccf9e4318733139fbbfa90c251d9fb2ee22e",
+      "bytes": 12989
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/cli.py",
+      "sha256": "81ebb3d408c7bb9546f54fa87c2abddbd26571ecc8dd1f49bb6dee29759d14c4",
+      "bytes": 2951
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/env_filter.py",
+      "sha256": "97f3e29d710f247eaf361d8fa1dda5ebca3d3e7aec680c6b6d907bbe867b9e45",
+      "bytes": 288
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/file_reference.py",
+      "sha256": "faf64a2aaf341997b21bd169907f6b234c77bd6a0be438b3c77a0f9a3e13b3cd",
+      "bytes": 2980
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/image_processing.py",
+      "sha256": "e499931ef55d24ac16dfc1d88a43a162b9ee0c3a4593d0faceb7bd7cc5e1d3ec",
+      "bytes": 6849
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/macro.py",
+      "sha256": "d550af287c301a0a2e4c9699bdd8ac45544e5a61bb2d3f308350a1fff7371167",
+      "bytes": 15335
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/mcp.py",
+      "sha256": "f604df7f62922319fba6d49870e60dca556079ca2fe678a227dae91d8b108d71",
+      "bytes": 9898
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/model_catalog.py",
+      "sha256": "eab9aea8a79082d3b95116dd203bf953f9925f188c6682837ac0c124672cfdc5",
+      "bytes": 27004
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/mutation_queue.py",
+      "sha256": "86441888d3eadcdf09fd06ec0ad2898c603ae62054204554667f5ee6940217d6",
+      "bytes": 1358
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/paths.py",
+      "sha256": "454ffa4fcda0c9d1916a20a4831cbf476d3e1120695b3fbadb7d01856be96e38",
+      "bytes": 6298
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/permissions.py",
+      "sha256": "75492b69f18fb4b577370df2274ee9d0cb5b0da14d9b2a7cde6697c6e5446b0e",
+      "bytes": 14953
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/prompt.py",
+      "sha256": "c77473eeab453023a0f40b8d30326c5ddf45b56b16b944a6ae72879dfc4545de",
+      "bytes": 3558
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/resource_scanner.py",
+      "sha256": "578574054b488a0d237183710da59b71c1035b756165101a74c02e88819b6f9f",
+      "bytes": 10574
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/rpc/__init__.py",
+      "sha256": "5bebb2c7ea45ef103595ef021b6dbb6f2fce8a01d572052a69e6828cc33b9d82",
+      "bytes": 417
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/rpc/decorators.py",
+      "sha256": "b022ca4e5ad6eccd4ceb98092996cf657b1196e92f0beedbf577794431021d5f",
+      "bytes": 1682
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/rpc/model_handlers.py",
+      "sha256": "9ee791264277576be582c55438ec2dd818a5d8e43509dc1975223636a442177d",
+      "bytes": 12423
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/rpc/session_handlers.py",
+      "sha256": "fbb99c5c794ef675acb07aba6fb315412335d117b0e181c81a4e65a3731ecea0",
+      "bytes": 18072
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/rpc/system_handlers.py",
+      "sha256": "3bd1bfe965ee029dc89828f8cc2d3e6138fdf95d93d73c9e056da9ca0e0e118b",
+      "bytes": 12140
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/rpc_server.py",
+      "sha256": "0253c07703e29ca9705b37919e2bd77e1ad3e4d3369ad5803dbbf892e75a9126",
+      "bytes": 33408
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/serialization.py",
+      "sha256": "53194599883f96d24b39362ca275beb179fea77a492cf5f629890f77a17de57e",
+      "bytes": 6774
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/session_ops.py",
+      "sha256": "7979b2f888f638e601941c383dc88311ee0e9b7a11e966cb0fef01be6034ec03",
+      "bytes": 29012
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/settings.py",
+      "sha256": "7b982f115580d5ce874a07e26bcfba1f487a5f96be3c7f74d0bf7746273be195",
+      "bytes": 4753
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/__init__.py",
+      "sha256": "aa21f8a95bc93402baea17e927c1deed091f29c5d03ee17afc04f07df976fd9e",
+      "bytes": 2367
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/artifact.py",
+      "sha256": "8e6102cc0cb472dad685aafddc8de4068c611cef7fdffcf16a688dd14d8856c2",
+      "bytes": 3218
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/base.py",
+      "sha256": "21d85137c1d6b35eef37cc163f0bfea907d6006c3b4a78fb25a93df3d9c0258d",
+      "bytes": 5343
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/bash.py",
+      "sha256": "048ee473f587fb4d44b71279e20b1a5c0063972aa89c871349baffbbb15e327d",
+      "bytes": 11371
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/edit.py",
+      "sha256": "50a98596bb1c84ac704e6bc9f7bd9278e2128191e66197d3295ed1d229b9f42c",
+      "bytes": 9048
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/find.py",
+      "sha256": "6cd58a532d4b9da314ed99d18ecaba70755679bfe0a4eb6d2417dcc9c18bfe71",
+      "bytes": 3608
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/grep.py",
+      "sha256": "441e76fbb7322400d818c0627c66e1c6556280d69888d21fdf07081223770d82",
+      "bytes": 6402
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/ls.py",
+      "sha256": "7eb0f995dc98e7a09a2fed0c0fef42b69f2166f3f88c2e4a200b11941943b35d",
+      "bytes": 2945
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/read.py",
+      "sha256": "3fec7c919924d8b8f0d33fa5b597cc0dc1fe82d107a3266ec30874edce8f215e",
+      "bytes": 4170
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tools/write.py",
+      "sha256": "cce431dd6262791f87e8c80b38d979ba5427d8694dc6337456c45f314607752d",
+      "bytes": 2036
+    },
+    {
+      "path": "/mnt/c/Users/MLL/Desktop/my-agent-harness/.worktrees/interview-redesign/src/my_coding_agent/tracer.py",
+      "sha256": "23c5a8b1a41d96be1a57add39ffb98860929f4754748c821b27b861847286683",
+      "bytes": 10730
+    }
+  ]
+}

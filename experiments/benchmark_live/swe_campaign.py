@@ -20,6 +20,7 @@ from uuid import uuid4, uuid5, NAMESPACE_URL
 from filelock import FileLock
 
 from .budget import BudgetLedger
+from .swe_results import PARSER_VERSION, parse_official_outcome, summarize_outcomes
 
 ROOT = Path(__file__).resolve().parents[2]
 TASK_FIELDS = {"instance_id", "metadata", "gold_evidence", "evaluation_dataset", "evaluation_cwd"}
@@ -374,6 +375,14 @@ async def _score(*, trial, task, output, prediction):
     candidates = [p for p in output.glob("*.json") if p.name != "command.json" and "resolved_ids" in _json(p)]
     if len(candidates) != 1:
         raise ValueError("official scoring did not produce one unambiguous report")
+    _write(
+        output / "analysis-outcome.json",
+        {
+            "analysis_parser_version": PARSER_VERSION,
+            "official_report_sha256": sha(candidates[0]),
+            "outcome": parse_official_outcome(_json(candidates[0]), trial["instance_id"]),
+        },
+    )
     return candidates[0]
 
 
@@ -517,13 +526,20 @@ def _artifact_facts(agent, run):
 def summarize_campaign(root):
     root, plan, plan_hash = _load(root)
     rows = []
-    completed = {}
+    test_pairs = {}
     expected = 0
     expected_known = True
     for trial in plan["trials"]:
         path = root / "trials" / trial["trial_id"]
         state_path = path / "state.json"
-        row = {**trial, "generation_status": "not_started", "official_resolved": None, "score_category": "unscored"}
+        row = {
+            **trial,
+            "generation_status": "not_started",
+            "official_resolved": None,
+            "score_category": "unscored",
+            "test_executed": None,
+            "outcome_reason": "official_report_unavailable",
+        }
         if state_path.exists():
             state = _json(state_path)
             _verify_outputs(state)
@@ -549,17 +565,23 @@ def summarize_campaign(root):
             if score.get("plan_sha256") != plan_hash:
                 raise ValueError("scoring identity changed")
             if score["status"] == "completed":
-                report = _json(score["official_report"])
-                if trial["instance_id"] in report.get("completed_ids", []) and trial["instance_id"] not in report.get(
-                    "error_ids", []
-                ):
-                    row.update(
-                        score_category="scored",
-                        official_resolved=trial["instance_id"] in report.get("resolved_ids", []),
-                    )
-                    completed.setdefault(trial["instance_id"], set()).add(trial["arm"])
-                else:
-                    row["score_category"] = "environment_or_execution_error"
+                report_path = Path(score["official_report"]).resolve()
+                fingerprint = next(
+                    (r for r in score.get("outputs", []) if Path(r["path"]).resolve() == report_path), None
+                )
+                if fingerprint is None or sha(report_path) != fingerprint["sha256"]:
+                    raise ValueError("official report is not bound to its saved checksum")
+                outcome = parse_official_outcome(_json(report_path), trial["instance_id"])
+                row.update(
+                    score_category=outcome["category"],
+                    official_resolved=outcome["resolved"],
+                    test_executed=outcome["test_executed"],
+                    outcome_reason=outcome["reason"],
+                    official_report_sha256=fingerprint["sha256"],
+                    cached_score_category_audit=score.get("score_category", score.get("category")),
+                )
+                if outcome["test_executed"] is True:
+                    test_pairs.setdefault(trial["instance_id"], set()).add(trial["arm"])
         rows.append(row)
     ledger = BudgetLedger(plan["ledger_path"]).snapshot()
     ids = {r["run_id"] for r in plan["trials"]}
@@ -571,9 +593,24 @@ def summarize_campaign(root):
         and all(r["generation_status"] in ("completed", "blocked") for r in rows)
     )
     unknown_global = any(r["cost_micro_usd"] is None for r in ledger["requests"])
+    outcomes = summarize_outcomes(
+        [
+            {
+                "instance_id": r["instance_id"],
+                "arm": r["arm"],
+                "outcome": {
+                    "category": r["score_category"],
+                    "resolved": r["official_resolved"],
+                    "test_executed": r["test_executed"],
+                },
+            }
+            for r in rows
+        ]
+    )
     return {
         "schema_version": 1,
         "adapter_protocol": "v2",
+        "analysis_parser_version": PARSER_VERSION,
         "plan_sha256": plan_hash,
         "selected_tasks": len(plan["tasks"]),
         "eligible_tasks": sum(t["eligible"] for t in plan["tasks"]),
@@ -583,9 +620,14 @@ def summarize_campaign(root):
         "model_attempted_trials": sum(
             isinstance(r.get("model_requests"), int) and r["model_requests"] > 0 for r in rows
         ),
-        "scored_trials": sum(r["score_category"] == "scored" for r in rows),
+        "scored_trials": outcomes["test_executed_trials"],
+        "test_executed_trials": outcomes["test_executed_trials"],
+        "test_execution_unknown_trials": outcomes["test_execution_unknown_trials"],
+        "known_official_outcomes": outcomes["known_official_outcomes"],
         "resolved_trials": sum(r["official_resolved"] is True for r in rows),
-        "complete_pairs": sum(arms == {"on", "off"} for arms in completed.values()),
+        "complete_pairs": sum(arms == {"on", "off"} for arms in test_pairs.values()),
+        "complete_pairs_definition": "legacy count of pairs with tests executed in both arms",
+        "complete_known_pairs": outcomes["complete_known_pairs"],
         "budget": {
             "usage_complete": complete,
             "campaign_cost_usd": sum(r["cost_micro_usd"] for r in campaign_rows) / 1_000_000 if complete else None,

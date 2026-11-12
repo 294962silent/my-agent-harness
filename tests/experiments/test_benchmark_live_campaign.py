@@ -9,6 +9,24 @@ from experiments.benchmark_live import swe_campaign as campaign
 from experiments.benchmark_live.budget import BudgetLedger
 
 
+def official_summary(instance, kind):
+    report = {"schema_version": 2, "total_instances": 1, "incomplete_ids": [], "failure_reasons": {}}
+    present = {"submitted", "completed", "resolved"} if kind == "resolved" else {"submitted", "empty_patch"}
+    for name in (
+        "submitted",
+        "completed",
+        "resolved",
+        "unresolved",
+        "empty_patch",
+        "error",
+        "infra_failure",
+        "ambiguous_failure",
+    ):
+        report[name + "_instances"] = int(name in present)
+        report[name + "_ids"] = [instance] if name in present else []
+    return report
+
+
 def make_inputs(tmp_path, n=2, blocked=False):
     tasks = []
     inputs = []
@@ -170,18 +188,7 @@ async def test_run_resume_scores_and_hash_protection_no_duplicate_solver(tmp_pat
         assert prediction.is_file()
         output.mkdir()
         path = output / "official.json"
-        path.write_text(
-            json.dumps(
-                {
-                    "completed_ids": [trial["instance_id"]],
-                    "resolved_ids": [trial["instance_id"]],
-                    "error_ids": [],
-                    "completed_instances": 1,
-                    "resolved_instances": 1,
-                    "error_instances": 0,
-                }
-            )
-        )
+        path.write_text(json.dumps(official_summary(trial["instance_id"], "resolved")))
         return path
 
     await campaign.score_campaign(root, scorer=scorer)
@@ -268,7 +275,7 @@ async def test_default_scorer_uses_official_command_without_model_credentials(tm
 
     async def create(*command, **kwargs):
         captured.update(command=command, **kwargs)
-        (output / "official.json").write_text(json.dumps({"resolved_ids": [task["instance_id"]]}))
+        (output / "official.json").write_text(json.dumps(official_summary(task["instance_id"], "resolved")))
 
         class Process:
             async def wait(self):
@@ -288,6 +295,8 @@ async def test_default_scorer_uses_official_command_without_model_credentials(tm
     assert "--predictions_path" in captured["command"] and "--dataset_name" in captured["command"]
     assert not any(k in captured["env"] for k in ("LIVE_BENCH_API_KEY", "OPENAI_API_KEY"))
     assert "SYNTHETIC_SECRET" not in (output / "command.json").read_text()
+    derived = json.loads((output / "analysis-outcome.json").read_text())
+    assert derived["analysis_parser_version"] and derived["outcome"]["resolved"] is True
 
 
 @pytest.mark.anyio
@@ -450,3 +459,66 @@ async def test_run_rejects_nonpositive_new_trial_limit_before_execution(tmp_path
         with pytest.raises(ValueError, match="positive integer"):
             await campaign.run_campaign(root, executor=forbidden, max_new_trials=limit)
     assert not (root / "trials").exists()
+
+
+@pytest.mark.anyio
+async def test_summary_rederives_empty_official_report_without_rewriting_old_state(tmp_path):
+    root = campaign.plan_campaign(**make_inputs(tmp_path, n=1))
+
+    async def executor(*, trial, plan, output):
+        output.mkdir()
+        (output / "run.json").write_text(
+            json.dumps(
+                {"adapter_protocol": "v2", "run_id": trial["run_id"], "status": "budget_exhausted", "requests": 0}
+            )
+        )
+        (output / "model_patch.jsonl").write_text(
+            json.dumps({"instance_id": trial["instance_id"], "model_name_or_path": "fake", "model_patch": ""}) + "\n"
+        )
+
+    await campaign.run_campaign(root, executor=executor)
+
+    async def scorer(*, trial, task, output, prediction):
+        output.mkdir()
+        report = {"schema_version": 2, "total_instances": 1, "incomplete_ids": [], "failure_reasons": {}}
+        for name in (
+            "submitted",
+            "completed",
+            "resolved",
+            "unresolved",
+            "empty_patch",
+            "error",
+            "infra_failure",
+            "ambiguous_failure",
+        ):
+            report[name + "_instances"] = int(name in ("submitted", "empty_patch"))
+            report[name + "_ids"] = [trial["instance_id"]] if name in ("submitted", "empty_patch") else []
+        path = output / "official.json"
+        path.write_text(json.dumps(report))
+        return path
+
+    await campaign.score_campaign(root, scorer=scorer)
+    states = list((root / "trials").glob("*/score-state.json"))
+    for path in states:
+        cached = json.loads(path.read_text())
+        cached["score_category"] = "environment_or_execution_error"
+        path.write_text(json.dumps(cached))
+    snapshots = {path: path.read_bytes() for path in states}
+    summary = campaign.summarize_campaign(root)
+    assert all(
+        row["official_resolved"] is False and row["score_category"] == "empty_patch" for row in summary["trials"]
+    )
+    assert summary["known_official_outcomes"] == 2 and summary["test_executed_trials"] == summary["scored_trials"] == 0
+    assert summary["complete_known_pairs"] == 1 and summary["complete_pairs"] == 0
+    assert summary["analysis_parser_version"]
+    assert all(row["cached_score_category_audit"] == "environment_or_execution_error" for row in summary["trials"])
+    assert all(path.read_bytes() == body for path, body in snapshots.items())
+    # An otherwise valid report is not trusted merely because a cached path points
+    # to it: it must be one of the original hash-bound scoring outputs.
+    cached = json.loads(states[0].read_text())
+    unbound = root / "unbound-report.json"
+    unbound.write_bytes(Path(cached["official_report"]).read_bytes())
+    cached["official_report"] = str(unbound)
+    states[0].write_text(json.dumps(cached))
+    with pytest.raises(ValueError, match="not bound"):
+        campaign.summarize_campaign(root)

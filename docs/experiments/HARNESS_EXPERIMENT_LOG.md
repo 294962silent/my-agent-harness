@@ -605,3 +605,27 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - gold预检：20590复用之前原成功报告并重绑安全metadata；11400与pytest5103/5221/5227本轮原评分器通过，11870固定300秒窗口超时（318.39秒含清理、completed0/resolved0/error1），保留环境blocked，不替换、不收费。最终选定6、eligible5，计划最多10个真实model trial。此时尚未发本批模型请求，实际结果另节追加。
 - 价值与代价：解耦任务批准与solver、使消费与重入有证据且可阻断，避免环境问题混入模型成绩；增加catalog准备、冻结、状态和原始数据维护。评分仍依赖原官方Docker环境，小样本/两个项目/已知回归题不具有全量代表性；不声称Mem0、Dream-RSI或真实Langfuse已接入，也不预填Artifact或缓存收益。
 - 代码已提交并推送 `3e2d345`。正式模型前追加 `run --max-new-trials N`，仅限制本次新增eligible执行；完成/blocked不计数、不改冻结顺序或预算，便于先验首配对后resume。两个新增回归先红后绿，主代理实际campaign定点 **12 passed in6.03s**，另一助手只读复核无阻断。正式SDK的免费模型目录读取成功，确认请求模型仍可用；Config实际温度默认0.7已核对。普通urllib默认UA读取目录曾被403/1010拒绝，正式SDK正常，不把这种网络目录失败算成模型trial或模型费用。
+
+
+### E-SWE-V2-RUN：2026-11-12 / 固定六题真实小样本执行与更正
+
+- 模型生成使用已提交源码 `765216830b1972ba3b3c0d20171315343c63d288`；该提交GitHub CI run `43218293170` 四组Ubuntu/Windows × Python3.11/3.13均completed/success。运行前核真实core/llm导入来自目标worktree/src，温度默认0.7；原API profile通过正式SDK模型目录验证，密钥只经host环境转发。
+- 首个真实请求前冻结campaign `9684ed3b72784f52b939ac77d5ab46bf`，plan SHA256 `b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a`，catalog SHA256 `fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c`。184项输入/源码指纹经独立复核一致；选定6、eligible5、blocked1，eligible首发臂按seed23平衡为3 on/2 off，blocked单独分配不计模型先后平衡。
+- 先用max-new-trials=2完成pytest5103首配对：两组各16请求，终态budget_exhausted，所有请求usage已结算。保守账本on$0.050700、off$0.070654，新增合计$0.121354；on实际生成1个artifact，read/search响应0，off无artifact。两组模型patch长度均0，不能当作交付修改。
+- 首次自动summary将两份官方empty_patch报告误标为environment_or_execution_error，因此主代理先停后续收费排查。直接核原aggregate：两组empty_patch_instances=1、completed_instances=0、resolved_instances=0、error_instances=0、infra_failure_instances=0。这是预算内没有修改的已知未解决结果，测试没有执行；不是评分环境故障。没有重跑模型或评分、改补丁、改题、放宽预算。
+- 更正后按原冻结顺序恢复其余8个eligible trial；冻结源码在整批模型生成结束前不动，避免运行中引入新策略或输入漂移。原错误分类/state/report保留，公共收集层追加带来源的派生分类；源码统计修复与回归在本批生成结束后单独记录。整个任务的最终费用、成绩和回读以本节后续原始证据为准，不从首对差值宣称因果收益。
+- 最终真实结果：5个eligible任务/10个trial全部生成与独立原官方评分完成；160请求全结算、0在途/unknown，均budget_exhausted。on解决2/5、off1/5；总3resolved、7empty_patch，无模型评分error/infra/ambiguous。真正执行测试3次、已知结果10次、完整known pair5、双臂都执行测试的pair1。11870仍是gold超时blocked，不进模型分母，没有追加题目或重试。
+- 费用与用量：本批全冷价微美元逐请求向上取整合计$0.503462，on$0.252843、off$0.250619，开启总费用没有下降；历史$0.068597另计，全局$0.572059。on完整输入583228/输出64864，off输入617804/输出54369，总token1320265；归一化prompt字段140552不等全部输入。cache_read仅158/160覆盖、cache_write0/160，完整总量与命中率保持null，不用缺失补零制造排名。
+- 激活情况：5个on trial累计11产物，off0；read/search响应均0。真实投影链路已激活，但没有真实模型回读使用证据；不将离线往返或2/5对1/5的小样本差异宣传为稳定质量/费用/KV收益。7次空补丁是后续预算/交付策略要研究的问题，原因尚未通过新实验归因。
+- 归档：`results/swe-v2-pilot-20261112/raw/`为81个manifest列入文件+manifest自身，原manifest SHA `7321985b32f571baa37d96361b45ab51c1a91ea5343b1dd381b6e6219f69e282`。收集前184项输入及92项原结果hash全部匹配，复制后81项再核；保留原state/report与原错误category，empty更正单独派生，不复制gold/testpatch/hints/session或artifact正文。六份固定base许可证、14份原gold/预检证据另存同目录，准备阶段源码快照不冒充765生成版本。
+- 清理：所有模型/评分进程已结束，实际Docker ps无运行容器；逐个核已导入镜像下载副本的绝对父目录和字节数后删除五份本批tar，共5205992960字节，Docker原镜像缓存与原始记录保留。无L20/GPU/DSH，未继续使用预算扩题。
+
+
+### E-SWE-ANALYSIS：2026-11-12 / 空补丁分类修复与可移植离线重算
+
+- 整批模型/评分及原始归档完成后，新增 `swe_results.py` 单一 `parse_official_outcome`；_score与summary共用。对原始report bytes核hash后重派生，旧state只deepcopy审计、不写回；新增known_official_outcomes/test_executed_trials/complete_known_pairs，旧complete_pairs保留双臂实际执行测试的语义。
+- 官方SWE-bench5.0.2语义核验：total_instances可以是整个dataset规模，submitted需匹配单题；completed与error可能重叠，infra/ambiguous是附加标签。parser按真实语义校验ID/计数/集合，不用模拟schema误拒合法官方结果。empty明确False/False，completed unresolved为False/True，错误/矛盾/缺失保留unknown，错题不能冒充本题结果。
+- 新增纯stdlib `archive_outcomes`/CLI：只用归档相对路径、先验证manifest路径边界和hash，再从原报告重算；无需原宿主绝对路径/模型/Docker或生成源码仍与当前一致。输出分析parser版本 `swebench-5.0.2-outcome-v1`及其SHA，生成版本仍765；run/score的source drift保护没有放宽。当前81文件独立复算得到相同3resolved/7empty/5known pairs，archive_modified=false。
+- 数据分析脚本 `analysis/recompute_metrics.py`从plan.run_ids划分本批/历史，只解析plan/ledger，逐字段覆盖完整才给total。主代理重新执行后与 `analysis/metrics.json` 逐对象一致；同大小文件篡改、路径逃逸拒绝，换工作目录复算相同。此脚本与许可证/预检文件不改raw manifest。
+- 验证：原empty误分类回归先失败，再实现；作者Windows/Linux同版窄26项通过，另一助手三文件只读复核无阻断。主代理最终 `pytest tests/experiments -q -o addopts= --import-mode=importlib` 为 **80 passed、2 skipped、5 subtests passed in11.57s**（skip为缺可选Harbor），Ruff通过；CLI和精确费用重算已实际执行。批次数量不累加为独立测试总数。
+- 文档：更新README、面试CLAIMS/上下文/成本模块及开发问题P13–P17；完整报告见 `results/swe-v2-pilot-20261112/REPORT.md`。本批借用官方SWE任务/镜像/评分协议，调度、归档与分类为本项目实现，不将其他Harness分数混作对照；Mem0、Dream-RSI和真实Langfuse服务仍未接入。后续Git提交与CI状态以实际记录为准。

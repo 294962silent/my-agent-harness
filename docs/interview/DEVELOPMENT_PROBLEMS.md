@@ -101,3 +101,38 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 修复：用 `.gitattributes` 只对两组实验结果目录关闭文本换行转换，对官方 stdout 关闭 whitespace 检查，保留可查看的文本 diff；不清洗或改写原始输出。
 - 验证：重新暂存后核对 index blob 与本地证据逐字节相同，再运行 staged diff check。manifest 继续绑定原始字节。
 - 边界：不关闭项目其他源码或文档的空白检查；绝对路径和机器环境仍保留在原始记录中，不能当作可移植执行配置。
+
+## P13：SWE 入口只有两个硬编码实例
+
+- 复现：任务批准、Docker初始化和报告直接读取同一个两题常量，新增第三题需要同时改多处查表。
+- 修复：冻结官方catalog/TaskSpec，将安全metadata、base、原image/config与来源hash贯穿solver；旧两题fallback保持。
+- 验证：第三题数据驱动回归、篡改输入拒绝、五个真实eligible任务的独立新容器probe通过；实际模型是否解决问题另看官方评分。
+- 代价：数据批准和gold预检仍需宿主准备；catalog hash不等于第三方签名，通用入口不等于跑完300题。
+
+## P14：取消评分时只停止等待，没有回收子进程
+
+- 发现：另一助手交叉复核指出，取消await并不能结束评分器及Docker daemon中的容器。
+- 修复：独立进程组、terminate/kill/wait，并按本次instance/run_id精确清理评分容器；不匹配其他任务资源。
+- 验证：取消回归覆盖进程回收及容器匹配；增加同campaign跨进程排他锁，防止两个进程重复发起收费任务。
+- 边界：已发生的供应商调用不能回滚；未知用量保留预留并停止，不能当作免费重试。
+
+## P15：空补丁被自动汇总误标为评分执行错误
+
+- 复现：v2首个真实配对中，两组各16次请求后都生成空model_patch。原官方报告均empty_patch_instances=1、completed_instances=0、error_instances=0；自动汇总却把所有非completed结果统一归为environment_or_execution_error。
+- 更正：这两次是预算内没有产生修改，官方已知未解决，测试没有执行，不是评分环境故障。保留原报告、原state和错误分类作为历史证据，不重跑模型或评分来消除失败。
+- 处理顺序：先停后续收费、核原报告及补丁字节长度，再按冻结顺序继续；汇总修复放在该批模型生成结束后，防止改源码破坏冻结校验。公共收集层可追加带来源的派生分类，不能覆盖原始记录。
+- 边界：empty_patch、测试执行后unresolved、评分环境error与unknown须分开；已知结果数量与真正执行测试数量也要分开。
+- 完成更正：在全部生成/评分/原始归档后新增swe_results单一parser，_score与summary共用；重算先核原report hash，旧缓存只审计不写回。实际复算10个报告=7empty/3resolved、3次测试、5个known pairs；同时覆盖错题ID、计数矛盾、缺字段、completed与error重叠及档案篡改拒绝。可移植archive CLI允许事后分析版本单独演进，run/score仍检查原source drift。
+
+## P16：独立工作区可能导入原 checkout 的 editable 包
+
+- 复现：Windows直接运行新CLI但不设PYTHONPATH时，导入了原checkout安装的旧包；只看当前目录或Git分支不能证明实际执行了新代码。
+- 修复：Windows显式PYTHONPATH=src;.、Linux使用src:.；真实调用前核core/llm的__file__必须位于目标worktree/src，冻结输入与源码hash。
+- 验证：主代理在正确路径下完成64项实验回归和12项分段执行定点回归；真实worker先核导入路径再允许进入Agent。
+- 边界：源码hash可证明输入版本，不能证明供应商实际模型权重版本；模型与价格仍按请求/返回字段和供应商口径记录。
+
+## P17：固定预算下空补丁较多，模型没有使用回读
+
+- 本轮观察：160次请求、10个trial全部budget_exhausted；7次空补丁、3次官方测试通过。on外置11份，但read/search响应均0。两组均有空补丁，不能直接归因为Artifact。
+- 当前处理：保持本批参数、题目和原始失败，不用增加步数或重试美化结果；保留生成版本与只读重算接口。
+- 待验证：可以分别研究剩余预算提示、16/32请求上限、回读提示，每次只改变一个变量。尚未执行这些实验，不承诺它们能提高完成率。当前证据不支持直接扩成300题。
