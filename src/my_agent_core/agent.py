@@ -15,6 +15,7 @@ import asyncio
 import contextlib
 import inspect
 from collections.abc import AsyncIterator, Callable, Sequence
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Literal
 
@@ -28,6 +29,7 @@ from my_agent_core.events import (
     ContextCompacted,
     Event,
     MessageEnd,
+    MessageUpdate,
     TurnEnd,
 )
 from my_agent_core.extensions import ExtensionManager
@@ -37,7 +39,8 @@ from my_agent_core.hooks import (  # pyright: ignore[reportMissingImports]
     HookResult,
     UserInputHook,
 )
-from my_agent_core.loop import CancellationToken, run_agent_loop
+from my_agent_core.loop import CancellationToken, run_agent_loop, _synthesize_interrupted_tool_calls
+from my_agent_core.run_lifecycle import RunLimits, RunState, RunLimitExceeded, RunAborted
 from my_agent_core.memory import MemoryStore, make_memory_tool, make_memory_read_tool
 from my_agent_core.memory_distillation import MemoryDistiller, SOURCE_TEXT, input_text, is_trivial_memory_query
 from my_agent_core.message_queue import MessageQueue, QueuedMessage
@@ -58,6 +61,7 @@ from my_agent_core.tools.builtin.task_tools import (  # pyright: ignore[reportMi
     TaskGuardHook,
     make_todo_tool,
 )
+from my_agent_llm.observation import observation_context
 from my_agent_llm import LLM, Message, MessageContent, TextContent  # pyright: ignore[reportMissingImports]
 
 
@@ -122,6 +126,7 @@ class Agent:
         hooks: list[tuple[type, Callable[..., Any]]] | None = None,
         retry_policy: AutoRetryPolicy | None = None,
         artifact_store: Any | None = None,
+        run_limits: RunLimits | None = None,
     ):
         """各参数语义见框架设计文档 §4.3（hook 通过 register_hook 挂载）。
 
@@ -154,6 +159,11 @@ class Agent:
         self._system_prompt = system_prompt  # 保存，reset 重拼用
         self._aborted = False  # 中止状态标记
         self._current_signal: CancellationToken | None = None
+        self.run_limits = run_limits or RunLimits()
+        if not isinstance(self.run_limits, RunLimits):
+            raise TypeError("run_limits must be RunLimits or None")
+        self._active_run: RunState | None = None
+        self._cleanup_tasks: set[asyncio.Task] = set()
         self._subscribers: list[Callable[[Event], Any]] = []
         self.hooks = HookRegistry()
         self.registry = ToolRegistry()
@@ -350,11 +360,13 @@ class Agent:
     def abort(self) -> None:
         """中止当前运行中的任务（取消流式输出，丢弃未完成半截文本并清空干预队列）。"""
         self._memory_distiller.cancel()
+        if self._active_run is not None:
+            self._active_run.abort()
         self._aborted = True
         if self._current_signal is not None:
             self._current_signal.cancel()
         self.message_queue.clear()
-        asyncio.create_task(self.background_runner.cancel_all())
+        self._queue_background_cleanup()
 
     def subscribe(self, listener: Callable[[Event], Any]) -> Callable[[], None]:
         """订阅所有生命周期事件通知，返回取消订阅的回调函数。"""
@@ -390,11 +402,106 @@ class Agent:
             return [m.content for m in self.message_queue.get_followup_messages()]
         return []
 
-    async def prompt_stream(self, user_input: MessageContent) -> AsyncIterator[Event]:
-        """原生事件流一等公民接口：调用 run_agent_loop 执行 ReAct 循环，逐一产生生命周期事件，并更新 session 与 messages。"""
-        self._aborted = False
-        self._current_signal = CancellationToken()
+    @property
+    def active_run_id(self) -> str | None:
+        return self._active_run.run_id if self._active_run else None
 
+    def _queue_background_cleanup(self) -> None:
+        task = asyncio.create_task(self.background_runner.cancel_all())
+        self._cleanup_tasks.add(task)
+        task.add_done_callback(self._cleanup_finished)
+
+    def _cleanup_finished(self, task: asyncio.Task) -> None:
+        self._cleanup_tasks.discard(task)
+        if not task.cancelled():
+            task.exception()
+
+    async def _drain_cleanup(self) -> None:
+        if self._cleanup_tasks:
+            await asyncio.gather(*tuple(self._cleanup_tasks), return_exceptions=True)
+
+    async def prompt_stream(self, user_input: MessageContent) -> AsyncIterator[Event]:
+        """One owned run; consumer cancellation propagates after nested cleanup."""
+        if self._active_run is not None:
+            raise RuntimeError("Agent prompt is already running")
+        state = RunState(self.run_limits, CancellationToken())
+        self._active_run = state
+        self._current_signal = state.signal
+        self._aborted = False
+        stream = self._prompt_stream_run(user_input, state)
+        state.stream = stream
+        ended = False
+        completed = False
+        try:
+            while True:
+                try:
+                    with observation_context(root_id=state.run_id, purpose="agent"):
+                        event = await state.next_event(stream)
+                except StopAsyncIteration:
+                    break
+                if isinstance(event, MessageUpdate) and event.message.role == "assistant":
+                    state.partial = event.message
+                elif isinstance(event, MessageEnd) and event.message.role == "assistant":
+                    state.partial = None
+                if isinstance(event, AgentEnd):
+                    ended = True
+                    completed = event.stop_reason == "end_turn"
+                    event = replace(event, run_id=state.run_id)
+                yield event
+        except (RunLimitExceeded, RunAborted) as stop:
+            state.signal.cancel()
+            await self._close_interrupted_tool_group(state.partial)
+            state.partial = None
+            reason = "budget_exhausted" if isinstance(stop, RunLimitExceeded) else "cancelled"
+            end = AgentEnd(messages=list(self.messages), final_text=None,
+                           iterations=state.budget.turns, stop_reason=reason, run_id=state.run_id,
+                           limit_details=stop.details if isinstance(stop, RunLimitExceeded) else None)
+            await self._notify(end)
+            yield end
+        finally:
+            state.signal.cancel()
+            try:
+                await stream.aclose()
+                if not ended:
+                    await self._close_interrupted_tool_group(state.partial)
+                    state.partial = None
+                    self._queue_background_cleanup()
+                await self._drain_cleanup()
+            finally:
+                if self._active_run is state:
+                    self._current_signal = None
+                    self._active_run = None
+                state.finished.set()
+                if completed and not state.aborted:
+                    with observation_context(root_id=state.run_id, purpose="agent"):
+                        self._memory_distiller.schedule()
+
+    async def _close_interrupted_tool_group(self, partial: Message | None) -> None:
+        """Keep observed tool-call intent and append missing interruption results.
+
+        Cancellation may interrupt the microkernel before its normal repair events.
+        Never persist an unfinished assistant text without tool calls.
+        """
+        history = self.session.get_full_history_messages()
+        if partial is not None and (partial.metadata or {}).get("tool_calls") and not (
+            history and history[-1].role == "assistant"
+            and (history[-1].metadata or {}).get("tool_calls") == (partial.metadata or {}).get("tool_calls")
+        ):
+            message = partial.model_copy(update={"metadata": {**(partial.metadata or {}), "stop_reason": "cancelled"}})
+            await self.session.add_message_async(message.role, message.content, **(message.metadata or {}))
+            self.messages.append(message)
+            history.append(message)
+        index = next((i for i in range(len(history) - 1, -1, -1) if history[i].role == "assistant"), None)
+        if index is None or any(m.role != "tool" for m in history[index + 1:]):
+            return
+        calls = (history[index].metadata or {}).get("tool_calls") or []
+        existing = {(m.metadata or {}).get("tool_call_id") for m in history[index + 1:]}
+        for message in _synthesize_interrupted_tool_calls(calls):
+            if (message.metadata or {}).get("tool_call_id") not in existing:
+                await self.session.add_message_async(message.role, message.content, **(message.metadata or {}))
+                self.messages.append(message)
+
+    async def _prompt_stream_run(self, user_input: MessageContent, state: RunState) -> AsyncIterator[Event]:
         await self._memory_distiller.stop()
         if self._memory_distiller.closed:
             raise RuntimeError("Agent is closed")
@@ -528,43 +635,48 @@ class Agent:
             before_tool_call=self.hooks.emit,
             after_tool_call=self.hooks.emit,
             retry_policy=self.retry_policy,
+            run_budget=state.budget,
         )
 
-        async for event in loop_gen:
-            # 同步 Session 状态与压缩写回
-            if isinstance(event, MessageEnd):
-                msg = event.message
-                is_cancelled_partial_text = (
-                    msg.role == "assistant"
-                    and not (msg.metadata and msg.metadata.get("tool_calls"))
-                    and (bool(msg.metadata and msg.metadata.get("stop_reason") == "cancelled") or self._aborted)
-                )
-                if msg.role != "system" and not is_cancelled_partial_text:
-                    # 树变更留在事件循环线程；JSONL 落盘（fsync/重写）交给工作线程，避免阻塞 TUI
-                    await self.session.add_message_async(msg.role, msg.content, **(msg.metadata or {}))
-            elif isinstance(event, ContextCompacted):
-                self._persist_compaction()
+        async with contextlib.aclosing(loop_gen):
+            async for event in loop_gen:
+                # 同步 Session 状态与压缩写回
+                if isinstance(event, MessageEnd):
+                    msg = event.message
+                    is_cancelled_partial_text = (
+                        msg.role == "assistant"
+                        and not (msg.metadata and msg.metadata.get("tool_calls"))
+                        and (bool(msg.metadata and msg.metadata.get("stop_reason") == "cancelled") or self._aborted)
+                    )
+                    if msg.role != "system" and not is_cancelled_partial_text:
+                        # 树变更留在事件循环线程；JSONL 落盘（fsync/重写）交给工作线程，避免阻塞 TUI
+                        await self.session.add_message_async(msg.role, msg.content, **(msg.metadata or {}))
+                elif isinstance(event, ContextCompacted):
+                    self._persist_compaction()
 
-            if isinstance(event, AgentEnd) and event.stop_reason == "end_turn":
-                self._memory_distiller.schedule()
+                if isinstance(event, AgentEnd):
+                    event = replace(event, run_id=state.run_id)
 
-            # 分发到订阅者
-            await self._notify(event)
+                # 分发到订阅者
+                await self._notify(event)
 
-            yield event
+                yield event
 
     async def run(self, user_input: MessageContent) -> str | None:
         """追加 user 消息 → 内部消费 prompt_stream 事件流 → 返回最终文本。"""
         final_text = None
-        async for event in self.prompt_stream(user_input):
-            if isinstance(event, AgentEnd):
-                if event.stop_reason == "cancelled":
-                    return "(cancelled)"
-                if event.stop_reason == "blocked":
-                    return event.final_text or "(blocked)"
-                if event.stop_reason == "error":
-                    raise RuntimeError(event.final_text or "Error during model stream")
-                final_text = event.final_text
+        async with contextlib.aclosing(self.prompt_stream(user_input)) as events:
+            async for event in events:
+                if isinstance(event, AgentEnd):
+                    if event.stop_reason == "cancelled":
+                        return "(cancelled)"
+                    if event.stop_reason == "budget_exhausted":
+                        return "(budget exhausted)"
+                    if event.stop_reason == "blocked":
+                        return event.final_text or "(blocked)"
+                    if event.stop_reason == "error":
+                        raise RuntimeError(event.final_text or "Error during model stream")
+                    final_text = event.final_text
 
         return final_text
 
@@ -574,6 +686,23 @@ class Agent:
 
     async def aclose(self) -> None:
         """Cancel and reap this Agent's in-process memory tasks."""
+        state = self._active_run
+        if state is not None:
+            state.abort()
+            if state.step is None:
+                # The consumer may be paused at a yielded event: no next_event is
+                # running to perform cleanup, so close the suspended inner stream.
+                if state.stream is not None:
+                    await state.stream.aclose()
+                await self._close_interrupted_tool_group(state.partial)
+                state.partial = None
+                self._queue_background_cleanup()
+                self._current_signal = None
+                self._active_run = None
+                state.finished.set()
+            elif state.owner is not asyncio.current_task():
+                await state.finished.wait()
+        await self._drain_cleanup()
         await self._memory_distiller.close()
 
     async def invoke_skill(self, name: str, instructions: str = "") -> str | None:
@@ -600,6 +729,8 @@ class Agent:
 
     async def _notify(self, event: Event) -> None:
         """将生命周期事件安全广播给所有旁路订阅者（对标 Tau AgentHarness._notify）。"""
+        if isinstance(event, AgentEnd) and event.run_id is None and self._active_run is not None:
+            event = replace(event, run_id=self._active_run.run_id)
         for sub in list(self._subscribers):
             with contextlib.suppress(Exception):
                 res = sub(event)

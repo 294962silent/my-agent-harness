@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from my_agent_llm.observation import observation_context
 from my_agent_llm import Message  # pyright: ignore[reportMissingImports]
 
 if TYPE_CHECKING:
@@ -703,7 +704,8 @@ class ContextManager:
             Message(role="system", content=SUMMARIZATION_SYSTEM_PROMPT),
             Message(role="user", content=user_content),
         ]
-        resp = await self.llm.achat(messages=msgs, tools=[])
+        with observation_context(purpose="summary"):
+            resp = await self.llm.achat(messages=msgs, tools=[])
 
         summary_text = self._extract_summary(resp.content)
         read_files, modified_files = extract_file_operations(messages, self._summary)

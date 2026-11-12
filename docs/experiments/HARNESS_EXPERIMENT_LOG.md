@@ -530,3 +530,19 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 - 最终复核：上述源码提交的 CI run `43135488211` 四个 job 均为 **completed / success**：Ubuntu-latest / Python 3.11、3.13，Windows-latest / Python 3.11、3.13。每组均完成依赖同步、Ruff、TUI 构建、完整 pytest、wheel 构建 / 入口检查及 TUI 测试。
 - 本批最后的实验记录更新只补交付与 CI 证据，不改变已通过检查的源码。后续检查状态以 PR 实际结果为准。
+
+
+### E-REDESIGN-CODE：2026-11-12 / 面向 Agent 实习的运行与观测重设计
+
+- 用户目标：重新设计整个框架，面向 Agent / 大模型应用开发实习，持续整理逐模块消融、实际数值、技术取舍和开发问题；随后指定只使用两名执行助手。主代理负责设计、集成和记录，执行助手为 GPT-6.1 Sol / medium，当前无 DS / DSH。
+- 工作区：从已交付的 `1f150e1` 创建 `.worktrees/interview-redesign` / `codex/interview-harness-redesign`，保留原 checkout 的调度中间实现和用户文档修改 / 删除。不是把原 checkout 的整个 Agent / RPC 文件复制过来。
+- 架构：详见 `docs/architecture/HARNESS_VNEXT.md`。统一 Runtime、Model、Tools、Session、Context/Artifact、Memory、Permission、Observation/Evaluation 的职责；选择渐进重设计，保留已验证模块，新增运行归属与统一观测接缝。不因为有新架构就宣称所有模块重写。
+- Runtime 改动：`agent.py/loop.py/events.py`、新 `run_lifecycle.py`；可选 RunLimits 默认无限制，同一 Agent 直接运行只有一个 owner，明确 run_id、signal、budget 和清理责任。轮次在主请求重试外计数，deadline 限制异步等待，abort / 外部取消 / budget_exhausted 有不同终态；关闭和异常后释放归属。
+- 开发中回归：provider 已交付部分 tool_calls 但尚未 StreamDone 时，立即取消使 Session 中工具配对缺失。集中终止收尾保存已观察工具意图并补恰一条中断结果；新增 abort / deadline / consumer close 后 Session.load 回归。不保存纯 partial 文本，不通过放宽 deadline 隐藏问题。
+- 观测改动：LLM门面五个入口及新 `observation.py/observation_export.py/langfuse_export.py`；不可变 start/end、root/parent/purpose、provider归一化usage快照，默认无正文 / 参数 / 异常消息。流在首次迭代开始，结束 / 错误 / 取消 / close 各一次终态，ContextVar不跨消费者yield泄漏。
+- 导出：本地 recorder / JSONL 与有界 worker，丢弃、传输失败、sink清理失败和线程存活分开；观测异常不影响模型结果。独立复核发现 flush异常跳过own_client.shutdown，已用try/finally及失败回归修复。Langfuse适配对照官方Python SDK5.2.0 `00e5098bd6511a2f7bc7b6813ac125a3af559697` 的 start_observation/update/end，仅fake client验证，未宣称真实上传接通。
+- 打包问题：独立Linux环境暴露PIL依赖未显式声明，开发环境的matplotlib间接依赖曾掩盖。新增 `Pillow>=10` 并同步uv.lock；61个既有包版本完全未变，锁中pillow仍12.3.0，只有direct依赖与少量revision/marker元数据变化。Linux另装Pillow13.0.0后实际import Agent/Session/CodingAgent成功，`uv lock --check`通过。
+- 主代理验证：`python -m pytest tests -q -o addopts= --import-mode=importlib -k 'not test_bash_pipefail_propagates_error'`，**1105 passed、1 skipped、1 deselected in55.93s**；skip为主Windowsvenv未安装Harbor的可选测试，deselect仍是既有cmd/cat pipefail环境差异。执行助手独立分批core+llm665项、coding399项通过，重叠数量不累加。
+- 静态与构建：`ruff check src tests experiments/harness_eval experiments/benchmark_live`通过；`npm test` **96 passed、2 skipped、0 failed**；TUI构建与wheel构建通过，实际检查wheel含RunLifecycle、观测模块、TUI入口及 `Requires-Dist: pillow>=10`。
+- 代价与限制：协作取消不能强停同步Python/同步SDK，外部副作用不能回滚；exporter transport永久阻塞可能close超时；observer不是硬费用预算。真实API账本、官方任务预检与模型评分作为单独实验追加，不把软件回归数量当模型成功率。
+- 原始基线：本轮改前干净core/llm **630 passed in21.01s**。本节完成本地实现与验证，GitHub提交 / CI 状态以后续实际记录为准，不预填。
