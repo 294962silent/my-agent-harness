@@ -57,10 +57,15 @@ class CodingAgent:
             session = Session(path=Path(session), cwd=str(self.workspace))
 
         # 1. 预先装配 7 大编码专属工具并与额外工具合并
+        # 稳定产物库：工作区归属 + 内容寻址；工具清单在构造时固定注册。
+        from my_agent_core.artifacts import ArtifactStore
+
+        self.artifact_store = ArtifactStore(self.workspace)
         coding_tools = build_coding_tools(
             self.workspace,
             mutation_queue=self.mutation_queue,
             background_runner=lambda: getattr(self.agent, "background_runner", None),
+            artifact_store=self.artifact_store,
         )
         all_tools = [*extra_tools, *coding_tools]
 
@@ -105,6 +110,7 @@ class CodingAgent:
             session=session,
             tools=all_tools,
             system_prompt=effective_prompt,
+            artifact_store=self.artifact_store,
             **kw,
         )
 

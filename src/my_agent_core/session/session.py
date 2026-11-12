@@ -293,6 +293,7 @@ class Session:
         tokens_before: int,
         summary_usage: dict | None = None,
         summary_model: str | None = None,
+        covered_messages: list[dict] | None = None,
     ) -> None:
         """写一条 CompactionEntry（不动 current_id）+ 更新 compaction_floor。"""
         metadata: dict[str, Any] = {
@@ -300,6 +301,33 @@ class Session:
             "covered_count": covered_count,
             "tokens_before": tokens_before,
         }
+        # 分支归属与覆盖身份：只记录，不改写任何原始消息节点。
+        path = self.tree.get_current_path()
+        msg_ids = [e.id for e in path if getattr(e, "type", None) == "message"]
+        if covered_messages is not None:
+            from my_agent_core.context import _message_fingerprint
+
+            keys = [_message_fingerprint(Message(**m)) for m in covered_messages]
+            remaining = iter(keys)
+            expected = next(remaining, None)
+            boundary = 0
+            for i, entry in enumerate(e for e in path if isinstance(e, MessageEntry)):
+                if expected is not None and _message_fingerprint(self._hydrate_message_images(entry.message)) == expected:
+                    boundary = i + 1
+                    expected = next(remaining, None)
+            if expected is not None:
+                # Sanitized input no longer maps to this Session: do not persist a guessed cache.
+                return
+            covered = msg_ids[:boundary]
+            metadata["covered_message_keys"] = keys
+        else:
+            covered = msg_ids[:max(0, covered_count)]
+        first_kept = msg_ids[len(covered)] if len(covered) < len(msg_ids) else None
+        metadata["provenance_version"] = 1
+        metadata["covered_ids"] = covered
+        metadata["first_kept_id"] = first_kept
+        metadata["source_path_id"] = self.tree.current_id
+        metadata["path_messages_before"] = len(msg_ids)
         if summary_usage is not None:
             metadata["summary_usage"] = summary_usage
         if summary_model is not None:
@@ -319,47 +347,138 @@ class Session:
         return self.get_current_path_messages()
 
     def get_latest_compaction_cache(self) -> dict | None:
-        """最新一条 CompactionEntry → {summary, covered_count, retained_tail}；无则 None。"""
-        cache_entries = [
-            e
-            for e in self.tree.entries.values()
-            if isinstance(e, CompactionEntry) or getattr(e, "type", None) == "compaction"
-        ]
-        if not cache_entries:
-            return None
-        latest = max(cache_entries, key=lambda e: len(self.tree.get_path_to_entry(e.id)))
-        md = getattr(latest, "metadata", {}) or {}
-        try:
-            covered_count = int(md.get("covered_count", 0))
-        except (ValueError, TypeError):
-            covered_count = 0
-        summary_text = latest.summary if isinstance(latest, CompactionEntry) else getattr(latest, "summary", "")
-        return {
-            "summary": summary_text,
-            "covered_count": covered_count,
-            "retained_tail": list(md.get("retained_tail", [])),
-        }
+        """当前分支路径上最新的合法 CompactionEntry → 摘要缓存；否则 None。
+
+        旧实现按「整棵树路径深度」取最大，会把无关分支更深处的摘要当成本分支缓存
+        （错误归属，可能污染 Floor 与视图）。现在先取当前真实路径，再校验来源：
+        entry 必须在路径上；有 provenance 时覆盖 id / first_kept / source 也必须在
+        路径上；旧 entry 无 provenance 时仅在路径上且覆盖条数不超过其前序消息数时兼容。
+        """
+        path = self.tree.get_current_path()
+        path_ids = [e.id for e in path]
+        path_set = set(path_ids)
+        index = {eid: i for i, eid in enumerate(path_ids)}
+        msg_before = {}
+        seen = 0
+        for eid in path_ids:
+            msg_before[eid] = seen
+            entry = self.tree.entries.get(eid)
+            if getattr(entry, "type", None) == "message":
+                seen += 1
+        candidates = []
+        for order, e in enumerate(self.tree.entries.values()):
+            if not (isinstance(e, CompactionEntry) or getattr(e, "type", None) == "compaction"):
+                continue
+            anchor = e.id if e.id in path_set else getattr(e, "parent_id", None)
+            if anchor in path_set:
+                candidates.append((index.get(anchor, -1), order, e, anchor))
+        for _, _, latest, anchor in sorted(candidates, key=lambda item: (item[0], item[1]), reverse=True):
+            md = getattr(latest, "metadata", {}) or {}
+            if "provenance_version" in md:
+                covered_ids = md.get("covered_ids")
+                first_kept = md.get("first_kept_id")
+                source = md.get("source_path_id")
+                if isinstance(covered_ids, list) and not set(covered_ids) <= path_set:
+                    continue
+                if first_kept is not None and first_kept not in path_set:
+                    continue
+                if source != latest.parent_id or source not in path_set:
+                    continue
+                if not isinstance(covered_ids, list) or len(covered_ids) != len(set(covered_ids)):
+                    continue
+            try:
+                covered_count = int(md.get("covered_count", 0))
+            except (ValueError, TypeError):
+                covered_count = 0
+            messages_up_to_anchor = sum(
+                1
+                for eid in path_ids[: index.get(anchor, -1) + 1]
+                if getattr(self.tree.entries.get(eid), "type", None) == "message"
+            )
+            covered_ids = md.get("covered_ids")
+            if isinstance(covered_ids, list) and covered_ids:
+                # 覆盖身份必须与当前路径上紧邻锚点之前的消息顺序完全一致（不只看 set 子集）。
+                message_ids_before = [
+                    eid
+                    for eid in path_ids[: index.get(anchor, -1) + 1]
+                    if getattr(self.tree.entries.get(eid), "type", None) == "message"
+                ]
+                expected = message_ids_before[:len(covered_ids)]
+                if covered_ids != expected:
+                    continue
+                if "provenance_version" in md:
+                    first_kept = md.get("first_kept_id")
+                    expected_first = message_ids_before[len(covered_ids)] if len(covered_ids) < len(message_ids_before) else None
+                    if first_kept != expected_first:
+                        continue
+                    keys = md.get("covered_message_keys")
+                    if keys is not None:
+                        from my_agent_core.context import _message_fingerprint
+
+                        if not isinstance(keys, list):
+                            continue
+                        actual = [
+                            _message_fingerprint(self._hydrate_message_images(self.tree.entries[eid].message))
+                            for eid in covered_ids
+                            if isinstance(self.tree.entries[eid], MessageEntry) and self.tree.entries[eid].message.role != "system"
+                        ]
+                        # Sanitization may omit malformed tool groups; order and endpoint still bind the prefix.
+                        cursor = iter(actual)
+                        if any(not any(value == key for value in cursor) for key in keys):
+                            continue
+                        if keys and (not actual or keys[-1] != actual[-1]):
+                            continue
+            # 旧 entry 无覆盖身份，只能做保守的范围合理性检查；新 entry 以 covered_ids 为准。
+            if "provenance_version" not in md and covered_count > messages_up_to_anchor:
+                continue
+            summary_text = latest.summary if isinstance(latest, CompactionEntry) else getattr(latest, "summary", "")
+            return {
+                "summary": summary_text,
+                "covered_count": covered_count,
+                "retained_tail": list(md.get("retained_tail", [])),
+                "entry_id": latest.id,
+                "provenance_version": md.get("provenance_version"),
+                "covered_ids": list(covered_ids) if isinstance(covered_ids, list) else [],
+                "first_kept_id": md.get("first_kept_id"),
+                "source_path_id": md.get("source_path_id"),
+                "covered_message_keys": md.get("covered_message_keys"),
+            }
+        return None
 
     def rewind(self, entry_id: str) -> None:
         """移动 current 指针（旧分支保留）+ save。压缩后只能回 floor（含）之后，否则 ValueError。"""
-        if self.compaction_floor is not None and not self._after_floor(entry_id):
+        cache = self.get_latest_compaction_cache()
+        floor = (cache or {}).get("source_path_id")
+        if floor is None and self._floor_applies():
+            floor = self.compaction_floor
+        if floor is not None and not self._after_floor(entry_id, floor):
             raise ValueError(
-                f"Cannot rewind past compaction floor {self.compaction_floor}: "
+                f"Cannot rewind past compaction floor {floor}: "
                 f"entry {entry_id} is prior to compacted history"
             )
         self.tree.rewind(entry_id)
         self.save()
 
-    def _after_floor(self, entry_id: str) -> bool:
+    def _after_floor(self, entry_id: str, floor: str | None = None) -> bool:
         """entry_id 是否在 compaction_floor（含）之后长出的节点：等于 floor，或沿 parent 链能走到 floor。"""
-        if entry_id == self.compaction_floor:
+        floor = floor if floor is not None else self.compaction_floor
+        if entry_id == floor:
             return True
         cur = self.tree.entries.get(entry_id)
         while cur is not None and cur.parent_id is not None:
-            if cur.parent_id == self.compaction_floor:
+            if cur.parent_id == floor:
                 return True
             cur = self.tree.entries.get(cur.parent_id)
         return False
+
+    def _floor_applies(self) -> bool:
+        """Floor 只对当前分支生效：另一分支产生的 Floor 不得锁住当前分支的回退。
+
+        这是归属修正，不是放宽本分支有效摘要的护栏。
+        """
+        if self.compaction_floor is None:
+            return False
+        return any(e.id == self.compaction_floor for e in self.tree.get_current_path())
 
     # ── 持久化：增量追加 / 原子全量重写 ─────────────────────────
 

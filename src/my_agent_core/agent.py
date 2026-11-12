@@ -44,6 +44,7 @@ from my_agent_core.plugins import PluginManager
 from my_agent_core.registry import ToolRegistry
 from my_agent_core.retry import AutoRetryPolicy  # pyright: ignore[reportMissingImports]
 from my_agent_core.session import Session
+from my_agent_core.runtime_context import RuntimeContext, projection_message
 from my_agent_core.skills import Skill, SkillManager
 from my_agent_core.subagents import SubagentManager
 from my_agent_core.task_store import TaskStore  # pyright: ignore[reportMissingImports]
@@ -117,6 +118,7 @@ class Agent:
         followup_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
         hooks: list[tuple[type, Callable[..., Any]]] | None = None,
         retry_policy: AutoRetryPolicy | None = None,
+        artifact_store: Any | None = None,
     ):
         """各参数语义见框架设计文档 §4.3（hook 通过 register_hook 挂载）。
 
@@ -143,6 +145,9 @@ class Agent:
         self.llm = llm
         self.model = model  # 缺省 inherit：None 时 llm.chat 用 LLM 自身配置
         self.session = session
+        self.artifact_store = artifact_store
+        # 运行态事实的显式来源：只由宿主通过 set/update/clear 写入，按快照交付。
+        self.runtime_context = RuntimeContext()
         self._system_prompt = system_prompt  # 保存，reset 重拼用
         self._aborted = False  # 中止状态标记
         self._current_signal: CancellationToken | None = None
@@ -261,9 +266,51 @@ class Agent:
             llm=self.llm,
             keep_recent_tokens=keep_recent_tokens,
             results_dir=self._ctx_bridge.results_dir(),
+            artifact_store=self.artifact_store,
             **({} if context_budget is None else {"budget": context_budget}),
         )
-        self._ctx_bridge.restore_cache(self._ctx)
+        cache = self._ctx_bridge.restore_cache(self._ctx)
+        self._ctx_cache_entry_id = (cache or {}).get("entry_id")
+        self._ctx_session_identity = (self.session.id, str(self.session.path.resolve()))
+
+    def _mark_summary_replaced(self, reason: str) -> None:
+        """摘要视图替换时留下显式诊断原因；普通 LLM 无诊断接口则静默跳过。"""
+        provider = getattr(self.llm, "_provider", None)
+        projection = getattr(provider, "request_projection", None) or getattr(self.llm, "request_projection", None)
+        if projection is not None and hasattr(projection, "mark_message_rewrite"):
+            projection.mark_message_rewrite(reason)
+
+    def _sync_context_cache(self) -> None:
+        """每轮模型请求前对齐当前分支的摘要缓存（分支切换/恢复/Session 替换）。
+
+        同一分支正常追加时 entry 身份不变 → 不做任何重载或重新摘要。
+        """
+        cache = self.session.get_latest_compaction_cache()
+        identity = (cache or {}).get("entry_id")
+        session_identity = (self.session.id, str(self.session.path.resolve()))
+        session_changed = session_identity != getattr(self, "_ctx_session_identity", None)
+        if not session_changed and identity == getattr(self, "_ctx_cache_entry_id", None):
+            return
+        self._ctx_bridge = ContextSessionBridge(self.session)
+        self._ctx.results_dir = self._ctx_bridge.results_dir()
+        if cache:
+            self._ctx.restore_cache(
+                summary=cache["summary"],
+                covered_count=cache["covered_count"],
+                retained_tail=cache["retained_tail"],
+                entry_id=cache.get("entry_id"),
+                provenance_version=cache.get("provenance_version"),
+                covered_ids=cache.get("covered_ids"),
+                first_kept_id=cache.get("first_kept_id"),
+                source_path_id=cache.get("source_path_id"),
+                covered_message_keys=cache.get("covered_message_keys"),
+            )
+            self._mark_summary_replaced("summary_replaced")
+        elif session_changed or getattr(self, "_ctx_cache_entry_id", None) is not None:
+            self._ctx.invalidate_cache("branch_or_session_changed")
+            self._mark_summary_replaced("summary_dropped")
+        self._ctx_cache_entry_id = identity
+        self._ctx_session_identity = session_identity
 
     def _register_hooks(self, hooks: list[tuple[type, Callable[..., Any]]] | None) -> None:
         """构造时批量注册 hooks / 决策回调（对称 _register_tools）。"""
@@ -395,6 +442,8 @@ class Agent:
         restored = system + self.session.get_full_history_messages()
         # 对齐 Tau: 执行对话历史自愈与清洗，剔除无效断头，保证送入模型的转录本闭合
         self.messages = clean_provider_context(restored)
+        # 分支切换/恢复/Session 替换：只按当前路径重新同步摘要缓存。
+        self._sync_context_cache()
 
         # 准备 system_prompt
         system_prompt = self.system_prompt or ""
@@ -423,6 +472,29 @@ class Agent:
                 elif system_prompt:
                     self.messages.insert(0, Message(role="system", content=system_prompt))
 
+        # 每轮模型请求前的安全边界：投影运行态快照（不插 system、不断开工具配对）。
+        async def _project_view(messages: list[Message], view: list[Message]) -> None:
+            canonical_projection = projection_message(self.runtime_context, messages)
+            projection = canonical_projection or projection_message(self.runtime_context, view)
+            if projection is None:
+                # An explicit clear can itself have been summarized away.
+                if self.runtime_context.is_empty:
+                    for old in reversed(messages):
+                        if (old.metadata or {}).get("kind") == "runtime_context_clear":
+                            if not any((m.metadata or {}).get("kind") == "runtime_context_clear" for m in view):
+                                view.append(old)
+                            break
+                return
+            # A summary can hide an already-persisted fact snapshot. Restore it to
+            # the outgoing view without duplicating canonical history.
+            if canonical_projection is None:
+                view.append(projection)
+                return
+            messages.append(projection)
+            if view is not messages:
+                view.append(projection)
+            await self.session.add_message_async(projection.role, projection.content, **(projection.metadata or {}))
+
         # 委托核心 ReAct 纯函数微内核驱动事件流
         loop_gen = run_agent_loop(
             llm=self.llm,
@@ -432,6 +504,8 @@ class Agent:
             model=self.model,
             system=system_prompt,
             prompts=[prompt],
+            project_view=_project_view,
+            artifact_store=self.artifact_store,
             signal=self._current_signal,
             get_steering_messages=self._get_steering_messages,
             get_follow_up_messages=self._get_follow_up_messages,
@@ -454,7 +528,7 @@ class Agent:
                     # 树变更留在事件循环线程；JSONL 落盘（fsync/重写）交给工作线程，避免阻塞 TUI
                     await self.session.add_message_async(msg.role, msg.content, **(msg.metadata or {}))
             elif isinstance(event, ContextCompacted):
-                self._ctx_bridge.write_compaction(self._ctx)
+                self._persist_compaction()
 
             # 分发到订阅者
             await self._notify(event)
@@ -546,9 +620,18 @@ class Agent:
                 if inspect.isawaitable(res):
                     await res
 
+    def _persist_compaction(self) -> None:
+        """写回压缩缓存，更新本分支缓存身份，并标记摘要视图替换原因。"""
+        self._ctx_bridge.write_compaction(self._ctx)
+        latest = self.session.get_latest_compaction_cache()
+        new_id = (latest or {}).get("entry_id")
+        if new_id != getattr(self, "_ctx_cache_entry_id", None):
+            self._ctx_cache_entry_id = new_id
+            self._mark_summary_replaced("summary_replaced")
+
     async def _handle_compaction(self) -> None:
         """prepare/force_compact 触发压缩后：写回 session（桥）+ 事件。"""
-        self._ctx_bridge.write_compaction(self._ctx)
+        self._persist_compaction()
         info = self._ctx.pending_compaction
         if info is not None:
             ev = ContextCompacted(

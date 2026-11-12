@@ -29,7 +29,7 @@ PermissionMode = Literal["review", "autonomous", "yolo", "strict"]
 RiskLevel = Literal["low", "medium", "high"]
 ApprovalScope = Literal["once", "session"]
 
-READONLY_TOOLS = frozenset({"read", "grep", "find", "ls"})
+READONLY_TOOLS = frozenset({"read", "grep", "find", "ls", "artifact_read", "artifact_search"})
 MUTATING_TOOLS = frozenset({"write", "edit"})
 
 SAFE_BASH_PREFIXES = (

@@ -115,6 +115,7 @@ def _decode_stream_bytes(data: bytes) -> str:
 def make_bash_tool(
     workspace: Path | str,
     background_runner: BackgroundRunner | None = None,
+    preserve_full_output: bool = False,
 ) -> Tool:
     """创建 bash 工具工厂，绑定 workspace 目录并支持超时终结、日志外溢与后台运行。"""
     workspace = Path(workspace).resolve()
@@ -258,7 +259,7 @@ def make_bash_tool(
             encoded = output.encode("utf-8")
             is_overflow = total_lines > DEFAULT_MAX_LINES or len(encoded) > DEFAULT_MAX_BYTES
 
-            if is_overflow:
+            if is_overflow and not preserve_full_output:
                 with tempfile.NamedTemporaryFile(
                     mode="w",
                     prefix="pi-bash-",

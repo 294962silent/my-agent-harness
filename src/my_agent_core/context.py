@@ -74,6 +74,11 @@ def _message_key(msg: Message) -> str:
     return f"{msg.role}:sha1:{digest}"
 
 
+def _message_fingerprint(message: Message) -> str:
+    """Full message identity for persisted summary coverage (never prompt text)."""
+    return hashlib.sha256(json.dumps(message.model_dump(), sort_keys=True, ensure_ascii=False, default=str).encode("utf-8")).hexdigest()
+
+
 def _as_token_count(value: Any) -> int:
     """provider 返回的 token 计数 → 安全 int（None / 非数字 / NaN / Inf 一律 0）。"""
     try:
@@ -247,6 +252,7 @@ class CompactionInfo:
         retained_tail: list[dict[str, Any]],
         summary_usage: dict[str, Any] | None,
         summary_model: str | None,
+        covered_messages: list[dict[str, Any]],
     ):
         # ── 事件组：ContextCompacted(tokens_before, tokens_after, summarized_count) ──
         self.tokens_before = tokens_before  # 压缩前估算 token（审计）
@@ -258,6 +264,7 @@ class CompactionInfo:
         self.retained_tail = retained_tail  # 保留尾部的快照（list[dict]）
         # ── 审计组：缓存 entry metadata（摘要 LLM 调用的成本与模型）──
         self.summary_usage = summary_usage  # 摘要调用的 usage（prompt/completion tokens）
+        self.covered_messages = covered_messages
         self.summary_model = summary_model  # 摘要用的模型名
 
 
@@ -299,12 +306,15 @@ class ContextManager:
         llm,
         keep_recent_tokens: int | None = None,
         results_dir: Path | None = None,
+        artifact_store: Any | None = None,
     ):
         self.llm = llm
         self.keep_recent_tokens = (
             keep_recent_tokens if keep_recent_tokens is not None else min(20_000, max(1_000, budget // 4))
         )
         self.results_dir = Path(results_dir) if results_dir else None
+        self.artifact_store = artifact_store
+        self._canonical_messages: list[Message] | None = None
         self.set_budget(budget)
         self._summary: str | None = None
         self._covered_count: int | None = None
@@ -316,17 +326,48 @@ class ContextManager:
         self._last_view_tokens = 0
         self._last_prompt_tokens = 0
         self.pending_compaction: CompactionInfo | None = None
+        self._cache_identity: dict[str, Any] | None = None
 
-    def restore_cache(self, *, summary: str, covered_count: int, retained_tail: list[dict[str, Any]]) -> None:
+    @property
+    def cache_identity(self) -> dict[str, Any] | None:
+        return self._cache_identity
+
+    def invalidate_cache(self, reason: str = "") -> None:
+        """公开失效入口：分支切换/Session 替换时丢弃旧摘要及边界，避免泄入新分支。"""
+        self._invalidate_cache()
+        self._cache_identity = {"invalidated": True, "reason": reason} if reason else {"invalidated": True}
+
+    def restore_cache(
+        self,
+        *,
+        summary: str,
+        covered_count: int,
+        retained_tail: list[dict[str, Any]],
+        entry_id: str | None = None,
+        provenance_version: int | None = None,
+        covered_ids: list[str] | None = None,
+        first_kept_id: str | None = None,
+        source_path_id: str | None = None,
+        covered_message_keys: list[str] | None = None,
+    ) -> None:
         """从 session 缓存 entry 恢复（Agent 构造时调用）。
 
         边界 key 不落盘：非空尾可从 retained_tail[0] 反推；空尾在 session 恢复后
         没有可校验的消息标识，prepare 会视其为不可校验并放弃缓存安全重建。
+        provenance 字段由 Session 已在当前路径上校验；这里只保留身份用于失效判断。
         """
         self._summary = summary
         self._covered_count = covered_count
         self._retained_tail = retained_tail
         self._end_key = None
+        self._cache_identity = {
+            "entry_id": entry_id,
+            "provenance_version": provenance_version,
+            "covered_ids": list(covered_ids or []),
+            "first_kept_id": first_kept_id,
+            "source_path_id": source_path_id,
+            "covered_message_keys": covered_message_keys,
+        }
 
     def set_budget(self, budget: int) -> None:
         """更新压缩预算（业务层在构造后与切模型后同步当前模型窗口）：阀值同步重算为 80%。"""
@@ -373,6 +414,8 @@ class ContextManager:
         超阈值时执行离散块压缩（compact 结构化摘要），建立下一个周期的静态稳定前缀。
         """
         self.pending_compaction = None
+        self._canonical_messages = list(messages)
+        messages = self._project_artifacts(messages)
         if self._summary is not None:
             view = self._build_cached_view(messages, allow_legacy_position=False)
             if view is not None:
@@ -410,6 +453,7 @@ class ContextManager:
         self._end_key = None
         self._ratio = None
         self.pending_compaction = None
+        self._cache_identity = None
 
     async def compact(self, messages: list[Message] | None = None, instructions: str | None = None) -> list[Message]:
         """对标 Pi manual compact API：执行强制摘要并可传入额外聚焦指令。"""
@@ -422,10 +466,10 @@ class ContextManager:
 
         对话过短（正常切点逻辑找不到 cut）时仍强制：摘要全部非 system 消息，不保留尾部。
         """
-        self._summary = None
-        self._covered_count = None
-        self._retained_tail = None
-        self._end_key = None
+        self.pending_compaction = None
+        self._invalidate_cache()
+        self._canonical_messages = list(messages)
+        messages = self._project_artifacts(messages)
         cut = self._find_cut(messages)
         if cut is None:
             start = 1 if (messages and messages[0].role == "system") else 0
@@ -472,6 +516,22 @@ class ContextManager:
         - 尾为空且无 key（session 恢复的空尾缓存）：无法校验任何标识 → 返回 None 触发安全重建；
           仅当 allow_legacy_position=True 时退回 covered_count + 工具组边界收敛（兼容路径）。
         """
+        keys = (self._cache_identity or {}).get("covered_message_keys")
+        if keys is not None:
+            # Session validated these fingerprints against canonical entry identities.
+            # Host-injected system messages are not part of the summarized transcript.
+            canonical = self._canonical_messages if self._canonical_messages is not None else messages
+            non_system = [(i, m) for i, m in enumerate(canonical) if m.role != "system"]
+            if len(non_system) >= len(keys) and [
+                _message_fingerprint(m) for _, m in non_system[:len(keys)]
+            ] == keys:
+                start = non_system[len(keys) - 1][0] + 1 if keys else (1 if messages and messages[0].role == "system" else 0)
+                if self._retained_tail:
+                    boundary_key = _message_key(Message(**self._retained_tail[0]))
+                    if start >= len(messages) or _message_key(messages[start]) != boundary_key:
+                        return None
+                return start
+            return None
         if not messages:
             return None if self._retained_tail else 0
         if self._retained_tail:
@@ -522,11 +582,26 @@ class ContextManager:
         self._covered_count = None
         self._retained_tail = None
         self._end_key = None
+        self._cache_identity = None
 
     def _apply_free_layers(self, view: list[Message]) -> list[Message]:
         """轻量层执行：仅支持超大工具输出持久化到磁盘，废除旧滚动裁切与滚动工具篡改以保障前缀缓存。"""
-        if self.results_dir:
+        if self.results_dir and self.artifact_store is None:
             view = budget_tool_results(view, results_dir=self.results_dir)
+        return view
+
+    def _project_artifacts(self, messages: list[Message]) -> list[Message]:
+        """Project before estimating/summarizing; canonical Session bodies stay intact."""
+        if self.artifact_store is None:
+            return messages
+        from my_agent_core.artifacts import apply_previews
+
+        view, changed = apply_previews(messages, self.artifact_store)
+        if changed:
+            provider = getattr(self.llm, "_provider", None)
+            projection = getattr(provider, "request_projection", None) or getattr(self.llm, "request_projection", None)
+            if projection is not None:
+                projection.mark_message_rewrite("artifact_preview")
         return view
 
     async def _do_summarize(self, messages: list[Message]) -> list[Message]:
@@ -558,6 +633,12 @@ class ContextManager:
         self._covered_count = cut
         self._retained_tail = [m.model_dump() for m in retained]
         self._end_key = _message_key(messages[cut - 1]) if cut > 0 else None
+        canonical_covered = [m for m in (self._canonical_messages or messages)[:cut] if m.role != "system"]
+        # Fresh in-memory summaries need the same coverage validation as restored
+        # Session caches. A matching tail alone cannot authenticate the prefix.
+        self._cache_identity = {
+            "covered_message_keys": [_message_fingerprint(m) for m in canonical_covered],
+        }
         self.pending_compaction = CompactionInfo(
             tokens_before=tokens_before,
             tokens_after=tokens_after,
@@ -567,6 +648,7 @@ class ContextManager:
             retained_tail=list(self._retained_tail),
             summary_usage=usage,
             summary_model=model,
+            covered_messages=[m.model_dump() for m in canonical_covered],
         )
         return view
 
@@ -642,11 +724,23 @@ class ContextSessionBridge:
         """工具输出落盘目录：session 所在 workspace 的 .my_agent_core/tool-results/。"""
         return self.session.path.parent.parent / "tool-results"
 
-    def restore_cache(self, ctx: ContextManager) -> None:
-        """session 最新缓存 entry → ctx（免重算）。无缓存则不动。"""
+    def restore_cache(self, ctx: ContextManager) -> dict[str, Any] | None:
+        """session 当前分支最新合法缓存 → ctx；返回缓存身份（无则 None）。"""
         cache = self.session.get_latest_compaction_cache()
-        if cache:
-            ctx.restore_cache(**cache)
+        if not cache:
+            return None
+        ctx.restore_cache(
+            summary=cache["summary"],
+            covered_count=cache["covered_count"],
+            retained_tail=cache["retained_tail"],
+            entry_id=cache.get("entry_id"),
+            provenance_version=cache.get("provenance_version"),
+            covered_ids=cache.get("covered_ids"),
+            first_kept_id=cache.get("first_kept_id"),
+            source_path_id=cache.get("source_path_id"),
+            covered_message_keys=cache.get("covered_message_keys"),
+        )
+        return cache
 
     def write_compaction(self, ctx: ContextManager) -> None:
         """ctx.pending_compaction → session 缓存 entry + floor。无压缩则不动。"""
@@ -660,6 +754,7 @@ class ContextSessionBridge:
             tokens_before=info.tokens_before,
             summary_usage=info.summary_usage,
             summary_model=info.summary_model,
+            covered_messages=info.covered_messages,
         )
 
 
