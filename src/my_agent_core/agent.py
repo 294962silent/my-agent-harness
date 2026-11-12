@@ -38,12 +38,14 @@ from my_agent_core.hooks import (  # pyright: ignore[reportMissingImports]
     UserInputHook,
 )
 from my_agent_core.loop import CancellationToken, run_agent_loop
-from my_agent_core.memory import MemoryStore, make_memory_tool
+from my_agent_core.memory import MemoryStore, make_memory_tool, make_memory_read_tool
+from my_agent_core.memory_distillation import MemoryDistiller, SOURCE_TEXT, input_text, is_trivial_memory_query
 from my_agent_core.message_queue import MessageQueue, QueuedMessage
 from my_agent_core.plugins import PluginManager
 from my_agent_core.registry import ToolRegistry
 from my_agent_core.retry import AutoRetryPolicy  # pyright: ignore[reportMissingImports]
 from my_agent_core.session import Session
+from my_agent_core.runtime_context import RuntimeContext, projection_message
 from my_agent_core.skills import Skill, SkillManager
 from my_agent_core.subagents import SubagentManager
 from my_agent_core.task_store import TaskStore  # pyright: ignore[reportMissingImports]
@@ -112,11 +114,14 @@ class Agent:
         plugin_dirs: Sequence[str | Path] | None = None,
         memory_dir: str | Path | None | Literal[False] = None,
         memory_autodistill: bool = False,
+        memory_idle_seconds: float = 30,
+        memory_distill_timeout: float = 15,
         task_store: TaskStore | Path | str | None | Literal[False] = None,
         steering_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
         followup_mode: Literal["one-at-a-time", "all"] = "one-at-a-time",
         hooks: list[tuple[type, Callable[..., Any]]] | None = None,
         retry_policy: AutoRetryPolicy | None = None,
+        artifact_store: Any | None = None,
     ):
         """各参数语义见框架设计文档 §4.3（hook 通过 register_hook 挂载）。
 
@@ -143,6 +148,9 @@ class Agent:
         self.llm = llm
         self.model = model  # 缺省 inherit：None 时 llm.chat 用 LLM 自身配置
         self.session = session
+        self.artifact_store = artifact_store
+        # 运行态事实的显式来源：只由宿主通过 set/update/clear 写入，按快照交付。
+        self.runtime_context = RuntimeContext()
         self._system_prompt = system_prompt  # 保存，reset 重拼用
         self._aborted = False  # 中止状态标记
         self._current_signal: CancellationToken | None = None
@@ -161,6 +169,7 @@ class Agent:
         # 会话结束时的记忆蒸馏（sleep-time）：默认关闭，打开后每轮结束抽取稳定事实
         self.memory_autodistill = bool(memory_autodistill)
         self._distill_cursor = 0
+        self._memory_distiller = MemoryDistiller(self, idle_seconds=memory_idle_seconds, timeout=memory_distill_timeout)
 
         self.task_store = self._init_task_store(task_store)  # 任务看板仓库装配
         self.retry_policy = retry_policy or AutoRetryPolicy()  # 大模型自动重试策略
@@ -225,6 +234,9 @@ class Agent:
             if self.registry.get("memory") is not None:
                 raise ValueError("Tool name 'memory' conflicts with the built-in memory tool")
             self.registry.register(make_memory_tool(self.memory_store))
+            if self.registry.get("memory_read") is not None:
+                raise ValueError("Tool name 'memory_read' conflicts with the built-in memory reader")
+            self.registry.register(make_memory_read_tool(self.memory_store))
         if self.task_store:
             todo_tool = make_todo_tool(self.task_store)
             if self.registry.get(todo_tool.name) is not None:
@@ -261,9 +273,53 @@ class Agent:
             llm=self.llm,
             keep_recent_tokens=keep_recent_tokens,
             results_dir=self._ctx_bridge.results_dir(),
+            artifact_store=self.artifact_store,
+            before_compact=self._memory_distiller.precompress if self.memory_autodistill else None,
+            before_compact_timeout=self._memory_distiller.timeout,
             **({} if context_budget is None else {"budget": context_budget}),
         )
-        self._ctx_bridge.restore_cache(self._ctx)
+        cache = self._ctx_bridge.restore_cache(self._ctx)
+        self._ctx_cache_entry_id = (cache or {}).get("entry_id")
+        self._ctx_session_identity = (self.session.id, str(self.session.path.resolve()))
+
+    def _mark_summary_replaced(self, reason: str) -> None:
+        """摘要视图替换时留下显式诊断原因；普通 LLM 无诊断接口则静默跳过。"""
+        provider = getattr(self.llm, "_provider", None)
+        projection = getattr(provider, "request_projection", None) or getattr(self.llm, "request_projection", None)
+        if projection is not None and hasattr(projection, "mark_message_rewrite"):
+            projection.mark_message_rewrite(reason)
+
+    def _sync_context_cache(self) -> None:
+        """每轮模型请求前对齐当前分支的摘要缓存（分支切换/恢复/Session 替换）。
+
+        同一分支正常追加时 entry 身份不变 → 不做任何重载或重新摘要。
+        """
+        cache = self.session.get_latest_compaction_cache()
+        identity = (cache or {}).get("entry_id")
+        session_identity = (self.session.id, str(self.session.path.resolve()))
+        session_changed = session_identity != getattr(self, "_ctx_session_identity", None)
+        if not session_changed and identity == getattr(self, "_ctx_cache_entry_id", None):
+            return
+        self._ctx_bridge = ContextSessionBridge(self.session)
+        self._ctx.results_dir = self._ctx_bridge.results_dir()
+        if cache:
+            self._ctx.restore_cache(
+                summary=cache["summary"],
+                covered_count=cache["covered_count"],
+                retained_tail=cache["retained_tail"],
+                entry_id=cache.get("entry_id"),
+                provenance_version=cache.get("provenance_version"),
+                covered_ids=cache.get("covered_ids"),
+                first_kept_id=cache.get("first_kept_id"),
+                source_path_id=cache.get("source_path_id"),
+                covered_message_keys=cache.get("covered_message_keys"),
+            )
+            self._mark_summary_replaced("summary_replaced")
+        elif session_changed or getattr(self, "_ctx_cache_entry_id", None) is not None:
+            self._ctx.invalidate_cache("branch_or_session_changed")
+            self._mark_summary_replaced("summary_dropped")
+        self._ctx_cache_entry_id = identity
+        self._ctx_session_identity = session_identity
 
     def _register_hooks(self, hooks: list[tuple[type, Callable[..., Any]]] | None) -> None:
         """构造时批量注册 hooks / 决策回调（对称 _register_tools）。"""
@@ -293,6 +349,7 @@ class Agent:
 
     def abort(self) -> None:
         """中止当前运行中的任务（取消流式输出，丢弃未完成半截文本并清空干预队列）。"""
+        self._memory_distiller.cancel()
         self._aborted = True
         if self._current_signal is not None:
             self._current_signal.cancel()
@@ -338,12 +395,17 @@ class Agent:
         self._aborted = False
         self._current_signal = CancellationToken()
 
+        await self._memory_distiller.stop()
+        if self._memory_distiller.closed:
+            raise RuntimeError("Agent is closed")
         if not self._extensions_loaded:
             await self.extension_manager.load()
             self._extensions_loaded = True
 
         # ── Hook 1: UserInputHook 拦截与改写（在进入 Session 和消息历史之前触发）
-        prompt = Message(role="user", content=user_input)
+        prompt = Message(role="user", content=user_input, metadata=(
+            {SOURCE_TEXT: input_text(user_input)} if self.memory_autodistill and self.memory_store is not None else None
+        ))
         # 混合输入逐个改写文字块，保留图片位置；纯图片仍触发一次空文字 Hook。
         text_parts: list[TextContent] = (
             [{"type": "text", "text": prompt.content}]
@@ -383,7 +445,7 @@ class Agent:
                 memory_query = " ".join(
                     str(part.get("text", "")) for part in prompt.content if isinstance(part, dict)
                 )
-            retrieved_memory = self.memory_store.retrieve(memory_query)
+            retrieved_memory = None if is_trivial_memory_query(memory_query) else self.memory_store.retrieve(memory_query)
             if retrieved_memory:
                 if isinstance(prompt.content, str):
                     prompt.content = f"{retrieved_memory}\n\n{prompt.content}"
@@ -395,6 +457,8 @@ class Agent:
         restored = system + self.session.get_full_history_messages()
         # 对齐 Tau: 执行对话历史自愈与清洗，剔除无效断头，保证送入模型的转录本闭合
         self.messages = clean_provider_context(restored)
+        # 分支切换/恢复/Session 替换：只按当前路径重新同步摘要缓存。
+        self._sync_context_cache()
 
         # 准备 system_prompt
         system_prompt = self.system_prompt or ""
@@ -423,6 +487,29 @@ class Agent:
                 elif system_prompt:
                     self.messages.insert(0, Message(role="system", content=system_prompt))
 
+        # 每轮模型请求前的安全边界：投影运行态快照（不插 system、不断开工具配对）。
+        async def _project_view(messages: list[Message], view: list[Message]) -> None:
+            canonical_projection = projection_message(self.runtime_context, messages)
+            projection = canonical_projection or projection_message(self.runtime_context, view)
+            if projection is None:
+                # An explicit clear can itself have been summarized away.
+                if self.runtime_context.is_empty:
+                    for old in reversed(messages):
+                        if (old.metadata or {}).get("kind") == "runtime_context_clear":
+                            if not any((m.metadata or {}).get("kind") == "runtime_context_clear" for m in view):
+                                view.append(old)
+                            break
+                return
+            # A summary can hide an already-persisted fact snapshot. Restore it to
+            # the outgoing view without duplicating canonical history.
+            if canonical_projection is None:
+                view.append(projection)
+                return
+            messages.append(projection)
+            if view is not messages:
+                view.append(projection)
+            await self.session.add_message_async(projection.role, projection.content, **(projection.metadata or {}))
+
         # 委托核心 ReAct 纯函数微内核驱动事件流
         loop_gen = run_agent_loop(
             llm=self.llm,
@@ -432,6 +519,8 @@ class Agent:
             model=self.model,
             system=system_prompt,
             prompts=[prompt],
+            project_view=_project_view,
+            artifact_store=self.artifact_store,
             signal=self._current_signal,
             get_steering_messages=self._get_steering_messages,
             get_follow_up_messages=self._get_follow_up_messages,
@@ -454,7 +543,10 @@ class Agent:
                     # 树变更留在事件循环线程；JSONL 落盘（fsync/重写）交给工作线程，避免阻塞 TUI
                     await self.session.add_message_async(msg.role, msg.content, **(msg.metadata or {}))
             elif isinstance(event, ContextCompacted):
-                self._ctx_bridge.write_compaction(self._ctx)
+                self._persist_compaction()
+
+            if isinstance(event, AgentEnd) and event.stop_reason == "end_turn":
+                self._memory_distiller.schedule()
 
             # 分发到订阅者
             await self._notify(event)
@@ -474,48 +566,15 @@ class Agent:
                     raise RuntimeError(event.final_text or "Error during model stream")
                 final_text = event.final_text
 
-        if self.memory_autodistill and self.memory_store is not None:
-            await self._maybe_distill_memory()
         return final_text
 
-    async def _maybe_distill_memory(self) -> None:
-        """会话边界蒸馏：把最近对话里的稳定事实写进长期记忆。
+    async def wait_memory_idle(self) -> None:
+        """Explicitly drain optional memory work (tests/hosts); responses do not await it."""
+        await self._memory_distiller.wait()
 
-        失败一律静默——记忆是增强，不能因为抽取失败让主流程报错。
-        """
-        store = self.memory_store
-        if store is None:
-            return
-        transcript = [m for m in self.messages if m.role in ("user", "assistant")]
-        new_messages = len(transcript) - self._distill_cursor
-        if new_messages < 4:
-            return
-        self._distill_cursor = len(transcript)
-
-        recent = transcript[-12:]
-        lines = [f"{m.role}: {str(m.content)[:600]}" for m in recent]
-        prompt = (
-            "Extract durable facts about the user from this conversation.\n"
-            "Return ONLY a JSON array, each item {\"key\": \"...\", \"value\": \"...\"}.\n"
-            "Rules: key is short snake_case; value is a short concrete string; "
-            "only stable preferences, constraints, or facts; skip anything uncertain; max 5 items.\n\n"
-            + "\n".join(lines)
-        )
-        try:
-            response = await self.llm.achat(
-                [Message(role="user", content=prompt)], tools=None, model=self.model
-            )
-            payload = str(getattr(response, "content", "") or "")
-            items = _parse_distilled_facts(payload)
-        except Exception:
-            _LOG.debug("memory distillation failed (extract)", exc_info=True)
-            return
-        for item in items:
-            try:
-                store.remember(item["key"], item["value"], subject="user", source="distill")
-            except Exception:
-                _LOG.debug("memory distillation failed (store %s)", item.get("key"), exc_info=True)
-                continue
+    async def aclose(self) -> None:
+        """Cancel and reap this Agent's in-process memory tasks."""
+        await self._memory_distiller.close()
 
     async def invoke_skill(self, name: str, instructions: str = "") -> str | None:
         """显式调用：skill_manager.format_invocation 包装（未知名 ValueError）→
@@ -524,6 +583,7 @@ class Agent:
 
     def reset(self) -> None:
         """清空对话（保留 system）。session 树清空 + 重载 memory 快照并重拼 system，清空干预队列。"""
+        self._memory_distiller.reset()
         self.message_queue.clear()
         self.session.reset()
         if self.memory_store:
@@ -546,9 +606,18 @@ class Agent:
                 if inspect.isawaitable(res):
                     await res
 
+    def _persist_compaction(self) -> None:
+        """写回压缩缓存，更新本分支缓存身份，并标记摘要视图替换原因。"""
+        self._ctx_bridge.write_compaction(self._ctx)
+        latest = self.session.get_latest_compaction_cache()
+        new_id = (latest or {}).get("entry_id")
+        if new_id != getattr(self, "_ctx_cache_entry_id", None):
+            self._ctx_cache_entry_id = new_id
+            self._mark_summary_replaced("summary_replaced")
+
     async def _handle_compaction(self) -> None:
         """prepare/force_compact 触发压缩后：写回 session（桥）+ 事件。"""
-        self._ctx_bridge.write_compaction(self._ctx)
+        self._persist_compaction()
         info = self._ctx.pending_compaction
         if info is not None:
             ev = ContextCompacted(

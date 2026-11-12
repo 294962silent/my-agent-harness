@@ -10,6 +10,7 @@ from collections.abc import AsyncIterator, Iterator
 import openai
 
 from ..config import Config
+from ..request_projection import RequestProjection
 from ..models import Message, Response, StreamChunk, ToolCall
 from ._base import Provider
 
@@ -112,6 +113,8 @@ class OpenAIProvider(Provider):
         # 部分 OpenAI 兼容网关不认 stream_options；一旦 400 就永久降级（实例级标记）
         self._stream_usage_supported = True
         self.config = config
+        # 最终线上边界的诊断：只存哈希/计数，不存原文与认证信息。
+        self.request_projection = RequestProjection("openai")
         if client is not None or async_client is not None:
             self.client = client
             self.async_client = async_client
@@ -275,9 +278,11 @@ class OpenAIProvider(Provider):
         """同步对话。"""
         if self.client is None:
             raise RuntimeError("client not provided; cannot run sync methods")
+        wire = self._convert_messages(messages)
+        self.request_projection.observe(model=model, system=[m for m in wire if m.get("role") in {"system", "developer"}] or None, tools=tools, messages=wire, options=kwargs)
         response = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
             model=model,
-            messages=self._convert_messages(messages),
+            messages=wire,
             tools=tools,
             **kwargs,
         )
@@ -302,10 +307,12 @@ class OpenAIProvider(Provider):
         if self.client is None:
             raise RuntimeError("client not provided; cannot run sync methods")
         stream_kwargs, usage_injected = self._stream_request_kwargs(kwargs)
+        wire = self._convert_messages(messages)
+        self.request_projection.observe(model=model, system=[m for m in wire if m.get("role") in {"system", "developer"}] or None, tools=tools, messages=wire, options={**stream_kwargs, "stream": True})
         try:
             stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
                 model=model,
-                messages=self._convert_messages(messages),
+                messages=wire,
                 tools=tools,
                 stream=True,
                 **stream_kwargs,
@@ -314,9 +321,10 @@ class OpenAIProvider(Provider):
             if not self._handle_stream_options_rejection(exc, usage_injected):
                 raise
             stream_kwargs.pop("stream_options", None)
+            self.request_projection.observe(model=model, system=[m for m in wire if m.get("role") in {"system", "developer"}] or None, tools=tools, messages=wire, options={**stream_kwargs, "stream": True})
             stream = self.client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
                 model=model,
-                messages=self._convert_messages(messages),
+                messages=wire,
                 tools=tools,
                 stream=True,
                 **stream_kwargs,
@@ -372,9 +380,11 @@ class OpenAIProvider(Provider):
         """异步对话。"""
         if self.async_client is None:
             raise RuntimeError("async_client not provided; cannot run async methods")
+        wire = self._convert_messages(messages)
+        self.request_projection.observe(model=model, system=[m for m in wire if m.get("role") in {"system", "developer"}] or None, tools=tools, messages=wire, options=kwargs)
         response = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
             model=model,
-            messages=self._convert_messages(messages),
+            messages=wire,
             tools=tools,
             **kwargs,
         )
@@ -399,10 +409,12 @@ class OpenAIProvider(Provider):
         if self.async_client is None:
             raise RuntimeError("async_client not provided; cannot run async methods")
         stream_kwargs, usage_injected = self._stream_request_kwargs(kwargs)
+        wire = self._convert_messages(messages)
+        self.request_projection.observe(model=model, system=[m for m in wire if m.get("role") in {"system", "developer"}] or None, tools=tools, messages=wire, options={**stream_kwargs, "stream": True})
         try:
             stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
                 model=model,
-                messages=self._convert_messages(messages),
+                messages=wire,
                 tools=tools,
                 stream=True,
                 **stream_kwargs,
@@ -411,9 +423,10 @@ class OpenAIProvider(Provider):
             if not self._handle_stream_options_rejection(exc, usage_injected):
                 raise
             stream_kwargs.pop("stream_options", None)
+            self.request_projection.observe(model=model, system=[m for m in wire if m.get("role") in {"system", "developer"}] or None, tools=tools, messages=wire, options={**stream_kwargs, "stream": True})
             stream = await self.async_client.chat.completions.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
                 model=model,
-                messages=self._convert_messages(messages),
+                messages=wire,
                 tools=tools,
                 stream=True,
                 **stream_kwargs,

@@ -46,15 +46,15 @@ def _store(tmpdir: str) -> MemoryStore:
 def test_remember_supersedes_previous_value() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         store = _store(tmpdir)
-        store.remember("wifi_password", "1234", valid_from="2023-01-01")
-        result = store.remember("wifi_password", "9876", valid_from="2023-06-01")
+        store.remember("wifi_name", "1234", valid_from="2023-01-01")
+        result = store.remember("wifi_name", "9876", valid_from="2023-06-01")
 
         assert "superseded" in result
         active = [f for f in store._facts if f.active]
         assert [f.value for f in active] == ["9876"]
         assert [f.value for f in store._facts] == ["1234", "9876"]  # 旧值保留可审计
 
-        context = store.retrieve("what is my wifi password?")
+        context = store.retrieve("what is my wifi name?")
         assert context is not None
         assert "9876" in context
         assert "1234" not in context, "被取代的事实不应注入"
@@ -111,11 +111,11 @@ async def test_agent_injects_retrieved_memory_into_user_message() -> None:
 
         store = MemoryStore(mem_dir=mem_dir)
         store.load_from_disk()
-        store.remember("wifi_password", "9876", valid_from="2023-06-01")
+        store.remember("wifi_name", "9876", valid_from="2023-06-01")
 
         llm = CapturingLLM("9876")
         agent = Agent(llm=llm, tools=[], session=Session(path=workspace / "s.jsonl"), memory_dir=mem_dir)
-        await agent.run("what is my wifi password?")
+        await agent.run("what is my wifi name?")
 
         user_msgs = [m for m in llm.calls[0]["messages"] if m.role == "user"]
         assert user_msgs, "至少要有一条用户消息"

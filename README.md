@@ -38,7 +38,7 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 | --- | --- |
 | `src/my_agent_llm` | 多 provider 适配层，统一为流式事件与结构化 `ToolCall` |
 | `src/my_agent_core` | 通用内核：ReAct 循环、14 类事件、5 个 Hook、会话树、上下文压缩 |
-| `src/my_coding_agent` | 产品层：7 个编码工具、单文件写锁、权限门禁、stdio RPC 服务端 |
+| `src/my_coding_agent` | 产品层：7 个基础编码工具、2 个受限产物回读工具、单文件写锁、权限门禁、stdio RPC 服务端 |
 | `my-tui` | 终端界面，复用 `@earendil-works/pi-tui` 渲染引擎，组件自行实现 |
 | `my-eval` | Terminal-Bench 评测适配器 |
 
@@ -53,6 +53,12 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 **上下文压缩优先 Append-Only。** 未超 80% 预算前只追加、不改历史，保持前缀稳定。真实 API 实测（glm-5.3-flash，6 轮）：命中率 53.5%，滑动窗口只有 17.9% 且从第 4 轮起归零。缓存最小块为 1088 token，短对话做 cache 优化没有意义。
 
 **会话用 JSONL 追加落盘。** 崩溃时最多丢最后一行——实测单个 JSON 文件损坏后 0 条可恢复，JSONL 可恢复 9/10。
+
+**运行态与摘要有明确来源。** 动态事实未变时复用已有快照，变化时追加完整新快照；摘要复用校验当前分支、覆盖消息和内容指纹，切分支或恢复会话时重新对齐。请求诊断保留组件指纹和变化原因。
+
+**长工具输出保留稳定产物引用。** 模型先看到有界头尾预览，可用 `artifact_read` 分页回读或 `artifact_search` 搜索；完整原文与会话记录保留，回读受工作区归属和大小上限约束。
+
+**长期记忆支持核对与删除。** `memory_read` 按精确键回读完整事实，`memory` 支持显式删除；写入与抽取入口进行常见凭据脱敏，琐碎输入跳过检索。可选的空闲 / 压缩前抽取默认关闭，使用方式及限制见[长期记忆说明](docs/memory.md)。
 
 **工具错误统一转成结果。** 不向上抛异常，让模型看到错误并自行修正；中断时自动补齐缺失的工具结果，避免孤儿调用触发 API 400。
 

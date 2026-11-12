@@ -44,6 +44,7 @@ from my_agent_core.tool_history import (
     _INTERRUPTED_TOOL_RESULT,
     clean_provider_context,
 )
+from my_agent_core.artifacts import apply_previews as apply_artifact_previews  # pyright: ignore[reportMissingImports]
 from my_agent_core.tools import ToolResult
 from my_agent_core.types import ContextManagerProtocol, LLMProtocol
 from my_agent_llm import Message, MessageContent, StreamChunk, ToolCall
@@ -323,6 +324,7 @@ async def _execute_tools_turn(
     before_tool_call: (Callable[[ToolCallHook], Awaitable[HookResult | None] | HookResult | None] | None) = None,
     after_tool_call: (Callable[[ToolResultHook], Awaitable[HookResult | None] | HookResult | None] | None) = None,
     signal: CancellationToken | None = None,
+    preserve_full_output: bool = False,
 ) -> AsyncIterator[Event]:
     """专职工具批处理执行车间：Preflight 广播 -> 审批改参 -> 并发批执行 -> 结果改写 -> 结果广播。
 
@@ -450,7 +452,14 @@ async def _execute_tools_turn(
     for idx, call in enumerate(parsed_calls):
         res = direct_results.get(idx, ToolResult(ok=False, error=_INTERRUPTED_TOOL_RESULT))
         obs = res.serialize()
+        if preserve_full_output and not isinstance(obs, list):
+            # Artifact projection needs the full canonical body; generic serialization
+            # truncates before a handle could be created. Multimodal/custom serializers stay intact.
+            if type(res) is ToolResult:
+                obs = str(res.data) if res.ok else str(res.error or "Unknown error")
         is_err = not res.ok
+        bounded_result = bool(res.ok and call.name in {"artifact_read", "artifact_search"}
+                              and getattr(registry.get(call.name), "_artifact_bounded", False))
         effective_terminate = res.terminate
 
         # 文本视图（供 Hook 审计、ToolExecutionEnd 广播及 TUI 显示）
@@ -484,6 +493,7 @@ async def _execute_tools_turn(
                         text_view = obs
                         is_err = True
                     elif decision.updated_result is not None:
+                        bounded_result = False
                         obs = decision.updated_result
                         text_view = str(decision.updated_result)
                         is_err = False
@@ -511,6 +521,7 @@ async def _execute_tools_turn(
                 "tool_name": call.name,
                 "is_error": is_err,
                 "terminate": effective_terminate,
+                **({"artifact_bounded": True} if bounded_result else {}),
             },
         )
 
@@ -531,6 +542,8 @@ async def run_agent_loop(
     model: str | None = None,
     system: str = "",
     prompts: Sequence[Message | MessageContent] = (),
+    project_view: Callable[[list[Message], list[Message]], Awaitable[None] | None] | None = None,
+    artifact_store: Any | None = None,
     signal: CancellationToken | None = None,
     get_steering_messages: Callable[[], Sequence[Message | MessageContent]] | None = None,
     get_follow_up_messages: Callable[[], Sequence[Message | MessageContent]] | None = None,
@@ -615,6 +628,19 @@ async def run_agent_loop(
             clean_messages = clean_provider_context(messages)
             view = await context_manager.prepare(clean_messages) if context_manager else clean_messages
             view = clean_provider_context(view)
+            # 每个模型请求的安全 prepare 边界：宿主可在此投影运行态快照。
+            if project_view is not None:
+                projected = project_view(messages, view)
+                if inspect.isawaitable(projected):
+                    await projected
+            # 稳定产物预览：首次发送前即固定，Session 原文不变；可信回读工具不再外置。
+            if artifact_store is not None and context_manager is None:
+                view, previewed = apply_artifact_previews(view, artifact_store)
+                if previewed:
+                    provider = getattr(llm, "_provider", None)
+                    projection = getattr(provider, "request_projection", None)
+                    if projection is not None and hasattr(projection, "mark_message_rewrite"):
+                        projection.mark_message_rewrite("artifact_preview")
 
             # 派发上下文压缩事件（若触发了 compact 压缩）
             comp_info = getattr(context_manager, "pending_compaction", None) if context_manager is not None else None
@@ -709,6 +735,7 @@ async def run_agent_loop(
                         before_tool_call=before_tool_call,
                         after_tool_call=after_tool_call,
                         signal=signal,
+                        preserve_full_output=artifact_store is not None,
                     )
                 )
                 async for ev in tool_stream:

@@ -65,11 +65,10 @@ async def test_synthetic_tool_insertion_before_boundary_not_duplicated() -> None
     llm = FakeLLM()
     ctx = _ctx(llm)
     history = _history()
-    view1 = await ctx.prepare(history)
+    await ctx.prepare(history)
     assert len(llm.calls) == 1
     assert ctx._retained_tail
     assert ctx._covered_count is not None
-    tail_len = len(ctx._retained_tail)
 
     # 压缩后继续追加一轮新对话
     history.append(_msg("user", "new-question"))
@@ -81,15 +80,14 @@ async def test_synthetic_tool_insertion_before_boundary_not_duplicated() -> None
     assert len(cleaned) == len(history) + 1  # 合成结果确实被插入
 
     view2 = await ctx.prepare(cleaned)
-    assert len(llm.calls) == 1  # 缓存命中，未重新摘要
+    assert len(llm.calls) == 2  # covered prefix changed: rebuild instead of reusing stale summary
     contents = _contents(view2)
     assert contents.count("new-question") == 1
     assert contents.count("new-answer") == 1
     _assert_tail_once(contents, ctx)
-    # system + 摘要 + 尾部快照 + 2 条新增
-    assert len(view2) == 1 + 1 + tail_len + 2
-    # 压缩建立的静态前缀（system + 摘要 + 尾部）字节不变
-    assert view2[: len(view1)] == view1
+    assert any("call-x" in m.text_content or "bash" in m.text_content for m in llm.calls[-1])
+    assert await ctx.prepare(cleaned) == view2
+    assert len(llm.calls) == 2
 
 
 @pytest.mark.anyio
@@ -137,7 +135,6 @@ async def test_empty_assistant_removal_before_boundary_not_lost() -> None:
 
     await ctx.prepare(history)
     assert ctx._retained_tail
-    tail_len = len(ctx._retained_tail)
 
     history.append(_msg("user", "after-compact-question"))
     history.append(_msg("assistant", "after-compact-answer"))
@@ -145,12 +142,13 @@ async def test_empty_assistant_removal_before_boundary_not_lost() -> None:
     assert len(cleaned) == len(history) - 1  # 空失败轮次确实被剔除
 
     view = await ctx.prepare(cleaned)
-    assert len(llm.calls) == 1
+    assert len(llm.calls) == 2  # removing covered input invalidates its summary
     contents = _contents(view)
     assert contents.count("after-compact-question") == 1
     assert contents.count("after-compact-answer") == 1
     _assert_tail_once(contents, ctx)
-    assert len(view) == 1 + 1 + tail_len + 2
+    assert await ctx.prepare(cleaned) == view
+    assert len(llm.calls) == 2
 
 
 @pytest.mark.anyio
@@ -242,3 +240,67 @@ async def test_repeated_prepare_is_idempotent_and_prefix_stable() -> None:
 
     view5 = await ctx.prepare(history)
     assert view5 == view4
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("with_system", [False, True])
+@pytest.mark.parametrize("empty_tail", [False, True])
+async def test_changed_covered_prefix_with_same_tail_cannot_reuse_summary(with_system, empty_tail):
+    llm = FakeLLM()
+    ctx = _ctx(llm, budget=100_000, keep_recent_tokens=20_000 if empty_tail else 1)
+    history = ([_msg("system", "HOST")] if with_system else []) + [
+        _msg("user", "old prefix"),
+        _msg("assistant", "answer"),
+        _msg("user", "same tail"),
+        _msg("assistant", "tail answer"),
+    ]
+    await ctx.force_compact(history)
+    assert bool(ctx._retained_tail) is not empty_tail
+    assert len(llm.calls) == 1
+    index = 1 if with_system else 0
+    history[index] = _msg("user", "NEW prefix")
+    view = await ctx.prepare(history)
+    assert ctx._summary is None
+    assert view == history
+    assert any(m.content == "NEW prefix" for m in view)
+    assert len(llm.calls) == 1  # below budget: expose current history without a model request
+
+
+@pytest.mark.anyio
+async def test_unchanged_coverage_allows_tail_shortening_and_system_change():
+    llm = FakeLLM()
+    ctx = _ctx(llm, budget=100_000, keep_recent_tokens=1)
+    history = [_msg("system", "HOST"), _msg("user", "old prefix"),
+               _msg("assistant", "answer"), _msg("user", "E"), _msg("assistant", "F")]
+    await ctx.force_compact(history)
+    shortened = [_msg("system", "NEW HOST"), *history[1:-1]]
+    view = await ctx.prepare(shortened)
+    assert ctx._summary is not None
+    assert view[0].content == "NEW HOST"
+    assert _contents(view[-2:]) == ["answer", "E"]
+    assert "F" not in _contents(view)
+    assert await ctx.prepare(shortened) == view
+    assert len(llm.calls) == 1
+
+
+@pytest.mark.anyio
+async def test_iterative_summary_replaces_coverage_identity():
+    llm = FakeLLM()
+    ctx = _ctx(llm, budget=100_000, keep_recent_tokens=1)
+    history = [_msg("system", "HOST"), _msg("user", "old prefix"),
+               _msg("assistant", "answer"), _msg("user", "tail"), _msg("assistant", "tail answer")]
+    await ctx.force_compact(history)
+    first_keys = list(ctx.cache_identity["covered_message_keys"])
+    history += [_msg("user", "later"), _msg("assistant", "later answer")]
+    ctx.set_budget(1)
+    await ctx.prepare(history)  # iterative summary consumes the expanded canonical prefix
+    assert len(llm.calls) == 2
+    assert len(ctx.cache_identity["covered_message_keys"]) > len(first_keys)
+    ctx.set_budget(100_000)
+    view = await ctx.prepare(history)
+    assert ctx._summary is not None
+    assert await ctx.prepare(history) == view
+    assert len(llm.calls) == 2
+    history[1] = _msg("user", "changed after iteration")
+    assert await ctx.prepare(history) == history
+    assert ctx._summary is None

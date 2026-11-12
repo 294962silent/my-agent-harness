@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator, Iterator
 import anthropic
 
 from ..config import Config
+from ..request_projection import RequestProjection
 from ..models import Message, Response, StreamChunk, ToolCall
 from ._base import Provider
 
@@ -17,6 +18,7 @@ class AnthropicProvider(Provider):
     def __init__(self, config: Config, client=None, async_client=None):
         """初始化。client/async_client 可注入（测试缝隙）。"""
         self.config = config
+        self.request_projection = RequestProjection("anthropic")
         if client is not None:
             self.client = client
             self.async_client = async_client
@@ -206,6 +208,7 @@ class AnthropicProvider(Provider):
         system, ant_messages = self._convert_messages(messages)
         ant_tools = self._resolve_tools(tools, kwargs)
         kwargs.pop("tools", None)
+        self.request_projection.observe(model=model, system=system, tools=ant_tools, messages=ant_messages, options={"max_tokens": 4096, **kwargs})
         response = self.client.messages.create(
             model=model,
             messages=ant_messages,
@@ -227,6 +230,7 @@ class AnthropicProvider(Provider):
         system, ant_messages = self._convert_messages(messages)
         ant_tools = self._resolve_tools(tools, kwargs)
         kwargs.pop("tools", None)
+        self.request_projection.observe(model=model, system=system, tools=ant_tools, messages=ant_messages, options={"max_tokens": 4096, **kwargs})
         with self.client.messages.stream(
             model=model,
             messages=ant_messages,
@@ -264,6 +268,7 @@ class AnthropicProvider(Provider):
         system, ant_messages = self._convert_messages(messages)
         ant_tools = self._resolve_tools(tools, kwargs)
         kwargs.pop("tools", None)
+        self.request_projection.observe(model=model, system=system, tools=ant_tools, messages=ant_messages, options={"max_tokens": 4096, **kwargs})
         response = await self.async_client.messages.create(  # pyright: ignore[reportCallIssue, reportArgumentType]
             model=model,
             messages=ant_messages,
@@ -287,6 +292,7 @@ class AnthropicProvider(Provider):
         system, ant_messages = self._convert_messages(messages)
         ant_tools = self._resolve_tools(tools, kwargs)
         kwargs.pop("tools", None)
+        self.request_projection.observe(model=model, system=system, tools=ant_tools, messages=ant_messages, options={"max_tokens": 4096, **kwargs})
         async with self.async_client.messages.stream(  # pyright: ignore[reportCallIssue, reportArgumentType]
             model=model,
             messages=ant_messages,
