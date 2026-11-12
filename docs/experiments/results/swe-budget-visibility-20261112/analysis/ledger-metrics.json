@@ -1,0 +1,639 @@
+{
+  "schema_version": 1,
+  "generation_source_commit": "c69ff37ed148f53d526b458b9b36233860b85f26",
+  "adapter_protocol": "v2",
+  "integrity": {
+    "manifest_sha256": "18888467ad123eb0b70f850e40ab1d2c93fa974f1fcefd17a02e02a2ba4883dd",
+    "verified_manifest_files": 60,
+    "archive_files_including_manifest": 61,
+    "plan_sha256": "89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5",
+    "raw_ledger_sha256": "f457ed77792da5b7698b4f9cd42efeaad25aecb57d1932adb070a2a3b69c3770",
+    "parsed_files": [
+      "plan.json",
+      "ledger.json"
+    ]
+  },
+  "definitions": {
+    "scope": "Ledger accounting and field coverage only; no scoring or causal comparison.",
+    "input_tokens": "Per request total_tokens - completion_tokens; aggregate only when both fields are complete and consistent.",
+    "normalized_prompt_tokens": "Separate normalized field; never substituted for all input tokens.",
+    "coverage": "observed_sum covers present valid values only; total_if_complete is null when any request lacks the field, or no requests exist.",
+    "cost": "Sum persisted cost_micro_usd. Conservative all-input cold/peak-price estimate, rounded upward to whole micro-USD per request; not a provider invoice. Not recalculated from token totals.",
+    "zero_requests": "No-request trials have known zero ledger cost; token fields have no observations and remain null."
+  },
+  "ledger_pricing": {
+    "input_per_million": "0.30",
+    "output_per_million": "1.20"
+  },
+  "global": {
+    "requests": 300,
+    "request_statuses": {
+      "ok": 300
+    },
+    "cost_micro_usd": 888355,
+    "cost_usd": 0.888355,
+    "cost_complete": true,
+    "cost_covered_requests": 300,
+    "observed_cost_micro_usd": 888355,
+    "tokens": {
+      "complete": true,
+      "input_tokens": 2157263,
+      "completion_tokens": 200871,
+      "total_tokens": 2358134,
+      "input_coverage": {
+        "covered_requests": 300,
+        "request_count": 300,
+        "observed_sum": 2157263,
+        "total_if_complete": 2157263
+      },
+      "completion_coverage": {
+        "covered_requests": 300,
+        "request_count": 300,
+        "observed_sum": 200871,
+        "total_if_complete": 200871
+      },
+      "total_coverage": {
+        "covered_requests": 300,
+        "request_count": 300,
+        "observed_sum": 2358134,
+        "total_if_complete": 2358134
+      },
+      "normalized_prompt_tokens": {
+        "covered_requests": 300,
+        "request_count": 300,
+        "observed_sum": 273103,
+        "total_if_complete": 273103
+      },
+      "cache_read_tokens": {
+        "covered_requests": 291,
+        "request_count": 300,
+        "observed_sum": 1884160,
+        "total_if_complete": null
+      },
+      "cache_write_tokens": {
+        "covered_requests": 0,
+        "request_count": 300,
+        "observed_sum": null,
+        "total_if_complete": null
+      }
+    }
+  },
+  "batch": {
+    "requests": 96,
+    "request_statuses": {
+      "ok": 96
+    },
+    "cost_micro_usd": 307190,
+    "cost_usd": 0.30719,
+    "cost_complete": true,
+    "cost_covered_requests": 96,
+    "observed_cost_micro_usd": 307190,
+    "tokens": {
+      "complete": true,
+      "input_tokens": 740015,
+      "completion_tokens": 70955,
+      "total_tokens": 810970,
+      "input_coverage": {
+        "covered_requests": 96,
+        "request_count": 96,
+        "observed_sum": 740015,
+        "total_if_complete": 740015
+      },
+      "completion_coverage": {
+        "covered_requests": 96,
+        "request_count": 96,
+        "observed_sum": 70955,
+        "total_if_complete": 70955
+      },
+      "total_coverage": {
+        "covered_requests": 96,
+        "request_count": 96,
+        "observed_sum": 810970,
+        "total_if_complete": 810970
+      },
+      "normalized_prompt_tokens": {
+        "covered_requests": 96,
+        "request_count": 96,
+        "observed_sum": 89775,
+        "total_if_complete": 89775
+      },
+      "cache_read_tokens": {
+        "covered_requests": 92,
+        "request_count": 96,
+        "observed_sum": 650240,
+        "total_if_complete": null
+      },
+      "cache_write_tokens": {
+        "covered_requests": 0,
+        "request_count": 96,
+        "observed_sum": null,
+        "total_if_complete": null
+      }
+    }
+  },
+  "historical": {
+    "requests": 204,
+    "request_statuses": {
+      "ok": 204
+    },
+    "cost_micro_usd": 581165,
+    "cost_usd": 0.581165,
+    "cost_complete": true,
+    "cost_covered_requests": 204,
+    "observed_cost_micro_usd": 581165,
+    "tokens": {
+      "complete": true,
+      "input_tokens": 1417248,
+      "completion_tokens": 129916,
+      "total_tokens": 1547164,
+      "input_coverage": {
+        "covered_requests": 204,
+        "request_count": 204,
+        "observed_sum": 1417248,
+        "total_if_complete": 1417248
+      },
+      "completion_coverage": {
+        "covered_requests": 204,
+        "request_count": 204,
+        "observed_sum": 129916,
+        "total_if_complete": 129916
+      },
+      "total_coverage": {
+        "covered_requests": 204,
+        "request_count": 204,
+        "observed_sum": 1547164,
+        "total_if_complete": 1547164
+      },
+      "normalized_prompt_tokens": {
+        "covered_requests": 204,
+        "request_count": 204,
+        "observed_sum": 183328,
+        "total_if_complete": 183328
+      },
+      "cache_read_tokens": {
+        "covered_requests": 199,
+        "request_count": 204,
+        "observed_sum": 1233920,
+        "total_if_complete": null
+      },
+      "cache_write_tokens": {
+        "covered_requests": 0,
+        "request_count": 204,
+        "observed_sum": null,
+        "total_if_complete": null
+      }
+    }
+  },
+  "arms": {
+    "on": {
+      "requests": 48,
+      "request_statuses": {
+        "ok": 48
+      },
+      "cost_micro_usd": 158567,
+      "cost_usd": 0.158567,
+      "cost_complete": true,
+      "cost_covered_requests": 48,
+      "observed_cost_micro_usd": 158567,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 403012,
+        "completion_tokens": 31372,
+        "total_tokens": 434384,
+        "input_coverage": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 403012,
+          "total_if_complete": 403012
+        },
+        "completion_coverage": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 31372,
+          "total_if_complete": 31372
+        },
+        "total_coverage": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 434384,
+          "total_if_complete": 434384
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 50500,
+          "total_if_complete": 50500
+        },
+        "cache_read_tokens": {
+          "covered_requests": 45,
+          "request_count": 48,
+          "observed_sum": 352512,
+          "total_if_complete": null
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 48,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    },
+    "off": {
+      "requests": 48,
+      "request_statuses": {
+        "ok": 48
+      },
+      "cost_micro_usd": 148623,
+      "cost_usd": 0.148623,
+      "cost_complete": true,
+      "cost_covered_requests": 48,
+      "observed_cost_micro_usd": 148623,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 337003,
+        "completion_tokens": 39583,
+        "total_tokens": 376586,
+        "input_coverage": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 337003,
+          "total_if_complete": 337003
+        },
+        "completion_coverage": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 39583,
+          "total_if_complete": 39583
+        },
+        "total_coverage": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 376586,
+          "total_if_complete": 376586
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 48,
+          "request_count": 48,
+          "observed_sum": 39275,
+          "total_if_complete": 39275
+        },
+        "cache_read_tokens": {
+          "covered_requests": 47,
+          "request_count": 48,
+          "observed_sum": 297728,
+          "total_if_complete": null
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 48,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    }
+  },
+  "trials": [
+    {
+      "trial_id": "01-pytest-dev__pytest-5227-off",
+      "run_id": "710d1e7f070751ccae75d8730d3d5cc8",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "off",
+      "requests": 16,
+      "request_statuses": {
+        "ok": 16
+      },
+      "cost_micro_usd": 43770,
+      "cost_usd": 0.04377,
+      "cost_complete": true,
+      "cost_covered_requests": 16,
+      "observed_cost_micro_usd": 43770,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 119960,
+        "completion_tokens": 6478,
+        "total_tokens": 126438,
+        "input_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 119960,
+          "total_if_complete": 119960
+        },
+        "completion_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 6478,
+          "total_if_complete": 6478
+        },
+        "total_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 126438,
+          "total_if_complete": 126438
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 16664,
+          "total_if_complete": 16664
+        },
+        "cache_read_tokens": {
+          "covered_requests": 15,
+          "request_count": 16,
+          "observed_sum": 103296,
+          "total_if_complete": null
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 16,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    },
+    {
+      "trial_id": "02-pytest-dev__pytest-5227-on",
+      "run_id": "ff3421c8b6125126b3d0c96307806af1",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "on",
+      "requests": 16,
+      "request_statuses": {
+        "ok": 16
+      },
+      "cost_micro_usd": 45230,
+      "cost_usd": 0.04523,
+      "cost_complete": true,
+      "cost_covered_requests": 16,
+      "observed_cost_micro_usd": 45230,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 128804,
+        "completion_tokens": 5486,
+        "total_tokens": 134290,
+        "input_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 128804,
+          "total_if_complete": 128804
+        },
+        "completion_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 5486,
+          "total_if_complete": 5486
+        },
+        "total_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 134290,
+          "total_if_complete": 134290
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 19364,
+          "total_if_complete": 19364
+        },
+        "cache_read_tokens": {
+          "covered_requests": 15,
+          "request_count": 16,
+          "observed_sum": 109440,
+          "total_if_complete": null
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 16,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    },
+    {
+      "trial_id": "03-sympy__sympy-11400-on",
+      "run_id": "e1c2b908450f5e28a7c012ad379b4882",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "on",
+      "requests": 16,
+      "request_statuses": {
+        "ok": 16
+      },
+      "cost_micro_usd": 62308,
+      "cost_usd": 0.062308,
+      "cost_complete": true,
+      "cost_covered_requests": 16,
+      "observed_cost_micro_usd": 62308,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 156555,
+        "completion_tokens": 12780,
+        "total_tokens": 169335,
+        "input_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 156555,
+          "total_if_complete": 156555
+        },
+        "completion_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 12780,
+          "total_if_complete": 12780
+        },
+        "total_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 169335,
+          "total_if_complete": 169335
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 19211,
+          "total_if_complete": 19211
+        },
+        "cache_read_tokens": {
+          "covered_requests": 15,
+          "request_count": 16,
+          "observed_sum": 137344,
+          "total_if_complete": null
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 16,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    },
+    {
+      "trial_id": "04-sympy__sympy-11400-off",
+      "run_id": "12323e0add1c5f67958090721e8a035b",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "off",
+      "requests": 16,
+      "request_statuses": {
+        "ok": 16
+      },
+      "cost_micro_usd": 45323,
+      "cost_usd": 0.045323,
+      "cost_complete": true,
+      "cost_covered_requests": 16,
+      "observed_cost_micro_usd": 45323,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 97618,
+        "completion_tokens": 13359,
+        "total_tokens": 110977,
+        "input_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 97618,
+          "total_if_complete": 97618
+        },
+        "completion_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 13359,
+          "total_if_complete": 13359
+        },
+        "total_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 110977,
+          "total_if_complete": 110977
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 11602,
+          "total_if_complete": 11602
+        },
+        "cache_read_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 86016,
+          "total_if_complete": 86016
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 16,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    },
+    {
+      "trial_id": "05-pytest-dev__pytest-5103-on",
+      "run_id": "39d1d4079f925873ae13183cca3bdad4",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "on",
+      "requests": 16,
+      "request_statuses": {
+        "ok": 16
+      },
+      "cost_micro_usd": 51029,
+      "cost_usd": 0.051029,
+      "cost_complete": true,
+      "cost_covered_requests": 16,
+      "observed_cost_micro_usd": 51029,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 117653,
+        "completion_tokens": 13106,
+        "total_tokens": 130759,
+        "input_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 117653,
+          "total_if_complete": 117653
+        },
+        "completion_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 13106,
+          "total_if_complete": 13106
+        },
+        "total_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 130759,
+          "total_if_complete": 130759
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 11925,
+          "total_if_complete": 11925
+        },
+        "cache_read_tokens": {
+          "covered_requests": 15,
+          "request_count": 16,
+          "observed_sum": 105728,
+          "total_if_complete": null
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 16,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    },
+    {
+      "trial_id": "06-pytest-dev__pytest-5103-off",
+      "run_id": "ca639e54c7455f628b49f547bf699bb0",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "off",
+      "requests": 16,
+      "request_statuses": {
+        "ok": 16
+      },
+      "cost_micro_usd": 59530,
+      "cost_usd": 0.05953,
+      "cost_complete": true,
+      "cost_covered_requests": 16,
+      "observed_cost_micro_usd": 59530,
+      "tokens": {
+        "complete": true,
+        "input_tokens": 119425,
+        "completion_tokens": 19746,
+        "total_tokens": 139171,
+        "input_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 119425,
+          "total_if_complete": 119425
+        },
+        "completion_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 19746,
+          "total_if_complete": 19746
+        },
+        "total_coverage": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 139171,
+          "total_if_complete": 139171
+        },
+        "normalized_prompt_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 11009,
+          "total_if_complete": 11009
+        },
+        "cache_read_tokens": {
+          "covered_requests": 16,
+          "request_count": 16,
+          "observed_sum": 108416,
+          "total_if_complete": 108416
+        },
+        "cache_write_tokens": {
+          "covered_requests": 0,
+          "request_count": 16,
+          "observed_sum": null,
+          "total_if_complete": null
+        }
+      }
+    }
+  ]
+}

@@ -147,3 +147,16 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 后续实际复核：47a89aa的GitHub run43228948231四组全部成功，包含原失败的Ubuntu/Python3.11。原失败run链接与复现仍保留。
 - 再次更正：文档head f0d12c1的run43229586859暴露同文件另一项30ms模型等待假设：模型可能尚未进入，不能无条件断言closed。整份15项随后统一审查；model_wait、四stage、已交付工具意图的deadline都改用共用deadline_at_stage fixture，工具意图需等消费者实际收到MessageUpdate后才arm。唯一保留真实30ms的early-deadline用例只断预算、模型未启动与owner释放，允许在任何前置位置过期；0.5s close/5s收集限制均是同步后的防挂watchdog。
 - 最终该文件本地验证：主代理Windows15 passed in1.21s，作者Linux同版15 passed in1.59s，Ruff及整份独立复核无阻断。没有只靠增加timeout或反复重跑掩盖失败；最新提交CI通过状态以PR checks和PR正文实际记录为准，历史47通过不替代新head验证。
+
+## P19：回读能力成功，不等于最终任务完成
+
+- 复现：两份隐藏中段nonce日志，各做投影on/off。on均由生产工具回读到目标，第四次响应却仍在调用工具，四请求上限结束后未交付正确最终答案；off两次均在第二次正常答对。
+- 处理：把隐藏预览、handle、真实回读、目标进入模型输入和最终精确答案分别记录。on能力链路2/2、端到端0/2；不把前者当成功率，也不追加请求消除失败。
+- 证据：四trial/12个已结算请求/$0.009106，schema一致、无提前泄漏；独立助手核audit/result及Agent.run预算终态。审计只在SDK前Provider入口，正文/推理/finish reason未保存，不能解释继续读的动机。
+- 代价：回读引入额外请求；“少发工具正文”只有在完整任务质量、总请求和费用一起测量后才有价值。该探针不是SWE或KV缓存排名。
+
+## P20：Windows worktree的Git指针不能直接交给Linux Git
+
+- 发现：运维脚本在WSL执行git rev-parse时，`.git`中Windows绝对路径`C:/...`被当成Linux相对路径，模型启动前失败；消费未增加。
+- 处理：在Windows宿主核完整提交与源码无脏改，Linux核真实包导入路径和冻结输入/源码hash。保留共享Git文件原样，避免破坏Windows工作树。
+- 边界：提交名不能替代实际导入检查，文件hash也不代表服务端模型权重版本。本轮生成版本固定c69ff37，文档和事后分析版本单独标注。

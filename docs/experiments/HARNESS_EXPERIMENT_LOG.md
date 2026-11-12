@@ -669,3 +669,20 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 作者 Windows/Linux 定点各17项、双方独立互审无阻断；主代理实际 `PYTHONPATH=src;.`，`python -m pytest tests/experiments -q -o addopts= --import-mode=importlib`：**114 passed、2 skipped、5 subtests passed in14.13s**。`python -m ruff check experiments/benchmark_live tests/experiments` 与 `git diff --check` 通过。CLI 实际动作为 plan/run/score/summarize（一次误用 create 的本地帮助命令被 argparse 拒绝，未发模型）。
 - 运维脚本离线准备初次按 list 读取旧任务文件，实际是 tasks 对象，已按原 schema 修正；首次冻结的 fixture 未重生、未覆盖。此时账本仍192请求/全部已结算/$0.572059；fixture SHA `e0babe0f79fa847f79eea3f42a6d0d71bdb00d75cfe6db4ac9e24fc2795c223d`，三题输入 SHA `e7cf61df7dc418648f677526e0e12bfaa19dc6bb630d21a37799ed106957c89f`。先提交冻结源码并验 CI，再发新模型请求。
 - 优势是把预算可见性与产物投影解耦，并补充真实回读/工作树证据；代价是额外观察开销和诊断脚手架。借鉴的是前批 DSH 的稳定前缀与 oh-my-pi/Hermes 的受限回读思路，本轮不调用 DSH、不将外部 Harness 成绩当基线，也未新增 Mem0/Dream-RSI/Langfuse 远端集成。尚无新模型效果结论。
+
+### E-READBACK-PROBE：2026-11-12 / 真实回读与最终交付分开计数
+
+- 源码提交 `c69ff37ed148f53d526b458b9b36233860b85f26` 在模型前通过[CI run43241787757](https://github.com/294962silent/my-agent-harness/actions/runs/43241787757)四组矩阵。Windows主机运维脚本最初在WSL调用git rev-parse，Windows worktree的gitdir `C:/...` 被Linux按相对路径解释而失败；当时尚未启动收费。改为Windows侧核完整HEAD/源码无脏改，Linux侧保留实际导入路径和冻结hash校验，不改共享.git指针或已提交源码。
+- 实验输入保持首次冻结的两份日志；probe plan SHA `b0f50a8e40bfd33c65edda3800e3020ce0b2879e6a7528e763bf21aeec03f366`。顺序fixture-a on/off、fixture-b off/on，四trial共12请求全部结算，新增$0.009106，累计204请求/$0.581165。没有未知用量、提前目标泄漏或schema漂移，临时Session/产物正文已由所有者清理。
+- on两次均观察到隐藏预览与handle、实际read/search、后续Provider输入目标可见；能力链路2/2。但第4次响应仍为工具调用，随后4请求上限耗尽，最终答案正确0/2。off两次均2请求正常end_turn并答对，2/2。读到和完成分开统计，不把回读能力冒充端到端质量，不提高上限补成功。
+- SOL-1独立核四份audit/result及Agent.run终态：budget_exhausted映射为预算终态文本，probe按最终准确值判定；当前元数据不含响应正文/推理/finish reason，不能解释模型为何继续读。方法入口审计仍为pre-SDK而非wire。结果详见独立probe README，后续只归档元数据。
+- 下一阶段维持三道固定诊断题、每题两条件的原方案：两臂artifact_projection均on，仅静态预算提示不同。新plan SHA `89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5`，本阶段新增额度1.75，绝对ceiling $2.331165（前累计0.581165+1.75，未另加2）。三题按既有结果选定、不代表未见随机样本；此时先执行5227首配对，未评分，不预填成功率。
+
+### E-BUDGET-VISIBILITY-RUN：2026-11-12 / 三题对照与用户调整优先级
+
+- 实际生成及评分均已结束，仍为冻结源码c69ff37。六trial各16请求且usage全部结算；官方5227双臂resolved，11400/5103双臂empty_patch，合计on1/3、off1/3、4empty、2次实际测试、unknown/环境blocked均0。没有通过换题、追加请求或放宽评分消除失败。首次响应后可见差异为5227 off14/on11次请求，另外四条无响应后差异；100/100观察available，不能把该指标等同首次源码编辑。
+- 费用：SWE off48请求/$0.148623，on48请求/$0.158567；合计96请求/$0.307190。probe另12请求/$0.009106，本阶段共108请求/$0.316296；加此前192请求/$0.572059，累计300请求/$0.888355。300是请求数、不是300道SWE；客户端保守冷价不等于供应商账单。cache_read仅92/96覆盖、cache_write0/96覆盖，完整缓存总量null，不给完整任务KV排名。
+- 本次条件是budget_visibility，两臂projection均on。off产生8份/75999B，on15份/140052B；六份canonical Session均可解析，read/search均0。Session工具响应不是wire证据，原SWE没有必须回读隐藏中段的标注；独立probe的真实回读能力和最终0/2交付另记，不混入SWE成功率。
+- 归档60个manifest列入文件+manifest，共61；manifest SHA `18888467ad123eb0b70f850e40ab1d2c93fa974f1fcefd17a02e02a2ba4883dd`。采集前核148项输入、100项原结果；108个runtime py同时核原SHA和c69 Git规范化blob，关闭此前仅比较commit常量的来源缺口。只复制安全metadata、官方结果、无正文侧车/探针审计；旧raw不改。所有JSON/JSONL、hash/大小校验通过，双方互审无阻断。
+- 主代理实际执行新raw的`swe_results --archive --manifest-sha256 …`，得到6known/2resolved/4empty/3pairs、archive_modified=false；复用前批通用stdlib账本脚本独立重算96请求/$0.307190并保存analysis两JSON，均先核全部60文件。详见 `results/swe-budget-visibility-20261112/REPORT.md`，默认static仍关闭，未提供质量提升证据。
+- 用户随后要求先适配Mem0、Langfuse、Dream-RSI，SWE/benchmark以后再测。本批运行在该指令前已全部结束；后续不新增benchmark/收费试验，保留以上记录。新适配将作为下一批独立设计、实现和提交，不把适配完成冒充真实远端接通或质量消融。

@@ -188,3 +188,29 @@ paths. They verify archive paths and hashes before analysis, and identify the
 analysis parser separately from generation commit `7652168`. This does not relax
 the source/input checks for `run` or `score`. Raw artifacts remain immutable;
 post-experiment classification fixes do not retroactively change the generator.
+
+## Static budget visibility and readback probe
+
+The campaign's default factor is `artifact_projection`, preserving older plans.
+Planning with `--factor budget_visibility` instead defines on/off as static budget
+guidance. Both conditions keep artifact projection on; only on appends one
+initial system sentence with the effective API request limit, including auxiliary
+calls. It does not refresh a remaining-budget sentence or add an editing strategy.
+Trial metadata records the condition, projection and guidance separately; official
+prediction labels follow the condition. Direct solver use accepts
+`--budget-guidance none|static`, defaulting to none.
+
+After each shell response, including failed commands, a host-only
+`worktree-observations.jsonl` records read-only Git counts against the pinned base.
+The observation does not enter the model prompt, write the Git index or change
+shell feedback on observation failure. A new untracked file is a visible
+worktree difference, not automatically a source-code edit. Observation latency
+is part of both conditions and is not a zero-overhead claim.
+
+`artifact_probe` is a separate four-trial capability test, with controlled
+`fetch_log` and production read/search tools. See its
+[frozen protocol and results](../../docs/experiments/results/artifact-capability-20261112/README.md).
+It uses the original shared ledger, a local four-request cap and a lower phase
+ceiling. The audit is metadata at the Provider method entry before SDK
+serialization, not a wire capture. Revealing the target and delivering the
+correct final answer are separate outcomes. Probe results are not SWE scores.

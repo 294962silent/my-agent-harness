@@ -1,0 +1,22 @@
+{
+  "trial_id": "fixture-a-off",
+  "fixture_id": "fixture-a",
+  "fixture_sha256": "b6403f9aa6bce813c7e15740df4f04df14a0ac46aacd179b17a34162db2a255f",
+  "arm": "off",
+  "run_id": "48762a145eab4dd289c5c195627717fc",
+  "status": "end_turn",
+  "requests": 2,
+  "usage_available": true,
+  "cost_usd": 0.001862,
+  "success": true,
+  "final_correct": true,
+  "fetch_preview_hidden_with_handle": false,
+  "read_search_result_revealed_target": false,
+  "hidden_fetch_preceded_read": false,
+  "premature_target_exposure": false,
+  "schema_hashes": [
+    "68c9031d4f22abaf2d4ec24aa07344ca44ea6c032e3e9fa2405985e9c72b54b7"
+  ],
+  "audit_boundary": "provider_method_entry_pre_sdk_not_wire",
+  "temporary_bodies_deleted": true
+}
