@@ -66,18 +66,24 @@ are evaluation evidence; no leaderboard upload is performed. Network/image build
 failures are environment evidence, not model failure. No official tasks, gold
 patches or hidden tests are bundled in this source tree.
 
-## Explicitly pinned SWE entry
+## Frozen catalog SWE entry
 
-`python -m experiments.benchmark_live.swe_agent` supports only the official
-`psf__requests-1963` and `sympy__sympy-20590` instances, with explicit base commits,
-original image names and config IDs pinned in `swe_agent.py`. It is not a general
-SWE dataset adapter. The safe metadata accepts only instance_id/problem_statement/
-repo/base_commit/image/version/environment_setup_commit; never pass the full
-evaluator metadata containing gold or test patches.
+`python -m experiments.benchmark_live.swe_agent` accepts approved official tasks
+through `swe_catalog.py`. A catalog records the official task repository/revision,
+instance ID, repo, base commit, original image/config ID and safe metadata SHA256.
+The caller must supply the catalog SHA256 frozen by the trusted host preparation
+step. This detects input changes; it is not a signature against a malicious host.
+Unknown fields, mismatched bindings and gold/test fields are rejected.
+
+Without a catalog, the legacy `psf__requests-1963` and `sympy__sympy-20590`
+bindings remain available. The safe metadata accepts only
+instance_id/problem_statement/repo/base_commit/image/version/environment_setup_commit;
+never pass the full evaluator metadata containing gold or test patches.
 
 ```sh
 PYTHONPATH=src:. python -m experiments.benchmark_live.swe_agent \
   --metadata "$SAFE_METADATA" --gold-evidence "$GOLD_EVIDENCE" \
+  --catalog "$CATALOG" --catalog-sha256 "$CATALOG_SHA256" \
   --ledger-path "$SHARED_LEDGER" --arm on --output "$UNIQUE_NEW_OUTPUT"
 ```
 
@@ -105,3 +111,50 @@ the owner runs SWE-bench 5.0.2 independently against the official evaluator data
 The solver removes its own fresh container in cleanup and never reuses a gold
 container. The same limits, endpoint, credential injection and shared ledger
 requirements above apply.
+
+`--spend-ceiling-usd` optionally imposes a lower absolute cumulative ceiling on
+the same ledger, checked under its reservation lock for every request. The ledger's
+original $30 policy remains intact. For a campaign starting after $0.068597 in
+known settled costs, a $3 additional allowance gives a $3.068597 ceiling. This is
+client-side accounting, not a verified provider bill. `--run-id` allows the host
+campaign to persist a request correlation ID before the solver starts.
+
+Catalog support does not imply the complete benchmark has been prepared or run.
+Task selection, official input hashes, image availability and gold preflight must
+still be frozen separately. See the six-task [v2 selection](../../docs/experiments/results/swe-v2-pilot-20261112/SELECTION.md).
+
+## Frozen small campaign
+
+`swe_campaign.py` provides `plan`, `run`, `score` and `summarize`. Prepare all
+official gold results first, including failed preflight evidence. The task-inputs
+JSON contains `tasks`, each with instance_id, metadata, gold_evidence,
+evaluation_dataset and evaluation_cwd. Safe metadata alone reaches the solver;
+the full evaluation dataset goes only to the separate official scorer.
+
+```sh
+PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign plan \
+  --task-inputs "$TASK_INPUTS" --catalog-path "$CATALOG" \
+  --catalog-sha256 "$CATALOG_SHA256" --ledger-path "$SHARED_LEDGER" \
+  --batch-budget-usd 3 --output "$NEW_CAMPAIGN_DIR"
+PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign run \
+  --campaign "$NEW_CAMPAIGN_DIR"
+PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign score \
+  --campaign "$NEW_CAMPAIGN_DIR"
+PYTHONPATH=src:. python -m experiments.benchmark_live.swe_campaign summarize \
+  --campaign "$NEW_CAMPAIGN_DIR"
+```
+
+The output directory must not exist when planning. It receives `plan.json` and
+`plan.sha256`, freezing input/source hashes, seed23 ordering, limits and initial
+budget state. Each task has one on/off pair; first-arm assignments are balanced.
+`run` is serial and guarded against concurrent execution of the same campaign.
+It persists started/run IDs before paid work. Complete hashed results may be
+skipped on resume; interrupted or failed trials are retained without automatic
+retry. Unknown usage blocks continuation rather than becoming zero cost.
+
+`score` invokes SWE-bench 5.0.2 independently with the model credential removed.
+Cancellation reaps the child process group and cleans only the container matching
+that trial's instance/run ID. Summary separates selected, eligible, execution
+attempts, actual model attempts, scored and resolved trials. Artifact activation
+and readback are reported separately; inactive interventions cannot establish
+causal savings. These commands do not run the complete 300-task benchmark.

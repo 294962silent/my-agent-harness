@@ -1,4 +1,8 @@
-"""Two explicitly pinned SWE tasks. Scoring is a separate official run."""
+"""Frozen-catalog SWE solver; legacy two-task entry remains compatible.
+
+Catalogs are trusted host-approved inputs, not authenticity signatures. Scoring
+is a separate official process and evaluator data never enters the solver.
+"""
 
 from __future__ import annotations
 
@@ -20,6 +24,7 @@ from my_agent_llm import Config, LLM
 from my_coding_agent.tools.artifact import make_artifact_tools
 
 from .budget import BudgetLedger, GuardedLLM
+from .swe_catalog import Catalog, TaskSpec, load_catalog
 
 INSTANCE = "psf__requests-1963"
 BASE = "110048f9837f8441ea536804115e80b69f400277"
@@ -37,7 +42,18 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def gated_task(metadata, evidence):
+def _task_spec(task, catalog: Catalog | None):
+    instance = task.get("instance_id")
+    if not isinstance(instance, str):
+        raise ValueError("task must have an instance ID")
+    if catalog is not None:
+        return catalog.get(instance)
+    if instance not in PINNED:
+        raise ValueError("only explicitly pinned official tasks are supported without a catalog")
+    return TaskSpec(instance_id=instance, repo=instance.rsplit("-", 1)[0].replace("__", "/"), **PINNED[instance])
+
+
+def gated_task(metadata, evidence, *, catalog: Catalog | None = None):
     """Read only the explicitly projected safe metadata, never evaluator JSON."""
     task = json.loads(Path(metadata).read_text(encoding="utf-8"))
     if isinstance(task, list) and len(task) == 1:
@@ -53,32 +69,43 @@ def gated_task(metadata, evidence):
     }:
         raise ValueError("solver requires safe projected task metadata only")
     gate = json.loads(Path(evidence).read_text(encoding="utf-8"))
+    if not isinstance(gate, dict):
+        raise ValueError("gold evidence must be an object")
     instance = task.get("instance_id")
-    pin = PINNED.get(instance)
+    spec = _task_spec(task, catalog)
+    pin = spec.pin
     if (
-        pin is None
+        task.get("repo") != spec.repo
         or task.get("base_commit") != pin["base_commit"]
         or task.get("image") != pin["image"]
         or not isinstance(task.get("problem_statement"), str)
         or not task["problem_statement"].strip()
     ):
         raise ValueError("only explicitly pinned official tasks are supported")
+    metadata_sha = sha(metadata)
+    if catalog is not None and (
+        metadata_sha != spec.metadata_sha256 or gate.get("task_repository_revision") != spec.source_revision
+    ):
+        raise ValueError("catalog metadata checksum or source revision differs")
     if any(
         gate.get(k) != v
         for k, v in {
             "instance_id": instance,
             **pin,
-            "metadata_sha256": sha(metadata),
+            "metadata_sha256": metadata_sha,
             "resolved": True,
         }.items()
     ):
         raise ValueError("gold evidence does not bind the exact safe task and image")
+    if gate.get("resolved") is not True:
+        raise ValueError("gold evidence requires a successful official result")
     report = Path(gate.get("official_report_path") or gate["official_report"])
     if sha(report) != gate.get("official_report_sha256"):
         raise ValueError("gold official report checksum differs")
     result = json.loads(report.read_text(encoding="utf-8"))
     if (
-        instance not in result.get("resolved_ids", [])
+        not isinstance(result, dict)
+        or instance not in result.get("resolved_ids", [])
         or result.get("completed_instances") != 1
         or result.get("resolved_instances") != 1
         or result.get("error_instances") != 0
@@ -96,10 +123,10 @@ class SetupError(RuntimeError):
 class DockerTask:
     """Own one new isolated container; subprocess argv never uses a host shell."""
 
-    def __init__(self, instance_id=INSTANCE):
-        if instance_id not in PINNED:
-            raise ValueError("task is outside pinned allowlist")
-        self.pin = PINNED[instance_id]
+    def __init__(self, instance_id: str | TaskSpec = INSTANCE):
+        spec = instance_id if isinstance(instance_id, TaskSpec) else _task_spec({"instance_id": instance_id}, None)
+        self.spec = spec
+        self.pin = spec.pin
         self.name = "harness-swe-" + uuid4().hex
         self.created = False
         self.stage = "image_inspect"
@@ -190,13 +217,13 @@ class DockerTask:
                 raise RuntimeError("owned container cleanup failed")
 
 
-async def probe_environment(metadata, gold_evidence, output):
+async def probe_environment(metadata, gold_evidence, output, *, catalog: Catalog | None = None):
     """Initialize the real pinned container without credentials, ledger or LLM."""
-    task, _ = gated_task(metadata, gold_evidence)
+    task, _ = gated_task(metadata, gold_evidence, catalog=catalog)
     path = Path(output)
     if path.exists():
         raise ValueError("probe output must be a new file")
-    env = DockerTask(task["instance_id"])
+    env = DockerTask(_task_spec(task, catalog))
     result = {"instance_id": task["instance_id"], "model_requests": 0, "passed": False}
     try:
         await env.start()
@@ -216,18 +243,22 @@ async def probe_environment(metadata, gold_evidence, output):
     return result
 
 
-async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environment=None, llm_factory=LLM):
+async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environment=None, llm_factory=LLM,
+                catalog: Catalog | None = None, spend_ceiling_usd: float | None = None, run_id: str | None = None):
     if arm not in ("on", "off"):
         raise ValueError("arm must be on/off")
-    task, _ = gated_task(metadata, gold_evidence)
+    task, _ = gated_task(metadata, gold_evidence, catalog=catalog)
+    spec = _task_spec(task, catalog)
+    if run_id is not None and (not isinstance(run_id, str) or not run_id.strip()):
+        raise ValueError("run_id must be a nonempty string")
     key = os.environ.get("LIVE_BENCH_API_KEY")
     if not key:
         raise ValueError("LIVE_BENCH_API_KEY is required in host process environment")
     root = Path(output)
     root.mkdir(parents=True, exist_ok=False)
-    ledger = BudgetLedger(ledger_path)
-    env = environment if environment is not None else DockerTask(task["instance_id"])
-    run_id = uuid4().hex
+    ledger = BudgetLedger(ledger_path, **({"spend_ceiling_usd": spend_ceiling_usd} if spend_ceiling_usd is not None else {}))
+    env = environment if environment is not None else DockerTask(spec)
+    run_id = run_id if run_id is not None else uuid4().hex
     agent = None
     terminal, status = {}, "environment_setup"
     stage, error_code, error_type = "environment_setup", None, None
@@ -314,7 +345,11 @@ async def solve(*, metadata, gold_evidence, ledger_path, arm, output, environmen
         known = bool(rows) and all(r["cost_micro_usd"] is not None for r in rows)
         report = {
             "instance_id": task["instance_id"],
-            **PINNED[task["instance_id"]],
+            **spec.pin,
+            "repo": spec.repo,
+            "catalog_sha256": catalog.sha256 if catalog is not None else None,
+            "task_repository": spec.source_repository,
+            "task_repository_revision": spec.source_revision,
             "metadata_sha256": sha(metadata),
             "gold_evidence_sha256": sha(gold_evidence),
             "run_id": run_id,
@@ -345,8 +380,18 @@ def main(argv=None):
     parser.add_argument("--ledger-path", required=True)
     parser.add_argument("--arm", choices=("on", "off"), required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--catalog", help="Host-approved frozen task catalog")
+    parser.add_argument("--catalog-sha256", help="Expected SHA256 of the approved catalog bytes")
+    parser.add_argument("--spend-ceiling-usd", type=float)
+    parser.add_argument("--run-id", help="Preallocated campaign association ID (default: new UUID)")
     args = parser.parse_args(argv)
-    asyncio.run(solve(**vars(args)))
+    if (args.catalog is None) != (args.catalog_sha256 is None):
+        parser.error("--catalog and --catalog-sha256 must be supplied together")
+    options = vars(args)
+    catalog_path = options.pop("catalog")
+    expected_sha = options.pop("catalog_sha256")
+    catalog = load_catalog(catalog_path, expected_sha256=expected_sha) if catalog_path is not None else None
+    asyncio.run(solve(**options, catalog=catalog))
 
 
 if __name__ == "__main__":

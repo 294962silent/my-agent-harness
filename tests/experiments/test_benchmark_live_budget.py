@@ -212,3 +212,33 @@ async def test_guard_cancellation_retains_reservation_and_model_override_stops(t
     row = ledger.snapshot()["requests"][0]
     assert row["status"] == "cancelled" and row["cost_micro_usd"] is None and row["held_micro_usd"] > 0
     assert ledger.snapshot()["runs"]["run"]["blocked"]
+
+
+def test_optional_absolute_ceiling_is_atomic_without_changing_global_policy(tmp_path):
+    path = tmp_path / "ledger.json"
+    original = BudgetLedger(path)
+    old = original.reserve("old", input_bound=1000, max_output=1, purpose="agent")
+    original.settle(old, usage={"prompt_tokens": 1000, "completion_tokens": 0}, status="ok")
+
+    def reserve(i):
+        try:
+            return BudgetLedger(path, spend_ceiling_usd=0.0007).reserve(
+                str(i), input_bound=1000, max_output=1, purpose="agent"
+            )
+        except BudgetStop:
+            return None
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        rows = list(pool.map(reserve, range(4)))
+    assert sum(r is not None for r in rows) == 1
+    snapshot = original.snapshot()
+    assert snapshot["limit_micro_usd"] == 30_000_000
+    assert (
+        sum(
+            r["cost_micro_usd"] if r["cost_micro_usd"] is not None else r["held_micro_usd"]
+            for r in snapshot["requests"]
+        )
+        <= 700
+    )
+    with pytest.raises(ValueError):
+        BudgetLedger(path, spend_ceiling_usd=float("nan"))

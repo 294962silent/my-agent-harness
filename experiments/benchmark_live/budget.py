@@ -37,7 +37,15 @@ def _cost(input_tokens: int, output_tokens: int) -> int:
 
 
 class BudgetLedger:
-    def __init__(self, path: str | Path, *, limit_usd: str = "30", max_requests: int = 16, time_cap: float = 600):
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        limit_usd: str = "30",
+        max_requests: int = 16,
+        time_cap: float = 600,
+        spend_ceiling_usd: float | None = None,
+    ):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.lock = FileLock(str(self.path) + ".lock", timeout=10)
@@ -47,6 +55,12 @@ class BudgetLedger:
         if not 0 < max_requests <= 16 or not 0 < time_cap <= 1800:
             raise ValueError("invalid run request/time limits")
         self.limit = int(limit * 1_000_000)
+        self.spend_ceiling = None
+        if spend_ceiling_usd is not None:
+            ceiling = Decimal(str(spend_ceiling_usd))
+            if not ceiling.is_finite() or not 0 < ceiling <= 30:
+                raise ValueError("spend ceiling must be positive, finite and at most 30 USD")
+            self.spend_ceiling = int(ceiling * 1_000_000)
         self.max_requests, self.time_cap = max_requests, time_cap
         with self.lock:
             if not self.path.exists():
@@ -122,7 +136,12 @@ class BudgetLedger:
                 r["cost_micro_usd"] if r["cost_micro_usd"] is not None else r["held_micro_usd"]
                 for r in data["requests"]
             )
-            if charged + held > data["limit_micro_usd"]:
+            effective_limit = (
+                min(data["limit_micro_usd"], self.spend_ceiling)
+                if self.spend_ceiling is not None
+                else data["limit_micro_usd"]
+            )
+            if charged + held > effective_limit:
                 raise BudgetStop("shared authorized budget exhausted")
             request_id = uuid4().hex
             data["requests"].append(

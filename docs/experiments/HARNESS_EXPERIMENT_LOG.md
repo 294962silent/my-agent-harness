@@ -591,3 +591,16 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - `e2181f6` 的 [CI run 43208908713](https://github.com/294962silent/my-agent-harness/actions/runs/43208908713) 过程快照：Ubuntu / Python3.11与3.13均 completed/success，完成依赖、Ruff、TUI构建、pytest、wheel与TUI测试；Windows3.11/3.13当时仍queued，不能预填四组通过。后续文档补交会产生新head，最终状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
 - 收尾清理：确认没有运行中的Docker CLI或容器后，只删除本轮三份已经导入的官方镜像tar下载副本（逐个核绝对父目录与文件大小），共2261497856字节；Docker镜像缓存和原始实验材料保留。未同步L20，未运行GPU，未追加模型请求。
 - 本批已完成架构设计、关键接缝实现、八模块离线证据和SWE单例真实链路验证。尚未完成v2真实模型因果实验、Terminal-Bench模型评测、真实Langfuse上传、Mem0或Dream-RSI集成；这些不构成本次已交付效果。
+
+
+### E-SWE-V2-CODE：2026-11-12 / 扩展官方任务入口与小样本执行协议
+
+- 用户在核对第三方集成边界后，明确要求继续扩展SWE入口、完成v2真实小样本；沿用已授权30美元总预算和两名Sol/medium执行助手。设计与执行清单见 `docs/handoffs/2026-11-12-swe-v2-pilot-plan.md`，不是恢复DSH或完整300题实验。
+- 改前为 `db77a71`：SWE solver只接受写死的两题，没有通用配对调度；预算只有总额政策。现在新增 `swe_catalog.py` 的冻结catalog/TaskSpec，`swe_agent.py`贯穿安全metadata/base/image/config/source/hash绑定；CLI须成对提供catalog与批准的SHA，旧两题接口保留。可信宿主审批hash只检测变更，不伪称数字签名或恶意宿主防护。
+- 新增 `swe_campaign.py`：plan/run/score/summarize，固定输入与源码hash、seed23平衡先后、逐trial唯一输出与started/run_id、跨进程排他、完成项hash校验后跳过、未完成项不自动重试。独立官方评分不携带模型key；blocked、执行尝试、真实model attempts、scored与resolved分开，unknown usage停止后续消费。
+- `budget.py`新增可选绝对累计ceiling，在原FileLock预留锁内检查min(原30美元政策,本批ceiling)，不改变旧账本政策和provider归一化计量。历史消费0.068597美元，本批新增客户端准入3美元，上限字段为3.068597；供应商实际账单仍需另核。代码默认保持旧行为。
+- 交叉复核发现取消官方评分未回收进程的问题，已修同组terminate/kill/wait并限定本instance/run_id清理评分容器；新增取消回归。另补同campaign多进程排他和ledger正常增长不误判输入漂移，0request预代理失败单列，避免冒充模型任务失败。
+- 验证：SOL-1先取得catalog缺模块的22项红回归，再完成第三题数据驱动/gold绑定/hash篡改拒绝；SOL-2补ceiling和campaign缺口回归。作者Linux窄回归A43项、B19项通过（有重叠不累加）；另一名助手分别按db77a71定点diff复核，无剩余阻断。主代理明确 `PYTHONPATH=src;.` 后实际运行 `python -m pytest tests/experiments -q -o addopts= --import-mode=importlib`，**64 passed、2 skipped in10.31s**（可选Harbor未安装）；Ruff与diff check通过。本批生产core/llm/TUI未改，不重报旧构建为新验证。
+- 数据准备：官方taskrepo固定 `3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`，六题选择在模型结果前保存 `results/swe-v2-pilot-20261112/SELECTION.md`。通过GitHub连接器取52文件并两侧逐字节核Gitblob/SHA256；Windows原官方crane拉原镜像再Linux加载核config，不重建镜像或改测试。Go工具不读取Windows系统代理导致初次registry超时，显式在子进程内采用系统代理后恢复，未打印代理或凭据。
+- gold预检：20590复用之前原成功报告并重绑安全metadata；11400与pytest5103/5221/5227本轮原评分器通过，11870固定300秒窗口超时（318.39秒含清理、completed0/resolved0/error1），保留环境blocked，不替换、不收费。最终选定6、eligible5，计划最多10个真实model trial。此时尚未发本批模型请求，实际结果另节追加。
+- 价值与代价：解耦任务批准与solver、使消费与重入有证据且可阻断，避免环境问题混入模型成绩；增加catalog准备、冻结、状态和原始数据维护。评分仍依赖原官方Docker环境，小样本/两个项目/已知回归题不具有全量代表性；不声称Mem0、Dream-RSI或真实Langfuse已接入，也不预填Artifact或缓存收益。
