@@ -32,3 +32,6 @@ src/my_coding_agent/dream_rsi_optimizer.py text eol=lf
 experiments/context_rsi/live_runner.py text eol=lf
 experiments/context_rsi/live_tasks.py text eol=lf
 experiments/context_rsi/recover_research_policy.py text eol=lf
+experiments/context_rsi/continue_live.py text eol=lf
+experiments/context_rsi/analyze_live.py text eol=lf
+experiments/context_rsi/reports/live-v2-analysis-*/analysis.json text eol=lf

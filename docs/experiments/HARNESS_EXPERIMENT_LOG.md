@@ -906,3 +906,12 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - c927650的CI43483613293两Linux成功（含3.13 SDK专项）、两Windows默认pytest失败，均为新增4/12轮工具契约tested.flag缺失。不是本次真实Agent数据失败，原CI记录保留。
 - 本机独立复现：原fixture按os.name用list2cmdline；cmd可执行，真实Git Bash把Windows反斜线吞掉，exit127且无marker。仅测试改按实际_resolve_shell().is_bash选quote：Bash用shlex.join+as_posix可执行路径，cmd保留list2cmdline。保留真实工具/marker和4/12终态断言，不skip或假执行。
 - 作者两shell各2通过；主代理最终cmd2 passed/43 deselected in8.17s、GitBash2 passed/43 deselected in7.85s。Ruff/diffcheck通过，117冻结执行源未变、0修复验证provider调用；[失败/双shell证据](results/rsi-live-20261114/ci-shell.json)，新head远端状态后核。
+
+### E-LIVE-TEST-INTERRUPTION：2026-11-14 / 权限失败与误导性退出信息
+
+- 最新已推head `5cd6e75ec532ff59e6e98469f912c1ab7820d7f8` 的 [CI 43487624350](https://github.com/294962silent/my-agent-harness/actions/runs/43487624350) 四组 Windows/Ubuntu × Python3.11/3.13 均 completed/success，Ubuntu3.13 可选SDK专项实际成功；不是用前一head绿灯代替。
+- 正式v2在test `HumanEval/6`、seed23、C条件出现 `PermissionError`，host将该槽记录failed后停止。原run_batch把所有blocked状态统称为“new unknown usage stops the campaign”；主代理起初照退出信息报告未知用量，核journal后更正：实际298次请求全部settled、870205已知tokens，pending/unknown/held均0。错误文字不作为费用缺失证据。
+- 停止时test共11/48个终态：A完成2/12、B完成3/12、C完成2/12加失败1/12、random完成3/12，余37槽未启动。失败C槽10次请求22670tokens，两个attempt正常end_turn，后续attempt在新请求前失败；独立final未执行，保持unavailable，不补为0、不删除分母或用另ID重跑。
+- collection为84请求237239tokens，test为214请求632966tokens；再计v1四请求8496tokens及独立连通一请求55tokens，本轮303请求878756已知tokens。币价未核，currency/cost继续null；旧533请求账本与未知预留不改。本轮完整cache字段覆盖另见报告，不凭缺失补零。
+- 新增只读 `experiments/context_rsi/analyze_live.py`，从plan、hash-chain journal及sealed result/final重算全53槽；不读prompt/candidate/gold。total-completion为输入权威，无total仅在四个分项齐全时求和；cache缺失不影响已知input、不产生完整命中率。主代理最新版专项 **29 passed in4.03s**。历史preview保留，新[停止态报告](../../experiments/context_rsi/reports/live-v2-analysis-stopped-20261114-r1/REPORT.md)不覆盖旧结果。
+- 当前对照不完整，只报告coverage，不能排名；C使用reference fallback，与B同参数，RSI学习贡献not_identifiable。权限路径、非付费复现与是否可仅续未启动槽仍在调查；任何续跑须另行登记操作协议，不能把原batch写成无修订完成。
