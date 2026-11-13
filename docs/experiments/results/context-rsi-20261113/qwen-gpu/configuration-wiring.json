@@ -1,0 +1,10 @@
+{
+  "provider_calls": 0,
+  "settings_rpc_agent_context_wiring": true,
+  "profile": "local_qwen_gpu",
+  "mode": "layered",
+  "worker_pid": 46288,
+  "launcher_pid": 40872,
+  "agent_close_complete": true,
+  "worker_exited": true
+}

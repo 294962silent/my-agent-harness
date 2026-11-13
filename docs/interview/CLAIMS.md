@@ -5,7 +5,8 @@
 ## 2026-11-13 当前结论
 
 - 固定历史Memory三臂30题已完成：none4/30、Mem015/30、词法22/29有效（另1判分不可用）。英文历史+中文BGE，不支持当前语义配置优于词法。八道词法对/Mem0错中三题标注会话覆盖不足、五题覆盖完整；抽查其中两题证实Mem0漏答案chunk。27517条重建索引文本最长463tokens，无512截断证据。见[误差分解](../experiments/results/long-horizon-20261113/memory-error-analysis/REPORT.md)。
-- Dream-RSI当前是离线已评分树的参数搜索/回放/晋升/回滚。生产Agent尚未自动生成对应评分分支树，也未读取active控制实际在线动作。开启入口不等于Agent已经自进化；源码核验发现的是实际接线缺口，不能只写“融合完成、效果未测”。
+- Dream-RSI 已补齐显式串行 runtime：真实 CodingAgent 产出评分分支树，冻结参数控制下一轮分支，可从 registry 读取 active。真实工具与本地测试 + SDK dry-run 的四臂闭环已跑；模型 scripted、quality=unmeasured、未生产晋升。接线缺口已修，真实模型收益未测；TUI 流式 RSI 暂不支持。
+- 本机新增固定 Qwen3-Embedding-0.6B GPU profile。中英文两事实检索、禁词法回退、1024维、资源回收与配置装配已验证。旧 BGE 的可选 BM25/NLP 是否在30题触发未记录，不能无条件称旧臂纯稠密；新 profile 的 dense-only 行为须作为比较变量。
 - 长程代码质量尚未证明：本批Terminal首组科学pair0，off有验证器基础设施故障，on测试原reward1但Agent超时/末请求用量未知；EVO仅完成预检/接缝契约，无模型生成成绩。当前支持工程机制与停止保护的证据，不支持长程成功率优于基线或RSI带来提升。
 - 付费阶段已按未知用量协议停止。最新原账本533请求、已知$1.218608、另未知预留$0.045131；不是完整实际费用。原始失败与历史账本不覆盖。
 
@@ -24,6 +25,8 @@
 - [三项可选集成](../integrations/README.md)已具备安装/配置/调用入口：Mem0候选索引经本地有效事实重验、超时熔断及owned客户端清理；Langfuse全局装配、原observer保留及缓存用量映射；Dream真实固定SDK的参考策略回放与进程树清理。适配初版ec0fcdc的本地all-extras回归1254 passed、2 skipped、5 subtests passed；后续Linux CI修订的定点24项通过，最终跨平台状态见PR checks。SDK契约不是效果消融，重叠批次不累加。
 - 后续本地记忆与受控参数闭环：真实BGE CPU模型经生产Mem0Index检索，临时禁词法回退并拒绝socket仍通过；参数优化固定候选、train选择、独立holdout验收，晋升严格胜baseline及active并用CAS防覆盖。真实SDK合成CLI演练completed、promoted=false；当前无实绩数据，状态needs_dataset。主代理本地整套1302 passed、2 skipped、5 subtests passed，不是语义/任务质量成绩。
 - 发现并修复官方empty_patch被误标为环境异常的统计问题；保留原报告和旧state，另存派生分类并提供可移植离线重算。生成版本765与事后分析修复版本分开，不通过重试或改题消除失败。
+- 本轮为探索、摘要和评分建立共享父预算，缺 usage 保留 reservation 并停止派发。独立 final 反馈不进训练/选择；同 ceiling 四臂 scripted 复跑通过，A/B/random 各12次脚本调用，C为6次，仅为夹具行为，不能写成节省50%真实成本。最终 Windows all-extras 回归1424 passed、11 skipped、5 subtests passed，不是任务成功率。
+- 简历可用表述：“为 Coding Agent 实现受控策略闭环，将分支执行、独立评分、评分树导出和冻结策略消费接通，统一请求/token/评估预算，并建立固定与随机策略对照及可复查实验档案。”责任、取舍与追问见[闭环工程深挖](11-RSI闭环与本地推理工程深挖.md)。
 
 ## 尚不能支持的说法
 
@@ -33,7 +36,7 @@
 - “KV cache 命中提高 X%”：请求字节与本地前缀指纹不是服务端缓存读 token；缺失字段为 unavailable。
 - “后台任务保证持久恢复、exactly-once 或强制抢占”：当前进程任务与协作取消不具备这些能力。
 - “Langfuse 已真实接通”：已完成配置装配、fake client及真实SDK内存导出，不能替代真实服务上传后回读确认。
-- “Dream-RSI已经学出更优Agent策略”：离线参数搜索/验证/晋升通道已实现，但真实Agent还未消费active控制在线分支。现有合成功能与已评分树回放不提供真实长程收益证据，未启动任意代码自改或权重训练。
+- “Dream-RSI已经学出更优Agent策略”：执行与参数闭环已实现，现有脚本模型演练及回放不提供真实长程收益证据；未运行真实模型训练/测试对照、任意代码自改或权重训练。
 
 ## 本批与既有工作的区别
 

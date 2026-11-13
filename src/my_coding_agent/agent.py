@@ -79,9 +79,16 @@ class CodingAgent:
         memory_index_owned: bool = False,
         memory_index_config=None,
         observation_config=None,
+        compaction_policy=None,
+        artifact_projection: bool = True,
+        rsi_runtime=None,
         **kw,
     ):
         self.workspace = Path(workspace).resolve()
+        if type(artifact_projection) is not bool:
+            raise TypeError("artifact_projection must be boolean")
+        self.rsi_runtime = rsi_runtime
+        self.last_rsi_result = None
         self.mutation_queue = FileMutationQueue()
         self._permission_gate = permission_gate
         self.auto_load_mcp = auto_load_mcp
@@ -170,7 +177,8 @@ class CodingAgent:
                 session=session,
                 tools=all_tools,
                 system_prompt=effective_prompt,
-                artifact_store=self.artifact_store,
+                artifact_store=self.artifact_store if artifact_projection else None,
+                compaction_policy=compaction_policy,
                 memory_index=memory_index,
                 memory_index_owned=memory_index_owned,
                 memory_index_close_timeout=mem_config.close_timeout,
@@ -411,6 +419,11 @@ class CodingAgent:
 
     async def run(self, user_input: MessageContent) -> str:
         """批处理高阶入口：聚合最终助手文本"""
+        if self.rsi_runtime is not None:
+            if self.rsi_runtime.factory.source != self.workspace:
+                raise ValueError("RSI factory must match the CodingAgent source workspace")
+            self.last_rsi_result = await self.rsi_runtime.run(user_input, llm=self.llm)
+            return self.last_rsi_result.text or ""
         try:
             self._loop = asyncio.get_running_loop()
         except RuntimeError:
@@ -421,6 +434,8 @@ class CodingAgent:
 
     async def run_stream(self, user_input: MessageContent) -> AsyncIterator[Event]:
         """流式一等公民入口：实时产出全生命周期事件"""
+        if self.rsi_runtime is not None:
+            raise NotImplementedError("RSI currently supports CodingAgent.run batch execution only")
         try:
             self._loop = asyncio.get_running_loop()
         except RuntimeError:
@@ -447,6 +462,8 @@ class CodingAgent:
 
     def abort(self) -> None:
         """中止当前运行中的任务（取消流式输出，丢弃未完成半截文本并清空干预队列）。"""
+        if self.rsi_runtime is not None:
+            self.rsi_runtime.abort()
         try:
             asyncio.get_running_loop()
             self.agent.abort()

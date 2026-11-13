@@ -1,0 +1,140 @@
+{
+  "model_requests": 0,
+  "host_torch_imported_initially": false,
+  "gpu_memory_before_mib": "2437",
+  "startup_seconds": 16.450213300006,
+  "launcher_pid": 65232,
+  "worker_pid": 57656,
+  "document_embedding_seconds": 1.2963449999806471,
+  "vector_dimensions": [
+    1024,
+    1024
+  ],
+  "vector_norms": [
+    1.000000070521822,
+    1.0000000337552306
+  ],
+  "queries": [
+    {
+      "retrieval_seconds": 0.4674244000343606,
+      "semantic_header": true,
+      "nonempty": true
+    },
+    {
+      "retrieval_seconds": 0.05252319999272004,
+      "semantic_header": true,
+      "nonempty": true
+    }
+  ],
+  "index_status": {
+    "provider": "mem0",
+    "inflight": false,
+    "circuit_open": false,
+    "closed": false,
+    "sdk_owned": true,
+    "sdk_closed": false,
+    "indexed_identities": 2,
+    "local_profile": {
+      "ready": true,
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "dimensions": 1024,
+      "device": "cuda:0",
+      "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "compute_capability": [
+        12,
+        0
+      ],
+      "torch_version": "2.9.1+cu128",
+      "pid": 57656,
+      "cuda_device_total_bytes": 8546484224,
+      "max_length": 1024,
+      "batch_size": 2,
+      "normalized": true,
+      "network_guard": "python_inet_socket_denied_not_os_sandbox",
+      "profile": "local_qwen_gpu",
+      "worker_pid": 57656,
+      "launcher_pid": 65232,
+      "bm25": "disabled_owned_dense_store",
+      "nlp": "disabled_isolated_sdk_globals",
+      "sdk_method_hashes": {
+        "Memory._link_entities_for_memory": "541310fb8cb50c4928d6b4e54c4be54a22bb6d2d9785b06141dc7c7fdc70a5e8",
+        "Memory._add_to_vector_store": "a8cb8d1dea1b052f46a53c5948ea660d6b8e780f9f6295da99f6879232308ebb",
+        "Memory._search_vector_store": "df48dc18844ab3b958f38986c10eda84d25fe48df62f18242ec30645d4eaeffd",
+        "Memory._create_memory": "2352aea276ac1aea624105934d1e7f43d663e3b383af7f611de1ff5e4072c677",
+        "Memory._update_memory": "6f3821347b175ab6c5e42ef5ea0a115fc732ab689d173f24752fc2f7decb251d",
+        "Qdrant._get_bm25_encoder": "ed17bd30db8a3bb4a088ade39ef314efb9287f1e3f21de0bf93e2f14b0f52b50",
+        "Qdrant.create_col": "28756da953ea7fb30b0cf3b7f201852e26dfe1a09669594c5e320cfa6e7b12a2",
+        "Qdrant.insert": "430d7d982a28e41c7ebc2e1b2a9a1d8ee89d0ce744752c8e33b0962ccac8007a",
+        "Qdrant.keyword_search": "a10ee016cdbc064c8b6141aeffbd9a347b88b52fc2286a7b6e4134ab95734d56",
+        "Qdrant.update": "9b815d586d151ccf33c16fff8c4a72344251f4bc6126b29cbfe491a1e0416603"
+      },
+      "token_lengths": [
+        26
+      ],
+      "cuda_allocated_bytes": 1203127808,
+      "cuda_reserved_bytes": 1222639616,
+      "cuda_peak_allocated_bytes": 1207842816,
+      "cuda_peak_reserved_bytes": 1222639616
+    }
+  },
+  "profile": {
+    "ready": true,
+    "model": "Qwen/Qwen3-Embedding-0.6B",
+    "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "dimensions": 1024,
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "compute_capability": [
+      12,
+      0
+    ],
+    "torch_version": "2.9.1+cu128",
+    "pid": 57656,
+    "cuda_device_total_bytes": 8546484224,
+    "max_length": 1024,
+    "batch_size": 2,
+    "normalized": true,
+    "network_guard": "python_inet_socket_denied_not_os_sandbox",
+    "profile": "local_qwen_gpu",
+    "worker_pid": 57656,
+    "launcher_pid": 65232,
+    "bm25": "disabled_owned_dense_store",
+    "nlp": "disabled_isolated_sdk_globals",
+    "sdk_method_hashes": {
+      "Memory._link_entities_for_memory": "541310fb8cb50c4928d6b4e54c4be54a22bb6d2d9785b06141dc7c7fdc70a5e8",
+      "Memory._add_to_vector_store": "a8cb8d1dea1b052f46a53c5948ea660d6b8e780f9f6295da99f6879232308ebb",
+      "Memory._search_vector_store": "df48dc18844ab3b958f38986c10eda84d25fe48df62f18242ec30645d4eaeffd",
+      "Memory._create_memory": "2352aea276ac1aea624105934d1e7f43d663e3b383af7f611de1ff5e4072c677",
+      "Memory._update_memory": "6f3821347b175ab6c5e42ef5ea0a115fc732ab689d173f24752fc2f7decb251d",
+      "Qdrant._get_bm25_encoder": "ed17bd30db8a3bb4a088ade39ef314efb9287f1e3f21de0bf93e2f14b0f52b50",
+      "Qdrant.create_col": "28756da953ea7fb30b0cf3b7f201852e26dfe1a09669594c5e320cfa6e7b12a2",
+      "Qdrant.insert": "430d7d982a28e41c7ebc2e1b2a9a1d8ee89d0ce744752c8e33b0962ccac8007a",
+      "Qdrant.keyword_search": "a10ee016cdbc064c8b6141aeffbd9a347b88b52fc2286a7b6e4134ab95734d56",
+      "Qdrant.update": "9b815d586d151ccf33c16fff8c4a72344251f4bc6126b29cbfe491a1e0416603"
+    },
+    "token_lengths": [
+      26
+    ],
+    "cuda_allocated_bytes": 1203127808,
+    "cuda_reserved_bytes": 1222639616,
+    "cuda_peak_allocated_bytes": 1207842816,
+    "cuda_peak_reserved_bytes": 1222639616
+  },
+  "host_torch_imported_after_sdk": false,
+  "blocked_internet_socket_attempts": 1,
+  "source_hashes": {
+    "memory_qwen.py": "73b23f7c8a0a8c6bfee1d3d8a9761592e3c5f904b9c73159a46096ea565ef1d9",
+    "_memory_qwen_worker.py": "db02b64871affc0fda2d6349be22e8f53e197b473f4f7d60903423c744ad7601",
+    "memory_mem0.py": "d6f0141514c50a2e2485dff59477d173cdeb2a6790f52626fda26cd1dd393e2c"
+  },
+  "close_complete": true,
+  "worker_process_exited": true,
+  "worker_returncode": 1,
+  "gpu_memory_after_mib": "2435",
+  "lexical_fallback_forbidden": true,
+  "kind": "two_fact_functional_smoke",
+  "quality": "unmeasured",
+  "helper_sha256": "cdff31d5c72e44699c12f61102f9492988850a7dab470f775e92dbd3b6fe4786",
+  "raw_result_sha256": "1524816ddf61547fe84067950752540c86a336b860325672b4a135dcd6c557d9"
+}

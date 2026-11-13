@@ -1,6 +1,6 @@
 # Mem0、Langfuse、Dream-RSI
 
-2026-11-13。三项适配均有用户入口。当前新增本地CPU中文记忆和受控参数自动优化；本机已启用入口，项目分发默认保留显式开关。适配初版仅做功能/代码验证；后续用户授权的Memory30题已完成，当前Mem0未优于词法，Terminal首组因环境/超时/未知用量停止。Dream参数目前仅作用于离线回放，尚未接入真实Agent在线决策，不能将入口启用称为完整RSI融合。
+2026-11-13。三项适配均有用户入口。本轮接通串行 RSI 执行链：真实 CodingAgent 分支与本地评分 → trace → 参数搜索 → 冻结策略 → 下一轮真实分支。演练使用脚本模型，质量未测、未生产晋升。新增本地 Qwen3 GPU embedding，已验证功能，尚无召回提升结论。原 Memory30题负结果与 Terminal 停止记录保留。
 
 ## 安装与配置位置
 
@@ -13,9 +13,9 @@ uv run --all-extras python -c "from my_coding_agent.paths import AgentPaths; pri
 
 把[配置示例](settings.example.json)中需要的块合并到上述命令输出的**全局settings.json**，保留已有其他配置。新用户通常为`~/.my-agent-harness/settings.json`；MY_AGENT_HOME优先，也兼容已有`~/.my-pi-agent`。本机兼容路径为`C:/Users/MLL/.my-pi-agent/settings.json`，现有进程需重启以读新配置。
 
-memory_index、observation、dream_optimization属于全局专属配置，项目settings不能启用或覆盖它们；普通theme等项目覆盖保持。Python显式构造参数仍可注入，适合受信任调用方和测试。
+memory_index、observation、dream_optimization、context_compaction 属于全局专属配置，项目 settings 不能启用或覆盖它们；普通 theme 等项目覆盖保持。Python 显式参数仍可注入，适合受信任调用方和测试。
 
-分发示例默认enabled=false。本机用户已选择并启用local_cpu_zh及Dream入口；Dream因无真实数据保持needs_dataset和baseline。其他用户完成配置后，以`uv run --all-extras my-pi-agent`正常启动；显式开启却缺SDK、模型或无效配置会报错，不能把enabled等同于效果已验证。
+分发示例默认 enabled=false。本机本轮改为 local_qwen_gpu 与 layered 压缩，原 CPU profile 和配置备份保留。新配置需要本分支代码，请从 `interview-redesign` 工作区启动；旧 checkout 尚不识别 GPU profile，切回旧版本应恢复 CPU 配置。Dream 全局入口原值保留，不自动启用 RSI；首版 RSI 是显式批任务 API，TUI 流式入口暂不支持。其他用户配置后可用 `uv run --all-extras my-pi-agent` 启动；缺 SDK、模型或无效配置会报错。
 
 ## Mem0：语义候选索引
 
@@ -31,7 +31,13 @@ uv run --extra mem0-local python -c "from pathlib import Path; from my_agent_cor
 
 显式CPUExecutionProvider、cuda=False、2线程、只用本地路径；NeverLLM禁止二次抽取，不构造OpenAI客户端、不读取Harness模型认证。模型只读共享，SQLite/Qdrant为每adapter独占可重建缓存，关闭只清理自己目录并释放模型强引用。冷构造会同步加载模型，不在reconcile/search超时内；profile示例10秒只约束后续工作等待，不能杀SDK线程。
 
-本机实际配置已启用、模型已校验；真实生产链路功能检查临时禁止词法回退并拒绝所有socket连接，证明使用真实CPU语义索引。它不是召回效果消融，不据此给正确率或性能提升。
+原本机 CPU 配置及模型保留；该版本的真实链路功能检查曾临时禁止词法回退并拒绝 socket 连接。这是功能检查，不能据此给正确率或性能提升。
+
+### 本轮：本地 Qwen3 GPU 模型
+
+官方 `Qwen/Qwen3-Embedding-0.6B` 固定 revision，独立 Torch/CUDA Python，主应用无需 Torch。RTX 5060 Laptop 的真实中英文检索、1024维归一化、Settings → RPC → CodingAgent 装配和进程回收已验证；无付费调用。配置见[本地 Qwen](../local-qwen-memory.md)，证据见[两事实功能检查](../experiments/results/context-rsi-20261113/qwen-gpu/REPORT.md)。
+
+新 profile 显式禁用 owned SDK 的 BM25/NLP 懒加载，属于 dense-only 派生配置。追加更正：原 BGE profile 含可选 BM25/NLP 路径，旧30题没有记录是否实际触发；不能无条件称旧臂纯稠密，未来 Qwen/BGE 差异也不能全归于 embedding。旧数值不改，单因素对照须先固定这些行为。
 
 ### 其他可选embedding服务
 
@@ -66,7 +72,9 @@ uv run --extra mem0-local python -c "from pathlib import Path; from my_agent_cor
 
 自动化闭环为“冻结候选→train选参→holdout验收→原子晋升→回放消费active→可回滚”。候选只有max_width(1..64)、max_refine(0..64)两个参数，不生成或执行任意策略Python，也不调用额外LLM。执行器和评分器保持固定；不是上游完整任意代码RSI流程或模型权重训练。
 
-这里的“消费active”明确指Dream离线replay：默认评估器replay_trace、worker的TraceEnv.replay。真实Agent/CodingAgent尚未自动导出独立评分分支树，也未读取该active控制真实下一动作。核心在线闭环还缺实际接线，现有配置/合成数据不能证明RSI提高Agent质量。新增代码与实验应先补这条主链，再做相同预算、未见任务上的策略对照。
+历史“消费 active”仅指离线 replay。本轮新增 [RSI runtime](../rsi-runtime.md)：`CodingAgent(..., rsi_runtime=runtime).run(goal)` 经现有 core loop 执行分支、运行 host 可见测试并导出评分树；`FrozenPolicy.from_registry` 在下一 episode 开始时读取 active，宽度/继续尝试次数实际控制执行。无 active 明确失败，不在运行中热切换。
+
+请求、摘要、评分共享父预算；独立 final 在选定产物后执行，反馈不参与搜索/训练。分支独立目录、Session、ArtifactStore，目录隔离非 OS 沙箱。当前串行、显式启用、不自动应用文件或晋升，不包含任意代码自改或权重训练。脚本模型四臂演练见[证据](../experiments/results/context-rsi-20261113/rsi-contract/REPORT.md)，真实模型收益待验证。
 
 ```sh
 uv run --extra dream-rsi my-agent-dream status
@@ -99,13 +107,13 @@ uv run --extra dream-rsi my-agent-dream replay \
 
 没有active时调用真实上游TraceEnv.replay及完整baseline，标记fixed_reference；有合法active时将其受控参数送入同一官方策略类，标记controlled_parameters并记录版本/hash、requested/effective参数。核固定SDK来源，不加载任意候选Python；上游OptimalPolicy空模板未使用。旧无子命令的--trace用法保持兼容。
 
-`my-agent-dream rollback`回退到已验证previous；没有previous会明确失败而不修改状态。CLI可显式--registry选择可信目录。参数目前只影响Dream回放/研究层，未接入真实Agent在线分支执行与评分反馈，不宣称整个Agent已经持续自进化。
+`my-agent-dream rollback` 回退到已验证 previous；没有 previous 明确失败而不修改状态。CLI 可显式 --registry 选择可信目录。回放与真实 runtime 都可在开始时冻结受控参数，已开始的 episode 保持原版本。尚无真实模型策略晋升成绩。
 
 Windows使用Job Object，Unix使用进程组；worker归属建立后再运行，限时并清理自己完整进程树。工作进程不继承模型/API凭据且禁网络；进程隔离不宣称为任意代码安全沙箱。
 
 主执行超时后仍有独立的退出确认窗口。Unix发送kill后会有界确认组内没有非zombie成员，5秒无法确认时明确报错，不把“信号已排队”当成“整组已退出”。
 
-本版增加离线自动参数搜索、独立验证、晋升和回滚；Dream真实数据与效果实验仍未进行。本模块不做在线探索、自改代码或权重训练；后续Memory/Terminal实验不能算作Dream消融。
+离线选参、验证、晋升/回滚与显式在线分支执行链已实现，真实模型效果尚未测。既有 Memory/Terminal 不算 Dream 消融。后续 A 基础/固定、B 增强/固定、C 增强/冻结学习策略、seeded-random 四臂方案见[实验协议](../experiments/RSI_CLOSED_LOOP_EVALUATION.md)。
 
 ## 验证与来源
 

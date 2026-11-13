@@ -195,6 +195,9 @@ def create_mem0_index(config: dict, *, timeout: float = 2.0) -> Mem0Index:
     if not isinstance(config, dict):
         raise ValueError("Mem0 configuration must be a dictionary")
     if "profile" in config:
+        if config["profile"] == "local_qwen_gpu":
+            from my_agent_core.memory_qwen import create_local_qwen_index
+            return create_local_qwen_index(config, timeout=timeout)
         from my_agent_core.memory_local import create_local_cpu_index
         return create_local_cpu_index(config, timeout=timeout)
     config = deepcopy(config)

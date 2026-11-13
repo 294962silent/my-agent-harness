@@ -825,3 +825,25 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 本批付费API仍0新增，旧unknown/预留保持。RSI和本地Qwen GPU适配仍在独立文件实施，不能据本次Context验收提前宣称它们已完成；后续分批追加真实接线/本地模型验证结果。
 
 交付前补充：主代理在新的私有输出目录实际运行`python -m experiments.context_rsi.compaction_ablation --output <新目录>`，所得metrics与公开指标JSON完全一致；11个本批暂存文件实际API/Git凭据精确匹配0。只暂存本批Context、三点透传、独立机制证据与计划/日志，不纳入仍在实现的RSI/GPU文件。
+
+### E-RSI-EXECUTION-LOOP：2026-11-13 / 补齐真实分支与冻结策略消费
+
+- 之前active只供离线replay，Agent不会自行产对应评分树。本轮新增rsi_runtime.py/rsi_branch.py，CodingAgent.run显式接portfolio，现有core loop/文件工具执行独立分支、host可见命令评分，合法完成前缀导出train/holdout trace。FrozenPolicy可在下一episode读registry active或复制已验参数，真实控制width/refine；无active失败、运行中不热换。
+- ParentBudget/SharedLLM共享请求、token预留、deadline与评估池，包含摘要/辅助异步调用及后置final；未知usage保留reservation并停止。total-completion兼容另列cache。无通用裸client透传、同步provider入口明确unsupported。children首版禁MCP/skills/plugins/memory/background/retry，不复制Agent loop、不从生产导入experiments预算。
+- visible用于探索，独立final仅选定产物后在副本执行，反馈不进选择或训练；TaskSplits校任务隔离，synthetic永不生产晋升。选定tree/patch只供显式review/apply。目录隔离非OS沙箱、apply非原子、不消除所有TOCTOU；同步snapshot/copy/export可阻塞IO，非所有操作硬墙钟抢占。RSI首版串行、单次runtime，TUI流式run_stream明确unsupported。
+- 交叉review修复无尾换行patch、真实Windows junction越界和cleanup失败仍导trace三类问题；Git应用五组LF/CRLF/无换行逐bytes正例、junction拒绝与普通copy、取消传播均有回归。作者最终44项，早先190项属修前历史；主代理最终70项组合通过，包含44 RSI及26 memory，不重复累计。
+- 实际CLI使用真实CodingAgent/工具/本地测试与固定Dream SDK optimize dry-run；A/B/random各4有效尝试、12脚本请求/6评估，C为2尝试、6请求/4评估。ceilings全部12请求/300000tokens/90秒/6评估，SDK21次离线replay选择width1/refine1。四臂独立final通过、源answer仍0；quality=unmeasured、final_success=null、未promote。C少调用为合成夹具行为，不写成50%真实节费。A→B同时切layered与artifact，是工程增强组合。
+- 主代理在全新目录独立复跑，源码hash/参数/计数/上限与公开证据一致，见[rsi-contract](results/context-rsi-20261113/rsi-contract/REPORT.md)。保留作者与复跑raw hash，不覆盖旧档案。真实模型/未见长程收益尚未测；下一批四臂[实验协议](RSI_CLOSED_LOOP_EVALUATION.md)已设计但真实任务manifest未冻，不自动恢复付费benchmark。
+
+### E-QWEN-GPU：2026-11-13 / 本机独立embedding与SDK边界
+
+- 本机RTX5060 Laptop 8151MiB/cuda:0/sm120，独立Torch2.9.1+cu128与Transformers4.57.6；默认应用venv不装Torch。官方Qwen3-Embedding-0.6B revision97b0c614…10文件1,207,470,234B逐官方Git blob/LFS校验。大权重httpx成功、小文件TLS EOF后改官方native curl，TLS不降级、不用镜像/认证token；下载失败不伪装成功。GPU只embedding，不能生成摘要。
+- 新memory_qwen.py/_memory_qwen_worker.py及mem0工厂分派：独立-I -X utf8 -u stdio worker，fp16 SDPA/last-token/L2归一化1024维；batch1..4/max_length64..1024，超长显式报错。local_files_only/trust_remote_code=False/token=False，剥离凭据代理、拒PythonInternet socket，非OS网络沙箱。1024维新Qdrant目录，不复用BGE512旧库。
+- 真实路径暴露Mem0会懒下载BM25/spaCy，改Qwen-owned dense-only建库及隔离SDK函数globals禁NLP；固定版本/commit/10方法LF规范hash，未知源码失败。不是SDK全局patch，也不是完整原版混合语义。**旧结果更正**：当前BGE只读装配BM25 slot=true、原NLP函数，但历史30题实际是否触发未记录；不能无条件称旧臂纯稠密，未来模型比较须控制此变量，原负结果与raw档案不改。
+- 修复Windows GBK中文stdio、worker不读导致write/flush无限阻塞、venv launcher与真实worker PID不同。统一发送/接收deadline、有界1MiB帧、熔断终止owned树并确认线程/native handle；清理窗口独立，不宣称瞬时OS退出。SOL-1对send_deadline独立1项复核通过。
+- 主代理最终GPU实测禁词法回退、host/worker拒Internet socket：两事实中英文均返回语义候选，1024维norm约1；冷构造16.45s、文档batch2约1.30s、两查询0.467/0.053s，短文本峰值allocator1,207,842,816B。这是功能smoke，不是质量/吞吐/SLA benchmark。close_complete与worker退出核验；owned终止returncode1如实保留，桌面显存2437→2435MiB不当作零显存承诺。
+- 全局settings私有备份后merge-only启用layered（output reserve16384）、GPU profile与memory等待60s；CPU profile/模型保留，其余字段与Dream入口原值不变。实际Settings→RPC→CodingAgent→Context/GPU factory构造后关闭验证0provider调用。新配置需本分支worktree，旧checkout切回需恢复CPU配置；本机配置/模型/向量缓存不进Git。
+- 最终主代理Windows冻结依赖整库：`uv run --frozen --all-extras python -m pytest -q -o addopts= --import-mode=importlib --tb=short`，**1424 passed、11 skipped、5 subtests passed in107.00s**；Ruff src/tests/experiments/context_rsi、uv lock --check、wheel新模块/TUI与源码bytes比对通过。新增CI专项含RSI闭环与GPU CPU契约，不冒充CI有真实GPU。当前最终head远端CI待提交后核验。
+- [GPU安全证据](results/context-rsi-20261113/qwen-gpu/REPORT.md)与[面试P45–P50](../interview/11-RSI闭环与本地推理工程深挖.md)已同步。付费API本轮0新增，不改旧账本533请求/已知$1.218608/未知预留$0.045131；所有进程留本机，不迁移L20。真实RSI收益与Qwen召回效果保持未测，Langfuse云上传状态不因本轮变更。
+
+交付字节核验追加：Git暂存暴露5个源码文件CRLF与提交LF指纹差异，仅做换行规范化；历史source hash不覆盖，另存before/after/CRLF行数映射与最终checkout-validation。最小.gitattributes规则保护11份RSI/Qwen源码，实际autocrlf=true导出11文件逐bytes相同。规范化后专项44 passed in17.98s，新目录CLI四臂计数/上限一致、0provider、未晋升；重新构建wheel按最终源码bytes核验。没有以格式变化改写旧实验结果。

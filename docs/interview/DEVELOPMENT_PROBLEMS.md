@@ -263,3 +263,16 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 Terminal首配对raw reward为off0/on1，但off未执行测试（uv下载TLS失败），on发生AgentTimeoutError，最后usage未知。科学pair0、delta不可用；53调用已知$0.281062、另预留$0.045131保留。队列自动停止后续付费，未扩剩余14槽或EVO；没有将0→1写成成功率提升。
 
 实际配置与成功oracle相同，fresh同通道下载当前200也不能追溯原TLS原因；独立0LLM探针和原失败分开保留。完整九段分析、费用边界和追问见[深挖P44](10-长程评测工程问题深挖.md#p44原reward从0变1为什么仍然不能说框架提升)。
+
+## P45–P50：受控探索闭环与本机推理
+
+2026-11-13，本轮实现、问题反例、取舍与面试追问集中在[工程深挖](11-RSI闭环与本地推理工程深挖.md)，每点保留九段证据链。
+
+- P45：原active仅供replay；接CodingAgent真实分支、host可见评分、trace导出和下一episode冻结策略，final反馈后置且不入训练。脚本闭环不当泛化收益。
+- P46：分支各领额度会放大总消费；共享父请求/token/deadline/评分池，摘要计入、缺usage保留reservation并停止。同步磁盘IO仍非硬墙钟抢占。
+- P47：真实Windows junction越界、无尾换行patch与cleanup失败入库；增加lexical/reparse/containment检查、Git逐bytes应用测试、cleanup_failed禁trace。目录隔离不等于OS沙箱。
+- P48：Qwen本地模型之外仍有SDK懒下载；固定官方hash与独立cu128环境，owned SDK dense-only/禁NLP且不改全局。旧BGE30题BM25使用未记录，追加更正而不改旧分数。
+- P49：只给response加timeout仍会卡在pipe write/flush；统一发送/接收deadline、UTF8协议、有界帧及owned进程树退出确认。真实worker与venv launcher分别核验。
+- P50：压缩失败曾清合法旧摘要；auto/manual反例修为合法分支cache事务恢复并拒超限。分层机制对照不宣称KV或质量收益。
+
+主代理最终专项70 passed，整套1424 passed、11 skipped、5 subtests passed，批次重叠不累加。GPU两事实功能检查与RSI脚本四臂独立复跑均通过；真实模型质量仍待新实验。

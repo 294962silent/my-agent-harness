@@ -62,7 +62,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: |
           uv sync --frozen --all-extras --python ${{ matrix.python-version }}
-          uv run python -m pytest tests/integrations -q
+          uv run python -m pytest tests/integrations tests/test_rsi_runtime.py tests/experiments/test_rsi_closed_loop.py tests/core/test_memory_qwen.py tests/core/test_memory_local.py tests/core/test_memory_semantic.py --import-mode=importlib -q
 
       # my-tui/dist is gitignored, so the TUI must be built before the wheel.
       - name: Build wheel with TUI assets
@@ -74,7 +74,7 @@ jobs:
           wheel = sorted(glob.glob('dist/*.whl'))[-1];
           names = zipfile.ZipFile(wheel).namelist();
           assert 'my_coding_agent/my-tui/bin/my-agent.js' in names, 'TUI entry missing from ' + wheel;
-          assert all(path in names for path in ('my_agent_core/memory_mem0.py', 'my_agent_core/memory_local.py', 'my_agent_llm/observation_runtime.py', 'my_coding_agent/dream_rsi_replay.py', 'my_coding_agent/dream_rsi_contract.py', 'my_coding_agent/dream_rsi_optimizer.py', 'my_coding_agent/dream_rsi_registry.py')), 'Optional integration module missing';
+          assert all(path in names for path in ('my_agent_core/memory_mem0.py', 'my_agent_core/memory_local.py', 'my_agent_core/memory_qwen.py', 'my_agent_core/_memory_qwen_worker.py', 'my_agent_core/context_compaction.py', 'my_agent_llm/observation_runtime.py', 'my_coding_agent/dream_rsi_replay.py', 'my_coding_agent/dream_rsi_contract.py', 'my_coding_agent/dream_rsi_optimizer.py', 'my_coding_agent/dream_rsi_registry.py', 'my_coding_agent/rsi_runtime.py', 'my_coding_agent/rsi_branch.py')), 'Optional integration module missing';
           entry = next(name for name in names if name.endswith('.dist-info/entry_points.txt'));
           assert b'my-agent-dream' in zipfile.ZipFile(wheel).read(entry), 'Dream CLI entry missing';
           print(wheel, len(names), 'entries, TUI assets OK')"

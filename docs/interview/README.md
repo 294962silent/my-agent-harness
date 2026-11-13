@@ -17,6 +17,7 @@
 - [工具权限：副作用前的授权](07-工具权限.md)
 - [观测与成本：辅助调用也进入证据链](08-观测与成本.md)
 - [受控策略自优化：Dream-RSI参数闭环](09-策略回放.md)（新增研究入口，不计入原八模块实验）。
+- [RSI闭环与本地推理工程深挖](11-RSI闭环与本地推理工程深挖.md)：P45–P50，覆盖执行/评分隔离、父预算、Windows路径、SDK懒下载、IPC deadline与压缩失败事务。
 
 ## 可核验材料
 
@@ -25,7 +26,7 @@
 - [v2真实SWE小样本](../experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、eligible5题、10次模型trial，on2/5、off1/5；7空补丁，费用$0.503462，11外置/0回读，不作因果提升结论。
 - [历史v1单例](../experiments/results/live-swe-20261112/REPORT.md)：1题2trial，两组通过；当时没有激活产物外置，不能替代v2证据。
 - [开发问题账本](DEVELOPMENT_PROBLEMS.md)与[主张证据边界](CLAIMS.md)。
-- [三项集成使用说明](../integrations/README.md)：Mem0本地真实CPU功能、Langfuse内存导出、Dream合成参数优化闭环已验证，召回消融/真实云端/实绩策略效果仍未测。
+- [三项集成使用说明](../integrations/README.md)：Mem0真实CPU/GPU功能、Langfuse内存导出、Dream显式分支执行与脚本模型闭环已验证。Memory30题负结果保留；Qwen召回、云端上传与真实RSI策略效果尚未测。
 - [真实模型预算](../experiments/LIVE_MODEL_BUDGET.md)：用户授权$30；官方开源任务分环境预检、参考解与模型评分，结果独立记录。
 
 ## 面试叙述边界

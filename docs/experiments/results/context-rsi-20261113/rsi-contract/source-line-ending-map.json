@@ -1,0 +1,35 @@
+{
+  "change": "CRLF to LF only, no logical source change",
+  "files": {
+    "src/my_agent_core/agent.py": {
+      "before_sha256": "7d693e2ce909fbc8a6b1f5edce0fa91acc7f38984a715ba2d00824fe4a0420bc",
+      "after_sha256": "c32c8f12858ddc9956f5d000ce8b5f057fb516ac4ab0800931e65fa48c7063df",
+      "crlf_lines": 777,
+      "normalized_bytes_identical": true
+    },
+    "src/my_agent_core/context.py": {
+      "before_sha256": "6786ffc7077a671ce297bd35147bb1721de62f59ef0609e45538badb5c898f85",
+      "after_sha256": "71bfedd9daf7beff4995e0561eccc2345a8f6c9b8054903ee0d91e8c6ce6ba2f",
+      "crlf_lines": 968,
+      "normalized_bytes_identical": true
+    },
+    "src/my_coding_agent/agent.py": {
+      "before_sha256": "011152b286125e0baaef05968ffc3c207e52156f96d62c93a2e524a91811b7fc",
+      "after_sha256": "e5acbc521e772f0eb18d3140b6504a31cca5a2c0e6b6013da4ec96bf1930b4f9",
+      "crlf_lines": 479,
+      "normalized_bytes_identical": true
+    },
+    "src/my_coding_agent/settings.py": {
+      "before_sha256": "f959645690f6184d4796f4e2d97723f62c53f4b00bd77e108be983f7ea802bed",
+      "after_sha256": "c456e51fd92494093f9c63e679734fd12efcd53e632646a0c786acdeccb31efb",
+      "crlf_lines": 208,
+      "normalized_bytes_identical": true
+    },
+    "src/my_coding_agent/rpc/session_handlers.py": {
+      "before_sha256": "2fb6002c487e4632dbbc948f444e17570e276d5bfc0fcd1ebd29d71ec3079689",
+      "after_sha256": "c78465f59e5acfb08ef622a17715872d813c5544612ae2470e6e83fb848cca03",
+      "crlf_lines": 485,
+      "normalized_bytes_identical": true
+    }
+  }
+}

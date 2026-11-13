@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from my_coding_agent.paths import AgentPaths
 
@@ -20,6 +20,7 @@ PRIVILEGED_GLOBAL_KEYS: set[str] = {
     "memory_index",
     "observation",
     "dream_optimization",
+    "context_compaction",
 }
 
 
@@ -42,6 +43,27 @@ class MemoryIndexSettings(BaseModel):
     timeout: float = Field(default=2.0, gt=0, allow_inf_nan=False)
     close_timeout: float = Field(default=0.1, ge=0, allow_inf_nan=False)
     model_config = ConfigDict(extra="forbid")
+
+
+class ContextCompactionSettings(BaseModel):
+    """Host-controlled deterministic context policy; baseline remains the default."""
+    mode: Literal["baseline", "layered"] = "baseline"
+    recent_tool_groups: int = Field(default=2, strict=True, ge=0)
+    micro_min_chars: int = Field(default=1000, strict=True, ge=1)
+    model_context_window: int | None = Field(default=None, strict=True, gt=0)
+    output_reserve: int = Field(default=1024, strict=True, ge=0)
+    safety_margin: int = Field(default=256, strict=True, ge=0)
+    summary_max_tokens: int = Field(default=1024, strict=True, ge=1)
+    model_config = ConfigDict(extra="forbid")
+
+    def to_policy(self):
+        from my_agent_core.context_compaction import CompactionPolicy
+        return CompactionPolicy(**self.model_dump())
+
+    @model_validator(mode="after")
+    def validate_reserves(self):
+        self.to_policy()
+        return self
 
 
 class ObservationSettings(BaseModel):
@@ -105,6 +127,7 @@ class Settings(BaseModel):
 
     # ── 会话与压缩管线 ──
     compaction: CompactionSettings = Field(default_factory=CompactionSettings)
+    context_compaction: ContextCompactionSettings = Field(default_factory=ContextCompactionSettings)
     memory_index: MemoryIndexSettings = Field(default_factory=MemoryIndexSettings)
     observation: ObservationSettings = Field(default_factory=ObservationSettings)
     dream_optimization: DreamOptimizationSettings = Field(default_factory=DreamOptimizationSettings)

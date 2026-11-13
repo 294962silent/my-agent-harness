@@ -29,10 +29,14 @@ class SessionRpcMixin:
     """提供所有 _handle_session_* RPC 请求的处理能力。"""
 
     def _integration_options(self):
-        return {
+        options = {
             "memory_index_config": getattr(self.settings, "memory_index", None),
             "observation_config": getattr(self.settings, "observation", None),
         }
+        compaction = getattr(self.settings, "context_compaction", None)
+        if compaction is not None:
+            options["compaction_policy"] = compaction.to_policy()
+        return options
 
     async def _close_agent_for_replacement(self):
         if self.agent is not None:

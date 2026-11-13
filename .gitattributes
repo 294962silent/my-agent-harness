@@ -13,3 +13,17 @@ experiments/benchmark_live/evo_agent.py text eol=lf
 docs/experiments/SWE_EVO_SOURCE_MANIFEST.json text eol=lf
 docs/experiments/results/long-horizon-20261113/**/*.json text eol=lf
 docs/experiments/results/long-horizon-20261113/**/*.jsonl text eol=lf
+
+# RSI/Qwen evidence records exact source bytes; preserve those across checkout.
+src/my_agent_core/agent.py text eol=lf
+src/my_agent_core/context.py text eol=lf
+src/my_agent_core/context_compaction.py text eol=lf
+src/my_agent_core/memory_mem0.py text eol=lf
+src/my_agent_core/memory_qwen.py text eol=lf
+src/my_agent_core/_memory_qwen_worker.py text eol=lf
+src/my_coding_agent/agent.py text eol=lf
+src/my_coding_agent/settings.py text eol=lf
+src/my_coding_agent/rpc/session_handlers.py text eol=lf
+src/my_coding_agent/rsi_runtime.py text eol=lf
+src/my_coding_agent/rsi_branch.py text eol=lf
+experiments/context_rsi/*.json text eol=lf
