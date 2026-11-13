@@ -1,6 +1,6 @@
 # Mem0、Langfuse、Dream-RSI
 
-2026-11-13。三项适配均有用户入口。当前新增本地CPU中文记忆和受控参数自动优化；本机已启用，项目分发默认保留显式开关。按用户要求，只做功能/代码验证，SWE和效果benchmark暂停。
+2026-11-13。三项适配均有用户入口。当前新增本地CPU中文记忆和受控参数自动优化；本机已启用入口，项目分发默认保留显式开关。适配初版仅做功能/代码验证；后续用户授权的Memory30题已完成，当前Mem0未优于词法，Terminal首组因环境/超时/未知用量停止。Dream参数目前仅作用于离线回放，尚未接入真实Agent在线决策，不能将入口启用称为完整RSI融合。
 
 ## 安装与配置位置
 
@@ -19,7 +19,7 @@ memory_index、observation、dream_optimization属于全局专属配置，项目
 
 ## Mem0：语义候选索引
 
-### 当前推荐：本地CPU中文模型
+### 本机配置：本地CPU中文模型
 
 ```sh
 uv run --extra mem0-local python -c "from pathlib import Path; from my_agent_core.memory_local import prepare_model_cache; prepare_model_cache(Path.home()/'.cache/my-agent-harness/models/bge-small-zh-v1.5/46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59')"
@@ -48,7 +48,7 @@ uv run --extra mem0-local python -c "from pathlib import Path; from my_agent_cor
 
 同步SDK在每实例单daemon worker执行，等待超时后永久熔断，不每轮新增挂起调用。SDK自己的重试/请求可能继续；外层超时不能杀线程。`coding.agent.memory_index.status`提供inflight、circuit_open、closed、sdk_owned/sdk_closed等状态；关闭未完成返回False。SQLite与向量库均是可重建候选缓存，本地facts/tombstone才是权威。
 
-配置工厂创建的index由Agent关闭；显式注入默认caller-owned。`memory_dir=False`优先于全局开关，不创建工厂或远端检索。本轮没有测真实语义召回；既有脱敏规则仍是best-effort，不是所有秘密的完备检测器。
+配置工厂创建的index由Agent关闭；显式注入默认caller-owned。`memory_dir=False`优先于全局开关，不创建工厂或远端检索。适配初版未测质量；后续固定英文历史30题实验已经完成，Mem015/30、词法22/29有效（另1判分不可用），详见[误差分解](../experiments/results/long-horizon-20261113/memory-error-analysis/REPORT.md)。这不是自动事实抽取/巩固的质量评估，也不证明中文任务效果。既有脱敏规则仍是best-effort，不是所有秘密的完备检测器。
 
 ## Langfuse：元数据观测
 
@@ -65,6 +65,8 @@ uv run --extra mem0-local python -c "from pathlib import Path; from my_agent_cor
 ## Dream-RSI：受控参数自动优化
 
 自动化闭环为“冻结候选→train选参→holdout验收→原子晋升→回放消费active→可回滚”。候选只有max_width(1..64)、max_refine(0..64)两个参数，不生成或执行任意策略Python，也不调用额外LLM。执行器和评分器保持固定；不是上游完整任意代码RSI流程或模型权重训练。
+
+这里的“消费active”明确指Dream离线replay：默认评估器replay_trace、worker的TraceEnv.replay。真实Agent/CodingAgent尚未自动导出独立评分分支树，也未读取该active控制真实下一动作。核心在线闭环还缺实际接线，现有配置/合成数据不能证明RSI提高Agent质量。新增代码与实验应先补这条主链，再做相同预算、未见任务上的策略对照。
 
 ```sh
 uv run --extra dream-rsi my-agent-dream status
@@ -103,7 +105,7 @@ Windows使用Job Object，Unix使用进程组；worker归属建立后再运行�
 
 主执行超时后仍有独立的退出确认窗口。Unix发送kill后会有界确认组内没有非zombie成员，5秒无法确认时明确报错，不把“信号已排队”当成“整组已退出”。
 
-本版增加自动参数搜索、独立验证、晋升和回滚；真实数据与效果实验仍未进行。本轮不做在线探索、自改代码、权重训练或SWE benchmark。
+本版增加离线自动参数搜索、独立验证、晋升和回滚；Dream真实数据与效果实验仍未进行。本模块不做在线探索、自改代码或权重训练；后续Memory/Terminal实验不能算作Dream消融。
 
 ## 验证与来源
 

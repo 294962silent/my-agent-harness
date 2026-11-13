@@ -1,0 +1,10 @@
+{
+  "analysis_source_head": "1d903e1bc15e9f76c3f46d7eb26bb3cc62ee2942",
+  "generation_source_head": "16bdae0e4ec7fb8511ea8bd86d52e26d84d04c18",
+  "rows_sha256": "5158a8a796c13cbe1da0303b5c52a2788d687c7c0094780eb1e3de6861b0c96e",
+  "raw_analysis_sha256": "9c63a8e9c9633c5c00b403094727040d303c3e17a326767894e2c8ee264a04fe",
+  "model_requests": 0,
+  "case_inspection_count": 2,
+  "case_inspection_level": "manual evidence-chunk check, not all 8 disagreements",
+  "tokenizer_check_level": "local fixed BGE tokenizer, reconstructed Fact key and value; not wire capture"
+}

@@ -804,3 +804,11 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 定点调查未见代理漏配：实际off job/Harbor/trial与成功oracle同HTTPS-only策略，env.exec确实传递。独立fresh同镜像运输探针只丢弃下载体、不test.sh/评分，CONNECT GitHub→302→CONNECT release-assets→200/exit0，NO_PROXY未绕过；当前可通不能追溯原TLS原因。首私有probe解析器None stderr失败另存，不把探针当前成功改写原trial。
 - [首配对停止报告](results/long-horizon-20261113/terminal-first-pair/REPORT.md)公开安全原reward/分类/证据hash、53请求与未知预留、运输元数据；原result/ctrf/stdout/Session和ledger留本机。终态不是跑满八题，不把运行失败当完整benchmark成绩。Memory180请求/30题仍是独立已完成实验。
 - 付费进程均结束；主代理确认本批队列/Harbor PID已不存在、精确任务及探针容器剩余0，核cmdline/父子身份后关闭自有临时代理41392/18360及17913监听，用户原7897服务仍在。没有迁移L20、改共享Docker或重启用户代理。worktree和失败档案保留。
+
+### E-LONG-ERROR-AND-RSI-AUDIT：2026-11-13 / 解释负结果，纠正融合口径
+
+- 用户追问Mem0为何落后、RSI是否融合、如何证明长程能力。两位既有Sol/medium分别只读核评分分解与RSI调用链，0新增API、未改原数据或未知账本；主代理独立从90行重算15组计数通过，诊断存[memory-error-analysis](results/long-horizon-20261113/memory-error-analysis/REPORT.md)。
+- 词法对/Mem0错8题、反向1题；前8中3题标注会话覆盖不全、5题会话全命中仍错。抽查其中2题，词法送入具体答案chunk而Mem0没有。故session Recall=1不等于答案证据已送入，不能直接归因reader。真实BGE tokenizer重建27517条索引文本最长463tokens、超过512为0，本批没有512截断证据；语言/阈值/无rerank贡献仍待单因素实验。
+- 实际Mem0 infer=False、top8、threshold0.1、rerank=False；本轮是原始历史索引，不是整套记忆抽取/巩固质量。未换模型或重新付费选答案，原负结果保留。
+- RSI源码确认optimizer默认评估器replay_trace，worker为TraceEnv.replay→ParallelRefineMethod.solve，active只被replay消费。真实Agent未自动产出对应独立评分树，也未用active控制在线动作。已完成的是离线受控参数研究通道，线上主链尚缺接线；纠正“适配完成”可能造成的完整融合误解。默认registry只读no_active_policy，未核任意自定义registry，不推广配置结论。
+- 更新integrations说明与CLAIMS，分别说明已实现机制、已完成Memory实验、无效Terminal对照、缺失在线RSI和真实长程收益。新报告给出相同预算/工具/模型、仓库隔离与隐藏最终测试不反馈选分支的建议；属于待讨论方案，不是已实现或已跑的新实验。执行源码未修改，不因文档更新重跑模型。
