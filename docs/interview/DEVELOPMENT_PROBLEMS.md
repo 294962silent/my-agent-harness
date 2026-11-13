@@ -227,3 +227,8 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - P35：Dream回放参数尚未在线影响Agent，Langfuse云上传尚未验证；按真实路径安排专项，避免把SDK名词直接写成质量提升。
 
 修复后的oracle、有效样本、真实费用与源码提交结果继续追加，不用规划值覆盖失败历史。
+
+## P36：源码冻结漏实际依赖，schema不一致仍算差值
+
+- 两位助手交叉review分别复现Memory plan漏paid/guard哈希、TB两已评分臂schema不同仍报delta。已补真实执行入口的付款前漂移拒绝回归，并要求完整且schema一致才给配对差值。
+- WSL记忆12项通过，配对修复独立复核；主代理整套1334 passed、4 skipped、5 subtests passed。真实任务效果尚未生成。详细因果、证据和追问见[深挖P36](10-长程评测工程问题深挖.md#p36有hash和两组分数为什么仍然不能直接下结论)。

@@ -10,7 +10,7 @@ pytest.importorskip("harbor")
 from experiments.benchmark_live import harbor_agent as adapter
 from harbor.models.agent.context import AgentContext
 from harbor.models.task.task import Task
-from my_agent_llm import LLM, Response
+from my_agent_llm import Config, LLM, Response
 
 
 @pytest.mark.anyio
@@ -66,7 +66,10 @@ async def test_adapter_runs_guarded_loop_without_host_test_leakage(tmp_path, mon
         llm._provider = provider
         return llm
 
-    monkeypatch.setattr(adapter, "LLM", client)
+    monkeypatch.setattr(adapter, "create_live_llm", lambda **kw: client(Config(
+        provider="openai", model="deepseek-v4.1-flash", api_key="SYNTHETIC_KEY", max_retries=0,
+        max_tokens=kw["max_output_tokens"],
+    )))
     monkeypatch.setenv("LIVE_BENCH_API_KEY", "SYNTHETIC_KEY")
 
     class Environment:
@@ -82,5 +85,9 @@ async def test_adapter_runs_guarded_loop_without_host_test_leakage(tmp_path, mon
     assert commands == ["pwd"] and provider.calls == 2
     assert context.metadata["status"] == "end_turn"
     assert context.n_input_tokens == 200 and context.n_output_tokens == 40
+    assert context.n_cache_tokens is None
     assert not any(s in "\n".join(received) for s in ("SECRET_GOLD", "SECRET_VERIFIER", "SYNTHETIC_KEY"))
     assert "SYNTHETIC_KEY" not in (tmp_path / "logs/live_run.json").read_text()
+    with pytest.raises(adapter.BudgetStop, match="already consumed"):
+        await agent.run("Inspect visible workspace", Environment(), AgentContext())
+    assert provider.calls == 2

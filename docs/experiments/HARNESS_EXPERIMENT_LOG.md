@@ -733,3 +733,12 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 原账本实际300请求/888355微美元，unknown held0，根上限$30不重置。记忆阶段绝对cap$3.888355，代码阶段绝对cap$15.888355，本批最多新增$15；保守客户端价格不是供应商核账。run级冻结64请求/任务原时限(上限1800秒)，旧16/600默认不改。
 - 原样TB首轮八oracle均registry连接超时，属于environment-blocked，无模型新请求。旧fix-git verifier uv下载失败也保留。定位到WSL旧代理端口失效，正用仅WSL客户端可访问的临时转发和官方crane匿名拉镜像，再由Docker导入；不改共享daemon或官方task/test/solution。crane0.22.1官方release digest已核；第一镜像已导入，完整oracle尚未通过，不能写成模型成绩。
 - 新开发问题P30–P35同步写入问题账本和九段深挖文档，明确当前技术验证阶段、取舍、失败路径、责任边界和待补证据。规划指标、任务成功率、召回率与本批费用全部待实际产物计算。
+
+### E-LONG-PILOT-IMPLEMENT：2026-11-13 / 预算、驱动与付款前验证
+
+- 新long_horizon.py提供freeze/run/summary，源/输入/oracle/ledger/模型/任务时限绑定，run需显式execute，首轮默认最多2trial；journal与ledger trial_started防跨目录重复执行。只对完整且schema一致的配对计算差值；缺缓存用量保留None。Harbor原task不改，环境代理冻结为HTTPS-only/HTTP direct，避免代理使Debian apt返回502。
+- 新harness_ablation/corpus/retrieval/paid提供30题冻结、同语料生产三臂、独立Linux seccomp worker、回答与judge固定不同1请求/180s run；输入标签隔离、响应逐字重建、无效结果保留、付款前hash核验、BudgetStop封阶段不重试。上述是固定历史索引实验，不测自动事实抽取效果。
+- 实际依赖安装曾多次失败：uv内部Git仍命中失效URL级代理，普通HTTP_PROXY/进程Git配置不足；用仅本任务PATH内git wrapper显式-c覆盖后成功，未修改共享Git配置。按uv.lock导出安装Linux mem0-local，真实CPU+seccomp单chunk经生产链路成功，close_complete=True，0API。
+- 公共镜像通过官方crane0.22.1匿名下载后dockerload；8个镜像均可inspect，customheap大镜像load客户端超时后daemon仍完成导入，未仅凭CLI超时就断言导入失败。未改共享Docker daemon；保留最初registry失败、后续uv依赖失败和HTTP代理502的各次oracle原始证据。HTTPS-only第四次第一题cancel-async-tasks官方oracle实际reward1/noexception，其他仍进行中，不提前写为8题全过。
+- 交叉review抓到P36：Memory计划漏真实付费/guard源码，TB汇总在schema不同时仍算delta。双方修复并互相复核，付款前篡改反例不写ledger。主代理最终Windows命令沿用隔离MY_AGENT_HOME、真实模型缓存及Git Bash，全套 **1334 passed、4 skipped、5 subtests passed in94.93s**；Ruff/diffcheck通过。WSL记忆12项及实际Harbor定点另有重叠，不累加。
+- 本批此刻模型新调用仍0，旧300条/$0.888355不变；下一步冻结源码/选题、先首个检索和付费对照再扩展。所有收益和完整费用以实际原始记录为准。面试P30–P36已附深入取舍/反例/证据与个人边界。

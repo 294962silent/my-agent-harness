@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import tomllib
 from pathlib import Path
 
@@ -26,6 +27,21 @@ def task_fingerprint(task: str | Path) -> str:
     return digest.hexdigest()
 
 
+def runtime_constraints(task: str | Path, *, require_cpu: bool = False) -> dict:
+    """Cap agent time without modifying the official task configuration."""
+    config = tomllib.loads((Path(task) / "task.toml").read_text(encoding="utf-8"))
+    agent, environment = config.get("agent", {}), config.get("environment", {})
+    official = agent.get("timeout_sec", 600)
+    if type(official) not in (int, float) or not math.isfinite(official) or official <= 0:
+        raise ValueError("invalid official agent timeout")
+    if require_cpu and (environment.get("cpus") != 1 or environment.get("memory_mb") != 2048
+                        or environment.get("gpus", 0) != 0):
+        raise ValueError("pilot requires official CPU1/memory2048/GPU0 task")
+    return {"official_agent_timeout": official, "time_cap": min(1800, official),
+            "cpus": environment.get("cpus"), "memory_mb": environment.get("memory_mb"),
+            "gpus": environment.get("gpus", 0), "docker_image": environment.get("docker_image")}
+
+
 def oracle_gate(task: str | Path, result_path: str | Path) -> dict:
     task = Path(task)
     result_path = Path(result_path)
@@ -36,6 +52,7 @@ def oracle_gate(task: str | Path, result_path: str | Path) -> dict:
     if (
         result.get("task_name") != task_name
         or result.get("exception_info")
+        or type(rewards.get("reward")) not in (int, float)
         or rewards.get("reward") != 1
         or (result.get("agent_info") or {}).get("name") != "oracle"
         or not result.get("task_checksum")

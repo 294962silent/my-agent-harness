@@ -11,6 +11,7 @@ import asyncio
 from contextlib import contextmanager
 from decimal import Decimal, ROUND_CEILING
 import json
+import math
 import os
 from pathlib import Path
 import tempfile
@@ -19,6 +20,7 @@ from uuid import uuid4
 
 from filelock import FileLock
 
+from my_agent_llm import Config, LLM
 from my_agent_llm.events import StreamDoneEvent, StreamStartEvent
 from my_agent_llm.models import Response, StreamChunk
 from my_agent_llm.observation import _CONTEXT
@@ -26,6 +28,23 @@ from my_agent_llm.observation import _CONTEXT
 
 class BudgetStop(RuntimeError):
     """Stop this run without exposing provider exceptions or credentials."""
+
+
+LIVE_MODEL = "deepseek-v4.1-flash"
+LIVE_PROVIDER = "openai"
+LIVE_BASE_URL = "https://opencode.ai/inference/go/openai/v1"
+
+
+def create_live_llm(*, max_output_tokens: int = 4096, timeout: float = 120):
+    """Explicit host-only client factory; never load auth files or .env fallbacks."""
+    if (type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 4096
+            or type(timeout) not in (int, float) or not math.isfinite(timeout) or not 0 < timeout <= 1800):
+        raise ValueError("invalid live output/time limits")
+    key = os.environ.get("LIVE_BENCH_API_KEY")
+    if not key:
+        raise ValueError("LIVE_BENCH_API_KEY must be supplied to the host process")
+    return LLM(Config(provider=LIVE_PROVIDER, model=LIVE_MODEL, api_key=key, base_url=LIVE_BASE_URL,
+                      max_retries=0, timeout=timeout, max_tokens=max_output_tokens))
 
 
 def _cost(input_tokens: int, output_tokens: int) -> int:
@@ -46,6 +65,7 @@ class BudgetLedger:
         time_cap: float = 600,
         spend_ceiling_usd: float | None = None,
         request_ceiling: int | None = None,
+        campaign_id: str | None = None,
     ):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -66,6 +86,9 @@ class BudgetLedger:
         if request_ceiling is not None and (type(request_ceiling) is not int or request_ceiling <= 0):
             raise ValueError("request ceiling must be a positive integer")
         self.request_ceiling = request_ceiling
+        if campaign_id is not None and (not isinstance(campaign_id, str) or not 1 <= len(campaign_id) <= 128):
+            raise ValueError("campaign_id must be a nonempty bounded string")
+        self.campaign_id = campaign_id
         with self.lock:
             if not self.path.exists():
                 self._write(
@@ -85,6 +108,10 @@ class BudgetLedger:
                 time_cap,
             ):
                 raise ValueError("existing ledger policy differs; never silently raise limits")
+            campaign = data.get("campaigns", {}).get(campaign_id)
+            if campaign is not None and self.spend_ceiling is not None:
+                if campaign["spend_ceiling_micro_usd"] != min(self.limit, self.spend_ceiling):
+                    raise ValueError("existing campaign spend ceiling differs")
 
     def _read(self):
         return json.loads(self.path.read_text(encoding="utf-8"))
@@ -117,9 +144,69 @@ class BudgetLedger:
         with self.lock:
             return self._read()
 
+    def register_run(self, run_id: str, *, max_requests: int = 16, time_cap: float = 600):
+        """Freeze an opt-in extended run, preserving root defaults and old rows.
+
+        Campaign ceilings are absolute cumulative ledger ceilings, not allowances
+        added to $30. Registration never starts the run clock or reserves money.
+        """
+        if (not isinstance(run_id, str) or not run_id or type(max_requests) is not int
+                or not 1 <= max_requests <= 64 or type(time_cap) not in (int, float)
+                or not math.isfinite(time_cap) or not 0 < time_cap <= 1800):
+            raise ValueError("invalid frozen run limits")
+        if self.campaign_id is None:
+            raise ValueError("registered long runs require an explicit campaign_id")
+        limits = {"max_requests": max_requests, "time_cap": time_cap}
+        with self.transaction() as data:
+            existing = data["runs"].get(run_id)
+            if existing is not None:
+                if existing.get("limits") != limits or existing.get("campaign_id") != self.campaign_id:
+                    raise ValueError("run already exists with different or legacy limits")
+                return dict(limits)
+            campaigns = data.setdefault("campaigns", {})
+            campaign = campaigns.get(self.campaign_id)
+            if campaign is None:
+                if self.spend_ceiling is None:
+                    raise ValueError("new campaign requires a frozen absolute spend ceiling")
+                campaign = {"spend_ceiling_micro_usd": min(self.limit, self.spend_ceiling), "blocked": False}
+                campaigns[self.campaign_id] = campaign
+            elif self.spend_ceiling is not None and campaign["spend_ceiling_micro_usd"] != min(self.limit, self.spend_ceiling):
+                raise ValueError("campaign spend ceiling is frozen")
+            if campaign["blocked"]:
+                raise BudgetStop("campaign stopped; coordinator review required")
+            data["runs"][run_id] = {
+                "started_at": None, "blocked": False, "limits": limits, "campaign_id": self.campaign_id,
+            }
+        return dict(limits)
+
+    def _run_limits(self, run):
+        declared = (run or {}).get("limits", {"max_requests": self.max_requests, "time_cap": self.time_cap})
+        requests = declared["max_requests"]
+        if self.request_ceiling is not None:
+            requests = min(requests, self.request_ceiling)
+        return {"max_requests": requests, "time_cap": declared["time_cap"]}
+
+    def effective_run_limits(self, run_id):
+        return self._run_limits(self.snapshot()["runs"].get(run_id))
+
+    def campaign_status(self):
+        if self.campaign_id is None:
+            raise ValueError("campaign status requires campaign_id")
+        data = self.snapshot()
+        campaign = data.get("campaigns", {}).get(self.campaign_id)
+        if campaign is None:
+            return {"registered": False, "blocked": False}
+        campaign_runs = {k for k, r in data["runs"].items() if r.get("campaign_id") == self.campaign_id}
+        return {
+            "registered": True, **campaign,
+            "pending_requests": sum(r["status"] == "pending" and r["run_id"] in campaign_runs for r in data["requests"]),
+            "any_campaign_blocked": any(c["blocked"] for c in data.get("campaigns", {}).values()),
+        }
+
     def remaining_time(self, run_id):
         run = self.snapshot()["runs"].get(run_id)
-        return self.time_cap if run is None else max(0, self.time_cap - (time.time() - run["started_at"]))
+        cap = self._run_limits(run)["time_cap"]
+        return cap if run is None or run["started_at"] is None else max(0, cap - (time.time() - run["started_at"]))
 
     def reserve(
         self,
@@ -135,11 +222,27 @@ class BudgetLedger:
             raise ValueError("invalid reservation size")
         held = _cost(input_bound, max_output)
         with self.transaction() as data:
+            existing = data["runs"].get(run_id)
+            if self.campaign_id is not None and (existing is None or existing.get("campaign_id") != self.campaign_id):
+                raise BudgetStop("campaign run is not registered with frozen limits")
             run = data["runs"].setdefault(run_id, {"started_at": time.time(), "blocked": False})
+            campaign_id = run.get("campaign_id")
+            campaign = data.get("campaigns", {}).get(campaign_id)
+            if campaign_id is not None:
+                if campaign is None:
+                    raise BudgetStop("registered campaign policy is missing")
+                if any(c["blocked"] for c in data["campaigns"].values()):
+                    raise BudgetStop("a campaign stopped; coordinator review required")
+                registered_runs = {k for k, r in data["runs"].items() if r.get("campaign_id") is not None}
+                if any(r["status"] == "pending" and r["run_id"] in registered_runs for r in data["requests"]):
+                    raise BudgetStop("campaign has an inflight or unsettled request")
             requests = [r for r in data["requests"] if r["run_id"] == run_id]
             if run["blocked"] or any(r["status"] == "pending" for r in requests):
                 raise BudgetStop("run has unknown/inflight usage; start no further requests")
-            if len(requests) >= self.effective_request_limit or time.time() - run["started_at"] >= self.time_cap:
+            limits = self._run_limits(run)
+            started = run["started_at"]
+            if (len(requests) >= limits["max_requests"]
+                    or started is not None and time.time() - started >= limits["time_cap"]):
                 raise BudgetStop("run request or time cap reached")
             charged = sum(
                 r["cost_micro_usd"] if r["cost_micro_usd"] is not None else r["held_micro_usd"]
@@ -150,8 +253,12 @@ class BudgetLedger:
                 if self.spend_ceiling is not None
                 else data["limit_micro_usd"]
             )
+            if campaign is not None:
+                effective_limit = min(effective_limit, campaign["spend_ceiling_micro_usd"])
             if charged + held > effective_limit:
                 raise BudgetStop("shared authorized budget exhausted")
+            if run["started_at"] is None:
+                run["started_at"] = time.time()
             request_id = uuid4().hex
             data["requests"].append(
                 {
@@ -195,7 +302,11 @@ class BudgetLedger:
                     row["status"] = "bound_exceeded"
                     known = False
             if not known or status != "ok":
-                data["runs"][row["run_id"]]["blocked"] = True
+                run = data["runs"][row["run_id"]]
+                run["blocked"] = True
+                campaign_id = run.get("campaign_id")
+                if campaign_id is not None:
+                    data["campaigns"][campaign_id]["blocked"] = True
             row["finished_at"] = time.time()
         return known and status == "ok"
 

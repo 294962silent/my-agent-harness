@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
+import hashlib
 from pathlib import Path
 from uuid import uuid4
 
@@ -15,13 +15,13 @@ from my_agent_core.agent import Agent
 from my_agent_core.events import AgentEnd
 from my_agent_core.artifacts import ArtifactStore
 from my_agent_core.run_lifecycle import RunLimits
+from my_agent_core.retry import AutoRetryPolicy
 from my_agent_core.session import Session
 from my_agent_core.tools import tool
-from my_agent_llm import Config, LLM
 from my_coding_agent.tools.artifact import make_artifact_tools
 
-from .budget import BudgetLedger, GuardedLLM
-from .tasks import oracle_gate
+from .budget import BudgetLedger, BudgetStop, GuardedLLM, create_live_llm, LIVE_MODEL
+from .tasks import oracle_gate, agent_instruction, runtime_constraints
 
 
 class BudgetedHarborAgent(BaseAgent):
@@ -34,7 +34,10 @@ class BudgetedHarborAgent(BaseAgent):
     def version(self):
         return "2"
 
-    def __init__(self, *, task_dir, logs_dir, oracle_result, ledger_path, artifact_projection="on", **kwargs):
+    def __init__(self, *, task_dir, logs_dir, oracle_result, ledger_path, artifact_projection="on",
+                 campaign_id=None, run_id=None, max_requests=16, max_seconds=600,
+                 context_budget=32000, output_tokens=4096, shell_timeout=60,
+                 spend_ceiling_usd=None, **kwargs):
         super().__init__(logs_dir=Path(logs_dir), **kwargs)
         if artifact_projection not in ("on", "off"):
             raise ValueError("artifact_projection must be on/off")
@@ -42,7 +45,24 @@ class BudgetedHarborAgent(BaseAgent):
         self.gate = oracle_gate(self.task_dir, oracle_result)
         if Task(self.task_dir).checksum != self.gate["harbor_task_checksum"]:
             raise ValueError("oracle checksum differs from current official task")
-        self.ledger = BudgetLedger(Path(ledger_path))
+        if campaign_id is not None and (not Path(ledger_path).is_absolute() or not Path(ledger_path).is_file()):
+            raise ValueError("campaign requires the existing absolute shared ledger")
+        self.ledger = BudgetLedger(Path(ledger_path), campaign_id=campaign_id, spend_ceiling_usd=spend_ceiling_usd)
+        if (type(max_requests) is not int or not 1 <= max_requests <= 64
+                or type(context_budget) is not int or context_budget != 32000
+                or type(output_tokens) is not int or not 1 <= output_tokens <= 4096
+                or type(shell_timeout) not in (int, float) or not 0 < shell_timeout <= 120):
+            raise ValueError("invalid frozen Harbor limits")
+        official = runtime_constraints(self.task_dir)["time_cap"]
+        if type(max_seconds) not in (int, float) or not 0 < max_seconds <= official:
+            raise ValueError("agent time exceeds official task timeout or global limit")
+        if campaign_id is not None and not run_id:
+            raise ValueError("campaign requires a frozen run_id")
+        self.run_id = run_id or uuid4().hex
+        if campaign_id is not None:
+            self.ledger.register_run(self.run_id, max_requests=max_requests, time_cap=max_seconds)
+        self.max_requests, self.max_seconds = max_requests, max_seconds
+        self.context_budget, self.output_tokens, self.shell_timeout = context_budget, output_tokens, shell_timeout
         self.arm = artifact_projection
 
     async def setup(self, environment):
@@ -50,30 +70,24 @@ class BudgetedHarborAgent(BaseAgent):
         pass
 
     async def run(self, instruction, environment, context):
-        key = os.environ.get("LIVE_BENCH_API_KEY")
-        if not key:
-            raise ValueError("LIVE_BENCH_API_KEY must be supplied to the host process")
+        if instruction != agent_instruction(self.task_dir):
+            raise ValueError("Harbor instruction differs from frozen official input")
+        if any(row["run_id"] == self.run_id for row in self.ledger.snapshot()["requests"]):
+            raise BudgetStop("frozen run already consumed; retries are forbidden")
         root = self.logs_dir
         root.mkdir(parents=True, exist_ok=True)
-        run_id = uuid4().hex
-        # Fixed endpoint/model: no .env loading or default provider fallback.
-        raw = LLM(
-            Config(
-                provider="openai",
-                model="deepseek-v4.1-flash",
-                api_key=key,
-                base_url="https://opencode.ai/inference/go/openai/v1",
-                max_retries=0,
-                timeout=120,
-                max_tokens=4096,
-            )
-        )
+        run_id = self.run_id
+        raw = create_live_llm(max_output_tokens=self.output_tokens, timeout=120)
         guarded = GuardedLLM(raw, self.ledger, run_id)
+        deadline = asyncio.get_running_loop().time() + self.max_seconds
 
         @tool(is_parallel_safe=False)
         async def shell(command: str) -> str:
-            """Execute a shell command inside the official task container, timeout 60s."""
-            result = await environment.exec(command=command, timeout_sec=60)
+            """Execute a shell command in the official container, bounded by remaining run and shell deadlines."""
+            remaining = min(self.ledger.remaining_time(run_id), deadline - asyncio.get_running_loop().time())
+            if remaining <= 0:
+                raise BudgetStop("agent total time cap reached")
+            result = await environment.exec(command=command, timeout_sec=min(self.shell_timeout, remaining))
             return json.dumps(
                 {"exit_code": result.return_code, "stdout": result.stdout, "stderr": result.stderr}, ensure_ascii=False
             )
@@ -84,7 +98,7 @@ class BudgetedHarborAgent(BaseAgent):
             tools=[shell, *make_artifact_tools(store)],
             session=Session(path=root / "session.jsonl"),
             system_prompt="Complete the user task in the container using shell. Do not access benchmark solutions, hidden verifier tests, or scoring files. Finish with a concise description of your changes.",
-            context_budget=32000,
+            context_budget=self.context_budget,
             artifact_store=store if self.arm == "on" else None,
             memory_dir=False,
             task_store=False,
@@ -92,7 +106,8 @@ class BudgetedHarborAgent(BaseAgent):
             subagent_dirs=[],
             extension_dirs=[],
             plugin_dirs=[],
-            run_limits=RunLimits(max_turns=16, max_seconds=600),
+            retry_policy=AutoRetryPolicy(max_retries=0),
+            run_limits=RunLimits(max_turns=self.max_requests, max_seconds=self.max_seconds),
         )
         status = "started"
         terminal = {}
@@ -103,7 +118,7 @@ class BudgetedHarborAgent(BaseAgent):
 
         agent.subscribe(record_end)
         try:
-            await asyncio.wait_for(agent.run(instruction), timeout=600)
+            await asyncio.wait_for(agent.run(instruction), timeout=self.max_seconds)
             status = terminal.get("stop_reason") or "missing_terminal_event"
         except asyncio.CancelledError:
             status = "cancelled"
@@ -127,7 +142,8 @@ class BudgetedHarborAgent(BaseAgent):
                 else None
             )
             context.n_output_tokens = sum(r["usage"]["completion_tokens"] for r in rows) if known else None
-            context.n_cache_tokens = sum(r["usage"].get("cache_read_tokens", 0) for r in rows) if known else None
+            cache_complete = known and all("cache_read_tokens" in r["usage"] for r in rows)
+            context.n_cache_tokens = sum(r["usage"]["cache_read_tokens"] for r in rows) if cache_complete else None
             context.metadata = {
                 "run_id": run_id,
                 "adapter_protocol": "v2",
@@ -137,5 +153,10 @@ class BudgetedHarborAgent(BaseAgent):
                 "usage_available": known,
                 **terminal,
                 "oracle_gate": self.gate,
+                "model": LIVE_MODEL,
+                "limits": {"max_requests": self.max_requests, "max_seconds": self.max_seconds,
+                           "context_budget": self.context_budget, "output_tokens": self.output_tokens,
+                           "shell_timeout": self.shell_timeout},
+                "schema_sha256": hashlib.sha256(json.dumps(agent.registry.get_schemas(), sort_keys=True).encode()).hexdigest(),
             }
             (root / "live_run.json").write_text(json.dumps(context.metadata, indent=2), encoding="utf-8")
