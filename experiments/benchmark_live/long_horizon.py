@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import random
+import re
 import signal
 import subprocess
 import tempfile
@@ -219,16 +220,75 @@ def execute_harbor(config, directory, timeout):
             process.wait()
 
 
-def collect(directory, task):
+def verifier_diagnostic(result_path, task):
+    """Flag narrow verifier-bootstrap evidence without changing official rewards.
+
+    All eight tasks at REVISION explicitly use --ctrf /logs/verifier/ctrf.json
+    in their original tests/test.sh. Only Harbor's two verifier logs are read,
+    at most 256 KiB each. Oversized or linked evidence cannot prove absence of
+    test execution and therefore never triggers this diagnostic.
+    """
+    verifier = Path(result_path).parent / "verifier"
+    report = verifier / "ctrf.json"
+    expected = task in TASKS
+    evidence, texts, complete = [], [], True
+    for name in ("test-stdout.txt", "test-stderr.txt", "ctrf.json"):
+        path = verifier / name
+        if not path.exists():
+            continue
+        size = path.stat().st_size
+        safe = not verifier.is_symlink() and not path.is_symlink() and path.is_file() and size <= 256 * 1024
+        proof = {"path": str(path), "bytes": size, "sha256": None, "inspected": safe}
+        if safe:
+            with path.open("rb") as stream:
+                data = stream.read(256 * 1024 + 1)
+            safe = len(data) <= 256 * 1024
+            proof["inspected"] = safe
+            if safe:
+                proof["sha256"] = hashlib.sha256(data).hexdigest()
+                if name != "ctrf.json":
+                    texts.append(data.decode("utf-8", errors="replace"))
+        if not safe:
+            complete = False
+        evidence.append(proof)
+    text = "\n".join(texts)
+    missing_uvx = bool(re.search(
+        r"^(?:/tests/test\.sh|/test\.sh|test\.sh): line \d+: uvx: command not found\s*$",
+        text, re.MULTILINE,
+    ))
+    installer_failed = bool(re.search(
+        r"^ERROR:?\s+command failed:\s+downloader\s+https://github\.com/astral-sh/uv/releases/download/[^\s]+\s*$",
+        text, re.MULTILINE,
+    ))
+    test_execution = bool(re.search(
+        r"^(?:=+\s*test session starts\s*=+|collected \d+ items?|(?:_+\s*)?ERROR collecting\b"
+        r"|=+.*(?:FAILURES|ERRORS|short test summary info)|\s*\d+ (?:failed|passed|error)(?:\b|,))",
+        text, re.MULTILINE,
+    ))
+    suspected = bool(expected and not report.exists() and complete
+                     and (missing_uvx or installer_failed) and not test_execution)
+    return {"suspected_verifier_infra": suspected, "verifier_diagnostic": {
+        "protocol": "tb21-uv-verifier-v1", "expected_ctrf": expected,
+        "expected_report": str(report), "report_present": report.exists(),
+        "anchored_uvx_missing": missing_uvx, "anchored_uv_installer_failed": installer_failed,
+        "test_execution_observed": test_execution, "evidence_complete": complete, "evidence": evidence,
+    }}
+
+
+def collect(directory, task, *, expected_task_name=None):
+    allowed = {task, f"terminal-bench/{task}"}
+    if expected_task_name is not None and expected_task_name not in allowed:
+        raise ValueError("frozen oracle task identity is outside the selected TB task")
     results = []
     for path in directory.glob("jobs/**/result.json"):
         data = json.loads(path.read_text())
-        if data.get("task_name") == task:
+        if data.get("task_name") in allowed:
             results.append(path)
     if len(results) > 1:
         raise ValueError("multiple official trial results; do not choose a favorable result")
     if results:
-        return {"status": "finished", "result_path": str(results[0]), **parse_trial_result(results[0])}
+        return {"status": "finished", "result_path": str(results[0]), **parse_trial_result(results[0]),
+                **verifier_diagnostic(results[0], task)}
     return None
 
 
@@ -249,9 +309,10 @@ def run(output, *, expected_sha, execute=False, max_new_trials=2, executor=None)
                 run_id = slot["run_id"]
                 directory = output / f"{index:02d}-{slot['task']}-{slot['arm']}"
                 state = journal.get(run_id)
+                expected_name = (slot.get("oracle_gate") or {}).get("task_name")
                 if state:
                     if state["status"] == "started":
-                        journal[run_id] = collect(directory, slot["task"]) or {"status": "interrupted_unknown"}
+                        journal[run_id] = collect(directory, slot["task"], expected_task_name=expected_name) or {"status": "interrupted_unknown"}
                         write_json(journal_path, journal)
                     continue
                 if slot["blocked"]:
@@ -278,10 +339,10 @@ def run(output, *, expected_sha, execute=False, max_new_trials=2, executor=None)
                         # Agent bound plus ample official build/setup/verifier overhead.
                         (executor or execute_harbor)(config, directory, slot["limits"]["max_seconds"] + 3600)
                     except Exception as exc:
-                        journal[run_id] = collect(directory, slot["task"]) or {
+                        journal[run_id] = collect(directory, slot["task"], expected_task_name=expected_name) or {
                             "status": "infrastructure_error", "error_type": type(exc).__name__}
                     else:
-                        journal[run_id] = collect(directory, slot["task"]) or {"status": "missing_official_result"}
+                        journal[run_id] = collect(directory, slot["task"], expected_task_name=expected_name) or {"status": "missing_official_result"}
                 write_json(journal_path, journal)
             return summary(output)
 
@@ -309,15 +370,19 @@ def summary(output):
         complete = all(r.get("category") == "scored" for r in pair)
         schemas = [r["schema_sha256"] for r in pair]
         consistent = schemas[0] == schemas[1] if all(schemas) else None
+        suspected = any(r.get("suspected_verifier_infra", False) for r in pair)
+        valid = complete and consistent is True and not suspected
         pairs.append({"task": name, "complete_scored_pair": complete,
                       "schema_consistent": consistent,
-                      "valid_pair": complete and consistent is True,
+                      "suspected_verifier_infra": suspected,
+                      "valid_pair": valid,
                       "on_minus_off": next(r["official_reward"] for r in pair if r["arm"] == "on")
                       - next(r["official_reward"] for r in pair if r["arm"] == "off")
-                      if complete and consistent is True else None})
+                      if valid else None})
     result = {"protocol": plan["protocol"], "rows": rows, "pairs": pairs,
               "complete_scored_pairs": sum(p["complete_scored_pair"] for p in pairs),
               "complete_pairs": sum(p["valid_pair"] for p in pairs),
+              "suspected_verifier_infra_slots": sum(bool(r.get("suspected_verifier_infra")) for r in rows),
               "categories": dict(Counter(r.get("category", r["status"]) for r in rows))}
     write_json(output / "summary.json", result)
     return result

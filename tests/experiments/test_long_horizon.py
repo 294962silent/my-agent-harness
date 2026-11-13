@@ -172,3 +172,71 @@ def test_summary_requires_complete_matching_schemas_for_pair_delta(tmp_path, sch
     assert result["complete_pairs"] == int(valid)
     assert result["pairs"][0]["valid_pair"] is valid
     assert (result["pairs"][0]["on_minus_off"] is not None) is valid
+
+
+@pytest.mark.parametrize("log,report,suspected", [
+    ("/tests/test.sh: line 16: uvx: command not found\n", False, True),
+    ("============================= test session starts ==============================\nERROR collecting test_outputs.py\nImportError: broken user code\n", False, False),
+    ("/tests/test.sh: line 16: uvx: command not found\n1 failed\n", True, False),
+    ("curl: (92) generic network error\n", False, False),
+    ("ERROR: command failed: downloader https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz\n", False, True),
+    ("/tests/test.sh: line 16: uvx: command not found\n================== test session starts ==================\nERROR collecting test_outputs.py\n", False, False),
+])
+def test_verifier_diagnostic_preserves_raw_score(tmp_path, log, report, suspected):
+    trial = tmp_path / "jobs" / "harbor" / "trial"
+    verifier = trial / "verifier"
+    verifier.mkdir(parents=True)
+    (verifier / "test-stdout.txt").write_text(log)
+    if report:
+        (verifier / "ctrf.json").write_text('{"results":{"tests":[]}}')
+    (trial / "result.json").write_text(json.dumps({"task_name": "git-multibranch",
+        "verifier_result": {"rewards": {"reward": 0}}}))
+    result = pilot.collect(tmp_path, "git-multibranch")
+    assert result["category"] == "scored" and result["official_reward"] == 0
+    assert result["suspected_verifier_infra"] is suspected
+    assert len(result["verifier_diagnostic"]["evidence"]) <= 3
+
+
+def test_suspected_verifier_infra_invalidates_matching_schema_pair(tmp_path):
+    output, plan = fixture(tmp_path)
+    journal = {}
+    for index, slot in enumerate(plan["slots"][:2]):
+        directory = output / f"{index:02d}-{slot['task']}-{slot['arm']}"
+        directory.mkdir()
+        (directory / "live_run.json").write_text('{"schema_sha256":"same"}')
+        journal[slot["run_id"]] = {"status": "finished", "category": "scored", "official_reward": 0,
+                                  "suspected_verifier_infra": index == 0}
+    (output / "journal.json").write_text(json.dumps(journal))
+    result = pilot.summary(output)
+    assert result["complete_scored_pairs"] == 1 and result["complete_pairs"] == 0
+    assert result["suspected_verifier_infra_slots"] == 1
+    assert result["pairs"][0]["on_minus_off"] is None
+
+
+def test_official_namespaced_result_uses_frozen_oracle_identity(tmp_path):
+    trial = tmp_path / "jobs" / "harbor" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "result.json").write_text(json.dumps({"task_name": "terminal-bench/git-multibranch",
+        "verifier_result": {"rewards": {"reward": 0}}}))
+    result = pilot.collect(tmp_path, "git-multibranch", expected_task_name="terminal-bench/git-multibranch")
+    assert result["category"] == "scored" and result["official_reward"] == 0
+    (trial / "result.json").write_text(json.dumps({"task_name": "unrelated/git-multibranch",
+        "verifier_result": {"rewards": {"reward": 0}}}))
+    assert pilot.collect(tmp_path, "git-multibranch", expected_task_name="terminal-bench/git-multibranch") is None
+
+
+def test_resume_started_slot_collects_namespaced_result_without_dispatch(tmp_path):
+    output, plan = fixture(tmp_path)
+    slot = plan["slots"][0]
+    trial = output / f"00-{slot['task']}-{slot['arm']}" / "jobs" / "harbor" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "result.json").write_text(json.dumps({"task_name": "terminal-bench/" + slot["task"],
+        "verifier_result": {"rewards": {"reward": 0}}}))
+    (output / "journal.json").write_text(json.dumps({slot["run_id"]: {"status": "started"}}))
+    calls = []
+    pilot.run(output, expected_sha=pilot.sha_file(output / "plan.json"), execute=True,
+              max_new_trials=1, executor=lambda *args: calls.append(args))
+    journal = json.loads((output / "journal.json").read_text())
+    assert journal[slot["run_id"]]["status"] == "finished"
+    assert journal[slot["run_id"]]["official_reward"] == 0
+    assert len(calls) == 1

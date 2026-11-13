@@ -750,3 +750,8 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 新行为回归经真实Fact磁盘/索引/reader验证原SID标签与gold canary未入公共材料，Recall仍可算；source/旧plan拒绝和append稳定性同测。已用retrieval/已判答案hash变化会在付款前拒绝；WSL15tests通过。没有把排除探针的Recall1或冷构建耗时当正式召回/性能收益。
 - 临时urllib models GET曾被403/1010拒绝；改用项目真实SDK（既有项目UA与稳定session header，未伪造官方客户端身份）实际GET成功、flash可用。此为零generation连通检查，不是Agent基线或付费任务完成。
 - TB HTTPS-only runtime下已有7/8官方oracle reward1；git-multibranch仍uv release TLS失败/uvx缺失，保留blocked并继续基础设施诊断，不换题。SWE-EVO固定fork73文件/471797B已逐Gitblob验证，真实评分入口导入与help通过，镜像准备中，尚无EVO成绩。
+
+### E-LONG-VERIFIER-CONTRACT：2026-11-13 / 官方结果与归因资格
+
+- 真实oracle证明缺uvx仍可能reward0/noexception，另有namespace名称和fake短名不一致。SOL1最小修long_horizon，保留official_reward/category，不改generic解析；缺预期ctrf+明确安装器失败/uvx缺失+无测试执行才suspected，证据有path/bytes/hash且有界读取。正常代码/collection失败继续scored0。suspected或schema不一致不能计算科学配对delta。
+- 名称按冻结oracle身份仅接受短名或terminal-bench/<短名>，拒绝其他namespace；started恢复收割真实result不重跑。最终WSL21项、Ruff通过，无模型请求。SWE-EVO两官方镜像也已导入、config ID保存，固定forkgold/empty CPU预检开始准备，仍未宣称EVO通过。

@@ -237,3 +237,8 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 
 - 首题真实索引的上下文显示带answer_前缀的证据会话，原has_answer虽未传仍有标注旁路。v2对所有SID同规则匿名化，原映射仅host评分使用，完整正文/日期保留。旧0API单题探针归档并排除正式成绩。
 - 行为回归覆盖真实Fact/索引/reader无标签、Recall可算、合法追加与已用上下文篡改拒绝；WSL15项通过。完整九段深挖见[问题深挖P37](10-长程评测工程问题深挖.md#p37没传has_answer为什么仍然发生评测泄漏)。
+
+## P38：验证器缺依赖仍写0分，实际任务名与fake契约不同
+
+- 实际官方脚本uv/uvx失败却reward0且CLI无exception；收集器现保留raw分数，另附严格组合证据的suspected标记，不误排正常代码collection失败。
+- 真实task_name带terminal-bench/namespace，原短名比较会漏收割；按冻结oracle身份严格兼容，恢复不重复执行。WSL21项通过，generic历史协议未改。完整九段追问见[深挖P38](10-长程评测工程问题深挖.md#p38官方0分cli成功和真实测试执行如何区分)。
