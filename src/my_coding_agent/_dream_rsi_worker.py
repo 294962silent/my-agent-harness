@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 from importlib import metadata
 import json
 import os
@@ -40,7 +41,42 @@ def main() -> int:
 
     request = json.loads((root / "request.json").read_bytes())
     raw = (root / "input-trace.json").read_bytes()
-    config = {"max_width": request["shape"]["branches"], "max_refine": request["shape"]["max_attempt"]}
+    spec = importlib.util.spec_from_file_location(
+        "trusted_dream_contract", Path(__file__).with_name("dream_rsi_contract.py")
+    )
+    contract = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(contract)
+    shape = contract.validate_trace(json.loads(raw, object_pairs_hook=contract._unique_object))
+    if set(request) != {
+        "budget",
+        "max_workers",
+        "shape",
+        "source_commit",
+        "parameters",
+        "policy_version",
+        "selection_reason",
+    }:
+        return 1
+    parameters = request.get("parameters")
+    config = contract.effective_parameters(parameters, shape)
+    if (
+        request.get("source_commit") != SOURCE_COMMIT
+        or request.get("shape") != shape
+        or not contract._integer(request.get("budget"), minimum=1)
+        or request["budget"] > contract.MAX_NODES
+        or not contract._integer(request.get("max_workers"), minimum=1)
+        or request["max_workers"] > contract.MAX_NODES
+    ):
+        return 1
+    version = request["policy_version"]
+    version_digest = version.removeprefix("parameters-v1:") if isinstance(version, str) else ""
+    if (
+        len(version_digest) != 64
+        or any(c not in "0123456789abcdef" for c in version_digest)
+        or request["selection_reason"]
+        not in ("explicit_parameters", "explicit_baseline", "no_active_policy", "registry_active", "invalid_registry")
+    ):
+        return 1
     env = TraceEnv.replay(root / "input-trace.json", max_workers=request["max_workers"])
     result = ParallelRefineMethod(config).solve(env, budget=request["budget"])
     episode = env.execution_trace()
@@ -52,9 +88,13 @@ def main() -> int:
         "schema_version": 1,
         "status": "completed",
         "mode": "offline_replay",
-        "policy": "baseline",
+        "policy": "baseline" if parameters is None else "controlled_parallel_refine",
         "policy_class": "ParallelRefineMethod",
-        "policy_kind": "fixed_reference",
+        "policy_kind": "fixed_reference" if parameters is None else "controlled_parameters",
+        "policy_hash": contract.policy_identity(parameters),
+        "policy_version": request["policy_version"],
+        "parameters": {"requested": parameters, "effective": config},
+        "selection_reason": request["selection_reason"],
         "upstream": {
             "distribution": "dream-rsi",
             "version": dist.version,
@@ -74,11 +114,11 @@ def main() -> int:
             "batch_sizes": list(result.batch_sizes),
         },
         "limits": [
-            "Only the upstream fixed baseline is supported; no adaptive policy parameter is exposed.",
+            "Only trusted upstream ParallelRefineMethod and bounded width/depth parameters are executable.",
             "OptimalPolicy is an unimplemented upstream template, not a learned policy.",
             "Replay uses recorded outcomes only and does not estimate unseen branches.",
             "Input score provenance is caller-owned; structural validation does not authenticate scores.",
-            "No online exploration, model call, evaluator execution or automatic policy improvement.",
+            "No online exploration, model call, evaluator execution or arbitrary generated policy code.",
             "Credential environment removed; network blocked; process isolation is not a security sandbox.",
         ],
     }

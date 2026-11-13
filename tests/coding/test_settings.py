@@ -375,3 +375,42 @@ def test_load_settings_cwd_str_and_package_exports(tmp_path: Path) -> None:
 
     loaded = load_settings(paths, cwd=str(work_dir))
     assert loaded.theme == "light"
+
+
+def test_dream_optimization_defaults_and_needs_dataset():
+    from my_coding_agent.settings import DreamOptimizationSettings
+    settings = Settings()
+    assert settings.dream_optimization.enabled is False
+    assert settings.dream_optimization.budgets == [1, 2, 4]
+    assert settings.dream_optimization.max_candidates == 16
+    assert settings.dream_optimization.max_seconds == 300.0
+    assert DreamOptimizationSettings(enabled=True).status == "needs_dataset"
+
+
+@pytest.mark.parametrize("invalid", [
+    {"max_candidates": True}, {"max_candidates": 17}, {"max_candidates": 0},
+    {"budgets": [True]}, {"budgets": [1, 1]}, {"budgets": []},
+    {"budgets": [0]}, {"budgets": [100001]}, {"budgets": [1, 2, 3, 4, 5]},
+    {"max_seconds": True}, {"max_seconds": float("inf")}, {"max_seconds": 0}, {"max_seconds": 3601},
+])
+def test_dream_optimization_bounds_reject_invalid_values(invalid):
+    from my_coding_agent.settings import DreamOptimizationSettings
+    with pytest.raises(ValueError):
+        DreamOptimizationSettings(**invalid)
+
+
+def test_dream_optimization_is_global_only(tmp_path):
+    paths = AgentPaths(home=tmp_path / "trusted")
+    paths.ensure_directories()
+    workspace = tmp_path / "untrusted"
+    workspace.mkdir()
+    paths.settings_path.write_text(json.dumps({"dream_optimization": {"enabled": True}}), encoding="utf-8")
+    project = paths.project_settings_path(workspace)
+    project.parent.mkdir(parents=True, exist_ok=True)
+    project.write_text(json.dumps({"dream_optimization": {"enabled": False, "max_seconds": 0},
+                                   "theme": "project-theme"}), encoding="utf-8")
+    settings = load_settings(paths, cwd=workspace)
+    assert settings.dream_optimization.enabled is True
+    assert settings.dream_optimization.max_seconds == 300.0
+    assert settings.dream_optimization.status == "needs_dataset"
+    assert settings.theme == "project-theme"

@@ -50,6 +50,9 @@ class Mem0Index:
                         errors.append(error)
             if errors:
                 raise RuntimeError("Mem0 owned resource close failed") from None
+            cleanup = getattr(self.memory, "_harness_cleanup", None)
+            if cleanup is not None:
+                cleanup()
             self._sdk_closed = True
 
     @property
@@ -59,11 +62,15 @@ class Mem0Index:
     @property
     def status(self) -> dict:
         """Metadata only; a timeout never means the SDK worker was terminated."""
-        return {
+        result = {
             "provider": "mem0", "inflight": self.inflight, "circuit_open": self._broken,
             "closed": self._closed, "sdk_owned": self._own_memory, "sdk_closed": self._sdk_closed,
             "indexed_identities": len(self._known),
         }
+        profile = getattr(self.memory, "_harness_profile_metadata", None)
+        if profile is not None:
+            result["local_profile"] = dict(profile)
+        return result
 
     def _work(self, scope, query, records):
         wanted = {r["identity"]: r for r in records}
@@ -187,6 +194,9 @@ def create_mem0_index(config: dict, *, timeout: float = 2.0) -> Mem0Index:
     """Explicit OSS-only factory. SDK import/config validation never run disabled."""
     if not isinstance(config, dict):
         raise ValueError("Mem0 configuration must be a dictionary")
+    if "profile" in config:
+        from my_agent_core.memory_local import create_local_cpu_index
+        return create_local_cpu_index(config, timeout=timeout)
     config = deepcopy(config)
     if any(not isinstance(config.get(key), dict) or not config[key] for key in ("llm", "embedder", "vector_store")):
         raise ValueError("Mem0 requires explicit llm, embedder and vector_store configuration")

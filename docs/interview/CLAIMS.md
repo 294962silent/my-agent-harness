@@ -15,17 +15,18 @@
 - 后续[隔离日志探针](../experiments/results/artifact-capability-20261112/README.md)观察到两次真实回读：隐藏中段进入后续Provider输入；但四请求上限内on最终答对0/2，off为2/2。共12请求/$0.009106，SDK前元数据审计，不是wire抓包。支持回读链路可调用，不支持端到端收益，也不能替代SWE任务成绩。
 - [三题预算提示对照](../experiments/results/swe-budget-visibility-20261112/REPORT.md)两组均1/3通过、共4空补丁，96请求/$0.307190；两组投影恒on，100/100响应后工作树观察available，read/search仍0。静态提示保留为可选且默认关闭，面板没有提供成功率改善证据。累计消费$0.888355，后续benchmark依用户新指令暂停。
 - [三项可选集成](../integrations/README.md)已具备安装/配置/调用入口：Mem0候选索引经本地有效事实重验、超时熔断及owned客户端清理；Langfuse全局装配、原observer保留及缓存用量映射；Dream真实固定SDK的参考策略回放与进程树清理。适配初版ec0fcdc的本地all-extras回归1254 passed、2 skipped、5 subtests passed；后续Linux CI修订的定点24项通过，最终跨平台状态见PR checks。SDK契约不是效果消融，重叠批次不累加。
+- 后续本地记忆与受控参数闭环：真实BGE CPU模型经生产Mem0Index检索，临时禁词法回退并拒绝socket仍通过；参数优化固定候选、train选择、独立holdout验收，晋升严格胜baseline及active并用CAS防覆盖。真实SDK合成CLI演练completed、promoted=false；当前无实绩数据，状态needs_dataset。主代理本地整套1302 passed、2 skipped、5 subtests passed，不是语义/任务质量成绩。
 - 发现并修复官方empty_patch被误标为环境异常的统计问题；保留原报告和旧state，另存派生分类并提供可移植离线重算。生成版本765与事后分析修复版本分开，不通过重试或改题消除失败。
 
 ## 尚不能支持的说法
 
 - “SWE-bench / Terminal-Bench 全量达到某成功率”：需要固定数据版本、环境、官方结果、费用及完整失败记录；本轮先做小样本和环境验证。
 - “消融证明整体 Agent 提升 X%”：必须说明任务、对照变量、随机性、样本与费用；脚本 provider 无法证明真实模型质量。
-- “记忆召回达到 100%”：原2条标注查询只是smoke；Mem0适配已接入，但真实SDK契约使用假embedding，未测语义质量，不能借其论文成绩宣传本项目。
+- “记忆召回达到 100%”：原2条标注查询只是smoke；后续真实CPU模型也仅功能检查，未测标注集召回/消融，不能借论文成绩宣传本项目。
 - “KV cache 命中提高 X%”：请求字节与本地前缀指纹不是服务端缓存读 token；缺失字段为 unavailable。
 - “后台任务保证持久恢复、exactly-once 或强制抢占”：当前进程任务与协作取消不具备这些能力。
 - “Langfuse 已真实接通”：已完成配置装配、fake client及真实SDK内存导出，不能替代真实服务上传后回读确认。
-- “Dream-RSI已经学出更优策略”：当前只调用真实上游fixed_reference回放，在线探索/自动自改尚未开启，也没有效果benchmark。
+- “Dream-RSI已经学出更优策略”：参数自动优化闭环已实现，但目前没有真实评分树，只有合成功能验证、生产active仍baseline；未启动任意代码自改、权重训练或效果benchmark。
 
 ## 本批与既有工作的区别
 

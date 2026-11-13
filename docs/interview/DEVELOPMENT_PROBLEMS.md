@@ -196,3 +196,21 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 发现：同次Ubuntu/Python3.11 E2E首答为Completed而非Waiting；旧测试用0.1秒任务sleep假定首轮结束早于通知。让第2次假模型调用显式等待真实job后，Linux稳定复现旧断言失败；生产loop会在阶段末收割followup并继续同轮，是合法行为。
 - 修复：仅测试改为release文件gate，先保证后台仍running，再释放并await真实job，下一轮验证完成通知、输出与任务状态；finally取消/回收并关闭Agent。取消固定0.1/0.3秒阶段sleep，也不假定通知出现在第二轮第一次provider调用。
 - 验证：Linux/Windows定点各1项通过；生产后台调度未修改。主代理修订后24项定点（含三个真实SDK契约）通过，不是新增benchmark。
+
+## P27：Mem0原FastEmbed provider忽略CPU/缓存控制
+
+- 发现：固定Mem0 SDK只把model_name传给TextEmbedding，cache/threads/providers配置未转发；FastEmbed默认AUTO不能假称受控CPU。
+- 修复：固定SDK版本的局部装配层显式CPUExecutionProvider/cuda=False/2线程/本地路径，NeverLLM不构造OpenAI；7个官方固定权重文件逐项独立验hash，运行期不下载。可写候选缓存按adapter独占，关闭释放强引用和自身目录。
+- 验证：真实512维中文BGE经生产链路，禁词法fallback、拒绝socket仍检索成功，实际ORT provider仅CPU；模型弱引用在关闭后释放。功能smoke不是召回率实验，冷构造也不在search等待超时内。
+
+## P28：官方模型下载失败与匿名代理边界
+
+- 发现：直接urllib/curl TLS EOF或超时，WSL该域不可达；官方元数据可核不等于本机权重已下载。
+- 解决：仅显式采用Windows系统匿名代理，禁curlrc/netrc/HF token，TLS不降级，官方固定revision下载；ONNX按官方LFS SHA256，其余按官方Gitblob SHA1及字节数复验，再原子入缓存。空用户名但带口令的代理也拒绝。
+- 结果：7文件95332206B准备成功，不用镜像；缓存manifest哈希可复核。未把假向量当下载成功，模型留用户缓存不进Git。
+
+## P29：自动晋升必须比较当前active并防并发覆盖
+
+- 发现：候选胜过baseline仍可能弱于已有active；仅FileLock原子写不能避免训练期间另一个晋升/rollback后被过期报告覆盖。
+- 修复：冻结incumbent版本/参数/完整指针token；holdout只额外验证固定incumbent，候选须严格胜两者。锁内重核proof和CAS，revision nonce防ABA；同参数already_active不重发。先写中性prepared产物、指针最后提交，提交状态以registry为准，不宣称故障下exactly-once。
+- 验证：临时fixture/注入评估器覆盖低于active、prepare后active变化、ABA、损坏/重封hash、合法rollback；真实SDK合成闭环永不生产晋升。没有实绩策略收益证据。

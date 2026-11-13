@@ -5,9 +5,9 @@ from __future__ import annotations
 import contextlib
 import json
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from my_coding_agent.paths import AgentPaths
 
@@ -19,6 +19,7 @@ PRIVILEGED_GLOBAL_KEYS: set[str] = {
     "projectTrust",
     "memory_index",
     "observation",
+    "dream_optimization",
 }
 
 
@@ -56,6 +57,32 @@ class ObservationSettings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class DreamOptimizationSettings(BaseModel):
+    """Trusted global optimizer defaults; no task execution or activation here."""
+    enabled: bool = False
+    dataset_manifest: str | None = None
+    registry_path: str | None = None
+    max_candidates: int = Field(default=16, strict=True, ge=1, le=16)
+    budgets: list[Annotated[int, Field(strict=True, ge=1, le=100000)]] = Field(
+        default_factory=lambda: [1, 2, 4], min_length=1, max_length=4,
+    )
+    max_seconds: float = Field(default=300.0, strict=True, gt=0, le=3600, allow_inf_nan=False)
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("budgets")
+    @classmethod
+    def unique_budgets(cls, values):
+        if len(values) != len(set(values)):
+            raise ValueError("Dream optimization budgets must not repeat")
+        return values
+
+    @property
+    def status(self) -> str:
+        if not self.enabled:
+            return "disabled"
+        return "configured" if self.dataset_manifest else "needs_dataset"
+
+
 class Settings(BaseModel):
     """统一管理全局偏好与项目覆盖的强类型配置实体。"""
 
@@ -80,6 +107,7 @@ class Settings(BaseModel):
     compaction: CompactionSettings = Field(default_factory=CompactionSettings)
     memory_index: MemoryIndexSettings = Field(default_factory=MemoryIndexSettings)
     observation: ObservationSettings = Field(default_factory=ObservationSettings)
+    dream_optimization: DreamOptimizationSettings = Field(default_factory=DreamOptimizationSettings)
     auto_save_session: bool = Field(default=True, alias="autoSaveSession")
 
     # ── 权限与安全 ──
@@ -138,7 +166,7 @@ def load_settings(paths: AgentPaths | None = None, cwd: Path | str | None = None
         return Settings.model_validate(merged)
     except Exception:
         if any(isinstance(merged.get(key), dict) and merged[key].get("enabled")
-               for key in ("memory_index", "observation")):
+               for key in ("memory_index", "observation", "dream_optimization")):
             raise ValueError("Invalid enabled optional integration settings") from None
         return Settings()
 

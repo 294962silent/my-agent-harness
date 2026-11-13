@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import os
 from pathlib import Path
 import signal
@@ -18,93 +17,21 @@ import subprocess
 import sys
 import time
 
+from .dream_rsi_contract import (
+    _integer,
+    _number,
+    _unique_object,
+    validate_trace,
+    effective_parameters,
+    policy_identity,
+    verify_leaf,
+)
+
 SOURCE_COMMIT = "8ec35bd2538220517ce1bfca4282db21b8c518db"
 SOURCE_URL = "https://github.com/google-research/dream-rsi"
 MAX_TRACE_BYTES = 16 * 1024 * 1024
 MAX_NODES = 100_000
 _WORKER = Path(__file__).with_name("_dream_rsi_worker.py")
-
-
-def _integer(value, *, minimum=0):
-    return type(value) is int and value >= minimum
-
-
-def _number(value):
-    try:
-        return type(value) in (int, float) and math.isfinite(value)
-    except OverflowError:
-        return False
-
-
-def _cell(value):
-    if not isinstance(value, dict) or value.get("evaluated") is not True or not _number(value.get("combined_score")):
-        raise ValueError("trace must contain evaluated cells with finite scores")
-    for key in ("n_valid", "n_total"):
-        if value.get(key) is not None and not _integer(value[key]):
-            raise ValueError("invalid score counts")
-    if value.get("n_valid") is not None and value.get("n_total") is not None and value["n_valid"] > value["n_total"]:
-        raise ValueError("invalid score count relation")
-    for key in ("sol_times_ms", "max_gaps"):
-        values = value.get(key, [])
-        if not isinstance(values, list) or any(v is not None and not _number(v) for v in values):
-            raise ValueError("invalid numeric score details")
-    if not isinstance(value.get("valids", []), list) or any(
-        v is not None and type(v) is not bool for v in value.get("valids", [])
-    ):
-        raise ValueError("invalid score validity details")
-
-
-def validate_trace(value: dict) -> dict:
-    """Validate the scored subset of upstream raw trace v1 without touching node paths.
-
-    This verifies structure and scored status, not the truth of the supplied task
-    evaluator. Callers remain responsible for authentic score provenance.
-    """
-    if not isinstance(value, dict) or type(value.get("version")) is not int or value["version"] != 1:
-        raise ValueError("expected DREAM-RSI raw trace version 1")
-    if not _integer(value.get("n_problems"), minimum=1):
-        raise ValueError("trace n_problems must be positive")
-    _cell(value.get("baseline"))
-    nodes = value.get("nodes")
-    if not isinstance(nodes, list) or not 1 <= len(nodes) <= MAX_NODES:
-        raise ValueError("trace needs a bounded nonempty node list")
-    by_id, branches = {}, {}
-    for node in nodes:
-        if not isinstance(node, dict) or not _integer(node.get("branch")) or not _integer(node.get("attempt")):
-            raise ValueError("invalid branch/attempt")
-        branch, attempt = node["branch"], node["attempt"]
-        if branch >= MAX_NODES or attempt >= MAX_NODES:
-            raise ValueError("branch/attempt exceeds trace bounds")
-        identity = node.get("id")
-        if identity != f"b{branch}_a{attempt}" or identity in by_id:
-            raise ValueError("invalid or duplicate discovery node ID")
-        if node.get("status") not in (None, "done", "failed", "completed"):
-            raise ValueError("trace node is not terminal")
-        if not isinstance(node.get("path"), str) or not isinstance(node.get("intent", ""), str):
-            raise ValueError("invalid discovery node metadata")
-        if not isinstance(node.get("tags", []), list) or any(not isinstance(v, str) for v in node.get("tags", [])):
-            raise ValueError("invalid discovery node tags")
-        expected_parent = None if attempt == 0 else f"b{branch}_a{attempt - 1}"
-        if node.get("parent_id") != expected_parent:
-            raise ValueError("discovery parent must be the previous attempt of its branch")
-        _cell(node.get("raw"))
-        by_id[identity] = node
-        branches.setdefault(branch, set()).add(attempt)
-    if set(branches) != set(range(len(branches))):
-        raise ValueError("discovery branches must form a contiguous grid prefix")
-    for attempts in branches.values():
-        if attempts != set(range(max(attempts) + 1)):
-            raise ValueError("discovery attempts must form a contiguous scored prefix")
-    return {"nodes": len(nodes), "branches": len(branches), "max_attempt": max(n["attempt"] for n in nodes)}
-
-
-def _unique_object(pairs):
-    result = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError("duplicate trace JSON key")
-        result[key] = value
-    return result
 
 
 def _worker_environment() -> dict[str, str]:
@@ -150,8 +77,11 @@ def _unix_group_alive(pgid: int, *, timeout_seconds: float) -> bool:
     # fails closed instead of treating a successful kill() as exit confirmation.
     try:
         result = subprocess.run(
-            ["ps", "-eo", "pgid=,stat="], env=_worker_environment(),
-            stdin=subprocess.DEVNULL, capture_output=True, check=True,
+            ["ps", "-eo", "pgid=,stat="],
+            env=_worker_environment(),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            check=True,
             timeout=min(1.0, timeout_seconds),
         )
         for line in result.stdout.splitlines():
@@ -363,6 +293,9 @@ def replay_trace(
     budget: int,
     max_workers: int = 1,
     timeout_seconds: float = 30,
+    parameters: dict | None = None,
+    registry_path: str | Path | None = None,
+    use_active: bool = True,
 ) -> dict:
     """Replay an already scored tree with the upstream fixed baseline, offline.
 
@@ -384,11 +317,33 @@ def replay_trace(
         raise ValueError("trace exceeds byte limit")
     value = json.loads(raw, object_pairs_hook=_unique_object)
     shape = validate_trace(value)
+    policy_version = "parameters-v1:" + policy_identity(parameters)
+    selection_reason = "explicit_parameters" if parameters is not None else "explicit_baseline"
+    if parameters is None and use_active:
+        from .dream_rsi_registry import PolicyRegistry
+
+        if registry_path is None:
+            from .settings import load_settings
+
+            registry_path = getattr(getattr(load_settings(cwd=None), "dream_optimization", None), "registry_path", None)
+        selected = PolicyRegistry(registry_path).status()
+        parameters = selected["parameters"]
+        policy_version = selected.get("version") or "parameters-v1:" + policy_identity(None)
+        selection_reason = selected["reason"]
+    effective_parameters(parameters, shape)
     destination.mkdir(parents=True, exist_ok=False)
     (destination / "input-trace.json").write_bytes(raw)
     _write_json(
         destination / "request.json",
-        {"budget": budget, "max_workers": max_workers, "shape": shape, "source_commit": SOURCE_COMMIT},
+        {
+            "budget": budget,
+            "max_workers": max_workers,
+            "shape": shape,
+            "source_commit": SOURCE_COMMIT,
+            "parameters": parameters,
+            "policy_version": policy_version,
+            "selection_reason": selection_reason,
+        },
     )
     try:
         code = _run_worker(
@@ -403,6 +358,9 @@ def replay_trace(
         summary = json.loads((destination / "summary.json").read_bytes())
         if summary.get("input_sha256") != hashlib.sha256(raw).hexdigest() or summary.get("status") != "completed":
             raise RuntimeError("replay worker output identity mismatch")
+        verify_leaf(
+            value, summary, json.loads((destination / "decisions.json").read_bytes()), parameters, budget, max_workers
+        )
         _write_json(destination / "status.json", {"status": "completed"})
     except BaseException as exc:
         _write_json(
@@ -420,12 +378,30 @@ def replay_trace(
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "optimize":
+        from .dream_rsi_optimizer import main as optimize_main
+
+        return optimize_main(argv[1:])
+    if argv and argv[0] in ("status", "rollback"):
+        from .dream_rsi_registry import main as registry_main
+
+        return registry_main(argv)
+    if argv and argv[0] == "replay":
+        argv = argv[1:]
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        epilog="Commands: optimize (bounded parameter search), replay, status, rollback. Legacy --trace arguments remain valid.",
+    )
     parser.add_argument("--trace", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--budget", required=True, type=int)
     parser.add_argument("--max-workers", type=int, default=1)
     parser.add_argument("--timeout-seconds", type=float, default=30)
+    parser.add_argument("--registry", type=Path)
+    parser.add_argument(
+        "--baseline", action="store_true", help="ignore active policy and replay the full-shape reference"
+    )
     args = parser.parse_args(argv)
     try:
         summary = replay_trace(
@@ -434,6 +410,8 @@ def main(argv=None) -> int:
             budget=args.budget,
             max_workers=args.max_workers,
             timeout_seconds=args.timeout_seconds,
+            registry_path=args.registry,
+            use_active=not args.baseline,
         )
     except (OSError, ValueError, RuntimeError, TimeoutError) as exc:
         print(json.dumps({"status": "failed", "error_type": type(exc).__name__, "reason": str(exc)}), file=sys.stderr)

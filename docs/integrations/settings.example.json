@@ -2,9 +2,9 @@
   "memory_index": {
     "enabled": false,
     "provider": "mem0",
-    "config_file": "~/.my-agent-harness/mem0.json",
-    "timeout": 2.0,
-    "close_timeout": 0.1
+    "config_file": "~/.my-agent-harness/mem0-local.json",
+    "timeout": 10.0,
+    "close_timeout": 1.0
   },
   "observation": {
     "enabled": false,
@@ -15,5 +15,13 @@
     "capacity": 1024,
     "network_timeout": 5.0,
     "close_timeout": 5.0
+  },
+  "dream_optimization": {
+    "enabled": false,
+    "dataset_manifest": null,
+    "registry_path": null,
+    "max_candidates": 16,
+    "budgets": [1, 2, 4],
+    "max_seconds": 300.0
   }
 }

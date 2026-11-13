@@ -74,7 +74,7 @@ jobs:
           wheel = sorted(glob.glob('dist/*.whl'))[-1];
           names = zipfile.ZipFile(wheel).namelist();
           assert 'my_coding_agent/my-tui/bin/my-agent.js' in names, 'TUI entry missing from ' + wheel;
-          assert all(path in names for path in ('my_agent_core/memory_mem0.py', 'my_agent_llm/observation_runtime.py', 'my_coding_agent/dream_rsi_replay.py')), 'Optional integration module missing';
+          assert all(path in names for path in ('my_agent_core/memory_mem0.py', 'my_agent_core/memory_local.py', 'my_agent_llm/observation_runtime.py', 'my_coding_agent/dream_rsi_replay.py', 'my_coding_agent/dream_rsi_contract.py', 'my_coding_agent/dream_rsi_optimizer.py', 'my_coding_agent/dream_rsi_registry.py')), 'Optional integration module missing';
           entry = next(name for name in names if name.endswith('.dist-info/entry_points.txt'));
           assert b'my-agent-dream' in zipfile.ZipFile(wheel).read(entry), 'Dream CLI entry missing';
           print(wheel, len(names), 'entries, TUI assets OK')"

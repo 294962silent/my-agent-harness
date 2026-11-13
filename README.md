@@ -1,6 +1,8 @@
 # my-agent-harness
 
-面向长程代码任务的轻量 Python Agent 执行框架。重点是运行控制、上下文与长期记忆的可靠性，以及可复算的实验与执行证据。CodingAgent、RPC 和终端界面是框架的应用入口。
+**面向长程任务的 Coding Agent Harness：长期记忆、可观测执行、受控策略自优化。**
+
+以长程代码任务为目标，补强多轮执行中的运行控制、上下文保真、跨会话事实记忆和可复核证据。CodingAgent、RPC 和终端界面是应用入口；自优化层自动选择并验证受限的探索策略参数，不训练模型权重、不任意重写执行器。
 
 项目用于 Agent / 大模型应用开发实习的工程实践：保留可阅读的模块接口，用实际故障、取舍、回归和成对实验解释技术价值。框架仍有明确限制，不把它描述为已经成熟的生产平台。
 
@@ -21,11 +23,11 @@
 - Tools：注册表、schema、安全并发声明、依赖批次门控、超时与中断结果。
 - Session：JSONL 会话与分支路径恢复；摘要绑定 canonical 覆盖来源。
 - Context / Artifact：原始历史与发送视图区分，大输出保留全文并通过有界工具回读。
-- Memory：精确事实、替换历史、删除、脱敏与检索；自动抽取默认关闭。
+- Memory：精确事实、替换历史、删除、脱敏与检索；可用本地CPU中文语义候选，不需embedding API，自动抽取默认关闭。
 - Permission：副作用前授权，默认 fail-closed；不等同完整信息流安全。
 - Observation：默认关闭的元数据记录、有界导出与可选 Langfuse 适配，导出错误不改变模型结果。
 
-本批实现 Runtime 生命周期、统一观测与可选的 Mem0 / Langfuse / Dream-RSI 适配，保留既有上下文、记忆和工具契约。Mem0 接入候选检索，Langfuse 接入配置和生命周期，Dream-RSI 提供官方固定参考策略的离线回放入口；外部服务默认关闭。
+本批实现Runtime生命周期、统一观测和三个适配。Mem0支持本地CPU中文profile；Langfuse配置与生命周期完整；Dream支持候选参数搜索、独立验证、active实际消费和回滚。外部云服务分发默认关闭；本机已安装并启用本地记忆，自优化入口因无真实评分树明确needs_dataset。
 
 ## 安装与本地验证
 
@@ -89,13 +91,13 @@ async def main():
 ## Mem0、Langfuse、Dream-RSI
 
 ```sh
-uv sync --frozen --extra mem0 --extra langfuse --extra dream-rsi
+uv sync --frozen --extra mem0-local --extra langfuse --extra dream-rsi
 uv run --extra dream-rsi my-agent-dream --help
 ```
 
-[安装、全局配置与使用说明](docs/integrations/README.md)包含可复制JSON和极小合成回放输入。Mem0保留本地事实权威、infer=False避免双抽取，失败回退词法；Langfuse保留已有observer并关闭自身订阅；Dream真实调用上游TraceEnv和baseline，不启动在线RSI学习。项目settings不能改变两项外发集成的配置。
+[安装、全局配置与使用说明](docs/integrations/README.md)包含本地模型准备、JSON及合成参数搜索演练。Mem0保留本地事实权威、infer=False和NeverLLM防双抽取，失败回退词法；Langfuse保留已有observer；Dream只调白名单参数，晋升须胜过baseline和当前active，原子指针/CAS支持回滚。项目settings不能改三项集成的全局配置。
 
-本轮只做代码回归和真实SDK离线契约：Mem0本地Qdrant配假embedding、Langfuse内存SpanExporter、Dream生产CLI/worker回放。未验证语义质量、真实云端接通或策略收益；SWE及效果benchmark依用户要求暂停。
+本轮只做代码/功能验证：Mem0真实BGE CPU语义链路、Langfuse内存SpanExporter、Dream合成数据dry-run与活跃参数消费。没有真实评分树，不晋升合成策略；未测召回质量、真实云端或策略收益。SWE及效果benchmark继续暂停。
 
 ## 逐模块实验
 

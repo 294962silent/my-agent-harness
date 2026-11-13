@@ -1,10 +1,12 @@
-# my-agent-harness：面向 Agent 实习的框架重设计
+# my-agent-harness：面向长程任务的 Coding Agent Harness
 
-日期：2026-11-12。基线：`1f150e1a433c2b31ee83c8a2d11300e4a1fc3548`。目标岗位：Agent / 大模型应用开发。
+初版：2026-11-12；定位与受控自优化更新：2026-11-13。初始基线：`1f150e1a433c2b31ee83c8a2d11300e4a1fc3548`。目标岗位：Agent / 大模型应用开发。
 
 ## 定位与成功条件
 
 面向长程代码任务的轻量 Python Agent Harness。围绕任务执行控制、上下文与长期记忆、全过程观测提供可替换且可验证的模块；CodingAgent / RPC / TUI 是产品入口。
+
+主标题强调任务场景，副线是“长期记忆、可观测执行、受控策略自优化”。自优化限定Dream参考搜索策略的参数候选、训练选择、独立验证和版本回滚；它不表示Agent执行循环已具有在线任意代码进化、权重训练或跨任务持续提升。长程任务是设计目标，不代表已实现跨进程持久恢复和外部副作用exactly-once。
 
 面试证据必须同时有需求、实现接缝、替代方案、原始数据、失败案例与局限。测试数量不能替代任务成功率，脚本模型不能替代真实模型质量，历史上游数字不能冒充本轮贡献。
 
@@ -12,7 +14,22 @@
 
 选择渐进重设计：保留已通过跨平台 CI 的会话、摘要、产物、记忆和工具协议，补强共同生命周期与观测，并统一实验协议。
 
-一次重写全部源码会同时改变太多变量，难以做归因与回归；直接堆叠 Mem0 / Langfuse / Dream-RSI 则不能修复本地运行归属和测量口径。它们分别作为可选检索、观测导出、未来探索策略适配，不成为默认强依赖。
+一次重写全部源码会同时改变太多变量，难以做归因与回归；三个外部项目分别进入清晰接缝：Mem0提供本地事实之外的候选检索，Langfuse导出元数据，Dream回放支撑受控策略调参。SDK安装和运行时启用分别管理，模型缓存不进入源码包。
+
+```mermaid
+flowchart TB
+    Task[长程代码任务] --> Entry[CodingAgent / RPC / TUI]
+    Entry --> Runtime[运行预算 / 取消 / 工具权限]
+    Entry --> Context[Session / Context / Artifact]
+    Entry --> Memory[本地事实 / CPU中文候选检索]
+    Entry --> Observe[调用元数据 / 可选Langfuse]
+    Trace[外部已评分分支树] --> Tune[固定参数候选 / 训练选择]
+    Tune --> Validate[独立验证 / 完整性检查]
+    Validate --> Registry[策略版本 / active / rollback]
+    Registry --> Replay[Dream实际回放消费参数]
+```
+
+当前不会把Session自动画成评分树；真实分支执行与独立评分反馈仍是后续工作。没有真实树时，自优化入口明确needs_dataset、保留baseline，合成输入只验证机制且不可生产晋升。
 
 ## 模块与不变量
 
@@ -21,13 +38,14 @@
 3. **Tools / 工具与权限**：注册表管理 schema、并发安全、结果与取消；只读独立工具可并发，有依赖和副作用的批次遵守串行规则；权限默认阻断未授权动作。
 4. **Session / 历史**：会话树保存来源、分支和顺序；恢复指定分支，摘要与 canonical 覆盖身份匹配。会话恢复不等于外部副作用 exactly-once。
 5. **Context / 视图与产物**：canonical 历史与发送视图区分；动态快照未变不重发，摘要有覆盖来源；长输出保留完整产物，通过有界回读取得证据。字符数 / 字节数只表示输入体积，不能称 API token 或 KV 命中。
-6. **Memory / 长期事实**：Markdown 为事实来源；精确身份、历史、删除、脱敏与来源证据维持现有契约；索引可重建；无跨进程锁。未来向量后端只负责候选召回，不能绕过失效事实过滤。
+6. **Memory / 长期事实**：Markdown为事实来源；精确身份、历史、删除、脱敏与来源证据维持既有契约。Mem0候选按scope/identity/revision重验，正文从本地取；CPU中文模型本地计算，不需embedding API。候选缓存可重建，不能绕过失效过滤；原事实文件无新增跨进程事务保证。
 7. **Observation / 观测**：默认关闭；采集 call/root/parent ID、purpose、model、耗时、状态和 usage，不默认采集正文或错误文本。observer 出错不改变任务结果；网络导出经有界队列，丢弃可见，结束可 flush。可选 Langfuse 延迟导入、无凭据不启动。
 8. **Evaluation / 证据**：版本化场景、成对干预、逐次原始记录、从数据汇总指标；每个模块都有正反例与失败记录。源版本、配置、环境、seed、重复次数、样本数和无效运行必须可追溯。
+9. **Controlled Optimization / 受控自优化**：候选只能调整白名单参数，固定执行器和评分器；只用train选择、holdout仅做独立验证，真实数据完整且严格改善才晋升。原子active/previous、完整性校验、损坏回退与rollback明确；无数据、超时或合成数据都不能冒充生产优化成功。这是新增研究入口，不计入旧八模块实验数量。
 
 依赖方向：产品入口 → Runtime / Agent → Model、Tools、Session、Context、Memory；Model → 可选 Observation；Evaluation 调用公开产品接口，不让生产模块依赖实验脚本。
 
-## 本批实现边界
+## 初版实现边界（保留历史）
 
 - 接通单运行 owner、可选 max_turns / max_seconds 与可靠清理；保留 run / stream / abort 调用方式。
 - 统一 LLM 生命周期观测，补摘要 / 记忆用途及根关联；提供本地 recorder 与可选 Langfuse 导出接口。
@@ -35,6 +53,8 @@
 - 形成每模块面试说明、真实开发问题账本、实验与主张账本；README 只引用可核验结果。
 - 小规模真实模型实验先交预算。未经具体预算批准不发收费请求；不恢复旧 DSH / 缓存跑分，不使用 L20 GPU。
 - Mem0 主存储替换、Dream-RSI 在线策略优化、分布式队列、强制同步抢占与跨进程恢复不属于本批实现。
+
+2026-11-13后续范围：用户选择本地CPU中文Mem0和受控参数自动优化，先完成闭环、暂不做SWE/效果benchmark。区别在于原来只有固定baseline回放，现在增加参数搜索、验证、实际active消费及回滚；仍不替换事实主存储，不运行任意策略Python自改。实施与真实验证见[新计划](../handoffs/2026-11-13-local-memory-controlled-optimization.md)和持续实验日志。
 
 ## 消融与指标约定
 
