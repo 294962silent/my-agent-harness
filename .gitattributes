@@ -36,3 +36,5 @@ experiments/context_rsi/continue_live.py text eol=lf
 experiments/context_rsi/analyze_live.py text eol=lf
 experiments/context_rsi/reports/live-v2-analysis-*/analysis.json text eol=lf
 experiments/context_rsi/reports/train-tree-diagnostic-20261114.json text eol=lf
+experiments/context_rsi/summarize_continuation.py text eol=lf
+experiments/context_rsi/reports/live-v2-continuation-*/continuation.json text eol=lf

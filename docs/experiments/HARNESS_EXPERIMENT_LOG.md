@@ -927,3 +927,13 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 上批e213ac02b9fe5310a914687c8661c81df4d306e5的[CI43490480318](https://github.com/294962silent/my-agent-harness/actions/runs/43490480318)四矩阵及3.13 SDK专项已核成功。新controller的CI状态不据此外推；所有历史停止态与成本不覆盖。
 
 续跑前审查追加：SOL-2只读复核新controller关键gate通过，最终bytes SHA256 `cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34`。确认register不构造模型、锁内CAS、原付款/评分验证链、独立run锁、首批1槽和安全诊断。主代理组合91通过与独立审查为不同证据，未重复计数；真实运行另记。
+
+### E-LIVE-CONTINUATION-FIRST：2026-11-14 / 实际封印与首新槽核验
+
+- controller已推origin `5a737ca6980f39f9c3672c3108e39bf531a9adbe`；[CI43492669264](https://github.com/294962silent/my-agent-harness/actions/runs/43492669264)四矩阵及Ubuntu3.13 SDK专项全部success，主代理核了本head/jobs。
+- 真实register为0模型请求，独占sidecar绑定原634行journal、16已started/37未started、原298请求870205tokens与唯一旧failed。原journal前缀、源码117、任务与策略不变，新的操作事件只追加。根因未知的修订身份单列，不把旧failed解除或改完成。
+- 主代理实际先运行首未started `test-HumanEval-6-s23-A`：18请求52611tokens全settled，4个attempt均end_turn（6/5/3/4轮），valid4、cleanup0、独立final valid/score1/exit0。SOL-1只读复核terminal→final→result封印、逐请求账与source/wrapper/incident/task/policy全部通过。
+- 此检查点全局316请求922816tokens，pending/unknown/held0，original summary仍blocked且failed1；独立operational gate ready、剩36。包括v1/连通后的准备总量另计，不把316当完整总任务成本。[安全首检查点](results/rsi-live-20261114/continuation-r1.json)。
+- 首槽核验后主代理已启动其余36个原槽；执行与新增wrapper均冻结，任何新异常再停，不根据test改策略。最终coverage/比较/成本待整批终态后独立重算，本节不是48任务已全部完成。
+
+续跑披露追加：新增独立stdlib只读`summarize_continuation.py`，稳定analyzer与所有执行源不改。它核sidecar/receipt/controller、旧journal前缀与37槽集合、后续事件绑定和原failed不变，输出仅ID/hash/状态/计数，诊断不复制任意消息或filename。作者10项synthetic通过；主代理实际10 passed in1.45s、Ruff通过。首[运行中披露](../../experiments/context_rsi/reports/live-v2-continuation-disclosure-20261114-r1/continuation.json)为2续槽完成/1运行中时快照，正常在途pending不是unknown；旧快照不覆盖，最终另存新目录。该工具0模型调用，不调run或重采。
