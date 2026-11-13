@@ -19,6 +19,8 @@ from .dream_rsi_contract import (
     checksum,
     policy_identity,
     semantic_identity,
+    task_content_identity,
+    validate_task_evidence,
     validate_trace,
     verify_leaf,
     _unique_object,
@@ -67,9 +69,10 @@ def load_dataset(path):
         or not 2 <= len(value["entries"]) <= 32
     ):
         raise ValueError("invalid dataset schema_v1")
-    entries, seen_ids, files, tasks, meanings = [], set(), set(), {}, {}
+    entries, seen_ids, files, tasks, meanings, contents = [], set(), set(), {}, {}, {}
     for item in value["entries"]:
-        if not isinstance(item, dict) or set(item) != {"id", "task_id", "split", "file", "sha256", "provenance"}:
+        fields = {"id", "task_id", "split", "file", "sha256", "provenance"}
+        if not isinstance(item, dict) or set(item) not in (fields, fields | {"task_evidence_sha256"}):
             raise ValueError("invalid dataset entry schema")
         if (
             not isinstance(item["id"], str)
@@ -97,14 +100,28 @@ def load_dataset(path):
         if ceiling <= 0:
             raise ValueError("trace requires a positive recorded score ceiling")
         meaning = semantic_identity(trace)
+        content = None
+        if "task_evidence_sha256" in item or "task_evidence" in trace or "task_evidence_sha256" in trace:
+            evidence = validate_task_evidence(trace.get("task_evidence"))
+            digest = checksum(canonical(evidence))
+            if item.get("task_evidence_sha256") != digest or trace.get("task_evidence_sha256") != digest:
+                raise ValueError("dataset/trace task evidence binding differs")
+            content = task_content_identity(evidence)
+        # Verified public input is stronger than a scored curve: the same input
+        # cannot cross splits even after changing scores/IDs/checker labels.
+        if content is not None and content in contents and contents[content] != item["split"]:
+            raise ValueError("same public task content crosses train/holdout split")
         if (
             item["task_id"] in tasks
             and tasks[item["task_id"]] != item["split"]
-            or meaning in meanings
-            and meanings[meaning] != item["split"]
+            or any(split != item["split"] and (content is None or prior_content is None or prior_content == content)
+                   for split, prior_content in meanings.get(meaning, []))
         ):
             raise ValueError("same task or scored-tree meaning crosses train/holdout split")
-        tasks[item["task_id"]] = meanings[meaning] = item["split"]
+        tasks[item["task_id"]] = item["split"]
+        meanings.setdefault(meaning, []).append((item["split"], content))
+        if content is not None:
+            contents[content] = item["split"]
         seen_ids.add(item["id"])
         files.add(source)
         entries.append(
@@ -114,6 +131,7 @@ def load_dataset(path):
                 "bytes": len(body),
                 "shape": shape,
                 "semantic_sha256": meaning,
+                "task_content_sha256": content,
                 "trace": trace,
             }
         )

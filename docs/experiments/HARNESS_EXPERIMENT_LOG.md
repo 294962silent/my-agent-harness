@@ -855,3 +855,42 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 三项真实SDK测试局部importorskip，七项纯协议仍跑；all-extras专项不跳过这些SDK测试。作者Windows/WSL各10 passed，主代理干净默认7 passed/3 skipped in4.81s；修后最终Windows整库 **1425 passed、11 skipped、5 subtests passed in112.77s**。批次有重叠不累加，1424为原修前历史。
 - 主代理最终memory_qwen源码ae27a019…重新跑真实GPU：1024维两事实检索、禁词法回退/受控Python socket、close与实际worker退出通过；冷构造19.21s，查询0.522/0.073s，短文本峰值allocator1,207,842,816B。新raw与安全指标另目录，不覆盖原16.45s运行，时间差不当性能对照。0付费API、不改旧账本、不迁移L20。
 - 最终wheel与11源码bytes、真实autocrlf=true checkout一致，Ruff/diffcheck通过；失败/诊断/最终sourcehash与GPU见[ci-repair](results/context-rsi-20261113/ci-repair/REPORT.md)。面试P51追加默认安装、OS差异与清理异常覆盖原因果的九段深挖；修后远端CI需核新head，结果更新PR正文，不用旧绿灯代替。
+
+### E-LIVE-RSI-AUTH：2026-11-14 / 新授权与固定开源校准
+
+- 用户明确继续真实模型，声明约20亿DeepSeek V4.1 Flash tokens，不再沿用上一轮0新增API范围；余额未查服务商。仍本机、两名Sol/medium，不恢复DS/DSH、不迁L20。原533请求账本只读hash495d9e656deccd64ff67ca5c4db9d4c391520700bd0bb672e8fad72a45018e3d保持，已知$1.218608与未知预留$0.045131不改。
+- 现有SWE/Terminal/EVO依赖容器，不能把任务目录直接交host LocalBranchFactory。先固定官方HumanEval commit b9453e8f1865df0a0057a1383767caa400acfbcf、blob998d25196e17af24daf9b6cb3a975fe752528e46、SHA b796127e635a67f93fb35c04f4cb03cf06f38c8072ee7cee8833d7bee06979ef、MIT。train7/11/27，val32/45，test1/6/9/20/33/40，seed23/47为调度重复。属于短代码真实闭环校准，不是长程或仓库外泛化。
+- 单独连通请求55tokens（41输入+14输出）、8.23s、精确READY、无重试，currency=null；只证明当前端点可用，不当Agent原生基线或余额核验。凭据在host内存读取，未写任务/日志。[连通元数据](results/rsi-live-20261114/connectivity.json)。
+
+### E-RSI-PUBLIC-EVIDENCE：2026-11-14 / 不用分数曲线代替任务身份
+
+- 已复现不同官方输入/7与/32同全1曲线被旧loader当跨split重复；反例分数为synthetic，0API。新增contract公开内容证据、runtime冻结/基线绑定/trace-report-export digest、loader内容身份：同输入改ID/path/spec/scores仍拒；不同已核输入可共享曲线；legacy/mixed仍原保守规则。评分与优化目标未改，未删题或伪造分数。
+- 只支持单个UTF8公开输入文件，输入/visible spec均可重算hash，不导出canonical/final；trusted-host来源，不证明恶意host/远端执行或语义等价。生产默认无evidence保持兼容。借鉴沿用Dream固定SDK的评分树/replay入口，新增实际host任务绑定，不称完整任意代码RSI/权重训练。
+- 主代理真实组合94 passed in17.87s，涵盖runtime/evidence/optimizer/replay/SDK闭环；原重复改名保护保留。接口与边界见docs/rsi-task-evidence.md，面试P52已记录。
+
+### E-LIVE-ORACLE-V3：2026-11-14 / 评分器与候选进程分离
+
+- 初版普通11题44次empty/gold预检通过，交叉review仍实证stub可读取同进程__main__.t['test']并改DocTestRunner伪造visible通过。修前报告保留，v2准备材料禁止付费用；不是模型成绩。
+- live_tasks.py改visible/final物理分JSON、host checker与persistent candidate worker分进程，typed JSON只传args/kwargs/primitive-list-tuple返回，不传expected/final、不pickle/eval对象。host只exec固定官方checker，seed0；owned Windows Job/Unix组回收。发现者独立复用原两探针确认visible exit1/final对象不可达；仍非OS沙箱，同用户文件访问不保证对抗隔离。
+- 最终v3-seed0的11题44checker+44worker均empty0/gold1；manifest SHA cc28f20d6303100f4fe8d5b550937643fdb9e88239b0601c1f144f9356763339。作者任务专项22 passed in132.77s，主代理后续整套包含这些路径。原/32零例初判是误取首helper poly；按entry_point find_zero取到2个官方例，无人工补例或替题。新[安全预检报告](../../experiments/context_rsi/reports/humaneval-preflight-20261114-v3.json)与P53记录边界。
+
+### E-LIVE-JOURNAL：2026-11-14 / 真实调用前的持久与逐步核验
+
+- 新live_runner.py独立campaign/hashchain JSONL/fsync/FileLock，ParentBudget公共接缝付款前写reserve、后写settle，保留raw规范usage与total-completion依据，不套使来源变synthetic的旧GuardedLLM，也不复用旧prompt+cache求和/价格。unknown/pending保留预留、禁止跨ID重试；币价未核currency=null。
+- 交叉review复现任务仅入口verify、低层failed后新ID绕block、模型env凭据可能进shell。修为每reserve与begin_evaluation核代码/任务/checker/privateinputs/env、统一低层slot/blocked、CLI取key后净化env，库拒脏环境。host完成、Agent完成与final分别报告；正常score0/可信已知干净quota保留分母，unknown/漂移/cleanup不吞。只读互审通过，P54记录。
+- 主代理调额前全库1502 passed、11 skipped、5 subtests passed in241.86s；source证据组合94与该套有重叠不加总。最终v2轮额修改后独立runner45 passed in13.95s；Ruff/diffcheck通过。CI扩SDK专项执行evidence/live runner/tasks，最终head状态提交后另核。
+
+### E-LIVE-QUOTA-CALIBRATION：2026-11-14 / 首train负结果与test前修订
+
+- v1冻结117源文件与53槽，首train7实际4API/8496tokens（输入8139+输出357），ls/find/read/edit/bash各1真实调用，可见1，但4轮后budget_exhausted无endturn→invalid_attempt，无selected/final/trace；hostcompleted不是Agent成功。无pending/unknown/held；cache字段3/4覆盖、已知5760，不报完整命中率。[独立校准审计](../../experiments/context_rsi/reports/live-v1-calibration-20261114.json)保留hash与工具配对。
+- 按先首slot再核计划，停止v1余52未运行槽，0test数据；不删负结果、不重复该campaign槽、不改旧unknown（确实0）。test前预注册v2：同11题与四臂，统一attempt12轮、父64请求/1Mtokens/1800秒/6评估，MODEL4096输出/180秒/零重试不变；context显式4096输出reserve/512margin/1024summary。五轮实际工具契约12轮可成功、4轮control仍失败，未把quota定义成成功。
+- v2重新保存117源文件快照与53槽，[start-v2](results/rsi-live-20261114/start-v2.json)付款前冻结。首train7四个有效尝试均endturn，真实来源observed，visible1、独立final1、trace已生成，16请求39208tokens、无unknown。校准/训练暴露单列，后续不把准备成本藏掉；没有比较提升结论。
+- v2其余训练/val与48个test交错槽已开始执行，源码/数据/策略在阶段边界冻结，不看test重选。当前详细协议见handoffs/2026-11-14-live-rsi-evaluation.md；[面试P52–P55](../interview/12-真实RSI实验的数据与评分可信度.md)。后续终态/完整指标继续追加，不提前写成功率、KV或节费收益。
+
+### E-LIVE-COLLECTION-INCOMPLETE：2026-11-14 / 全分母与探索性恢复r1登记
+
+- 实际5个collection共84请求237239tokens（223250输入+13989输出）、0pending/unknown/held。train7/11/27均4个有效尝试且final1；val45同，val32在12轮额度耗尽，visible1但无valid trace/selected/final。完整交付4/5，final只执行4/5；不把未执行final补0或仅报4/4。cache字段82/84、已知195840，不报完整率。含连通与v1准备，本轮合计89调用245790tokens；currency保持null。
+- 原optimize_collection写optimizer_started后，export_dataset因val32无合法trace拒绝，actual SDK搜索尚未运行，0test。原partial导出目录保留；[独立全5题统计](results/rsi-live-20261114/collection-v2.json)绑定全部输入/最终侧证据hash与失败分母，不能把hostcompleted当Agent成功。
+- 观察此失败之后、首test之前登记exploratory recovery r1：117冻结执行源/数据/预算/48槽不变，保留完整5行及成本，另建明确available-tree投影3train+1可用val调用实际SDK；完整train才可选唯一候选，partial holdout不参与排序/平局/重选，不用于完整验证或晋升。overall gain=None、publication强制validation_incomplete_rejected_for_publication。不是原holdout完整通过，不伪造分数/trace、不重跑模型。
+- 若SDK选baseline/null，保留raw role/params/hash，在线C只用预先登记的reference2/1 fallback及独立effective hash；不能声称该条件代表学习干预、与SDK默认完全等价或证明0%学习提升。若选参数则冻结train唯一研究候选。全部规则在实际SDK选择与test之前固定。
+- 新recover_research_policy.py对5sealed输入/sourcepin/0test/0unknown核验、原子登记唯一恢复、新目录封印、只补同候选提交；不改原raw/partial/registry或117源。两助手独立方法/源码复核无阻断，主代理最终整文件12 passed in50.81s（实际SDK回归为synthetic，无provider）；Ruff/diffcheck通过。真实恢复尚待单次执行，后续终态追加，不能拿离线测试当真实策略收益。[恢复协议](../rsi-live-recovery.md)。

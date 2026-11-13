@@ -1,0 +1,27 @@
+{
+  "kind": "connectivity_only_not_agent_baseline",
+  "authorization_date": "2026-11-14",
+  "declared_available_tokens": 2000000000,
+  "quota_source": "user_not_provider_verified",
+  "provider": "openai",
+  "model": "deepseek-v4.1-flash",
+  "max_output_tokens": 256,
+  "timeout_seconds": 90,
+  "max_retries": 0,
+  "status": "settled",
+  "reserved_tokens": 2399,
+  "usage": {
+    "prompt_tokens": 41,
+    "completion_tokens": 14,
+    "total_tokens": 55
+  },
+  "cost_usd": null,
+  "historical_campaign_unchanged": true,
+  "duration_seconds": 8.229389799991623,
+  "response_model": "deepseek-v4.1-flash",
+  "ready_exact": true,
+  "input_tokens": 41,
+  "output_tokens": 14,
+  "total_tokens": 55,
+  "usage_basis": "reported_total_minus_completion"
+}

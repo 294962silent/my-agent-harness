@@ -62,7 +62,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
         run: |
           uv sync --frozen --all-extras --python ${{ matrix.python-version }}
-          uv run python -m pytest tests/integrations tests/test_rsi_runtime.py tests/experiments/test_rsi_closed_loop.py tests/core/test_memory_qwen.py tests/core/test_memory_local.py tests/core/test_memory_semantic.py --import-mode=importlib -q
+          uv run python -m pytest tests/integrations tests/test_rsi_runtime.py tests/coding/test_rsi_task_evidence.py tests/experiments/test_rsi_closed_loop.py tests/experiments/test_rsi_live_runner.py tests/experiments/test_rsi_live_tasks.py tests/experiments/test_rsi_policy_recovery.py tests/core/test_memory_qwen.py tests/core/test_memory_local.py tests/core/test_memory_semantic.py --import-mode=importlib -q
 
       # my-tui/dist is gitignored, so the TUI must be built before the wheel.
       - name: Build wheel with TUI assets

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from pathlib import PurePosixPath, PureWindowsPath
 
 SOURCE_COMMIT = "8ec35bd2538220517ce1bfca4282db21b8c518db"
 MAX_TRACE_BYTES = 16 * 1024 * 1024
@@ -140,6 +141,43 @@ def semantic_identity(trace):
             }
         )
     )
+
+
+def validate_task_evidence(value):
+    """Recompute public-content hashes, not host honesty or remote execution.
+
+    Input identity deliberately excludes IDs, filesystem paths and visible-spec
+    relabeling. The host must supply public material only; final tests/solutions
+    have no place in this optional single-input-file evidence contract.
+    """
+    fields = {"schema_version", "public_input", "public_input_sha256", "visible_spec", "visible_spec_sha256", "input_file"}
+    if not isinstance(value, dict) or set(value) != fields or type(value["schema_version"]) is not int or value["schema_version"] != 1:
+        raise ValueError("invalid public task evidence schema")
+    for content, digest in (("public_input", "public_input_sha256"), ("visible_spec", "visible_spec_sha256")):
+        text = value[content]
+        if not isinstance(text, str) or not text or len(text.encode("utf-8")) > 128000:
+            raise ValueError("public task evidence content must be bounded nonempty UTF-8")
+        if checksum(text.encode("utf-8")) != value[digest]:
+            raise ValueError("public task evidence content/hash differs")
+    name = value["input_file"]
+    if (not isinstance(name, str) or not 1 <= len(name) <= 512 or "\\" in name
+            or PurePosixPath(name).is_absolute() or PureWindowsPath(name).drive
+            or any(part in ("", ".", "..") for part in name.split("/"))):
+        raise ValueError("task evidence input_file must be a plain relative filename")
+    return dict(value)
+
+
+def make_task_evidence(*, public_input, visible_spec, input_file="solution.py"):
+    if not isinstance(public_input, str) or not isinstance(visible_spec, str):
+        raise ValueError("public task evidence requires text content")
+    return validate_task_evidence({"schema_version": 1, "public_input": public_input,
+        "public_input_sha256": checksum(public_input.encode("utf-8")), "visible_spec": visible_spec,
+        "visible_spec_sha256": checksum(visible_spec.encode("utf-8")), "input_file": input_file})
+
+
+def task_content_identity(evidence):
+    value = validate_task_evidence(evidence)
+    return checksum(canonical({"schema_version": 1, "public_input": value["public_input"]}))
 
 
 def expected_waves(trace, parameters, budget):

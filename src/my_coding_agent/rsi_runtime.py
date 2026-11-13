@@ -307,8 +307,8 @@ class RsiResult:
 class RsiRuntime:
     """Opt-in batch portfolio of real agents, initially serial and non-promoting."""
     def __init__(self, *, factory, evaluator, budget, policy, max_attempts=4, schedule="rsi", seed=23,
-                 task_id, split, arm="C"):
-        from .dream_rsi_contract import MAX_NODES
+                 task_id, split, arm="C", task_evidence=None):
+        from .dream_rsi_contract import MAX_NODES, canonical, checksum, validate_task_evidence
         from .rsi_branch import LocalBranchFactory, VisibleCommandEvaluator
         if not isinstance(factory, LocalBranchFactory) or not isinstance(evaluator, VisibleCommandEvaluator):
             raise TypeError("initial RSI runtime requires real local branches and fixed visible command evaluation")
@@ -325,6 +325,24 @@ class RsiRuntime:
         self.task_id, self.split, self.arm, self._used = task_id, split, arm, False
         self._task = None
         self._cancel_requested = False
+        self._task_evidence_bytes = canonical(validate_task_evidence(task_evidence)) if task_evidence is not None else None
+        self.task_evidence_sha256 = checksum(self._task_evidence_bytes) if self._task_evidence_bytes is not None else None
+
+    @property
+    def task_evidence(self):
+        return json.loads(self._task_evidence_bytes) if self._task_evidence_bytes is not None else None
+
+    def _verify_task_evidence(self):
+        from .dream_rsi_contract import checksum, validate_task_evidence
+        if self._task_evidence_bytes is None:
+            return
+        if checksum(self._task_evidence_bytes) != self.task_evidence_sha256:
+            raise ValueError("frozen public task evidence changed")
+        evidence = validate_task_evidence(self.task_evidence)
+        self.factory.verify_baseline()
+        if (set(self.factory.manifest) != {evidence["input_file"]}
+                or (self.factory.baseline / evidence["input_file"]).read_bytes() != evidence["public_input"].encode("utf-8")):
+            raise ValueError("task evidence public input does not match the single-file baseline")
 
     def abort(self):
         """Cancel this episode, including the currently awaited child/provider."""
@@ -358,6 +376,7 @@ class RsiRuntime:
             raise RuntimeError("RSI runtime is single-use; no implicit retry/resume")
         if not isinstance(prompt, str):
             raise NotImplementedError("initial RSI batch execution accepts text goals only")
+        self._verify_task_evidence()
         self._used = True
         shared = SharedLLM(llm, self.budget)
         provenance = shared.provider_evidence()
@@ -367,7 +386,7 @@ class RsiRuntime:
             "arm": self.arm, "schedule": self.schedule, "seed": self.seed, "policy": frozen,
             "nodes": plan, "provenance": provenance, "budget": self.budget.snapshot()["limits"],
             "context_policy": asdict(self.factory.compaction_policy) if is_dataclass(self.factory.compaction_policy) else None,
-            "artifact_projection": self.factory.artifact_projection})
+            "artifact_projection": self.factory.artifact_projection, "task_evidence_sha256": self.task_evidence_sha256})
         baseline, attempts, nodes, feedbacks = None, [], [], {}
         selected, status, failure, cleanup = None, "completed", None, []
         interruption = None
@@ -384,6 +403,7 @@ class RsiRuntime:
                 self.budget.remaining()
                 if self.policy.snapshot() != frozen:
                     raise ValueError("policy changed within episode")
+                self._verify_task_evidence()
                 with execution_scope(stage="attempt", branch=branch, attempt=attempt):
                     active = {"id": f"b{branch}_a{attempt}", "branch": branch, "attempt": attempt,
                               "valid": False, "stage": "started", "agent_terminal": None, "visible": None}
@@ -445,6 +465,8 @@ class RsiRuntime:
             trace = {"version": 1, "n_problems": 1, "baseline": {
                 "evaluated": True, "combined_score": baseline["score"], "n_valid": int(baseline["score"] == 1), "n_total": 1},
                 "nodes": nodes, "provenance": provenance, "feedback_type": "visible_command_exit_status"}
+            if self._task_evidence_bytes is not None:
+                trace.update(task_evidence=self.task_evidence, task_evidence_sha256=self.task_evidence_sha256)
             validate_trace(trace)
             trace_path = self.factory.output / "trace.json"
             write_json(trace_path, trace)
@@ -457,6 +479,7 @@ class RsiRuntime:
             "selected_agent_terminal": selected["agent_terminal"] if selected else None,
             "final_success": None, "quality": "unmeasured", "auto_promoted": False,
             "provenance": provenance, "policy": frozen, "budget": self.budget.snapshot(),
+            "task_evidence_sha256": self.task_evidence_sha256,
             "provider_requests": self.budget.records, "evaluations": self.budget.evaluations,
             "attempts": attempts, "planned_attempts": len(plan), "dispatched_attempts": len(attempts),
             "completed_attempts": sum(a["stage"] == "completed" for a in attempts),
@@ -496,6 +519,7 @@ def export_dataset(results, splits, output):
     """Export immutable scored traces, excluding the independent test split."""
     from .rsi_branch import file_sha, write_json
     from .dream_rsi_optimizer import load_dataset
+    from .dream_rsi_contract import canonical, checksum, validate_task_evidence
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     entries, kinds = [], []
@@ -510,10 +534,18 @@ def export_dataset(results, splits, output):
                 or result.trace_path is None or file_sha(result.trace_path) != report["trace_sha256"]):
             raise ValueError("unverified trace or task split")
         name = f"trace-{index}.json"
+        trace = json.loads(result.trace_path.read_text(encoding="utf-8"))
+        digest = report.get("task_evidence_sha256")
+        if digest is not None or "task_evidence" in trace or "task_evidence_sha256" in trace:
+            evidence = validate_task_evidence(trace.get("task_evidence"))
+            if digest != checksum(canonical(evidence)) or trace.get("task_evidence_sha256") != digest:
+                raise ValueError("export task evidence is not bound to the runtime report/trace")
         (output / name).write_bytes(result.trace_path.read_bytes())
         kinds.append(report["provenance"]["kind"])
         entries.append({"id": f"trace-{index}", "task_id": task, "split": split, "file": name,
                         "sha256": file_sha(output / name), "provenance": "production CodingAgent measured visible-command trace"})
+        if digest is not None:
+            entries[-1]["task_evidence_sha256"] = digest
     manifest = output / "manifest.json"
     write_json(manifest, {"schema_version": 1, "kind": "observed" if kinds and all(k == "observed" for k in kinds) else "synthetic",
                           "source": "Verified local RSI results; scripted/custom clients remain synthetic.", "entries": entries})

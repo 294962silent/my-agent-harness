@@ -2,6 +2,8 @@
 
 2026-11-13。目标岗位为Agent/大模型应用开发。先回答“控制器是否执行并受预算约束”，再回答“在未见任务上是否提高质量/效率”。本文件是下一批真实实验的设计，尚未冻结真实任务manifest，也未启动付费调用。
 
+2026-11-14状态增补：用户新授权继续真实模型，声明约20亿tokens。当前先执行官方HumanEval短代码校准，11题已预检、53槽已冻结；详细[当前协议与v1→v2校准](../handoffs/2026-11-14-live-rsi-evaluation.md)。正式v2每attempt12轮，父64请求/1Mtokens/1800秒/6评估，四臂一致。旧费用停止与原16请求方案保留为历史，不再限制本轮新授权；原账本unknown不补零。HumanEval不提供长程能力或仓库外泛化证据，长程正式任务仍需容器接缝。
+
 ## 已跑的零provider闭环
 
 实际 CodingAgent/core loop → 文件工具 → 本地可见测试 → scored trace → Dream SDK 参数搜索dry-run → 冻结策略 → 下一轮 A/B/C/random。完整入口为 `experiments/context_rsi/run_contract.py`，报告与原始计数见[RSI契约](results/context-rsi-20261113/rsi-contract/REPORT.md)。
