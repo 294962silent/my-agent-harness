@@ -72,6 +72,8 @@
 
 可练表达：闭环首先需要证明产出的是不同于对照的策略；如果训练选择baseline，应该报告“没有形成学习干预”，而不是从重复条件的随机差异编出学习收益。
 
+训练侧数值复核补充：三棵train树各4个节点，共12/12个可见分数为1；每棵公开起始stub分数为0，但SDK的baseline是完整树参考策略，不能把这两个baseline混为一谈。五种策略×三棵树×预算1/2/4的45个回放叶best均为1，按fixed-reference优先的平局规则选择baseline。c00始终消耗1次tree action，参考策略分别消耗1/2/4次；当前目标没有奖励节省action，因此不是“候选更贵所以没选中”。tree action也不等于API调用或token。下一批应事前明确质量目标与效率目标，并用完整独立验证约束；不能在看到当前test后改目标重报同批收益。精确安全数值与来源hash见[训练树诊断](../../experiments/context_rsi/reports/train-tree-diagnostic-20261114.json)。
+
 ## P57：退出说“用量未知”，为什么最终判断是权限失败？
 
 1. **背景**：正式test第11个终态退出信息是`new unknown usage stops the campaign`。只看最后一行会把基础设施故障误记为计费缺失。

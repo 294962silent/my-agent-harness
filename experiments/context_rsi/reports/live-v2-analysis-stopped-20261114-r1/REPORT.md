@@ -15,3 +15,7 @@ C 的 SDK 原始选择为 baseline、parameters=null；在线显式 fallback 为
 报告只含哈希、计数、类型、状态及数值用量；不含原始 prompt、response、candidate 代码、任务答案或官方 final 测试内容。分析过程不读取这些源材料，不构造模型客户端，不写 journal。
 
 边界：这是本地受信宿主证据的描述性审计，不是独立账单、远端执行真实性证明或 OS 沙箱证明；哈希也不能抵抗宿主同时重写全部材料。6 题各 2 次调度重复不是 12 个独立题，不做 p 值、显著性或长期工程效果泛化。continuation 尚未在本报告中执行；若另行授权，必须保留本次失败与原始成本并披露协议修订。
+
+## 训练树为何选中 SDK baseline
+
+仅核 train 数值：HumanEval/7、11、27 的起始 stub 分数均为 0；各树四个记录节点 `b0_a0、b1_a0、b0_a1、b1_a1` 均为 1，共 12/12。**SDK baseline 是完整树参考策略，不是这个 0 分 stub。** 五种策略×三棵树×预算 1/2/4 的 45 个 train 回放叶 best 全为 1，五者 train score 均为 1，因此固定参考优先的 tie rule 选中 baseline。不能解释为候选更贵：c00 实耗 action 为 1/1/1，baseline 为 1/2/4，c01–03 为 1/2/2，但目标未奖励 action 节省。当前可见树第一 probe 即饱和，分数目标没有区分度；不证明真实模型没有提升空间。action 也不等于真实 API/token 成本。精确数值和来源哈希见[独立诊断 JSON](../train-tree-diagnostic-20261114.json)。本次无 API、无 SDK 重放、未分析题面/代码/gold/final，未修改已选策略或利用 test 重调参数。

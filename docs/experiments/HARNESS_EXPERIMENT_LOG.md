@@ -915,3 +915,15 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - collection为84请求237239tokens，test为214请求632966tokens；再计v1四请求8496tokens及独立连通一请求55tokens，本轮303请求878756已知tokens。币价未核，currency/cost继续null；旧533请求账本与未知预留不改。本轮完整cache字段覆盖另见报告，不凭缺失补零。
 - 新增只读 `experiments/context_rsi/analyze_live.py`，从plan、hash-chain journal及sealed result/final重算全53槽；不读prompt/candidate/gold。total-completion为输入权威，无total仅在四个分项齐全时求和；cache缺失不影响已知input、不产生完整命中率。主代理最新版专项 **29 passed in4.03s**。历史preview保留，新[停止态报告](../../experiments/context_rsi/reports/live-v2-analysis-stopped-20261114-r1/REPORT.md)不覆盖旧结果。
 - 当前对照不完整，只报告coverage，不能排名；C使用reference fallback，与B同参数，RSI学习贡献not_identifiable。权限路径、非付费复现与是否可仅续未启动槽仍在调查；任何续跑须另行登记操作协议，不能把原batch写成无修订完成。
+
+训练侧诊断追加（0API、未改策略）：SOL-2只提取三棵train数值，12个节点可见分数均1；五策略×三树×预算1/2/4的45个回放叶best全1。SDK baseline是完整树reference，不是原始prompt stub的0分；fixed-reference优先tie规则选择baseline。c00在各预算均1个tree action，reference为1/2/4，目标未奖励较少action，不能解释为候选更贵；action不等同API/token。新[训练诊断](../../experiments/context_rsi/reports/train-tree-diagnostic-20261114.json)绑定3个源与SDK/evals hash。下一批须先登记有区分度任务和质量/效率目标；当前test不用于重选或改目标。
+
+### E-LIVE-CONTINUATION-IMPLEMENTATION：2026-11-14 / 仅续原未启动槽的独立控制器
+
+- 非付费调查发现原sealed报告只存异常类型，无法追溯路径/WinError；现有20份产物可读且无readonly属性，自有temp按原b0→a1拷贝成功，未见相关runner/worker。主代理据完整结算和当前环境检查接受一次根因未知的运维例外，不宣称已修复权限、未改ACL。
+- 新`continue_live.py`与专项测试独立于原117源，incident侧证据在campaign外独占封印：精确唯一旧failed、旧journal前缀、result/final/plan/source/task/policy、原未started37槽及controller bytes。原`_state/summary`不改、original blocked仍真；只在锁内CAS开始门控允许旧例外共存，原failed永不重跑/换ID/补final。
+- 不调用旧run_batch，只按原顺序逐槽调用原run_prepared_trial；每请求/评分前保留原守卫并校新增封印。首批强制只1新槽，新异常/未知/漂移再停。异常只输出安全type/数值错误码/可证实在trial内的相对文件名；底层只给type时路径继续None，不伪称已获得原权限路径。具体协议见[续跑设计](../rsi-live-continuation.md)。
+- 作者17离线测试通过；主代理实际执行continuation+analysis+原runner组合 **91 passed in35.30s**，Ruff通过。包含CAS竞争、逐付款/评分前漂移、旧槽/错元组拒绝、额外failed/unknown/pending停止、注册0API和安全诊断。此时只验证代码，真实incident尚未注册/运行，独立审查和实际首新槽另行追加。
+- 上批e213ac02b9fe5310a914687c8661c81df4d306e5的[CI43490480318](https://github.com/294962silent/my-agent-harness/actions/runs/43490480318)四矩阵及3.13 SDK专项已核成功。新controller的CI状态不据此外推；所有历史停止态与成本不覆盖。
+
+续跑前审查追加：SOL-2只读复核新controller关键gate通过，最终bytes SHA256 `cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34`。确认register不构造模型、锁内CAS、原付款/评分验证链、独立run锁、首批1槽和安全诊断。主代理组合91通过与独立审查为不同证据，未重复计数；真实运行另记。
