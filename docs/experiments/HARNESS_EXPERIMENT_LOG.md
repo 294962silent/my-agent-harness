@@ -894,3 +894,15 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 观察此失败之后、首test之前登记exploratory recovery r1：117冻结执行源/数据/预算/48槽不变，保留完整5行及成本，另建明确available-tree投影3train+1可用val调用实际SDK；完整train才可选唯一候选，partial holdout不参与排序/平局/重选，不用于完整验证或晋升。overall gain=None、publication强制validation_incomplete_rejected_for_publication。不是原holdout完整通过，不伪造分数/trace、不重跑模型。
 - 若SDK选baseline/null，保留raw role/params/hash，在线C只用预先登记的reference2/1 fallback及独立effective hash；不能声称该条件代表学习干预、与SDK默认完全等价或证明0%学习提升。若选参数则冻结train唯一研究候选。全部规则在实际SDK选择与test之前固定。
 - 新recover_research_policy.py对5sealed输入/sourcepin/0test/0unknown核验、原子登记唯一恢复、新目录封印、只补同候选提交；不改原raw/partial/registry或117源。两助手独立方法/源码复核无阻断，主代理最终整文件12 passed in50.81s（实际SDK回归为synthetic，无provider）；Ruff/diffcheck通过。真实恢复尚待单次执行，后续终态追加，不能拿离线测试当真实策略收益。[恢复协议](../rsi-live-recovery.md)。
+
+### E-LIVE-RECOVERY-EXECUTED：2026-11-14 / baseline回退与测试启动
+
+- 实现/恢复协议已提交推origin为c927650f1f0e07f2db8901df33ec529ab8428467。主代理先误把恢复output设在campaign子目录，被付款/搜索前独立目录校验拒绝，0SDK/0provider；保留该调用，再换正确独立新目录执行，原恢复marker为0才允许进入，不是重复搜索。
+- actual SDK单次运行48个离线tree-action评估，kind=observed，objective=mean-recorded-best-ratio-v1，train选择baseline/parameters=null，未选新参数。保留raw SDK hash f46ca7…，effective online C固定reference2/1/hash330301…另列，不称SDK默认等价；C_condition=reference_fallback_not_trained_intervention，学习贡献不可识别。完整validation gain=null、覆盖1/2、publication拒绝、promoted=false，不拿partial诊断声称通过。
+- 原117执行源、数据与48槽未改；恢复独占封印并追加唯一optimizer_finished后，原runner跳过5已完成collection，开始48未执行test，无重采或重选。[紧凑恢复证据](results/rsi-live-20261114/recovery-r1.json)保留脚本/输入/seal/SDK hash；原raw/partial/journal前缀保留。短代码校准不支持长程优势或RSI改善声明。
+
+### E-LIVE-CI-SHELL：2026-11-14 / 测试命令按实际shell引用
+
+- c927650的CI43483613293两Linux成功（含3.13 SDK专项）、两Windows默认pytest失败，均为新增4/12轮工具契约tested.flag缺失。不是本次真实Agent数据失败，原CI记录保留。
+- 本机独立复现：原fixture按os.name用list2cmdline；cmd可执行，真实Git Bash把Windows反斜线吞掉，exit127且无marker。仅测试改按实际_resolve_shell().is_bash选quote：Bash用shlex.join+as_posix可执行路径，cmd保留list2cmdline。保留真实工具/marker和4/12终态断言，不skip或假执行。
+- 作者两shell各2通过；主代理最终cmd2 passed/43 deselected in8.17s、GitBash2 passed/43 deselected in7.85s。Ruff/diffcheck通过，117冻结执行源未变、0修复验证provider调用；[失败/双shell证据](results/rsi-live-20261114/ci-shell.json)，新head远端状态后核。

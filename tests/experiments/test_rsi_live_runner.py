@@ -479,19 +479,24 @@ def test_final_known_quota_records_unscored_terminal_without_failing_host(campai
 
 @pytest.mark.parametrize("turns", [4, 12])
 def test_five_request_read_edit_test_endturn_consumes_frozen_v2_turn_limit(campaign, tmp_path, turns):
-    import os
+    from pathlib import Path
     import shlex
     import subprocess
     import sys
     from experiments.context_rsi.live_runner import _branch_factory
     from my_coding_agent.rsi_branch import LocalBranchFactory, VisibleCommandEvaluator
     from my_coding_agent.rsi_runtime import FrozenPolicy, RsiRuntime
+    from my_coding_agent.tools.bash import _resolve_shell
     source = tmp_path / "five-turn-source"
     source.mkdir()
     (source / "solution.py").write_text("value = 0\n")
     argv = [sys.executable, "-c", "from pathlib import Path; assert 'value = 42' in Path('solution.py').read_text()"]
     bash_argv = [*argv[:2], argv[2] + "; Path('tested.flag').write_text('ok')"]
-    command = subprocess.list2cmdline(bash_argv) if os.name == "nt" else shlex.join(bash_argv)
+    _, is_bash = _resolve_shell()
+    # The tool can select Git Bash on Windows. Quote for that actual parser,
+    # preserving executable paths rather than letting Bash consume backslashes.
+    command = (shlex.join([Path(bash_argv[0]).as_posix(), *bash_argv[1:]])
+               if is_bash else subprocess.list2cmdline(bash_argv))
     steps = [("read", {"path": "solution.py"}), ("read", {"path": "solution.py"}),
         ("edit", {"path": "solution.py", "edits": [{"oldText": "value = 0", "newText": "value = 42"}]}),
         ("bash", {"command": command})]
