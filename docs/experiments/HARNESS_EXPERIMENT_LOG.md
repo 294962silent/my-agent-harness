@@ -724,3 +724,12 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 本批不需要额外模型提案：参数网格搜索完全CPU/已记录结果，未调用付费模型、embedding API、Langfuse云上传、SWE或效果benchmark。旧账本和两份原始归档保持。优势是本机记忆可用且费用/外发边界清楚、受控优化有真实active/验证/回滚；代价是约95MB模型缓存、本地CPU/冷启动、额外候选回放与真实数据准备。借鉴Mem0 API、FastEmbed官方模型控制、Dream评分树/固定策略类，未冒称其完整自动代码RSI已启用。
 
 - 交付前增验：本批wheel构建成功（188项），memory_local、Dream contract/optimizer/registry/worker等8个必需模块及TUI入口、Dream console和mem0-local/fastembed元数据均核验；再次status仍needs_dataset/no_active_policy。Ruff/lockcheck通过，按仓库行尾规则diffcheck通过；最终提交及CI状态以PR/checks为准，不把旧head绿灯外推为新head。
+
+### E-LONG-PILOT-PLAN：2026-11-13 / 恢复小样本长程与记忆实验
+
+- 用户在基准选型建议后明确要求设计并开始；先前暂停不再阻止本批已授权实验。新计划见docs/handoffs/2026-11-13-long-horizon-pilot.md，两名Sol/medium分别拥有benchmark_live与longmemeval，主代理负责协议/成本/材料。
+- 固定TB2.1八题、SWE-EVO两题、LongMemEval cleaned按六类型各5题；代码只切artifact_projection，记忆只切none/production lexical/Mem0，不做全框架一次开关或Dream在线效果宣称。数据/官方Git blob与LFS均核，源SHA和限制见计划。
+- 环境核验更正：L20可连但无Docker，历史官方任务实际运行于本机WSL Ubuntu-20.04/Docker26.1.3；本批优先WSL CPU，所有子进程CUDA_VISIBLE_DEVICES=2，无GPU训练或推理。原数据、原checkout和旧结果保留。
+- 原账本实际300请求/888355微美元，unknown held0，根上限$30不重置。记忆阶段绝对cap$3.888355，代码阶段绝对cap$15.888355，本批最多新增$15；保守客户端价格不是供应商核账。run级冻结64请求/任务原时限(上限1800秒)，旧16/600默认不改。
+- 原样TB首轮八oracle均registry连接超时，属于environment-blocked，无模型新请求。旧fix-git verifier uv下载失败也保留。定位到WSL旧代理端口失效，正用仅WSL客户端可访问的临时转发和官方crane匿名拉镜像，再由Docker导入；不改共享daemon或官方task/test/solution。crane0.22.1官方release digest已核；第一镜像已导入，完整oracle尚未通过，不能写成模型成绩。
+- 新开发问题P30–P35同步写入问题账本和九段深挖文档，明确当前技术验证阶段、取舍、失败路径、责任边界和待补证据。规划指标、任务成功率、召回率与本批费用全部待实际产物计算。

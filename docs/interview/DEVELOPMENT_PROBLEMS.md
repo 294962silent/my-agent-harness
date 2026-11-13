@@ -214,3 +214,16 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 - 发现：候选胜过baseline仍可能弱于已有active；仅FileLock原子写不能避免训练期间另一个晋升/rollback后被过期报告覆盖。
 - 修复：冻结incumbent版本/参数/完整指针token；holdout只额外验证固定incumbent，候选须严格胜两者。锁内重核proof和CAS，revision nonce防ABA；同参数already_active不重发。先写中性prepared产物、指针最后提交，提交状态以registry为准，不宣称故障下exactly-once。
 - 验证：临时fixture/注入评估器覆盖低于active、prepare后active变化、ABA、损坏/重封hash、合法rollback；真实SDK合成闭环永不生产晋升。没有实绩策略收益证据。
+
+## P30–P35：长程评测的预算、因果与环境边界
+
+2026-11-13，用户要求每个问题能用于面试并可深入追问。完整九段证据链、取舍与问答见[长程评测工程问题深挖](10-长程评测工程问题深挖.md)。
+
+- P30：旧16请求/600s与长程任务不匹配，扩run级冻结限制并复用原$30账本；已核300请求/$0.888355，新增Guard离线回归45 passed，真实新调用待运行。
+- P31：旧记忆脚本含query expansion、额外抽取及隐式重试，不能直接用作Mem0单变量消融；改同历史、同chunk、同输出预算，真实指标待测。
+- P32：八个TB2.1 oracle在镜像拉取阶段失败，模型请求0；按environment-blocked保留，修任务专属网络，不改官方评分器。
+- P33：固定官方commit/LFS及实际执行文件hash；TB81文件、LongMemEval数据和SWE-EVO Arrow均已核，不用目录名或可移动main冒充版本证据。
+- P34：中文BGE面对英文官方历史，功能接通与跨语召回分别验证，不把中文翻译版成绩当官方成绩。
+- P35：Dream回放参数尚未在线影响Agent，Langfuse云上传尚未验证；按真实路径安排专项，避免把SDK名词直接写成质量提升。
+
+修复后的oracle、有效样本、真实费用与源码提交结果继续追加，不用规划值覆盖失败历史。
