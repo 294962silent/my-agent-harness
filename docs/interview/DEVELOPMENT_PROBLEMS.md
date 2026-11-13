@@ -276,3 +276,9 @@ Terminal首配对raw reward为off0/on1，但off未执行测试（uv下载TLS失�
 - P50：压缩失败曾清合法旧摘要；auto/manual反例修为合法分支cache事务恢复并拒超限。分层机制对照不宣称KV或质量收益。
 
 主代理最终专项70 passed，整套1424 passed、11 skipped、5 subtests passed，批次重叠不累加。GPU两事实功能检查与RSI脚本四臂独立复跑均通过；真实模型质量仍待新实验。
+
+## P51：all-extras全绿仍漏掉默认依赖与Linux清理反例
+
+首次源码24aeca1的四矩阵CI失败，原Windows1424通过记录不覆盖。三项SDK测试局部importorskip，七项协议默认保留；Linux已终止worker的stdin.close重flush抛BrokenPipe覆盖TimeoutError，窄修只在实际worker确认退出后忽略该stdin错误，严格超时断言保留。主代理干净默认Py3.13修前3失败/6通过，修后7通过/3skip；作者Windows/WSL SDK各10通过，最终主代理all-extras1425通过/11skip/5subtests，最终GPU也另目录复验成功。
+
+原CI、红→绿、源码前后hash、最终GPU与wheel/checkout证据见[ci-repair](../experiments/results/context-rsi-20261113/ci-repair/REPORT.md)，九段追问见[深挖P51](11-RSI闭环与本地推理工程深挖.md#p51为什么windows-all-extras全绿ci仍抓到实际缺陷)。其他关闭异常传播为源码审查结论，不编造独立负例测试。远端修后状态另核最终head，0新增付费API。

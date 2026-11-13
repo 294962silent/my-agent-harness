@@ -69,10 +69,8 @@ def test_timeout_kills_worker_and_opens_circuit(tmp_path):
 
 
 def test_owned_dense_shim_does_not_patch_sdk_or_other_qdrant(tmp_path, monkeypatch):
-    import importlib
-
     monkeypatch.setenv("MEM0_TELEMETRY", "false")
-    sdk = importlib.import_module("mem0.memory.main")
+    sdk = pytest.importorskip("mem0.memory.main", reason="optional pinned Mem0 SDK contract")
     from mem0.vector_stores.qdrant import Qdrant
     from my_agent_core.memory_qwen import _dense_only_classes
 
@@ -98,10 +96,8 @@ def test_owned_dense_shim_does_not_patch_sdk_or_other_qdrant(tmp_path, monkeypat
 
 
 def test_changed_sdk_source_fails_closed_before_worker(monkeypatch):
-    import importlib
-
     monkeypatch.setenv("MEM0_TELEMETRY", "false")
-    sdk = importlib.import_module("mem0.memory.main")
+    sdk = pytest.importorskip("mem0.memory.main", reason="optional pinned Mem0 SDK contract")
     from my_agent_core import memory_qwen
 
     pins = dict(memory_qwen.SDK_METHOD_HASHES)
@@ -119,11 +115,10 @@ def test_official_model_hash_gate_rejects_incomplete_source(tmp_path):
 
 
 def test_real_mem0_methods_dense_shim_avoid_optional_network_models(tmp_path, monkeypatch):
-    import importlib
     import socket
 
     monkeypatch.setenv("MEM0_TELEMETRY", "false")
-    sdk = importlib.import_module("mem0.memory.main")
+    sdk = pytest.importorskip("mem0.memory.main", reason="optional pinned Mem0 SDK contract")
     from my_agent_core import memory_qwen
     from my_agent_core.memory_local import NeverLLM
 
@@ -207,3 +202,37 @@ def test_send_deadline_covers_ready_worker_not_reading_large_payload(tmp_path):
         client.close()
         thread.join(2)
     assert client.process_exited and not thread.is_alive()
+
+
+def test_dead_stdin_flush_during_shutdown_preserves_request_timeout(tmp_path):
+    worker = tmp_path / "no_response.py"
+    worker.write_text(
+        "import json,time\nprint(json.dumps({'ready':True,'dimensions':1024,'device':'cuda:0'}),flush=True)\ntime.sleep(100)\n"
+    )
+    config = local_qwen_config(
+        model_dir=tmp_path, storage_dir=tmp_path / "store", python_executable=sys.executable, request_timeout=0.1
+    )
+    client = QwenEmbeddingClient(config, _worker_path=worker, _verify=False)
+    original = client._process.stdin
+
+    class DeadPipeClose:
+        def write(self, value):
+            return original.write(value)
+
+        def flush(self):
+            return original.flush()
+
+        def close(self):
+            original.close()
+            raise BrokenPipeError("buffer flush after owned process termination")
+
+    client._process.stdin = DeadPipeClose()
+    try:
+        with pytest.raises(TimeoutError):
+            client.embed("facts")
+        assert client.process_exited and not client._reader.is_alive() and not client._sender.is_alive()
+    finally:
+        try:
+            client.close()
+        except BrokenPipeError:
+            pass

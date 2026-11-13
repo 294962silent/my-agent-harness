@@ -33,3 +33,5 @@ uv run --frozen --all-extras python -m pytest tests/test_rsi_runtime.py tests/ex
 ```
 
 最终整套1424 passed、11 skipped、5 subtests passed；Ruff、锁检查、wheel新worker打包与源码bytes比对通过。GPU实测与CPU fake-worker回归分别记录，不把前者外推为CI设备覆盖。
+
+追加：首提交CI后来发现默认依赖测试和Linux stdin关闭缺陷。原metrics与上面的验证数字保留；修后新源码、最终GPU复验和1425项整库结果单独存[ci-repair](../ci-repair/REPORT.md)。其中冷启动19.21秒，不与原16.45秒组成性能benchmark。

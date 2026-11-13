@@ -371,7 +371,16 @@ class QwenEmbeddingClient:
                 raise RuntimeError("owned CUDA sender did not terminate")
         for stream in (self._process.stdin, self._process.stdout):
             if stream is not None:
-                stream.close()
+                try:
+                    stream.close()
+                except BrokenPipeError:
+                    # A killed reader cannot consume a partially buffered frame.
+                    # Linux TextIO.close may flush it again after the sender has
+                    # exited. Do not replace the original request timeout with
+                    # that expected teardown error. Actual CUDA-worker exit (not
+                    # just its Windows launcher) must already be confirmed.
+                    if stream is not self._process.stdin or not self.process_exited:
+                        raise
         if threading.current_thread() is not self._reader:
             self._reader.join(timeout=2)
             if self._reader.is_alive():

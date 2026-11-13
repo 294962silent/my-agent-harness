@@ -25,7 +25,7 @@
 - [三项可选集成](../integrations/README.md)已具备安装/配置/调用入口：Mem0候选索引经本地有效事实重验、超时熔断及owned客户端清理；Langfuse全局装配、原observer保留及缓存用量映射；Dream真实固定SDK的参考策略回放与进程树清理。适配初版ec0fcdc的本地all-extras回归1254 passed、2 skipped、5 subtests passed；后续Linux CI修订的定点24项通过，最终跨平台状态见PR checks。SDK契约不是效果消融，重叠批次不累加。
 - 后续本地记忆与受控参数闭环：真实BGE CPU模型经生产Mem0Index检索，临时禁词法回退并拒绝socket仍通过；参数优化固定候选、train选择、独立holdout验收，晋升严格胜baseline及active并用CAS防覆盖。真实SDK合成CLI演练completed、promoted=false；当前无实绩数据，状态needs_dataset。主代理本地整套1302 passed、2 skipped、5 subtests passed，不是语义/任务质量成绩。
 - 发现并修复官方empty_patch被误标为环境异常的统计问题；保留原报告和旧state，另存派生分类并提供可移植离线重算。生成版本765与事后分析修复版本分开，不通过重试或改题消除失败。
-- 本轮为探索、摘要和评分建立共享父预算，缺 usage 保留 reservation 并停止派发。独立 final 反馈不进训练/选择；同 ceiling 四臂 scripted 复跑通过，A/B/random 各12次脚本调用，C为6次，仅为夹具行为，不能写成节省50%真实成本。最终 Windows all-extras 回归1424 passed、11 skipped、5 subtests passed，不是任务成功率。
+- 本轮为探索、摘要和评分建立共享父预算，缺 usage 保留 reservation 并停止派发。独立 final 反馈不进训练/选择；同 ceiling 四臂 scripted 复跑通过，A/B/random 各12次脚本调用，C为6次，仅为夹具行为，不能写成节省50%真实成本。首次Windows all-extras1424通过后，CI抓到默认可选依赖/ Linux清理问题；修后最终整库1425 passed、11 skipped、5 subtests passed，干净默认记忆协议7通过/3skip。不是任务成功率，详见[修复记录](../experiments/results/context-rsi-20261113/ci-repair/REPORT.md)。
 - 简历可用表述：“为 Coding Agent 实现受控策略闭环，将分支执行、独立评分、评分树导出和冻结策略消费接通，统一请求/token/评估预算，并建立固定与随机策略对照及可复查实验档案。”责任、取舍与追问见[闭环工程深挖](11-RSI闭环与本地推理工程深挖.md)。
 
 ## 尚不能支持的说法

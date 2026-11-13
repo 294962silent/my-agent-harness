@@ -847,3 +847,11 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - [GPU安全证据](results/context-rsi-20261113/qwen-gpu/REPORT.md)与[面试P45–P50](../interview/11-RSI闭环与本地推理工程深挖.md)已同步。付费API本轮0新增，不改旧账本533请求/已知$1.218608/未知预留$0.045131；所有进程留本机，不迁移L20。真实RSI收益与Qwen召回效果保持未测，Langfuse云上传状态不因本轮变更。
 
 交付字节核验追加：Git暂存暴露5个源码文件CRLF与提交LF指纹差异，仅做换行规范化；历史source hash不覆盖，另存before/after/CRLF行数映射与最终checkout-validation。最小.gitattributes规则保护11份RSI/Qwen源码，实际autocrlf=true导出11文件逐bytes相同。规范化后专项44 passed in17.98s，新目录CLI四臂计数/上限一致、0provider、未晋升；重新构建wheel按最终源码bytes核验。没有以格式变化改写旧实验结果。
+
+### E-QWEN-CI-REPAIR：2026-11-13 / 默认依赖与Linux异常因果
+
+- 已提交并推origin的24aeca1，其CI43444322518四矩阵默认pytest失败；保留首失败，不将之前Windows all-extras1424通过外推为跨平台。三项SDK用例无条件import可选Mem0，主代理独立干净Windows/Py3.13复现3失败/6通过。
+- SOL-2本机WSL复现生产close问题：deadline正确杀worker，stdin TextIO.close二次flush抛BrokenPipe覆盖原TimeoutError，owned worker/读写线程其实已退出。新增跨平台注入反例先红后绿；生产仅在实际owned worker确认退出后忽略stdin BrokenPipe，其他流/其他异常/未确认退出继续报错；TimeoutError断言不放宽。SOL-1定点只读复核通过；其他关闭错误传播为源码审查证据，不捏造独立负例成绩。
+- 三项真实SDK测试局部importorskip，七项纯协议仍跑；all-extras专项不跳过这些SDK测试。作者Windows/WSL各10 passed，主代理干净默认7 passed/3 skipped in4.81s；修后最终Windows整库 **1425 passed、11 skipped、5 subtests passed in112.77s**。批次有重叠不累加，1424为原修前历史。
+- 主代理最终memory_qwen源码ae27a019…重新跑真实GPU：1024维两事实检索、禁词法回退/受控Python socket、close与实际worker退出通过；冷构造19.21s，查询0.522/0.073s，短文本峰值allocator1,207,842,816B。新raw与安全指标另目录，不覆盖原16.45s运行，时间差不当性能对照。0付费API、不改旧账本、不迁移L20。
+- 最终wheel与11源码bytes、真实autocrlf=true checkout一致，Ruff/diffcheck通过；失败/诊断/最终sourcehash与GPU见[ci-repair](results/context-rsi-20261113/ci-repair/REPORT.md)。面试P51追加默认安装、OS差异与清理异常覆盖原因果的九段深挖；修后远端CI需核新head，结果更新PR正文，不用旧绿灯代替。

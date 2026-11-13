@@ -77,3 +77,15 @@
 9. **追问**：为何小视图不必更好？可能丢证据并增加回读。为何不用micro结果算摘要身份？动态投影会随时间变化，身份应来自canonical历史。为何失败仍拒绝请求？恢复旧cache不代表预算足够，继续派发会掩盖安全边界。
 
 当前可写的简历句：为Coding Agent实现受控探索、评分树导出和冻结策略执行闭环，统一父预算与取消/资源回收，建立A/B/C及随机策略对照；完成跨平台回归与可复查实验档案。真实成功率和成本收益留待独立实验，不以测试数量代替模型能力。
+
+## P51：为什么Windows all-extras全绿，CI仍抓到实际缺陷？
+
+1. **背景**：24aeca1的Windows全量1424项通过，但四矩阵默认依赖阶段失败。三项SDK测试无条件import可选Mem0；Linux另有BrokenPipe覆盖timeout，all-extras环境不能代表默认安装或Linux的管道行为。
+2. **决策**：分别复现依赖维度和OS维度；不强制默认安装全部SDK、不跳过整份协议测试，也不放宽“应为TimeoutError”的断言。
+3. **动作**：主代理建立独立干净默认依赖Py3.13环境，旧版3失败/6通过；SOL-2在本机WSL复现超时后stdin.close二次flush抛BrokenPipe，而worker及sender/reader均已退出。
+4. **交付**：三项真实SDK用例局部缺依赖跳过；生产清理只处理owned实际worker确认退出后的stdin BrokenPipe，其他流/异常和未确认退出仍报错。首失败[安全摘要](../experiments/results/context-rsi-20261113/ci-repair/failure-summary.json)保留，修后验证另存。
+5. **范围**：修复异常因果与默认安装契约，不能证明所有OS管道/终止行为。请求deadline和清理等待仍是两个窗口。
+6. **证据**：原严格deadline反例保留，新增已退出stdin BrokenPipe回归；其他close异常传播由窄范围源码审查确认，没有独立负例成绩。真实GPU与默认/all-extras环境分别复验，不把Windows绿色外推为Linux绿色。
+7. **责任**：CI作为独立验证暴露了本机覆盖缺口，不能说首次就全平台通过；修复、复核和原失败的时间顺序公开。
+8. **缺口**：更多OS/解释器/管道容量及退出race的组合仍需按风险扩展，不为漂亮数字重复同一确定性fixture。
+9. **追问**：为何close也会写？TextIO会flush缓冲，读端关闭就可能EPIPE。为何不统一吞OSError？会掩盖真实关闭失败。为何default依赖测试仍有价值？可选集成应保持基础安装可用，但all-extras CI必须实际执行这些SDK用例，避免永远skip。
