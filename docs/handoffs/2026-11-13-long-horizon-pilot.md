@@ -64,3 +64,11 @@ Langfuse 本批不上传云服务；保留本地元数据观测。观测覆盖�
 Memory已完成30题三臂、180调用；none4/30、mem015/30、lexical22/29有效（另1judge空正文/length，不重试）。完整三臂29题中22/15/4，语义未优于词法；4弃答单列，召回分母26。客户端新增$0.049191，全账本480请求/$0.937546、unknown0。[正式报告](../experiments/results/long-horizon-20261113/memory-v2/REPORT.md)另存，不覆盖首题记录。
 
 EVO报告身份/额外可执行文件两个阻断已修并独立复核；源码稳定，公开adapter与73文件清单及[复现说明](../experiments/SWE_EVO_ADAPTER.md)可用。真实clean-Dask-empty零LLM契约通过，F2P0/44、P2P2861/2861，报告原hash与旧empty相同，容器已清理。尚无本批EVO模型成绩。
+
+源码455915743ee687006698eaeefe3a98d43b55609e已推origin且四平台CI run43422249290全通过。Terminal已另开terminal-queued-v2，12:05 UTC首cancel任务off/on开始；计划SHA8cb76c1479c97638eed024e627e13397a1fe63078b4209105886ac4442e16216，16槽中七题可用、一题blocked。见[启动快照](../experiments/results/long-horizon-20261113/terminal-start/REPORT.md)，完整成绩待运行产物，不把启动当完成。
+
+### 本批最终付费状态：已按保护停止
+
+首Terminal两trial已结束：off raw0且验证器uv下载失败未执行测试；on raw1但AgentTimeoutError/取消，最后请求缺usage。有效科学配对0、delta不可用；剩余14槽未启动，EVO模型未运行。53请求已知结算$0.281062，另$0.045131未知预留保持；全账本533请求/已知$1.218608/unknown1，不能当完整费用。
+
+队列在核到账本unknown后停止，没有绕过或重试。当前fresh运输探针可通，不能改写原网络失败；任务进程、自有容器和临时转发器已清理。[停止报告](../experiments/results/long-horizon-20261113/terminal-first-pair/REPORT.md)含原reward、执行终态与预算边界。Memory完整结果保留；后续仍以本机为执行地点，先做离线工作，缺失用量保持不可用。

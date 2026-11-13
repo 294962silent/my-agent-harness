@@ -790,3 +790,17 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 本批集成回归：主代理Windows在冻结依赖下实际执行 `uv run --frozen --all-extras python -m pytest tests/experiments -q -o addopts= --import-mode=importlib --tb=short`，**171 passed、10 skipped、5 subtests passed in32.47s**；包含上面13项EVO，不重复累加。skip含6个明确WSL/Unix边界和既有可选环境条件；不是当前整库总测。独立EVO源码审查与真实clean评分覆盖关键Linux路径，最新远端四平台CI待推送后核实。
 
 跨平台追加：提交前LF→CRLF提示表明新adapter和源码manifest的固定字节pin可能在Windows fresh checkout失效。仅.gitattributes追加最小LF规则，保留原stdout与旧证据规则；执行助手用真实`git -c core.autocrlf=true checkout-index --prefix=<新的私有目录>/ -- <27目标文件>`核验27文件hash全同、CRLF0，adapter dda743…与manifest8abe773…不变。主代理随后核34个暂存文件、21份JSON、三份产物manifest及暂存bytes与原证据相同，实际API/Git凭据精确匹配0。未将缓存、模型、auth或本机配置提交。
+
+### E-LONG-CODE-START：2026-11-13 / 源码CI与本机正式首配对
+
+- 实现/档案已推自己的origin，源码head455915743ee687006698eaeefe3a98d43b55609e；PR2正文按最终实现与真实Memory负结果重写，base仍codex/context-memory-reliability，未合并。该head的[run43422249290](https://github.com/294962silent/my-agent-harness/actions/runs/43422249290)已completed/success，四组Ubuntu/Windows × Py3.11/3.13实际全部成功，Ubuntu3.13 SDK专项实际运行成功；主代理核run/head与四个jobs，不用旧绿灯外推。
+- Terminal新调度器terminal-queued-v2已在本机启动，实际计划8cb76c1479c97638eed024e627e13397a1fe63078b4209105886ac4442e16216，首cancel-async-tasks off/on。七题通过oracle可候选配对、一题双槽blocked；首个完整/同schema/无suspected配对后续跑其余槽位。此刻尚无完整结果，不预填质量/费用收益。
+- [启动快照](results/long-horizon-20261113/terminal-start/REPORT.md)保留源码、任务、约束和预算，不公开运行时凭据或代理。后续SWE-EVO仅Dask可运行，须前阶段完成、账本无unknown及源码CI已核；Conan不因失败换题，继续blocked。所有执行留本机，L20未运行任务。
+
+### E-LONG-CODE-STOP：2026-11-13 / 实际故障触发停止，费用不补零
+
+- 首off正常end_turn，raw reward0但uv0.9.5下载TLS35→env/uvx缺失，无ctrf、未执行测试，suspected=true。on在原900秒上限取消、Harbor AgentTimeoutError；验证器执行且raw reward1，但分类结果execution_or_verifier_error/official_reward=null。两者原分数、执行异常与配对资格分开，科学有效pair0，delta=null，不能宣称投影0→1提升。
+- 两trial共53请求，52已结算、1cancelled缺完整usage。已知$0.281062，完整任务费用unavailable；45131微美元预留保留。全账本533请求，已知$1.218608+未知预留$0.045131=客户端已知加预留$1.263739，不是完整实际费用或供应商账单。原$30不重置，unknown未补0；队列核到unknown后stop，剩余14槽未启动、EVO未发模型。
+- 定点调查未见代理漏配：实际off job/Harbor/trial与成功oracle同HTTPS-only策略，env.exec确实传递。独立fresh同镜像运输探针只丢弃下载体、不test.sh/评分，CONNECT GitHub→302→CONNECT release-assets→200/exit0，NO_PROXY未绕过；当前可通不能追溯原TLS原因。首私有probe解析器None stderr失败另存，不把探针当前成功改写原trial。
+- [首配对停止报告](results/long-horizon-20261113/terminal-first-pair/REPORT.md)公开安全原reward/分类/证据hash、53请求与未知预留、运输元数据；原result/ctrf/stdout/Session和ledger留本机。终态不是跑满八题，不把运行失败当完整benchmark成绩。Memory180请求/30题仍是独立已完成实验。
+- 付费进程均结束；主代理确认本批队列/Harbor PID已不存在、精确任务及探针容器剩余0，核cmdline/父子身份后关闭自有临时代理41392/18360及17913监听，用户原7897服务仍在。没有迁移L20、改共享Docker或重启用户代理。worktree和失败档案保留。

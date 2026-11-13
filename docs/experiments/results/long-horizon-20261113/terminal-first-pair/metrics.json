@@ -1,0 +1,115 @@
+{
+  "plan_sha256": "8cb76c1479c97638eed024e627e13397a1fe63078b4209105886ac4442e16216",
+  "source_head": "455915743ee687006698eaeefe3a98d43b55609e",
+  "task": "cancel-async-tasks",
+  "rows": [
+    {
+      "run_id": "tb21-563807a4acf8a5c7fee8e175d9d8e444",
+      "arm": "off",
+      "status": "finished",
+      "category": "scored",
+      "official_reward": 0.0,
+      "result_sha256": "7eea6a56cc894445200984f8917c183a6def19ea11002e54b0865328c143276c",
+      "run_status": "end_turn",
+      "cost_usd": 0.02257,
+      "input_tokens": 4510,
+      "output_tokens": 17680,
+      "cache_tokens": null,
+      "task_name": "terminal-bench/cancel-async-tasks",
+      "suspected_verifier_infra": true,
+      "verifier_diagnostic": {
+        "anchored_uv_installer_failed": false,
+        "anchored_uvx_missing": true,
+        "evidence_complete": true,
+        "expected_ctrf": true,
+        "protocol": "tb21-uv-verifier-v1",
+        "report_present": false,
+        "test_execution_observed": false,
+        "evidence": [
+          {
+            "bytes": 9331,
+            "inspected": true,
+            "sha256": "dd431e982acedbf1c766381e072a8c70bb4578fca5ee22745b595cd3e12f4482",
+            "source_relative": "tb-plan-live-v1/00-cancel-async-tasks-off/jobs/harbor/cancel-async-tasks__Hhm3Voh/verifier/test-stdout.txt"
+          }
+        ]
+      },
+      "raw_verifier_rewards": {
+        "reward": 0.0
+      },
+      "exception_type": null
+    },
+    {
+      "run_id": "tb21-b5e19d6feaa07898e472a4be01b71bb5",
+      "arm": "on",
+      "status": "finished",
+      "category": "execution_or_verifier_error",
+      "official_reward": null,
+      "result_sha256": "fb5b27df287c5262dd14445c849905e6fbb001a680b37260c738ec5bdc7458f0",
+      "run_status": "cancelled",
+      "cost_usd": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cache_tokens": null,
+      "task_name": "terminal-bench/cancel-async-tasks",
+      "suspected_verifier_infra": false,
+      "verifier_diagnostic": {
+        "anchored_uv_installer_failed": false,
+        "anchored_uvx_missing": false,
+        "evidence_complete": true,
+        "expected_ctrf": true,
+        "protocol": "tb21-uv-verifier-v1",
+        "report_present": true,
+        "test_execution_observed": true,
+        "evidence": [
+          {
+            "bytes": 10094,
+            "inspected": true,
+            "sha256": "21ab83b7c92baa0ac714e86738091b90ed3594def3e96c66259f4813cb200cb5",
+            "source_relative": "tb-plan-live-v1/01-cancel-async-tasks-on/jobs/harbor/cancel-async-tasks__6MtLv9A/verifier/test-stdout.txt"
+          },
+          {
+            "bytes": 2538,
+            "inspected": true,
+            "sha256": "5dc3f656b79d6fffe930b2319b191f6e4adffc5e7628f0607ac1870505060f31",
+            "source_relative": "tb-plan-live-v1/01-cancel-async-tasks-on/jobs/harbor/cancel-async-tasks__6MtLv9A/verifier/ctrf.json"
+          }
+        ]
+      },
+      "raw_verifier_rewards": {
+        "reward": 1.0
+      },
+      "exception_type": "AgentTimeoutError"
+    }
+  ],
+  "valid_scientific_pairs": 0,
+  "reward_delta": null,
+  "invalid_reason": "suspected_verifier_infrastructure",
+  "remaining_slots_started": false,
+  "cost": {
+    "requests": 53,
+    "settled_micro_usd": 281062,
+    "pending": 0,
+    "settled_unknown": 1,
+    "complete_task_cost_usd": null
+  },
+  "global_ledger_snapshot": {
+    "requests": 533,
+    "settled_micro_usd": 1218608,
+    "unknown_or_pending": 1,
+    "reserved_unknown_micro_usd": 45131,
+    "known_plus_reserved_micro_usd": 1263739
+  },
+  "unknown_reservations": [
+    {
+      "request_id": "30c683c978754e299533684a50dc8d84",
+      "run_id": "tb21-b5e19d6feaa07898e472a4be01b71bb5",
+      "status": "cancelled",
+      "held_micro_usd": 45131,
+      "input_token_bound": 134051,
+      "max_output_tokens": 4096,
+      "cost_micro_usd": null
+    }
+  ],
+  "queue_final_status": "stopped"
+}
