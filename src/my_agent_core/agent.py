@@ -130,6 +130,7 @@ class Agent:
         retry_policy: AutoRetryPolicy | None = None,
         artifact_store: Any | None = None,
         run_limits: RunLimits | None = None,
+        compaction_policy: Any | None = None,
     ):
         """各参数语义见框架设计文档 §4.3（hook 通过 register_hook 挂载）。
 
@@ -157,6 +158,7 @@ class Agent:
         self.model = model  # 缺省 inherit：None 时 llm.chat 用 LLM 自身配置
         self.session = session
         self.artifact_store = artifact_store
+        self.compaction_policy = compaction_policy
         # 运行态事实的显式来源：只由宿主通过 set/update/clear 写入，按快照交付。
         self.runtime_context = RuntimeContext()
         self._system_prompt = system_prompt  # 保存，reset 重拼用
@@ -295,6 +297,7 @@ class Agent:
             artifact_store=self.artifact_store,
             before_compact=self._memory_distiller.precompress if self.memory_autodistill else None,
             before_compact_timeout=self._memory_distiller.timeout,
+            **({} if self.compaction_policy is None else {"compaction_policy": self.compaction_policy}),
             **({} if context_budget is None else {"budget": context_budget}),
         )
         cache = self._ctx_bridge.restore_cache(self._ctx)

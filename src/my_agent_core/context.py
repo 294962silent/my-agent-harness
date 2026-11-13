@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
 
 from my_agent_llm.observation import observation_context
 from my_agent_llm import Message  # pyright: ignore[reportMissingImports]
+from my_agent_core.context_compaction import CompactionPolicy, ContextBudgetExceeded, closed_groups, micro_project
 
 if TYPE_CHECKING:
     from my_agent_core.session import Session
@@ -313,6 +314,7 @@ class ContextManager:
         artifact_store: Any | None = None,
         before_compact: Any | None = None,
         before_compact_timeout: float = 15,
+        compaction_policy: CompactionPolicy | None = None,
     ):
         self.llm = llm
         self.keep_recent_tokens = (
@@ -323,6 +325,9 @@ class ContextManager:
         self.before_compact = before_compact
         self.before_compact_timeout = before_compact_timeout
         self._canonical_messages: list[Message] | None = None
+        self.compaction_policy = compaction_policy or CompactionPolicy()
+        self.compaction_report: dict[str, Any] = self.compaction_policy.capability_profile()
+        self._completed_prefix: tuple[list[str], int, str] | None = None
         self.set_budget(budget)
         self._summary: str | None = None
         self._covered_count: int | None = None
@@ -381,6 +386,10 @@ class ContextManager:
         """更新压缩预算（业务层在构造后与切模型后同步当前模型窗口）：阀值同步重算为 80%。"""
         self.budget = budget
         self.budget_threshold = (budget * 4) // 5
+        if self.compaction_policy.mode == "layered":
+            self.budget_threshold = min(self.budget_threshold, self.compaction_policy.input_limit(budget))
+            if self.budget_threshold <= 0:
+                raise ValueError("context budget cannot accommodate reserves")
 
     def record_usage(self, usage: dict[str, Any] | None) -> None:
         """每轮 llm.chat 后喂 usage → 更新锚定比例（ratio = 实测 prompt_tokens / 上次视图字符数）。
@@ -421,6 +430,9 @@ class ContextManager:
         保障前缀完全一致性以最大化大模型 KV-Cache（Prompt Cache）命中率。
         超阈值时执行离散块压缩（compact 结构化摘要），建立下一个周期的静态稳定前缀。
         """
+        if self.compaction_policy.mode == "layered":
+            return await self._prepare_layered(messages)
+        self.compaction_report = self.compaction_policy.capability_profile()
         self.pending_compaction = None
         self._canonical_messages = list(messages)
         messages = self._project_artifacts(messages)
@@ -453,6 +465,119 @@ class ContextManager:
                 return spilled_view
         return await self._do_summarize(messages)
 
+    def register_completed_prefix(self, messages: list[Message], cut: int, summary: str) -> None:
+        """Explicit caller-owned stage completion; only a closed canonical prefix.
+
+        No automatic task-completion inference or hidden LLM request. The supplied
+        structured summary is untrusted model-visible context, not a system rule.
+        """
+        if (type(cut) is not int or not 0 < cut < len(messages) or not summary.strip()
+                or messages[cut].role == "tool" or _has_tool_calls(messages[cut - 1])):
+            raise ValueError("completed prefix must end at a closed turn boundary")
+        prefix = messages[:cut]
+        for i, message in enumerate(prefix):
+            if _has_tool_calls(message) and not any(start == i and end <= cut for start, end in closed_groups(messages)):
+                raise ValueError("completed prefix contains an incomplete tool group")
+        self._completed_prefix = ([_message_fingerprint(m) for m in prefix], cut, summary)
+
+    @staticmethod
+    def _preserve_protected_context(summary: str, messages: list[Message]) -> str:
+        """Keep the initial user contract and explicit host-pinned text verbatim."""
+        initial = next((m for m in messages if m.role == "user"), None)
+        protected = [m for m in messages if m is initial or (m.metadata or {}).get("context_protected") is True]
+        contents = list(dict.fromkeys(m.content for m in protected if isinstance(m.content, str) and m.content))
+        missing = [text for text in contents if text not in summary]
+        if missing:
+            summary += "\n\n## Protected source context (verbatim data)\n" + "\n\n".join(missing)
+        return summary
+
+    def _mark_projection(self, reason: str) -> None:
+        provider = getattr(self.llm, "_provider", None)
+        projection = getattr(provider, "request_projection", None) or getattr(self.llm, "request_projection", None)
+        if projection is not None:
+            projection.mark_message_rewrite(reason)
+
+    def _layered_view(self, stable: list[Message]) -> list[Message]:
+        view = self._layered_artifacts(stable)
+        view, groups = micro_project(view, stable, self.artifact_store, self.compaction_policy)
+        self.compaction_report["micro_groups"] = groups
+        if groups:
+            self._mark_projection("local_tool_micro_projection")
+        return view
+
+    def _layered_artifacts(self, messages: list[Message]) -> list[Message]:
+        from my_agent_core.artifacts import apply_previews
+        try:
+            projected, _ = apply_previews(messages, self.artifact_store)
+        except Exception:
+            self.compaction_report["artifact_save_failed"] = True
+            return list(messages)
+        result = [original if (shown.metadata or {}).get("full_unavailable") else shown
+                  for original, shown in zip(messages, projected)]
+        if any(a is not b for a, b in zip(messages, result)):
+            self._mark_projection("artifact_preview")
+        return result
+
+    async def _prepare_layered(self, messages: list[Message]) -> list[Message]:
+        self.pending_compaction = None
+        self._canonical_messages = list(messages)
+        self.compaction_report = {
+            **self.compaction_policy.capability_profile(),
+            "window_source": "caller_supplied_model_window" if self.compaction_policy.model_context_window else "caller_budget_only",
+            "input_threshold": self.budget_threshold, "micro_groups": 0, "phase_fold": False,
+            "source_fingerprints": [_message_fingerprint(m) for m in messages],
+        }
+        stable = list(messages)
+        previous_cache = None
+        if self._summary is not None:
+            cached = self._build_cached_view(stable, allow_legacy_position=False)
+            if cached is None:
+                self._invalidate_cache()
+            else:
+                previous_cache = self._snapshot_cache()
+                stable = cached
+        candidate = self._completed_prefix
+        if candidate is not None:
+            keys, cut, summary = candidate
+            summary = self._preserve_protected_context(summary, messages[:cut])
+            self._completed_prefix = None
+            if keys == [_message_fingerprint(m) for m in messages[:cut]]:
+                system = [messages[0]] if messages and messages[0].role == "system" else []
+                folded = system + [Message(role="user", content=SUMMARY_MESSAGE_PREFIX + summary)] + messages[cut:]
+                if estimate_tokens(self._layered_view(folded), self._ratio) <= self.budget_threshold:
+                    stable = await self._summarize_from_cut(list(messages), cut, supplied_summary=summary)
+                    self.compaction_report["phase_fold"] = True
+                    self._mark_projection("local_completed_prefix_fold")
+        view = self._layered_view(stable)
+        tokens = estimate_tokens(view, self._ratio)
+        if tokens > self.budget_threshold:
+            # Full canonical coordinates, never indices into the shortened cached view.
+            full = self._layered_artifacts(list(messages))
+            view = await self._do_summarize(full)
+            view = self._layered_view(view)
+            tokens = estimate_tokens(view, self._ratio)
+            self.compaction_report["fallback_summary"] = self.pending_compaction is not None
+            if self.pending_compaction is not None:
+                self._mark_projection("local_context_summary")
+        if tokens > self.budget_threshold:
+            self.pending_compaction = None
+            self._restore_failed_cache(previous_cache)
+            raise ContextBudgetExceeded("no safe local projection fits configured context reserves")
+        self.compaction_report["estimated_tokens"] = tokens
+        self._record_view(view, tokens)
+        return view
+
+    def _snapshot_cache(self):
+        return (self._summary, self._covered_count, self._retained_tail, self._end_key,
+                self._cache_identity, self._last_view_chars, self._last_view_tokens)
+
+    def _restore_failed_cache(self, previous):
+        if previous is None:
+            self._invalidate_cache()
+        else:
+            (self._summary, self._covered_count, self._retained_tail, self._end_key,
+             self._cache_identity, self._last_view_chars, self._last_view_tokens) = previous
+
     def reset(self) -> None:
         """清缓存 + 锚定（Agent.reset 时调用）。"""
         self._summary = None
@@ -462,6 +587,7 @@ class ContextManager:
         self._ratio = None
         self.pending_compaction = None
         self._cache_identity = None
+        self._completed_prefix = None
 
     async def compact(self, messages: list[Message] | None = None, instructions: str | None = None) -> list[Message]:
         """对标 Pi manual compact API：执行强制摘要并可传入额外聚焦指令。"""
@@ -475,16 +601,35 @@ class ContextManager:
         对话过短（正常切点逻辑找不到 cut）时仍强制：摘要全部非 system 消息，不保留尾部。
         """
         self.pending_compaction = None
+        self._canonical_messages = list(messages)
+        previous_cache = None
+        if (self.compaction_policy.mode == "layered" and self._summary is not None
+                and self._build_cached_view(messages, allow_legacy_position=False) is not None):
+            previous_cache = self._snapshot_cache()
         self._invalidate_cache()
         self._canonical_messages = list(messages)
-        messages = self._project_artifacts(messages)
+        messages = self._layered_artifacts(messages) if self.compaction_policy.mode == "layered" else self._project_artifacts(messages)
         cut = self._find_cut(messages)
         if cut is None:
+            if self.compaction_policy.mode == "layered":
+                closed = {start for start, _ in closed_groups(messages)}
+                if any(_has_tool_calls(m) and i not in closed for i, m in enumerate(messages)):
+                    self._restore_failed_cache(previous_cache)
+                    raise ContextBudgetExceeded("manual compaction cannot discard unresolved tool calls")
             start = 1 if (messages and messages[0].role == "system") else 0
             if len(messages) <= start:
                 return list(messages)  # 空 / 仅 system → 无可摘要
             cut = len(messages)  # 强制：全部非 system 消息进摘要，不保留尾部
-        return await self._summarize_from_cut(messages, cut, instructions=instructions)
+        view = await self._summarize_from_cut(messages, cut, instructions=instructions)
+        if self.compaction_policy.mode == "layered":
+            view = self._layered_view(view)
+            if estimate_tokens(view, self._ratio) > self.budget_threshold:
+                self.pending_compaction = None
+                self._restore_failed_cache(previous_cache)
+                raise ContextBudgetExceeded("manual compaction cannot fit configured context reserves")
+            if self.pending_compaction is not None:
+                self._mark_projection("local_context_summary")
+        return view
 
     # ── 内部 ──
 
@@ -620,7 +765,8 @@ class ContextManager:
         return await self._summarize_from_cut(messages, cut)
 
     async def _summarize_from_cut(
-        self, messages: list[Message], cut: int, instructions: str | None = None
+        self, messages: list[Message], cut: int, instructions: str | None = None,
+        supplied_summary: str | None = None,
     ) -> list[Message]:
         """按既定 cut 执行摘要：调 LLM → 写缓存 → 构造视图。降级失败返回原视图。"""
         tokens_before = estimate_tokens(messages, self._ratio)
@@ -637,7 +783,10 @@ class ContextManager:
                 if inspect.isawaitable(result):
                     await asyncio.wait_for(result, timeout=self.before_compact_timeout)
         try:
-            summary, usage, model = await self._call_summarizer(summarized, instructions=instructions)
+            if supplied_summary is None:
+                summary, usage, model = await self._call_summarizer(summarized, instructions=instructions)
+            else:
+                summary, usage, model = supplied_summary, None, None
         except Exception:
             return list(messages)  # 降级：不压缩
         if not summary.strip():
@@ -648,7 +797,8 @@ class ContextManager:
 
         self._summary = summary
         self._covered_count = cut
-        self._retained_tail = [m.model_dump() for m in retained]
+        canonical_tail = (self._canonical_messages or messages)[cut:] if self.compaction_policy.mode == "layered" else retained
+        self._retained_tail = [m.model_dump() for m in canonical_tail]
         self._end_key = _message_key(messages[cut - 1]) if cut > 0 else None
         # Fresh in-memory summaries need the same coverage validation as restored
         # Session caches. A matching tail alone cannot authenticate the prefix.
@@ -680,6 +830,19 @@ class ContextManager:
                 break
         if cut == len(messages):
             return None  # 尾部未达预算 → 全部当尾？不压缩
+        if self.compaction_policy.mode == "layered":
+            # Retain a complete user turn, not the previous turn's assistant tail.
+            # All coordinates still refer to the full cardinality-preserving input.
+            while cut > 0 and messages[cut].role != "user":
+                cut -= 1
+            closed = {start for start, _ in closed_groups(messages)}
+            unresolved = [i for i, message in enumerate(messages[:cut]) if _has_tool_calls(message) and i not in closed]
+            if unresolved:
+                cut = min(unresolved)
+                while cut > 0 and messages[cut].role != "user":
+                    cut -= 1
+            start = 1 if messages and messages[0].role == "system" else 0
+            return cut if cut > start else None
         # 对齐到 user 边界（不拆 assistant(tool_calls)+tool）
         while cut > 1 and messages[cut - 1].role != "user":
             cut -= 1
@@ -704,10 +867,24 @@ class ContextManager:
             Message(role="system", content=SUMMARIZATION_SYSTEM_PROMPT),
             Message(role="user", content=user_content),
         ]
+        options = {}
+        if self.compaction_policy.mode == "layered":
+            policy = self.compaction_policy
+            msgs[0] = msgs[0].model_copy(update={"content": msgs[0].content + "\nInclude explicit sections: Goals, Constraints, Decisions, Changed files, Validation, Pending work, Artifact references. Preserve recoverable artifact handles and unresolved tool obligations."})
+            input_limit = min(self.budget, (policy.model_context_window or self.budget) - policy.summary_max_tokens - policy.safety_margin)
+            if estimate_tokens(msgs, self._ratio) > input_limit:
+                raise ContextBudgetExceeded("summarizer input exceeds configured context reserves")
+            options["max_tokens"] = policy.summary_max_tokens
         with observation_context(purpose="summary"):
-            resp = await self.llm.achat(messages=msgs, tools=[])
+            resp = await self.llm.achat(messages=msgs, tools=[], **options)
 
         summary_text = self._extract_summary(resp.content)
+        if self.compaction_policy.mode == "layered":
+            summary_text = self._preserve_protected_context(summary_text, messages)
+            handles = sorted(set(re.findall(r"artifact:[a-f0-9]{16}:[a-f0-9]{32}", conversation)))
+            missing = [handle for handle in handles if handle not in summary_text]
+            if missing:
+                summary_text += "\n\n## Artifact references\n" + "\n".join(missing)
         read_files, modified_files = extract_file_operations(messages, self._summary)
         file_ops_block = format_file_operations(read_files, modified_files)
         if file_ops_block and "<read-files>" not in summary_text and "<modified-files>" not in summary_text:

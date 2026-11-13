@@ -812,3 +812,16 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 实际Mem0 infer=False、top8、threshold0.1、rerank=False；本轮是原始历史索引，不是整套记忆抽取/巩固质量。未换模型或重新付费选答案，原负结果保留。
 - RSI源码确认optimizer默认评估器replay_trace，worker为TraceEnv.replay→ParallelRefineMethod.solve，active只被replay消费。真实Agent未自动产出对应独立评分树，也未用active控制在线动作。已完成的是离线受控参数研究通道，线上主链尚缺接线；纠正“适配完成”可能造成的完整融合误解。默认registry只读no_active_policy，未核任意自定义registry，不推广配置结论。
 - 更新integrations说明与CLAIMS，分别说明已实现机制、已完成Memory实验、无效Terminal对照、缺失在线RSI和真实长程收益。新报告给出相同预算/工具/模型、仓库隔离与隐藏最终测试不反馈选分支的建议；属于待讨论方案，不是已实现或已跑的新实验。执行源码未修改，不因文档更新重跑模型。
+
+### E-LAYERED-COMPACTION：2026-11-13 / 先低损投影，再有界摘要
+
+- 用户采纳真实RSI闭环优先/三臂等预算，并给Claude Code五层压缩截图要求改造。复用两名Sol/medium，SOL-2拥有Context管线，SOL-1接真实RSI并独占Agent/配置工厂；主代理负责集成。起点0e9ef15，初始工作树干净；Git改前归档SHA256 439fbae0dca996e43a3ca1fe12e2cf59af445f6c5bf4078364c8be6e37a7f586，旧context-cache基线不覆盖。实施约束见handoffs/2026-11-13-online-rsi-layered-compaction.md。
+- 新context_compaction.py的CompactionPolicy支持baseline兼容路径与layered显式启用。canonical/分支摘要身份先验→既有大结果外置→旧完整成功tool组micro成可回读handle→显式完成前缀fold→预算内结构化摘要。当前user turn、首条user契约与host标记context_protected原文保留；未知/错误/未闭合/近期tool组不误删。原canonical不改、cut使用原坐标，不能适用的前缀或无法容纳保护文本时拒绝请求。
+- 涉及context.py、新context_compaction.py、core Agent三个policy透传点、test_context_layered.py及docs/context-compaction.md。动态micro不作为缓存身份；fold复用Session已有覆盖指纹和持久化桥，不新增任意中段schema。保留输出/安全/摘要reserve和purpose=summary，复用原注入LLM，不新建裸client或隐式重试。
+- 官方[context editing文档](https://platform.claude.com/docs/en/build-with-claude/context-editing)说明清理工具结果会使对应缓存前缀失效；截图cache_edits不作为DeepSeek/OpenAI能力依据。本版不发送provider cache edits、不启用模型任意删句、不宣称完整复刻五层或KV收益。结构化摘要是有损的，回读与保护文本不能证明所有语义无损。
+- 交叉review复现P2：新摘要不能fit时曾清除内存中仍合法的旧摘要。auto/manual两个反例先红后绿，改为只对当前canonical先验有效的旧cache保存事务快照，失败恢复并pending=None继续拒绝；失配分支绝不恢复，磁盘Session未被错误覆盖。SOL-1修后只读复核通过。
+- 作者Windows组合101项通过；修前WSL新用例10项通过不外推为修后结果（批次有重叠）。主代理修后实际Context/Session/Artifacts组合 **94 passed in1.55s**，Ruff通过。使用fake摘要provider与真实磁盘Session/ArtifactStore，不计作模型任务成绩，最终跨平台状态另核CI。
+- 独立synthetic机制对照见[compaction-contract](results/context-rsi-20261113/compaction-contract/REPORT.md)：同29984B canonical、5000输入预算、512输出reserve；baseline fake摘要1次后4108B，layered fake摘要0次后12044B，6份真实产物nonce回读成功，两臂canonical不变/重复稳定。baseline最终更小，layered只证明先micro避免一次合成摘要；不编造成质量、速度、总token或缓存提升。显式前缀fold的静态host摘要与LLM摘要分列，Session保存/恢复已验。
+- 本批付费API仍0新增，旧unknown/预留保持。RSI和本地Qwen GPU适配仍在独立文件实施，不能据本次Context验收提前宣称它们已完成；后续分批追加真实接线/本地模型验证结果。
+
+交付前补充：主代理在新的私有输出目录实际运行`python -m experiments.context_rsi.compaction_ablation --output <新目录>`，所得metrics与公开指标JSON完全一致；11个本批暂存文件实际API/Git凭据精确匹配0。只暂存本批Context、三点透传、独立机制证据与计划/日志，不纳入仍在实现的RSI/GPU文件。
