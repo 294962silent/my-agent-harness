@@ -16,7 +16,7 @@ from experiments.longmemeval.harness_ablation import (
     run_id,
     tag,
 )
-from experiments.longmemeval.harness_corpus import ARMS, canonical, sha, answer_prompt
+from experiments.longmemeval.harness_corpus import ARMS, canonical, sha, answer_prompt, render_chunks
 
 
 def judge_prompt(question, reference, hypothesis):
@@ -33,6 +33,30 @@ def _verify_phase(plan_root, root, kind):
     phase = read(root / "phase.json")
     if phase["kind"] != kind or phase["plan_sha256"] != file_hash(Path(plan_root) / "plan.json"):
         raise ValueError("phase does not belong to this plan")
+    if kind == "retrieval":
+        plan = read(Path(plan_root) / "plan.json")
+        expected = {tag(e["question_id"]) + ".json": e for e in plan["questions"]}
+        for path in (root / "results").glob("*.json"):
+            if path.name not in expected:
+                raise ValueError("retrieval append outside frozen plan")
+            entry, value = expected[path.name], read(path)
+            if [r["arm"] for r in value["rows"]] != list(ARMS):
+                raise ValueError("retrieval append arms differ")
+            corpus = read(Path(plan_root) / entry["corpus_file"])
+            for row in value["rows"]:
+                keys = row["chunk_keys"]
+                if (
+                    row["question_id"] != entry["question_id"]
+                    or type(row["valid"]) is not bool
+                    or len(keys) != len(set(keys))
+                    or len(keys) > 8
+                    or (row["arm"] == "none" and keys)
+                    or (not row["valid"] and (keys or row["context"] or row["session_ids"]))
+                ):
+                    raise ValueError("retrieval append identity differs")
+                rendered = render_chunks(corpus, keys, plan["budget_chars"])
+                if any(row[k] != rendered[k] for k in ("context", "context_chars", "session_ids", "chunk_keys")):
+                    raise ValueError("retrieval append context differs from frozen corpus")
     return root
 
 
@@ -75,6 +99,18 @@ async def paid_phase(
     if answers is not None:
         descriptor["answers_phase_sha256"] = file_hash(answers / "phase.json")
     root = phase_root(plan_root, output, stage, descriptor, resume=resume)
+    # Input phase descriptors permit fixed-plan append, but every already-used
+    # question remains bound to its exact bytes, including terminal/no-retry slots.
+    for trial_path in (root / "trials").glob("*.json"):
+        trial = read(trial_path)
+        identity = tag(trial["question_id"])
+        retrieval_path = retrieval / "results" / (identity + ".json")
+        if not retrieval_path.is_file() or file_hash(retrieval_path) != trial["retrieval_sha256"]:
+            raise ValueError("previously consumed retrieval changed")
+        if "answer_sha256" in trial:
+            answer_path = answers / "trials" / (identity + "-" + trial["arm"] + ".json")
+            if not answer_path.is_file() or file_hash(answer_path) != trial["answer_sha256"]:
+                raise ValueError("previously judged answer changed")
     if (root / "status.json").exists():
         previous = read(root / "status.json")
         if previous.get("status") == "stopped":

@@ -26,6 +26,7 @@ from experiments.longmemeval.harness_corpus import (
     safe_question,
     build_corpus,
     retrieval_metrics,
+    session_alias,
 )
 
 
@@ -140,6 +141,8 @@ def prepare_plan(
             "question_type": question["question_type"],
             "answer": record["answer"],
             "answer_session_ids": gold,
+            "answer_session_aliases": [session_alias(sid) for sid in gold],
+            "session_aliases": {sid: session_alias(sid) for sid in record["haystack_session_ids"]},
             "is_abstention": qid.endswith("_abs") or record.get("has_answer") is False,
         }
         entries.append(
@@ -157,7 +160,8 @@ def prepare_plan(
     write(root / "references.json", references)  # metrics/judge only; never given to the retrieval worker or solver
     plan = {
         "schema_version": 1,
-        "protocol": "fixed-history-index-ablation-v1",
+        "protocol": "fixed-history-index-ablation-v2-anonymous-sessions",
+        "session_identity": "sha256-96bit-opaque-v1",
         "language": "original_english",
         "source": {
             "file": str(source),
@@ -203,7 +207,8 @@ def verify_plan(root):
     verify_inventory(root)
     plan = read(root / "plan.json")
     if (
-        plan["protocol"] != "fixed-history-index-ablation-v1"
+        plan["protocol"] != "fixed-history-index-ablation-v2-anonymous-sessions"
+        or plan["session_identity"] != "sha256-96bit-opaque-v1"
         or plan["language"] != "original_english"
         or len(plan["questions"]) != 30
         or plan["arms"] != list(ARMS)

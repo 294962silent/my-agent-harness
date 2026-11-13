@@ -57,11 +57,11 @@ def test_selection_is_frozen_balanced_and_prioritizes_one_abstention():
 
 
 def test_corpus_uses_every_session_but_never_gold_and_is_deterministic():
-    from experiments.longmemeval.harness_corpus import build_corpus, answer_prompt
+    from experiments.longmemeval.harness_corpus import build_corpus, answer_prompt, session_alias
 
     source = record()
     corpus = build_corpus(source, chunk_chars=100)
-    assert {c["session_id"] for c in corpus} == {"s1", "s2"}
+    assert {c["session_id"] for c in corpus} == {session_alias("s1"), session_alias("s2")}
     assert "GOLD" not in json.dumps(corpus)
     assert corpus == build_corpus(source, chunk_chars=100)
     messages = answer_prompt({k: source[k] for k in ("question", "question_date")}, "")
@@ -180,6 +180,9 @@ def paid_fixture(tmp_path):
         campaign_ceiling_usd=1,
     )
     entry = read(plan_root / "plan.json")["questions"][0]
+    from experiments.longmemeval.harness_corpus import render_chunks
+
+    corpus = read(plan_root / entry["corpus_file"])
     retrieval = phase_root(plan_root, tmp_path / "retrieval", "retrieval", {"fixture": True})
     write(
         retrieval / "results" / (tag(entry["question_id"]) + ".json"),
@@ -190,10 +193,7 @@ def paid_fixture(tmp_path):
                     "question_id": entry["question_id"],
                     "arm": arm,
                     "valid": arm != "mem0",
-                    "context": "fixture evidence" if arm == "lexical" else "",
-                    "session_ids": [],
-                    "chunk_keys": [],
-                    "context_chars": 16 if arm == "lexical" else 0,
+                    **render_chunks(corpus, [corpus[0]["key"]] if arm == "lexical" else [], 6000),
                     "total_seconds": 0.1,
                 }
                 for arm in ("none", "lexical", "mem0")
@@ -321,3 +321,130 @@ def test_frozen_plan_rejects_changed_paid_execution_source_before_call(tmp_path,
     with pytest.raises(ValueError, match="frozen source/protocol implementation differs"):
         asyncio.run(paid_phase("answer", plan_root, retrieval, output, max_questions=1))
     assert not output.exists() and ledger.read_bytes() == before
+
+
+def test_anonymous_session_identity_survives_plan_real_retrieval_and_reader_prompt(tmp_path, monkeypatch):
+    from experiments.longmemeval import harness_retrieval as retrieval_module
+    from experiments.longmemeval.harness_ablation import prepare_plan, retrieve_phase, read, write
+    from experiments.longmemeval.harness_corpus import answer_prompt, session_alias
+
+    data = records()
+    for row in data:
+        row["question_id"] = row["question_id"].replace("_abs", "-ordinary")
+        row["haystack_session_ids"] = ["answer_goldmarker", "random_original_session"]
+        row["answer_session_ids"] = ["answer_goldmarker"]
+        row["answer"] = "GOLD_PRIVATE_CANARY"
+    source = tmp_path / "longmemeval_s_cleaned.json"
+    raw = json.dumps(data).encode()
+    source.write_bytes(raw)
+    plan_root = tmp_path / "plan"
+    plan = prepare_plan(source, plan_root, source_sha256=hashlib.sha256(raw).hexdigest())
+    forbidden = (b"answer_goldmarker", b"random_original_session", b"GOLD_PRIVATE_CANARY")
+    references = read(plan_root / "references.json")
+    assert references[plan["questions"][0]["question_id"]]["session_aliases"]["answer_goldmarker"] == session_alias(
+        "answer_goldmarker"
+    )
+    for directory in ("questions", "corpora"):
+        for path in (plan_root / directory).glob("*.json"):
+            assert all(marker not in path.read_bytes() for marker in forbidden)
+    original_store = retrieval_module._store
+    stores_checked, index_inputs = [], []
+
+    def checked_store(*args, **kwargs):
+        store = original_store(*args, **kwargs)
+        files = [p for p in Path(args[0]).rglob("*") if p.is_file()]
+        assert files
+        for path in files:
+            assert all(marker not in path.read_bytes() for marker in forbidden)
+        stores_checked.append(True)
+        return store
+
+    monkeypatch.setattr(retrieval_module, "_store", checked_store)
+
+    class Empty:
+        status = {"circuit_open": False}
+
+        async def search(self, **kwargs):
+            index_inputs.append(json.dumps(kwargs).encode())
+            assert all(marker not in index_inputs[-1] for marker in forbidden)
+            return []
+
+        async def aclose(self, timeout=0):
+            return True
+
+    def worker(command, output):
+        question = read(command[command.index("--question") + 1])
+        corpus = read(command[command.index("--corpus") + 1])
+        assert all(marker not in json.dumps([question, corpus]).encode() for marker in forbidden)
+        rows = asyncio.run(
+            retrieval_module.retrieve_question(
+                question, corpus, tmp_path / "work", index_factory=lambda **kwargs: Empty()
+            )
+        )
+        for row in rows:
+            assert all(
+                marker not in json.dumps(answer_prompt(question, row["context"])).encode() for marker in forbidden
+            )
+        write(output, {"network_boundary": "linux_seccomp_no_non_unix_socket_or_connect", "rows": rows})
+        return 0
+
+    result = retrieve_phase(plan_root, tmp_path / "retrieval", model_dir=tmp_path, max_questions=1, _worker=worker)
+    assert stores_checked and index_inputs
+    lexical = next(r for r in result["rows"] if r["arm"] == "lexical")
+    assert lexical["valid"] and lexical["metrics"]["recall_at_8"] == 1
+    assert lexical["session_ids"][0].startswith("sid_")
+
+
+def test_raw_session_identity_cannot_bypass_anonymized_fact_boundary():
+    from experiments.longmemeval.harness_corpus import build_corpus, chunk_value
+
+    corpus = build_corpus(record())
+    corpus[0]["session_id"] = "answer_goldmarker"
+    with pytest.raises(ValueError, match="must be anonymized"):
+        chunk_value(corpus[0])
+
+
+def test_paid_resume_accepts_plan_append_but_rejects_changed_consumed_context(tmp_path):
+    from experiments.longmemeval.harness_ablation import read, write, inventory, tag
+    from experiments.longmemeval.harness_paid import paid_phase
+    from experiments.longmemeval.harness_corpus import render_chunks
+    from my_agent_llm import Config, LLM
+    from my_agent_llm.models import Response
+
+    plan_root, retrieval, first, ledger = paid_fixture(tmp_path)
+    calls = []
+
+    class Provider:
+        async def achat(self, messages, **kwargs):
+            calls.append(messages)
+            return Response(
+                content="fixture answer",
+                model="deepseek-v4.1-flash",
+                usage={"prompt_tokens": 5, "completion_tokens": 2, "total_tokens": 7},
+            )
+
+    raw = LLM(Config(provider="openai", api_key="offline", model="deepseek-v4.1-flash", max_retries=0))
+    raw._provider = Provider()
+    output = tmp_path / "answers"
+    asyncio.run(paid_phase("answer", plan_root, retrieval, output, max_questions=1, raw_llm=raw))
+    assert len(calls) == 2
+    second = read(plan_root / "plan.json")["questions"][1]
+    original_path = retrieval / "results" / (tag(first["question_id"]) + ".json")
+    value = read(original_path)
+    corpus = read(plan_root / second["corpus_file"])
+    for row in value["rows"]:
+        row["question_id"] = second["question_id"]
+        row.update(render_chunks(corpus, [corpus[0]["key"]] if row["arm"] == "lexical" else [], 6000))
+    write(retrieval / "results" / (tag(second["question_id"]) + ".json"), value)
+    inventory(retrieval)
+    asyncio.run(paid_phase("answer", plan_root, retrieval, output, max_questions=1, raw_llm=raw, resume=True))
+    assert len(calls) == 4 and len(read(ledger)["requests"]) == 4
+    value = read(original_path)
+    corpus = read(plan_root / first["corpus_file"])
+    value["rows"][1].update(render_chunks(corpus, [corpus[1]["key"]], 6000))
+    write(original_path, value, replace=True)
+    inventory(retrieval)
+    before = ledger.read_bytes()
+    with pytest.raises(ValueError, match="previously consumed retrieval changed"):
+        asyncio.run(paid_phase("answer", plan_root, retrieval, output, max_questions=1, raw_llm=raw, resume=True))
+    assert len(calls) == 4 and ledger.read_bytes() == before

@@ -29,6 +29,11 @@ def sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
+def session_alias(session_id):
+    """Opaque identity independent of gold labels; original IDs stay host-side."""
+    return "sid_" + sha(session_id.encode("utf-8"))[:24]
+
+
 def select_records(records, seed=23):
     if type(seed) is not int:
         raise ValueError("seed must be an integer")
@@ -68,6 +73,8 @@ def build_corpus(record, chunk_chars=800):
         raise ValueError("history session/date/id lengths differ")
     if any(not isinstance(sid, str) or not sid or len(sid) > 256 for sid in ids) or len(ids) != len(set(ids)):
         raise ValueError("invalid history session IDs")
+    if len({session_alias(sid) for sid in ids}) != len(ids):
+        raise ValueError("session alias collision")
     corpus = []
     for session_index, (timestamp, session, sid) in enumerate(zip(dates, sessions, ids)):
         if not isinstance(timestamp, str) or len(timestamp) > 128 or not isinstance(session, list):
@@ -90,7 +97,7 @@ def build_corpus(record, chunk_chars=800):
                 corpus.append(
                     {
                         "key": "lme_" + sha(canonical(identity))[:24],
-                        "session_id": sid,
+                        "session_id": session_alias(sid),
                         "date": timestamp,
                         "valid_from": valid_from,
                         "turn": turn,
@@ -105,6 +112,8 @@ def build_corpus(record, chunk_chars=800):
 
 
 def chunk_value(chunk):
+    if not re.fullmatch(r"sid_[a-f0-9]{24}", chunk["session_id"]):
+        raise ValueError("historical session identities must be anonymized")
     return (
         f"[session={chunk['session_id']}; date={chunk['date']}; turn={chunk['turn']}; role={chunk['role']}] "
         + chunk["text"]
@@ -142,7 +151,7 @@ def retrieval_metrics(sessions, reference, *, valid):
         return {"recall_at_8": None, "mrr": None, "reason": "invalid_retrieval"}
     if reference["is_abstention"]:
         return {"recall_at_8": None, "mrr": None, "reason": "abstention_no_evidence"}
-    gold = set(reference["answer_session_ids"])
+    gold = set(reference.get("answer_session_aliases", reference["answer_session_ids"]))
     if not gold:
         return {"recall_at_8": None, "mrr": None, "reason": "missing_evidence_labels"}
     rank = list(dict.fromkeys(sessions))[:8]

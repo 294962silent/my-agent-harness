@@ -232,3 +232,8 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 
 - 两位助手交叉review分别复现Memory plan漏paid/guard哈希、TB两已评分臂schema不同仍报delta。已补真实执行入口的付款前漂移拒绝回归，并要求完整且schema一致才给配对差值。
 - WSL记忆12项通过，配对修复独立复核；主代理整套1334 passed、4 skipped、5 subtests passed。真实任务效果尚未生成。详细因果、证据和追问见[深挖P36](10-长程评测工程问题深挖.md#p36有hash和两组分数为什么仍然不能直接下结论)。
+
+## P37：官方会话ID的answer_前缀泄漏证据身份
+
+- 首题真实索引的上下文显示带answer_前缀的证据会话，原has_answer虽未传仍有标注旁路。v2对所有SID同规则匿名化，原映射仅host评分使用，完整正文/日期保留。旧0API单题探针归档并排除正式成绩。
+- 行为回归覆盖真实Fact/索引/reader无标签、Recall可算、合法追加与已用上下文篡改拒绝；WSL15项通过。完整九段深挖见[问题深挖P37](10-长程评测工程问题深挖.md#p37没传has_answer为什么仍然发生评测泄漏)。

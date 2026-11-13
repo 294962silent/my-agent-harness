@@ -742,3 +742,11 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 公共镜像通过官方crane0.22.1匿名下载后dockerload；8个镜像均可inspect，customheap大镜像load客户端超时后daemon仍完成导入，未仅凭CLI超时就断言导入失败。未改共享Docker daemon；保留最初registry失败、后续uv依赖失败和HTTP代理502的各次oracle原始证据。HTTPS-only第四次第一题cancel-async-tasks官方oracle实际reward1/noexception，其他仍进行中，不提前写为8题全过。
 - 交叉review抓到P36：Memory计划漏真实付费/guard源码，TB汇总在schema不同时仍算delta。双方修复并互相复核，付款前篡改反例不写ledger。主代理最终Windows命令沿用隔离MY_AGENT_HOME、真实模型缓存及Git Bash，全套 **1334 passed、4 skipped、5 subtests passed in94.93s**；Ruff/diffcheck通过。WSL记忆12项及实际Harbor定点另有重叠，不累加。
 - 本批此刻模型新调用仍0，旧300条/$0.888355不变；下一步冻结源码/选题、先首个检索和付费对照再扩展。所有收益和完整费用以实际原始记录为准。面试P30–P36已附深入取舍/反例/证据与个人边界。
+
+### E-LONG-MEMORY-PROTOCOL-V2：2026-11-13 / 真实数据探针纠偏
+
+- dfcdc5b代码与设计a55aa3a已推origin，新head四平台CI已实际completed/success。记忆plan冻结30题，首题921chunks经真实CPU/生产MemoryStore/Mem0及seccomp完成；此时无新模型请求。
+- 主代理读取真实context发现官方SID的answer_前缀暴露证据身份。即使未传has_answer也可能泄漏；该单题探针排除正式成绩，旧memory-plan/retrieval不覆盖。SOL2把所有SID等价映射为sid_<24hex>，原映射与gold仅host references，协议升fixed-history-index-ablation-v2-anonymous-sessions。正式实验另开memory-plan-v2/retrieval-v2，完整历史/日期/30ID选择规则不变。
+- 新行为回归经真实Fact磁盘/索引/reader验证原SID标签与gold canary未入公共材料，Recall仍可算；source/旧plan拒绝和append稳定性同测。已用retrieval/已判答案hash变化会在付款前拒绝；WSL15tests通过。没有把排除探针的Recall1或冷构建耗时当正式召回/性能收益。
+- 临时urllib models GET曾被403/1010拒绝；改用项目真实SDK（既有项目UA与稳定session header，未伪造官方客户端身份）实际GET成功、flash可用。此为零generation连通检查，不是Agent基线或付费任务完成。
+- TB HTTPS-only runtime下已有7/8官方oracle reward1；git-multibranch仍uv release TLS失败/uvx缺失，保留blocked并继续基础设施诊断，不换题。SWE-EVO固定fork73文件/471797B已逐Gitblob验证，真实评分入口导入与help通过，镜像准备中，尚无EVO成绩。
