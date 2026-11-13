@@ -7,6 +7,7 @@
 - 已用真实 `deepseek-v4.1-flash` 跑通 CodingAgent 工具调用、分支评分树、实际 Dream SDK 离线搜索和冻结在线参数消费。任务为固定官方 HumanEval 短代码子集，不是长程任务或完整SWE成绩。
 - collection完整交付4/5，val32未形成合法trace；事后、首test前登记available-tree探索性恢复。SDK在完整3个train上选择baseline，未学出新参数；holdout仅1/2有trace，完整验证拒绝、未晋升。C为预先规定的固定reference fallback，与B同参数，**学习贡献不可识别**，不能写成“学习提升0%”或“RSI优于固定策略”。
 - 首轮test停止态为10完成、1权限失败、37未启动，科学比较未齐，不能排名。实际新campaign用量完整：298请求870205tokens；连同v1和连通准备共303请求878756tokens，币价未核。退出文字误报unknown已按journal更正，旧账本unknown仍单独保留。[逐槽停止态及限制](../../experiments/context_rsi/reports/live-v2-analysis-stopped-20261114-r1/REPORT.md)。后续若续跑另行记录，不覆盖此时快照。
+- 最终执行覆盖已齐：精确运维例外续原37未启动槽，全部完成；48个test为47正常交付且final通过、1原权限失败未执行final。A/B/random各12通过，C为11通过+1未评分；不是pass@1或长程成绩。含所有准备成本974请求2875023tokens，全结算、0unknown/held、金额null。原失败schema指纹缺失，严格完整比较未生成排名；C仍与B同参数，学习贡献不可识别。[最终报告](../experiments/results/rsi-live-20261114/REPORT.md)给出原分母、成本与26项独立审计。
 - 可用表述：“完成真实模型驱动的受控策略优化链路校准，建立任务内容身份、独立评分进程、付款前持久化与完整失败分母；实验发现验证覆盖不足和baseline选择导致学习干预缺失，未据此宣称策略收益。”具体问题见[真实RSI数据与评分深挖](12-真实RSI实验的数据与评分可信度.md)。
 
 ## 2026-11-13 当前结论

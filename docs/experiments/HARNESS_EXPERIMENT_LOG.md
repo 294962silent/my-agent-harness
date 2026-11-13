@@ -937,3 +937,19 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 首槽核验后主代理已启动其余36个原槽；执行与新增wrapper均冻结，任何新异常再停，不根据test改策略。最终coverage/比较/成本待整批终态后独立重算，本节不是48任务已全部完成。
 
 续跑披露追加：新增独立stdlib只读`summarize_continuation.py`，稳定analyzer与所有执行源不改。它核sidecar/receipt/controller、旧journal前缀与37槽集合、后续事件绑定和原failed不变，输出仅ID/hash/状态/计数，诊断不复制任意消息或filename。作者10项synthetic通过；主代理实际10 passed in1.45s、Ruff通过。首[运行中披露](../../experiments/context_rsi/reports/live-v2-continuation-disclosure-20261114-r1/continuation.json)为2续槽完成/1运行中时快照，正常在途pending不是unknown；旧快照不覆盖，最终另存新目录。该工具0模型调用，不调run或重采。
+
+### E-LIVE-RSI-TERMINAL：2026-11-14 / 全部终态、全成本与未形成的学习干预
+
+- 主代理实际续跑先1后36，两进程均exit0；37个原未started槽全部完成，原634行journal prefix与唯一旧failed bytes保持。最终53槽全部sealed终态（52hostcompleted、1原failed）；test48为47正常交付且独立final通过、1权限失败未执行final。A/B/random各12通过，C11通过+1未评分；不是HumanEval pass@1、完整SWE或长程成绩。
+- test48共885请求2629233tokens；collection5为84请求237239tokens；v1为4请求8496tokens；独立连通1请求55tokens。**本批全成本974请求2875023tokens，输入2695287、输出179736**，全部settled，pending/unknown/held0。v2自身969请求2866472tokens，续37槽671请求1996267tokens；实际SDK48个离线回放评估叶、合计82次tree action，不计API。价格未核，currency/cost=null；旧533请求及未知预留不改。
+- 主代理实际运行新独立输出目录的analyzer与continuation披露CLI均exit0。严格分析status=schema_mismatch，唯一组6-seed23来自原failed第三attempt未发请求、schema=null；其余190份已记录attempt指纹一致。它是证据缺失，不是已观察到工具定义改变。显式allow-incomplete发布完整coverage，comparisons不排名；不删null、重采旧槽或补造final。最终[报告](results/rsi-live-20261114/REPORT.md)、[53槽数据](../../experiments/context_rsi/reports/live-v2-analysis-final-20261114-r1/analysis.json)和[完整续跑披露](../../experiments/context_rsi/reports/live-v2-continuation-final-20261114-r1/continuation.json)均另目录保留历史快照。
+- 策略仍是SDK raw baseline/null与线上reference2/1分列；train12节点/45回放叶同分，完整val只覆盖1/2，未晋升，C与B同参数，learning_contribution=not_identifiable。工程真实闭环已接通，不能写成0%学习提升或RSI改善。借鉴沿用固定Dream SDK与既有layered/Session路径，新增实际模型审计与精确续接，不恢复DS/DSH或引入新外部优化器。
+- 缓存字段v2覆盖964/969，已知read2378240；test覆盖882/885。A/B/C缺字段，完整命中率null；random219/219字段完整、read/input0.8844757880，仅为该条件的API报告值，不做缺失组排名或KV提升解释。cache_write字段未提供，不能补零。
+- 实际触发：v2全部969请求purpose=agent，summary请求0；artifact_read/search recorded starts0。B/C/random的phase-fold snapshot-derived views为24/22/24，micro snapshot groups为0/2/1，A均0；这不是操作次数或成功回读次数。只支持短题中视图出现的机制证据，不证明长程收益。
+- SOL-1独立[26项运行审计](results/rsi-live-20261114/runtime-audit-final.json)通过：source117/wrapper/sidecar/task/policy、全部result/final封印、usage与严格一次续槽；owned runner/worker进程匹配0、cleanup_errors全空。SOL-2独立指标核验另见metrics-detail-final.json；主代理统一文档，不混用假模型测试与真实结果。
+- 本批同时更新README、集成说明、闭环协议、交接、CLAIMS和面试P56–P58，纠正“无真实评分树/benchmark暂停”的过时入口。代价与限制包含追加的审计/续接复杂度、串行执行、协议事后修订、短题饱和、完整验证与schema证据缺失。下一批应先登记有区分度train与质量/效率目标、完整holdout和configured/actual schema分离，当前test不重选策略。
+- 源码/辅助工具head64884425d06e8fcbc3a9e9a317795d6e52c149d6的[CI43494451220](https://github.com/294962silent/my-agent-harness/actions/runs/43494451220)四矩阵与SDK专项已核成功；最终报告提交的CI另核，不外推旧绿灯。
+
+独立指标终态追加：SOL-2已保存metrics-detail-final.json并核实四臂、全部准备成本、缓存字段和实际触发；已记录190个attempt schema指纹完全相同、另1个原失败指纹缺失。SDK口径进一步拆分为48个回放评估叶与82次离线tree action，旧记录里的“48次评估”不是48个动作或API请求。原始评分、策略与历史快照均不改。
+
+交付前复核追加：SOL-2只读审查最终REPORT无阻断的数字/口径问题，按建议区分v2的969次与含准备总量974次。主代理从原journal独立重算969+4+连通1及全部tokens一致；27个新增本地链接有效，14个暂存文件实际API/Git凭据精确匹配0，两份最终分析/披露JSON的Git暂存bytes与SHA一致。仅列明确路径暂存，未纳入模型、凭据或私有原文。

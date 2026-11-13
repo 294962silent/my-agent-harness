@@ -84,9 +84,9 @@ uv run --extra dream-rsi my-agent-dream optimize \
   --dry-run --budgets 2 --max-candidates 2 --max-seconds 60
 ```
 
-[演练数据](dream-demo/dataset.json)明确kind=synthetic，含独立train/holdout完整小树；只验证功能，不能生产晋升。本机当前optimization_enabled=true、optimization_status=needs_dataset、无active。没有真实数据时`optimize --output <新目录>`仅返回needs_dataset，不创建优化目录或假造改进。
+[演练数据](dream-demo/dataset.json)明确kind=synthetic，含独立train/holdout完整小树；只验证功能，不能生产晋升。初版没有配置真实数据集时返回needs_dataset，不创建优化目录或假造改进。后续研究campaign已产生真实树，但没有自动配置全局数据集或发布active；研究输出与`my-agent-dream status`的全局配置状态分别查看。
 
-真实manifest用kind=observed、source、entries；每条entry具有id/task_id/split/file/sha256/provenance，相对路径受限。至少各一完整train/holdout树，拒绝同任务或同评分树跨split（改文件名、时间戳、分支编号也不能绕过）。observed仅是数据提供方声明，不是评分真实性的密码学证明；Session和SWE单链不能补造成真实树。
+真实manifest用kind=observed、source、entries；每条entry具有id/task_id/split/file/sha256/provenance，相对路径受限。至少各一完整train/holdout树，拒绝同任务跨split（改文件名、时间戳、分支编号也不能绕过）。带可重算公开输入内容证据时，不同输入允许出现相同分数曲线；legacy/mixed数据仍用保守规则，见[任务内容身份](../rsi-task-evidence.md)。observed不是评分真实性的密码学证明；Session和SWE单链不能补造成真实树。
 
 候选网格在结果前固定，只用train选择一个。holdout只验该候选、完整shape baseline和冻结incumbent，不能拿它再选其他候选。指标是有限步数下best/已记录正数上界的归一化均值，不是论文reward、任务成功率或线上收益。可信动作/成本日志重算，TraceEnv初始best为0，不把baseline得分伪造为已经达到。
 
@@ -113,7 +113,7 @@ Windows使用Job Object，Unix使用进程组；worker归属建立后再运行�
 
 主执行超时后仍有独立的退出确认窗口。Unix发送kill后会有界确认组内没有非zombie成员，5秒无法确认时明确报错，不把“信号已排队”当成“整组已退出”。
 
-离线选参、验证、晋升/回滚与显式在线分支执行链已实现，真实模型效果尚未测。既有 Memory/Terminal 不算 Dream 消融。后续 A 基础/固定、B 增强/固定、C 增强/冻结学习策略、seeded-random 四臂方案见[实验协议](../experiments/RSI_CLOSED_LOOP_EVALUATION.md)。
+离线选参、验证、晋升/回滚与显式在线分支执行链已实现。[真实HumanEval短代码校准](../experiments/results/rsi-live-20261114/REPORT.md)48测试槽已到终态：47正常交付且final通过，1权限失败、final未执行。训练树可见分数饱和，SDK选择baseline；holdout覆盖不完整，未晋升，C为与B同参数的reference fallback，不能作为学习干预。原失败的一个schema指纹缺失，完整比较未生成排名。既有Memory/Terminal不算Dream消融；四臂方案与实际限制见[实验协议](../experiments/RSI_CLOSED_LOOP_EVALUATION.md)和[持续记录](../experiments/HARNESS_EXPERIMENT_LOG.md)。
 
 ## 验证与来源
 

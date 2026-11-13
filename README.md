@@ -27,7 +27,7 @@
 - Permission：副作用前授权，默认 fail-closed；不等同完整信息流安全。
 - Observation：默认关闭的元数据记录、有界导出与可选 Langfuse 适配，导出错误不改变模型结果。
 
-本批实现Runtime生命周期、统一观测和三个适配。Mem0支持本地CPU中文profile；Langfuse配置与生命周期完整；Dream支持候选参数搜索、独立验证、active实际消费和回滚。外部云服务分发默认关闭；本机已安装并启用本地记忆，自优化入口因无真实评分树明确needs_dataset。
+本批实现Runtime生命周期、统一观测和三个适配。Mem0支持本地CPU中文及Qwen GPU profile；Langfuse提供配置与生命周期装配；Dream支持候选参数搜索、独立验证、active消费和回滚。研究campaign已产生真实评分树，SDK选择baseline，验证覆盖不足、未晋升；全局数据集配置与研究输出分开，状态以对应入口为准。
 
 ## 安装与本地验证
 
@@ -97,7 +97,7 @@ uv run --extra dream-rsi my-agent-dream --help
 
 [安装、全局配置与使用说明](docs/integrations/README.md)包含本地模型准备、JSON及合成参数搜索演练。Mem0保留本地事实权威、infer=False和NeverLLM防双抽取，失败回退词法；Langfuse保留已有observer；Dream只调白名单参数，晋升须胜过baseline和当前active，原子指针/CAS支持回滚。项目settings不能改三项集成的全局配置。
 
-本轮只做代码/功能验证：Mem0真实BGE CPU语义链路、Langfuse内存SpanExporter、Dream合成数据dry-run与活跃参数消费。没有真实评分树，不晋升合成策略；未测召回质量、真实云端或策略收益。SWE及效果benchmark继续暂停。
+初版适配通过真实BGE CPU语义链路、Langfuse内存SpanExporter和Dream合成数据dry-run验证功能。后续固定历史Memory30题未支持当前Mem0配置优于词法；Qwen GPU目前是功能smoke。[真实HumanEval校准](docs/experiments/results/rsi-live-20261114/REPORT.md)的48测试槽已全部终态：47交付并通过final、1权限失败未执行final。train树同分、SDK选择baseline，holdout覆盖不足、发布拒绝，C为固定reference fallback，学习贡献不可识别。真实云上传及长程RSI收益仍待验证。
 
 ## 逐模块实验
 
@@ -114,9 +114,9 @@ PowerShell 可先设置 `$env:PYTHONPATH='src;.'`。每次输出唯一目录，�
 
 [真实评测入口](experiments/benchmark_live/README.md)使用生产 Agent、ContextManager、Session 和容器 shell；先运行未修改官方任务的 oracle / gold，再开始模型 trial。测试 / solution 不进入 solver prompt，缺失环境单列，结果只代表预选小样本。
 
-[预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)采用用户授权的 DeepSeek V4.1 Flash 总上限30美元，同一账本逐请求预留与结算，缺失用量不当零，禁用隐式重试。[本轮v2真实结果](docs/experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、5题环境可用、10次模型trial，开启组通过2/5、关闭组1/5；7次空补丁。160请求保守账本$0.503462，非供应商核账。on产生11个外置产物但没有回读，on费用$0.252843、off$0.250619，不能宣称稳定质量、费用或KV收益。
+[历史SWE预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)采用当时授权的 DeepSeek V4.1 Flash 30美元上限。2026-11-14用户新授权继续测试，声明约20亿tokens，余额未向服务商核验；新campaign保留逐请求预留、固定episode额度及零隐式重试，旧账本不重置，币价未核时不计算金额。[历史v2真实结果](docs/experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、5题环境可用、10次模型trial，开启组通过2/5、关闭组1/5；7次空补丁。160请求保守账本$0.503462，非供应商核账。on产生11个外置产物但没有回读，on费用$0.252843、off$0.250619，不能宣称稳定质量、费用或KV收益。
 
-通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留。[随后三题预算提示对照](docs/experiments/results/swe-budget-visibility-20261112/REPORT.md)双臂均1/3通过，未提供改善证据；加独立回读探针后累计保守账本$0.888355。Terminal-Bench仍没有模型成绩。上述是适配前历史结果，不能当作三个新适配器的消融；后续benchmark暂停。
+通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留。[随后三题预算提示对照](docs/experiments/results/swe-budget-visibility-20261112/REPORT.md)双臂均1/3通过，未提供改善证据；加独立回读探针后累计保守账本$0.888355。Terminal首pair因验证器故障/超时未形成有效科学比较。上述不能当作三个适配器的消融；当前HumanEval只校准真实RSI链路，完整SWE与长程收益尚未证明。
 
 ## 限制与历史
 

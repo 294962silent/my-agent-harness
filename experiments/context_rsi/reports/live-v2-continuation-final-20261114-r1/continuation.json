@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "kind": "readonly_operational_continuation_disclosure",
+  "incident_id": "permissionerror-operational-exception-r1",
+  "hashes": {
+    "incident_json": "d59286a4e172dd2a5eacf4737680310ba36251044dbe28ee0eee4bee1018514d",
+    "incident_seal": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+    "registered_receipt": "ea71024df4e7f7980e4a0ada694759a7caec3c95f703b63d297f9e92a9ed7142",
+    "original_prefix": "7e64e0c51f4f9ed0ca5daeaec2c0b52dc9d0e85ae6a0d8b7c7a1b591c7a67144",
+    "original_journal_head": "3e9db53c4e6e6fd32c77306ff7348c5fe05711d1aa27a5e4cf82e90e5a738a53",
+    "current_journal": "e01e3416ad4eaa790c8df4d1a513fef68c25b99618401dffbbaf2ca31f78a2ac",
+    "wrapper_script": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+    "original_pending_set": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f",
+    "frozen_execution_source_snapshot": "2c1d1acbf988c35063ef79f6530cc356bd24231ba9ab87c4c56dff2d0357488a",
+    "pinned_original_artifacts": {
+      "campaign.json": "f0812bfb09360c88fa6be1199d979c91ac2c11dcb7f18046bc03227e8505e576",
+      "plan.json": "9c157bbe1de25fdd761a35aaa51e01ebe02462022b74f34c9db93c22e9b167fd",
+      "research-policy.json": "e6affd7752ac4a9b00e77f86353decb8b457770eb137c4e3f2d875dbe9be9a37",
+      "trials/test-HumanEval-6-s23-C/final-evaluation.json": "e3abf06244ed317eeb98c97526bd851166cd33aece7ebefde68b3fdcc7969134",
+      "trials/test-HumanEval-6-s23-C/result.json": "0abb66dc68a1be2153c9b1440e66736c616edf6f82e7e612782e2adf1f345e4c"
+    }
+  },
+  "denominator": {
+    "planned": 53,
+    "collection": 5,
+    "test": 48,
+    "original_started": 16,
+    "started": 53,
+    "terminal": 53,
+    "original_failed": 1
+  },
+  "original_failed": {
+    "trial_id": "test-HumanEval-6-s23-C",
+    "status": "failed",
+    "error_type": "PermissionError",
+    "root_cause": "unlocalized",
+    "final_quality": null,
+    "retried": false
+  },
+  "continuation": {
+    "original_pending_count": 37,
+    "original_pending_trial_ids": [
+      "test-HumanEval-6-s23-A",
+      "test-HumanEval-6-s47-C",
+      "test-HumanEval-6-s47-A",
+      "test-HumanEval-6-s47-random",
+      "test-HumanEval-6-s47-B",
+      "test-HumanEval-9-s23-B",
+      "test-HumanEval-9-s23-C",
+      "test-HumanEval-9-s23-random",
+      "test-HumanEval-9-s23-A",
+      "test-HumanEval-9-s47-B",
+      "test-HumanEval-9-s47-random",
+      "test-HumanEval-9-s47-C",
+      "test-HumanEval-9-s47-A",
+      "test-HumanEval-20-s23-random",
+      "test-HumanEval-20-s23-B",
+      "test-HumanEval-20-s23-C",
+      "test-HumanEval-20-s23-A",
+      "test-HumanEval-20-s47-C",
+      "test-HumanEval-20-s47-B",
+      "test-HumanEval-20-s47-random",
+      "test-HumanEval-20-s47-A",
+      "test-HumanEval-33-s23-B",
+      "test-HumanEval-33-s23-random",
+      "test-HumanEval-33-s23-A",
+      "test-HumanEval-33-s23-C",
+      "test-HumanEval-33-s47-random",
+      "test-HumanEval-33-s47-A",
+      "test-HumanEval-33-s47-B",
+      "test-HumanEval-33-s47-C",
+      "test-HumanEval-40-s23-C",
+      "test-HumanEval-40-s23-random",
+      "test-HumanEval-40-s23-A",
+      "test-HumanEval-40-s23-B",
+      "test-HumanEval-40-s47-A",
+      "test-HumanEval-40-s47-C",
+      "test-HumanEval-40-s47-random",
+      "test-HumanEval-40-s47-B"
+    ],
+    "rows": [
+      {
+        "trial_id": "test-HumanEval-6-s23-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-B",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-A",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-C",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-random",
+        "status": "completed"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-B",
+        "status": "completed"
+      }
+    ],
+    "started": 37,
+    "completed": 37,
+    "failed": 0,
+    "cancelled": 0,
+    "unstarted": 0,
+    "in_progress": 0,
+    "additional_failed_ids": []
+  },
+  "financial_state": {
+    "requests": 969,
+    "settled": 969,
+    "pending": 0,
+    "unknown": 0,
+    "held_tokens": 0,
+    "known_tokens": 2866472,
+    "usage_complete": true
+  },
+  "operator_events": [
+    {
+      "phase": "registered",
+      "sequence": 634,
+      "event_sha256": "ea71024df4e7f7980e4a0ada694759a7caec3c95f703b63d297f9e92a9ed7142",
+      "incident_seal_sha256": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+      "script_sha256": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+      "pending_ids_sha256": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f"
+    },
+    {
+      "phase": "run_started",
+      "sequence": 635,
+      "event_sha256": "e26df63d04b241c1a681b36cd6748f3db27e076cc6da859874683eb037d28636",
+      "incident_seal_sha256": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+      "script_sha256": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+      "pending_ids_sha256": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f"
+    },
+    {
+      "phase": "run_finished",
+      "sequence": 674,
+      "event_sha256": "2c3de2482c17f49138defb90fc1ffd9d53a57cfaddc694cfb1e80587e49e00e3",
+      "incident_seal_sha256": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+      "script_sha256": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+      "pending_ids_sha256": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f"
+    },
+    {
+      "phase": "run_started",
+      "sequence": 675,
+      "event_sha256": "4ac9ffb09dff852cb3fb92d22fad7f7f92528e59c6e002b7bc246e7b157b2dd8",
+      "incident_seal_sha256": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+      "script_sha256": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+      "pending_ids_sha256": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f"
+    },
+    {
+      "phase": "run_finished",
+      "sequence": 2054,
+      "event_sha256": "0c26e03c7aa3f190acae80ff2ad25c4a83bd26afbfa839f06204a53f489de7dc",
+      "incident_seal_sha256": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+      "script_sha256": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+      "pending_ids_sha256": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f"
+    }
+  ],
+  "complete": true,
+  "authorization_continuation_clean": true,
+  "scope": {
+    "operational_exception_after_test_exposure": true,
+    "root_cause_fixed": false,
+    "original_failed_in_denominator": true,
+    "learning_contribution": "not_identifiable",
+    "trial_quality_audit": "Use the separate frozen sealed-result analyzer; this companion validates authorization metadata and denominator only.",
+    "no_raw_exception_message_filename_prompt_candidate_gold_or_final_content": true,
+    "audit_provider_calls": 0
+  }
+}

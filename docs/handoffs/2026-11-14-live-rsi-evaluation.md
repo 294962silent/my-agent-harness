@@ -59,3 +59,11 @@ v2五个collection共84请求/237239tokens：train3/3有完整评分树，holdou
 这是明确的test-blind探索性修订，不声称原完整holdout协议通过。另存五题full coverage和全成本，再为实际SDK构造独立available-tree投影（全部3train+可用val45）；选择/平局只由train决定，partial holdout仅raw诊断。整体gain均null、强制拒生产晋升。唯一train候选可冻结作研究测试；若SDK选择baseline/null，保留原身份，在线C用预先规定的2/1 reference fallback，不能称新学习干预或精确SDK默认映射。
 
 新恢复脚本不改冻结117执行源、不做模型调用、不重采collection，执行前核0test/0unknown/所有封印；以独占输出与增补operator事件记录，封印后只允许完成同一提交，不能重选或覆盖。提交后的原runner只继续48个未开始test槽。细节、限制和命令见[恢复协议](../rsi-live-recovery.md)。
+
+## 实际终态：测试与运维续跑均已结束
+
+48个test全部终态：47正常交付且独立final通过，1权限失败未执行final；5个collection保留val32无合法trace，完整交付4/5。SDK选择baseline，C使用预登记reference2/1，学习贡献不可识别、未晋升。
+
+原runner在6-seed23-C权限异常后停止，实际298请求全结算而非unknown。按[独立运维例外](../rsi-live-continuation.md)续原37未started槽，先1后36，全部完成且原失败不变；原634行prefix与117源保留，controller新增封印。此次操作不是权限根因已修复或原协议无修订完成。
+
+v2为969请求2866472tokens，计入v1四请求8496tokens和连通55tokens共974请求2875023tokens，0pending/unknown/held，金额null。原失败的第三attempt尚未请求模型，schema指纹为null；最终analyzer明确allow-incomplete发布完整coverage，comparisons.status=schema_mismatch，只含该证据缺失组，不生成排名。最终[报告与审计](../experiments/results/rsi-live-20261114/REPORT.md)记录全部原分母、成本和限制。相关运行进程已退出；不可再启动本campaign补采或重试。
