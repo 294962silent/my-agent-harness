@@ -755,3 +755,38 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 - 真实oracle证明缺uvx仍可能reward0/noexception，另有namespace名称和fake短名不一致。SOL1最小修long_horizon，保留official_reward/category，不改generic解析；缺预期ctrf+明确安装器失败/uvx缺失+无测试执行才suspected，证据有path/bytes/hash且有界读取。正常代码/collection失败继续scored0。suspected或schema不一致不能计算科学配对delta。
 - 名称按冻结oracle身份仅接受短名或terminal-bench/<短名>，拒绝其他namespace；started恢复收割真实result不重跑。最终WSL21项、Ruff通过，无模型请求。SWE-EVO两官方镜像也已导入、config ID保存，固定forkgold/empty CPU预检开始准备，仍未宣称EVO通过。
+
+### E-LONG-SMOKE-AND-LOCAL-RUN：2026-11-13 / 正式首题与本机批次
+
+- 用户明确暂不迁移，继续本机；全部执行器、Docker与CPU索引留WSL，生成/judge仍调用既有远端DeepSeek接口。不在L20跑任务。
+- v2匿名SID正式首题06db6396完成3回答+3judge，none0/1、lexical1/1、mem01/1；两检索证据会话Recall/MRR均1。独立源码/输入清单核对和原文人工辅助审验支持答案5，模型输入仅匿名SID（重建SHA证据，不是抓包）。n=1不能做质量收益结论。
+- 六请求全ok，prompt3062/completion470，客户端按全冷参考价逐请求结算1485微美元；原账本现306请求/889840微美元，unknown0，cache未提供保留unavailable。原始六条metadata/usage和首题指标存docs/experiments/results/long-horizon-20261113/smoke-v2，不含密钥、prompt、gold或完整历史。
+- 实际Mem0建库等待1800秒/close60秒与产品工作等待10秒不同；首题约100秒包含921块首次embedding/索引，不称query-only延迟。原始历史分块检索不测自动抽取/巩固/脱敏写入。详见首题报告和P41。
+- 30题Memory批量resume已启动，由专属进程顺序retrieve→answer→judge→summary，已完成首题不会重付；TB另进程等待Memory成功且无unknown才freeze实际计划、先跑2trial，再仅在完整/同schema/无疑似verifier故障的配对后续跑余下。两个进程只读旧123源补充清单，原账本$30、本批最多新增$15保持；没有自动恢复已失败API。
+- TB原8题最新7oracle通过，git-multibranch追加同配置网络复查仍0且依赖问题，保留所有轮次不替题。SWE-EVO固定fork四项gold/empty已真实评分：Dask gold F2P44/44、P2P2861/2861，empty0/44、2861/2861；Conan gold72/72、640/649，empty0/72、630/649，因此仅Dask可进入生成，未把gold失败归因模型。
+- Dask原镜像Git含4569个不属于base祖先的可达提交和303refs，存在基线之外信息通道。新接缝同tree单root清理三次探针通过，原objects/reflog不可读；丢失合法历史能力的代价记录在P39。EVO交叉review另发现foreign report路径/额外sitecustomize可执行清单缺口，修复复核中，尚未EVO付费。
+- 已推16bdae0的CI run43408977540实际completed/success；新增EVO文件未据此宣称CI已覆盖。首题报告、后续完整结果、官方预检与不同协议探针保持独立，不覆盖历史。
+
+### E-LONG-MEMORY-COMPLETE：2026-11-13 / 30题真实三臂结果
+
+- v2固定30题已完成90回答+90judge，180请求全部ok、unknown/pending0，客户端49191微美元（$0.049191）；全账本480请求/$0.937546，仍受原$30约束，未重置起点。原单题6请求包含在180中，不重复相加。
+- none4/30、mem015/30、lexical22/29有效且另1不可用。lexical的75f70248判分在1024输出上限以length结束、正文空，invalid_judge_format；不补零、不从推理猜分、不加请求重跑。三臂共同29题：lexical22、mem015、none4；mem0-lexical为-7/29。4弃答三臂全对，召回分母26。
+- 检索90槽位valid且全部close完成，词法session Recall@8/MRR为0.86538/0.80449，mem0为0.73077/0.61255。总耗时均值4.32/99.13秒含首次建库，不当warm查询或线上SLA；中文BGE面对原英文数据，固定历史索引不等于自动抽取管线。本次结果不支持语义优于词法，不改默认值、换题或覆盖负结果。
+- 独立stdlib审计核完全部manifest、输入重建SHA、检索/答案关联、exact判分及ledger一对一，require-complete/summary对照通过。公开metadata在results/long-horizon-20261113/memory-v2（6份机器证据，含manifest），无prompt/gold/历史。使用原summary bytes，并可从90行独立重算统计。
+- usage合计prompt95175/completion17067/total112498；有一条另列cache256，全输入按total-completion为95431。按每请求全冷参考价向上取整重算49191微美元，与ledger一致；cache_read覆盖仅1/180、write0/180，完整KV命中率不可用，不排名。供应商账单未核。
+- 面试材料新增P42判分可用性与P43负结果定位，均按九段证据深入，保留个人责任和适用边界。[完整报告](results/long-horizon-20261113/memory-v2/REPORT.md)。
+
+### E-LONG-EVO-REPAIR：2026-11-13 / 官方评分闭包与可复现接缝
+
+- 新增evo_agent.py、evo_cache_adapter.py及test_evo_agent.py，不改Memory/TB/预算/src/uv.lock既有冻结文件。EVO支持freeze/solve/probe/score、官方双gate、64请求/1800秒、源/模型/预算绑定和独立fresh评分；仅Dask符合前gate，Conan仍blocked。生成清理原Git历史，同tree固定单root，不声称完全消除泄漏。
+- 修复前只glob唯一report、只核已知73hash，会接受foreign报告或额外sitecustomize。修复后绑定固定run/model/iid报告路径、外层iid及父路径无symlink；校额外可执行inventory，并从原bytes建立clean snapshot，不复制旧pyc。-I -B隔离启动，解释器/site-packages仍信任，不是任意代码沙箱。
+- adapter公开为可配置根路径，原60672af1…文件/前gate不改；新dda7435e…的cached_pull和ALLOWED经独立AST核相同。公开73文件manifest与原8abe773c…hash一致，docs/experiments/SWE_EVO_ADAPTER.md给下载/核验/CLI和信任边界，不再依赖私有硬编码路径。
+- 作者WSL19 passed；主代理Windows实际13 passed/6 skipped（WSL评分及Unix symlink边界），Ruff/diffcheck通过；独立复核原反例11项通过，不把重叠计数相加。真实clean75file逐hash、0pyc、-I-B --help通过；新head CI尚待本批提交后核验。
+- 为避免源码稳定前自动freeze，主代理核原Terminal等待器waiting_for_memory、无child/无已开始trial后只停止该等待器，保留停前快照和stopped_before_freeze原因；Memory未中断。待源码稳定另开Terminal调度阶段，不重跑已消费任务。
+- 真实clean-Dask-empty零LLM契约首次在官方评分前因私有脚本漏mkdir(output_final)失败；产品score已有mkdir。仅修私有脚本，保留首失败目录，新v2目录重试；不影响账本或原gold/empty。最终评分结果另行追加，不预填成功。
+
+验收追加：主代理实际执行新v2 clean-Dask-empty已通过：官方CLI退出0、F2P0/44、P2P2861/2861、resolved=false，原report SHA仍053b84ab…，与旧empty一致；75份快照逐hash一致、pyc0、无cleanup_error。0模型请求、没有伪造generation run.json。安全证据存[evo-contract](results/long-horizon-20261113/evo-contract/REPORT.md)，它是评分装配契约，不是Agent解题成功。
+
+本批集成回归：主代理Windows在冻结依赖下实际执行 `uv run --frozen --all-extras python -m pytest tests/experiments -q -o addopts= --import-mode=importlib --tb=short`，**171 passed、10 skipped、5 subtests passed in32.47s**；包含上面13项EVO，不重复累加。skip含6个明确WSL/Unix边界和既有可选环境条件；不是当前整库总测。独立EVO源码审查与真实clean评分覆盖关键Linux路径，最新远端四平台CI待推送后核实。
+
+跨平台追加：提交前LF→CRLF提示表明新adapter和源码manifest的固定字节pin可能在Windows fresh checkout失效。仅.gitattributes追加最小LF规则，保留原stdout与旧证据规则；执行助手用真实`git -c core.autocrlf=true checkout-index --prefix=<新的私有目录>/ -- <27目标文件>`核验27文件hash全同、CRLF0，adapter dda743…与manifest8abe773…不变。主代理随后核34个暂存文件、21份JSON、三份产物manifest及暂存bytes与原证据相同，实际API/Git凭据精确匹配0。未将缓存、模型、auth或本机配置提交。

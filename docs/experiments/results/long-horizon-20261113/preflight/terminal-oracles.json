@@ -1,0 +1,281 @@
+{
+  "official_revision": "12b7565679ce5006230b820666353673a133db93",
+  "selected": 8,
+  "qualified": 7,
+  "blocked": 1,
+  "selection_changed_after_result": false,
+  "rows": [
+    {
+      "task_id": "cancel-async-tasks",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-cancel-async-tasks/cancel-async-tasks__C56aGLe/result.json",
+          "source_sha256": "63a8f6aeb739e6834db8d49621f2c07c5848a7c1b5f69fb347135f6bb9cd5e0a",
+          "task_name": "terminal-bench/cancel-async-tasks",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-cancel-async-tasks-network2/cancel-async-tasks__oX8JULP/result.json",
+          "source_sha256": "67b4f403c17bd3556a179f4f5d6d0c39be172e84aae7002e8b4939c45e354a70",
+          "task_name": "terminal-bench/cancel-async-tasks",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-cancel-async-tasks-proxy3/cancel-async-tasks__4SAUhd8/result.json",
+          "source_sha256": "c4b787a46d71b6569c5d929fef7855675f733e4e22809bc015ea927aa923013d",
+          "task_name": "terminal-bench/cancel-async-tasks",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-cancel-async-tasks-https4/cancel-async-tasks__Maq6H7h/result.json",
+          "source_sha256": "fe400c15127de3a7eeb21e741cd485bfd16bdf76987a99c2a7b90d4f78a7a801",
+          "task_name": "terminal-bench/cancel-async-tasks",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "large-scale-text-editing",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+          "source_sha256": "7b82f4b23095830f8fe906632b1ee6a10bf1d9e47d004afe14aa8b5c6224d2f2",
+          "task_name": "terminal-bench/large-scale-text-editing",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+          "source_sha256": "1ec52f47341abecc17ded8e769504af9fa7d763675d7633a2196259c3a37f8cf",
+          "task_name": "terminal-bench/large-scale-text-editing",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+          "source_sha256": "468c94b89b01bbeba5c7df549f582734f9337df386f9b49a3b524c5940f99b7e",
+          "task_name": "terminal-bench/large-scale-text-editing",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+          "source_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+          "task_name": "terminal-bench/large-scale-text-editing",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-summary-date-ranges",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-log-summary-date-ranges/log-summary-date-ranges__7QrSum9/result.json",
+          "source_sha256": "55696c0ec465fa7fcb9216663607acd6fb997ef2a6cc3440ba411477546aaf98",
+          "task_name": "terminal-bench/log-summary-date-ranges",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-log-summary-date-ranges-network2/log-summary-date-ranges__UsLPAzE/result.json",
+          "source_sha256": "92913834247f2e9e22861174a533c0999cda298acec21cfd36cb5cc10f6b7808",
+          "task_name": "terminal-bench/log-summary-date-ranges",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-log-summary-date-ranges-proxy3/log-summary-date-ranges__brwhiCB/result.json",
+          "source_sha256": "a9744e8c3efe238fadce9ca02834e6b7f7386aa05f71888bb9e79175615b412f",
+          "task_name": "terminal-bench/log-summary-date-ranges",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-log-summary-date-ranges-https4/log-summary-date-ranges__U2WLqHG/result.json",
+          "source_sha256": "135216bcf42f71e38c7446e20440ad184d6fc8d0f3de3ac29a5614c065cb60a1",
+          "task_name": "terminal-bench/log-summary-date-ranges",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "git-multibranch",
+      "oracle_qualified": false,
+      "status": "blocked",
+      "blocked_reason": "uv_release_tls_download_failed_and_uvx_unavailable",
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-git-multibranch/git-multibranch__6LZm69e/result.json",
+          "source_sha256": "e389e6bc43009b56b8697c5afef885ae1d6663d03e8dcefaee21f07762c2337e",
+          "task_name": "terminal-bench/git-multibranch",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-git-multibranch-network2/git-multibranch__7N6f9S4/result.json",
+          "source_sha256": "7307ae41696906f8a6a3c5ac633abbffac273469aeab1727c16d7462175d7af8",
+          "task_name": "terminal-bench/git-multibranch",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-git-multibranch-https4/git-multibranch__uyUkQTE/result.json",
+          "source_sha256": "b5c13d9fd87d6f9c304ce5a776a4f5fb9db2303eca8a6aa8d6775bee522a2675",
+          "task_name": "terminal-bench/git-multibranch",
+          "rewards": {
+            "reward": 0.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "fix-git",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+          "source_sha256": "d38fe9a61c54dd5f6aaea17b3bb5d5070e836bae34f9d2816594ad91a8fd6f68",
+          "task_name": "terminal-bench/fix-git",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+          "source_sha256": "8e7b43ac8a620725e91ce448b51e7bbe3028741f99035e2d2b2a9fc5b2c18188",
+          "task_name": "terminal-bench/fix-git",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+          "source_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+          "task_name": "terminal-bench/fix-git",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "regex-log",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-regex-log/regex-log__oAgAAwZ/result.json",
+          "source_sha256": "ef0638049bc55b90b443c3809379d219858c49b55ba665a426b307be99719028",
+          "task_name": "terminal-bench/regex-log",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-regex-log-https4/regex-log__veQVxrh/result.json",
+          "source_sha256": "21d10f4768a5b48b3bcb2f80756d0da2988aba0a05a918ea4494198a595f5b43",
+          "task_name": "terminal-bench/regex-log",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "db-wal-recovery",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-db-wal-recovery/db-wal-recovery__WLv38Kt/result.json",
+          "source_sha256": "8add89c4700b6564ed28db01d27a282e3fe76cfee881385ae1cd6fb662341272",
+          "task_name": "terminal-bench/db-wal-recovery",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-db-wal-recovery-https4/db-wal-recovery__R8J3maY/result.json",
+          "source_sha256": "4ed2ad334e3d20661e9d0c0524610f05d573b64ec56e3c296055c98000cbb154",
+          "task_name": "terminal-bench/db-wal-recovery",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    },
+    {
+      "task_id": "custom-memory-heap-crash",
+      "oracle_qualified": true,
+      "status": "oracle_passed",
+      "blocked_reason": null,
+      "model_requests": 0,
+      "attempts": [
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+          "source_sha256": "088738b97ab07083705053b7339b8fbb7c01c979af1117120cd821598d3ee6f0",
+          "task_name": "terminal-bench/custom-memory-heap-crash",
+          "rewards": null,
+          "exception_type": "RuntimeError"
+        },
+        {
+          "source_relative": "oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+          "source_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+          "task_name": "terminal-bench/custom-memory-heap-crash",
+          "rewards": {
+            "reward": 1.0
+          },
+          "exception_type": null
+        }
+      ]
+    }
+  ]
+}

@@ -40,9 +40,27 @@ Langfuse 本批不上传云服务；保留本地元数据观测。观测覆盖�
 - [x] 核验L20可连但无Docker/uv、拷贝非Git；历史官方评测实际在本机WSL Ubuntu-20.04，Docker26.1.3可用。当前使用WSL CPU；所有新子进程仍设置CUDA_VISIBLE_DEVICES=2，未运行GPU任务。
 - [x] 固定官方任务文件与记忆LFS、SWE-EVO Arrow来源；建立独立私有工作目录和初始账本快照。
 - [x] 原样运行八个TB oracle。首轮均因Docker registry连接失败而environment-blocked，模型请求为0，原始记录保留。
-- [ ] 修复任务专属网络路径并保存新一次oracle证据，不改官方task/test/solution、不把基础设施重试当模型重复试验。
+- [x] 修复任务专属网络路径并保存新一次oracle证据：TB七题通过、一题blocked；EVO Dask通过gold/empty，Conan gold仍有九项P2P失败。未改官方task/test/solution、不把基础设施重试当模型重复试验，见[预检归档](../experiments/results/long-horizon-20261113/preflight/REPORT.md)。
 - [ ] 完成两条驱动的离线回归、交叉审查、源提交与选择清单冻结。
 - [ ] 运行纯检索、首个完整付费对照、核对账本后续跑冻结小样本。
 - [ ] 归档原始证据与可复算汇总，明确本批有效样本、无效/阻塞和费用；更新实验日志、问题深挖和GitHub PR，不自动合并。
 
 每阶段以真实产物和退出状态为准。所有计划指标在测量前保持未测，不能预填收益。
+
+## 运行约束补充（2026-11-13，付款前/启动阶段已核）
+
+用户后续明确暂不迁移，继续本机；所有执行器、Docker任务和CPU向量索引运行于本机WSL，生成/判分仍用既有远端DeepSeek兼容API，不在L20跑任务。Memory索引离线建库等待1800秒、关闭60秒；这与产品全局10秒工作等待不同，不按在线SLA解释。正式协议已升级为v2匿名SID，旧0API单题探针排除。
+
+首题正式6调用已结算1485微美元，1独立题none0/1、lexical1/1、mem01/1；仅确认流程。30题批量resume已启动，TB串行排队并在首个科学配对检查通过后续跑；两进程遇未知用量/源漂移/预算上限会停止，仍复用原30美元账本。启动报告见[首题记录](../experiments/results/long-horizon-20261113/smoke-v2/REPORT.md)。
+
+### 后续状态更正：保持本机并等待EVO源码稳定
+
+30题检索已全部完成，回答/判分继续运行。原Terminal等待器在仍处于waiting_for_memory、无子进程、正式freeze尚未发生时停止，保留terminal-queued-v1及停前状态；付费trial为0。停因是新增EVO接缝仍在修复，而Terminal源码冻结会枚举benchmark_live文件。待修复、复核和源码稳定后，另建调度阶段接续，不覆盖旧目录，不重跑任何已消费模型任务。
+
+这次停止不影响Memory运行，未改其123份冻结源码或原累计账本。用户明确暂不迁移L20，后续实验仍在本机WSL/Docker/CPU执行；调用DeepSeek的远端API不等于在L20运行。
+
+### Memory完成与EVO接缝验收
+
+Memory已完成30题三臂、180调用；none4/30、mem015/30、lexical22/29有效（另1judge空正文/length，不重试）。完整三臂29题中22/15/4，语义未优于词法；4弃答单列，召回分母26。客户端新增$0.049191，全账本480请求/$0.937546、unknown0。[正式报告](../experiments/results/long-horizon-20261113/memory-v2/REPORT.md)另存，不覆盖首题记录。
+
+EVO报告身份/额外可执行文件两个阻断已修并独立复核；源码稳定，公开adapter与73文件清单及[复现说明](../experiments/SWE_EVO_ADAPTER.md)可用。真实clean-Dask-empty零LLM契约通过，F2P0/44、P2P2861/2861，报告原hash与旧empty相同，容器已清理。尚无本批EVO模型成绩。

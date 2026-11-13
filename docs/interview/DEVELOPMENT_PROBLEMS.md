@@ -242,3 +242,18 @@ SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属�
 
 - 实际官方脚本uv/uvx失败却reward0且CLI无exception；收集器现保留raw分数，另附严格组合证据的suspected标记，不误排正常代码collection失败。
 - 真实task_name带terminal-bench/namespace，原短名比较会漏收割；按冻结oracle身份严格兼容，恢复不重复执行。WSL21项通过，generic历史协议未改。完整九段追问见[深挖P38](10-长程评测工程问题深挖.md#p38官方0分cli成功和真实测试执行如何区分)。
+
+## P39–P41：镜像泄漏、评分来源与配置口径
+
+- P39：实际Dask image含4569个基线之外可达提交/303refs；同tree单root导出与旧objects不可读的三次探针通过，丢失合法历史能力的代价明确。
+- P40：唯一report glob和73项hash未覆盖真实输出身份/额外可执行文件，foreign报告与sitecustomize反例均复现；当前修复/复核中，不启动EVO付费。
+- P41：离线index等待1800秒不同产品10秒，首题约100秒包括首次921块索引，不当查询延迟或在线SLA。
+
+每点完整九段证据、替代方案与追问见[长程评测深挖](10-长程评测工程问题深挖.md)。
+
+## P42–P43：无效判分与不符合预期的真实收益
+
+- P42：180次API全部成功结算，但一条judge长度终止/空正文，没有合法yes/no。保留unavailable，不临时重试或补零；词法22/29并报29/30覆盖，三臂共同29题再比较。
+- P43：当前英文LongMemEval+中文BGE中，mem015/30，词法22/29；证据会话Recall@8为0.73077和0.86538。适配成功没有转化为本批质量增益，不泛化到Mem0整体或中文产品效果。首次建库耗时不冒充在线查询性能。
+
+完整30题的指标、180请求/客户端$0.049191和逐题关联hash见[Memory正式报告](../experiments/results/long-horizon-20261113/memory-v2/REPORT.md)。上面P40的两个阻断现已修复并独立复核，历史发现与修复验收分别保留在深挖文档；新head CI状态另核。

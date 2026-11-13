@@ -6,3 +6,10 @@ docs/experiments/benchmark-preflight/** -text whitespace=blank-at-eol,blank-at-e
 # Preserve it as evidence rather than applying source formatting rules.
 docs/experiments/results/**/test-output.txt -whitespace
 docs/experiments/benchmark-preflight/terminal-raw/verifier-bootstrap-output.txt -whitespace
+
+# Fixed-byte EVO pins and new machine-readable evidence must survive autocrlf.
+experiments/benchmark_live/evo_cache_adapter.py text eol=lf
+experiments/benchmark_live/evo_agent.py text eol=lf
+docs/experiments/SWE_EVO_SOURCE_MANIFEST.json text eol=lf
+docs/experiments/results/long-horizon-20261113/**/*.json text eol=lf
+docs/experiments/results/long-horizon-20261113/**/*.jsonl text eol=lf

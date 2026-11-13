@@ -1,0 +1,97 @@
+{
+  "status": "pipeline_smoke_only",
+  "independent_questions": 1,
+  "selected_questions": 30,
+  "question_id": "06db6396",
+  "generator_source_commit": "16bdae0e4ec7fb8511ea8bd86d52e26d84d04c18",
+  "memory_plan_sha256": "6d946de38daf968f4402fd4578e84d5833531bfdf815b5397581e2721be4129f",
+  "source_lfs_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+  "reader_and_judge_model": "deepseek-v4.1-flash",
+  "judge_level": "official_prompt_nonofficial_deepseek_model",
+  "arms": {
+    "lexical": {
+      "accuracy_on_available": 1.0,
+      "available": 1,
+      "correct": 1,
+      "expected_slots": 30,
+      "recorded_slots": 1,
+      "unavailable": 0
+    },
+    "mem0": {
+      "accuracy_on_available": 1.0,
+      "available": 1,
+      "correct": 1,
+      "expected_slots": 30,
+      "recorded_slots": 1,
+      "unavailable": 0
+    },
+    "none": {
+      "accuracy_on_available": 0.0,
+      "available": 1,
+      "correct": 0,
+      "expected_slots": 30,
+      "recorded_slots": 1,
+      "unavailable": 0
+    }
+  },
+  "cost": {
+    "global_limit_micro_usd": 30000000,
+    "requests": 6,
+    "settled_cost_usd": 0.001485,
+    "successful_calls_missing_ledger": 0,
+    "unknown_or_pending": 0
+  },
+  "retrieval": {
+    "none": {
+      "metrics": {
+        "mrr": 0.0,
+        "reason": "available",
+        "recall_at_8": 0.0
+      },
+      "context_chars": 0,
+      "corpus_chunks": 921,
+      "valid": true,
+      "close_complete": true,
+      "store_build_seconds": 0.0,
+      "index_init_seconds": 0.0,
+      "index_and_query_seconds": 0.0,
+      "total_seconds": 3.926999999848135e-06
+    },
+    "lexical": {
+      "metrics": {
+        "mrr": 1.0,
+        "reason": "available",
+        "recall_at_8": 1.0
+      },
+      "context_chars": 5219,
+      "corpus_chunks": 921,
+      "valid": true,
+      "close_complete": true,
+      "store_build_seconds": 4.4867027990000015,
+      "index_init_seconds": 0.0,
+      "index_and_query_seconds": 0.002498307999999838,
+      "total_seconds": 4.520787334000001
+    },
+    "mem0": {
+      "metrics": {
+        "mrr": 1.0,
+        "reason": "available",
+        "recall_at_8": 1.0
+      },
+      "context_chars": 3662,
+      "corpus_chunks": 921,
+      "valid": true,
+      "close_complete": true,
+      "store_build_seconds": 4.407526527999998,
+      "index_init_seconds": 3.3435975059999983,
+      "index_and_query_seconds": 92.373865739,
+      "total_seconds": 100.17145048799999
+    }
+  },
+  "limits": [
+    "Fixed history-index ablation, not automatic fact extraction quality.",
+    "Original English questions with Chinese BGE embeddings; not Chinese task-quality evidence.",
+    "Evidence labels and gold answers are isolated to metrics/judge only.",
+    "Non-official DeepSeek judge; no retries or reasoning-text verdict fallback."
+  ]
+}

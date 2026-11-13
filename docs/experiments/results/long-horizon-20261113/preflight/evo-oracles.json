@@ -1,0 +1,170 @@
+{
+  "official_revision": "9b83d5af943ba7a17567336f5b18239f73960219",
+  "dataset_sha256": "74e7c63160ada4ceba71d5d89a9bb7c9794f4574b384458d546eb65cdb730520",
+  "source_summary_sha256": "b8df5400ce1e9ac2fd9385ebe5c7f555361fad333871fd34f88fca4182759c55",
+  "scoring": "fixed_official_fork_with_recorded_verified_cache_transport_adapter",
+  "rows": [
+    {
+      "stage": "conan-gold",
+      "instance_id": "conan-io__conan_2.0.14_2.0.15",
+      "official_report": "evo-conan-gold-report.json",
+      "official_report_sha256": "95fe670b2cab3c8d0e1ffd1254e8edf3edea8614f92ed94a173ff26633f2dd00",
+      "status": "official_report_available",
+      "model_requests": 0,
+      "result_sha256": "c30b1e2bd305f9282d5bb6a1341da29e2f9079ac8e916b7ff6618acbbb0b9e6a",
+      "official_cli_sha256": "05b7427356cf4d447528b3afda3b7a8131d0e480e13c95b06178d04ae08db3ac",
+      "resolved": false,
+      "patch_successfully_applied": true,
+      "counts": {
+        "FAIL_TO_PASS": {
+          "success": 72,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 640,
+          "failure": 9
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "official_fix_rate_formula": 0,
+      "gold_qualified": false,
+      "p2p_failures": [
+        "conans/test/functional/graph/test_graph_build_mode.py::test_report_matches",
+        "conans/test/integration/command/info/test_graph_info_graphical.py::test_graph_info_html_output",
+        "conans/test/integration/command_v2/test_output_level.py::test_invalid_output_level",
+        "conans/test/integration/command_v2/test_output_level.py::test_output_level",
+        "conans/test/integration/conanfile/no_copy_source_test.py::NoCopySourceTest::test_basic",
+        "conans/test/integration/graph/version_ranges/version_range_override_test.py::VersionRangeOverrideFailTestCase::test_override",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs3-False-expected3]",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs4-True-expected4]",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs5-False-expected5]"
+      ]
+    },
+    {
+      "stage": "conan-empty",
+      "instance_id": "conan-io__conan_2.0.14_2.0.15",
+      "official_report": "evo-conan-empty-report.json",
+      "official_report_sha256": "a036bf380b286c9c3ed7d4d58ca079ccf82e02c01a6812ac0b5e4ec9f5dbfd84",
+      "status": "official_report_available",
+      "model_requests": 0,
+      "result_sha256": "b4c45c2a35f4995b13b6c24fe0c23e989f691e389959114de321cc756e9f78f5",
+      "official_cli_sha256": "c4bf9ec90b5e4481e8a9600d4ad3073588fbb8b2e554808983c5b67604635683",
+      "resolved": false,
+      "patch_successfully_applied": true,
+      "counts": {
+        "FAIL_TO_PASS": {
+          "success": 0,
+          "failure": 72
+        },
+        "PASS_TO_PASS": {
+          "success": 630,
+          "failure": 19
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "official_fix_rate_formula": 0,
+      "gold_qualified": null,
+      "p2p_failures": [
+        "conans/test/functional/graph/test_graph_build_mode.py::test_report_matches",
+        "conans/test/integration/cache/backup_sources_test.py::TestDownloadCacheBackupSources::test_upload_sources_backup",
+        "conans/test/integration/command/info/test_graph_info_graphical.py::test_graph_info_html_output",
+        "conans/test/integration/command/test_profile.py::test_profile_show_json",
+        "conans/test/integration/command/user_test.py::TestRemoteAuth::test_remote_auth",
+        "conans/test/integration/command_v2/test_output_level.py::test_invalid_output_level",
+        "conans/test/integration/command_v2/test_output_level.py::test_output_level",
+        "conans/test/integration/conanfile/no_copy_source_test.py::NoCopySourceTest::test_basic",
+        "conans/test/integration/graph/test_dependencies_visit.py::test_dependencies_visit",
+        "conans/test/integration/graph/test_system_tools.py::TestToolRequires::test_consumer_unresolved_revision",
+        "conans/test/integration/graph/test_system_tools.py::TestToolRequires::test_system_tool_require_no_host",
+        "conans/test/integration/graph/test_system_tools.py::TestToolRequires::test_system_tool_require_non_matching",
+        "conans/test/integration/graph/test_system_tools.py::TestToolRequires::test_system_tool_require_range_non_matching",
+        "conans/test/integration/graph/version_ranges/version_range_override_test.py::VersionRangeOverrideFailTestCase::test_override",
+        "conans/test/integration/metadata/test_metadata_collect.py::test_custom_command_collect",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs2-True-expected2]",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs3-False-expected3]",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs4-True-expected4]",
+        "conans/test/unittests/tools/google/test_bazel.py::test_bazeldeps_get_libs[libs5-False-expected5]"
+      ]
+    },
+    {
+      "stage": "dask-gold",
+      "instance_id": "dask__dask_2022.9.2_2022.10.0",
+      "official_report": "evo-dask-gold-report.json",
+      "official_report_sha256": "54eb51e59ac3819e181cc42d5b66a6002803443e441122e601ccb9ccadf2255f",
+      "status": "official_report_available",
+      "model_requests": 0,
+      "result_sha256": "c1a7e34625d0d7030b2afd535e071a6c650ec976db0425da5b82c18b05920c31",
+      "official_cli_sha256": "a88b3516a948ae93ddfc133ee6de690fe97e54a2172a9d8be3905a179b4afad3",
+      "resolved": true,
+      "patch_successfully_applied": true,
+      "counts": {
+        "FAIL_TO_PASS": {
+          "success": 44,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 2861,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "official_fix_rate_formula": 1.0,
+      "gold_qualified": true,
+      "p2p_failures": []
+    },
+    {
+      "stage": "dask-empty",
+      "instance_id": "dask__dask_2022.9.2_2022.10.0",
+      "official_report": "evo-dask-empty-report.json",
+      "official_report_sha256": "053b84ab8b63ff35db674c82676735a6f58c6e13512365328eb5ca41547c7dbd",
+      "status": "official_report_available",
+      "model_requests": 0,
+      "result_sha256": "9868ebdad18b8ee4ddc047b0fc3e747fcdd8178a117c6676a4f537962edd5404",
+      "official_cli_sha256": "b43346a16a3bf11ebb33e8bb95feef6cfa954a0af76972835bf527e0ac89875c",
+      "resolved": false,
+      "patch_successfully_applied": true,
+      "counts": {
+        "FAIL_TO_PASS": {
+          "success": 0,
+          "failure": 44
+        },
+        "PASS_TO_PASS": {
+          "success": 2861,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      },
+      "official_fix_rate_formula": 0.0,
+      "gold_qualified": null,
+      "p2p_failures": []
+    }
+  ]
+}
