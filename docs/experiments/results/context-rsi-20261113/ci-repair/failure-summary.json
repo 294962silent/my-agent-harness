@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "source_commit": "24aeca1e47cbfed8b0a79bc2c88acc921af9ca2e",
+  "ci_run": 43444322518,
+  "ci_conclusion": "failure",
+  "failed_matrix_legs": ["ubuntu/3.11", "ubuntu/3.13", "windows/3.11", "windows/3.13"],
+  "failed_stage": "Python tests (pytest), default dependencies",
+  "sdk_failures": {
+    "exception": "ModuleNotFoundError: mem0",
+    "tests": [
+      "test_owned_dense_shim_does_not_patch_sdk_or_other_qdrant",
+      "test_changed_sdk_source_fails_closed_before_worker",
+      "test_real_mem0_methods_dense_shim_avoid_optional_network_models"
+    ],
+    "primary_windows_313_clean_default_reproduction": {"passed": 6, "failed": 3, "seconds": 5.30}
+  },
+  "linux_failure": {
+    "test": "test_send_deadline_covers_ready_worker_not_reading_large_payload",
+    "expected": "TimeoutError",
+    "observed": "BrokenPipeError",
+    "reproduced_by": "SOL-2 on local WSL",
+    "cause": "Request deadline killed the worker correctly; closing TextIO stdin flushed pending bytes and BrokenPipeError masked the original timeout.",
+    "owned_process_and_sender_reader_exited": true
+  },
+  "actual_provider_calls": 0,
+  "gpu_used_for_reproduction": false,
+  "historical_record": "Preserved first failing run; later fixes and verification are separate evidence."
+}

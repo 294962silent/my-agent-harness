@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "file": "case-diagnostics.json",
+      "bytes": 5830,
+      "sha256": "f592c79b969d820947f504682617d2e9d7dc49d6fc6c6386cad841d04dfb0003"
+    },
+    {
+      "file": "subgroup-summary.json",
+      "bytes": 886,
+      "sha256": "9c12d38f8624e4c4381533727c42e7f663989bfc6339c08656528cb7e75f264d"
+    }
+  ],
+  "no_raw_question_history_hypothesis_or_gold": true,
+  "not_new_rescoring": true
+}

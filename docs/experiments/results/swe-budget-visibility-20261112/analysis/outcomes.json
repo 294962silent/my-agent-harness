@@ -1,0 +1,162 @@
+{
+  "analysis_parser_version": "swebench-5.0.2-outcome-v1",
+  "factor": "budget_visibility",
+  "analysis_parser_sha256": "c690d265d9380331cfeb54cc702d4b90f6e9807b7f03cbd9dbd71e07501fd3a5",
+  "generation_source_commit": "c69ff37ed148f53d526b458b9b36233860b85f26",
+  "archive_manifest_sha256": "18888467ad123eb0b70f850e40ab1d2c93fa974f1fcefd17a02e02a2ba4883dd",
+  "verified_archived_files": 60,
+  "selected_tasks": 3,
+  "eligible_tasks": 3,
+  "blocked_tasks": 0,
+  "official_reports": 6,
+  "empty_patch_trials": 4,
+  "parser_version": "swebench-5.0.2-outcome-v1",
+  "known_official_outcomes": 6,
+  "test_executed_trials": 2,
+  "test_execution_unknown_trials": 0,
+  "resolved_trials": 2,
+  "complete_known_pairs": 3,
+  "by_arm": {
+    "on": {
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "known_official_outcomes": 3,
+      "test_executed_trials": 1,
+      "test_execution_unknown_trials": 0,
+      "resolved_trials": 1,
+      "complete_known_pairs": 0,
+      "empty_patch_trials": 2
+    },
+    "off": {
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "known_official_outcomes": 3,
+      "test_executed_trials": 1,
+      "test_execution_unknown_trials": 0,
+      "resolved_trials": 1,
+      "complete_known_pairs": 0,
+      "empty_patch_trials": 2
+    }
+  },
+  "records": [
+    {
+      "trial_id": "01-pytest-dev__pytest-5227-off",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "off",
+      "factor": "budget_visibility",
+      "condition_arm": "off",
+      "artifact_projection": "on",
+      "budget_guidance": "none",
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "expected_instance_id": "pytest-dev__pytest-5227",
+      "raw_report_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+      "outcome": {
+        "category": "resolved",
+        "resolved": true,
+        "test_executed": true,
+        "reason": "official_resolved"
+      },
+      "previous_cached_audit": {},
+      "raw_report_or_cache_modified": false
+    },
+    {
+      "trial_id": "02-pytest-dev__pytest-5227-on",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "on",
+      "factor": "budget_visibility",
+      "condition_arm": "on",
+      "artifact_projection": "on",
+      "budget_guidance": "static",
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "expected_instance_id": "pytest-dev__pytest-5227",
+      "raw_report_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+      "outcome": {
+        "category": "resolved",
+        "resolved": true,
+        "test_executed": true,
+        "reason": "official_resolved"
+      },
+      "previous_cached_audit": {},
+      "raw_report_or_cache_modified": false
+    },
+    {
+      "trial_id": "03-sympy__sympy-11400-on",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "on",
+      "factor": "budget_visibility",
+      "condition_arm": "on",
+      "artifact_projection": "on",
+      "budget_guidance": "static",
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "expected_instance_id": "sympy__sympy-11400",
+      "raw_report_sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404",
+      "outcome": {
+        "category": "empty_patch",
+        "resolved": false,
+        "test_executed": false,
+        "reason": "official_empty_patch"
+      },
+      "previous_cached_audit": {},
+      "raw_report_or_cache_modified": false
+    },
+    {
+      "trial_id": "04-sympy__sympy-11400-off",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "off",
+      "factor": "budget_visibility",
+      "condition_arm": "off",
+      "artifact_projection": "on",
+      "budget_guidance": "none",
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "expected_instance_id": "sympy__sympy-11400",
+      "raw_report_sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404",
+      "outcome": {
+        "category": "empty_patch",
+        "resolved": false,
+        "test_executed": false,
+        "reason": "official_empty_patch"
+      },
+      "previous_cached_audit": {},
+      "raw_report_or_cache_modified": false
+    },
+    {
+      "trial_id": "05-pytest-dev__pytest-5103-on",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "on",
+      "factor": "budget_visibility",
+      "condition_arm": "on",
+      "artifact_projection": "on",
+      "budget_guidance": "static",
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "expected_instance_id": "pytest-dev__pytest-5103",
+      "raw_report_sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a",
+      "outcome": {
+        "category": "empty_patch",
+        "resolved": false,
+        "test_executed": false,
+        "reason": "official_empty_patch"
+      },
+      "previous_cached_audit": {},
+      "raw_report_or_cache_modified": false
+    },
+    {
+      "trial_id": "06-pytest-dev__pytest-5103-off",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "off",
+      "factor": "budget_visibility",
+      "condition_arm": "off",
+      "artifact_projection": "on",
+      "budget_guidance": "none",
+      "parser_version": "swebench-5.0.2-outcome-v1",
+      "expected_instance_id": "pytest-dev__pytest-5103",
+      "raw_report_sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a",
+      "outcome": {
+        "category": "empty_patch",
+        "resolved": false,
+        "test_executed": false,
+        "reason": "official_empty_patch"
+      },
+      "previous_cached_audit": {},
+      "raw_report_or_cache_modified": false
+    }
+  ],
+  "archive_modified": false
+}

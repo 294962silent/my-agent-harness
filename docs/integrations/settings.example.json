@@ -1,0 +1,27 @@
+{
+  "memory_index": {
+    "enabled": false,
+    "provider": "mem0",
+    "config_file": "~/.my-agent-harness/mem0-local.json",
+    "timeout": 10.0,
+    "close_timeout": 1.0
+  },
+  "observation": {
+    "enabled": false,
+    "backend": "langfuse",
+    "public_key_env": "LANGFUSE_PUBLIC_KEY",
+    "secret_key_env": "LANGFUSE_SECRET_KEY",
+    "base_url": null,
+    "capacity": 1024,
+    "network_timeout": 5.0,
+    "close_timeout": 5.0
+  },
+  "dream_optimization": {
+    "enabled": false,
+    "dataset_manifest": null,
+    "registry_path": null,
+    "max_candidates": 16,
+    "budgets": [1, 2, 4],
+    "max_seconds": 300.0
+  }
+}

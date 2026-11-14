@@ -1,0 +1,38 @@
+{
+  "kind": "zero_llm_adapter_contract",
+  "model_requests": 0,
+  "contract_passed": true,
+  "error_type": null,
+  "cleanup_error": null,
+  "report_rejection": null,
+  "process_exit_code": 0,
+  "counts": {
+    "FAIL_TO_FAIL": {
+      "failure": 0,
+      "success": 0
+    },
+    "FAIL_TO_PASS": {
+      "failure": 44,
+      "success": 0
+    },
+    "PASS_TO_FAIL": {
+      "failure": 0,
+      "success": 0
+    },
+    "PASS_TO_PASS": {
+      "failure": 0,
+      "success": 2861
+    }
+  },
+  "resolved": false,
+  "official_fix_rate": 0,
+  "official_cli_sha256": "94944523ca864e7cfd38c0da0624690cb4ff51deece5b1a543761d967575938c",
+  "scorer_snapshot_sha256": "edf49b76eb0bb56b67339ff37cbf41fcac7b323e1d425ea1a4eb7c11f642ce97",
+  "instance_id": "dask__dask_2022.9.2_2022.10.0",
+  "source_sha256": "74e7c63160ada4ceba71d5d89a9bb7c9794f4574b384458d546eb65cdb730520",
+  "image_config_id": "sha256:3bfe422ab58729fc9f4765f79076d3f22db8dba3c16d63101d83ac339f7c44b4",
+  "adapter_sha256": "dda7435e019dde8468e3954b012f5abf637824f785a160f8a8ad4b576f15d855",
+  "preflight_adapter_sha256": "60672af1f6605e048bd539ef130e812e92e7bf96ec7eb5f508bec2e373f5a56d",
+  "official_report_sha256": "053b84ab8b63ff35db674c82676735a6f58c6e13512365328eb5ca41547c7dbd",
+  "evo_agent_sha256": "ec36bc7fcd70f75ae58e9b9064be144cbcd97013b631004a6a9d5fd342fe20a3"
+}

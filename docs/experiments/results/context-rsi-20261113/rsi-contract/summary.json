@@ -1,0 +1,541 @@
+{
+  "schema_version": 1,
+  "kind": "synthetic",
+  "quality": "unmeasured",
+  "actual_provider_calls": 0,
+  "auto_promoted": false,
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.13",
+    "dream-rsi": "0.1.0"
+  },
+  "command": ".venv/Scripts/python.exe experiments/context_rsi/run_contract.py --output experiments/context_rsi/results/contract-20261113-serial-final",
+  "source_sha256": {
+    "src/my_coding_agent/rsi_runtime.py": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+    "src/my_coding_agent/rsi_branch.py": "6faabf3beeac772cb81f7cb860b684629a8529540cdd95c28793a29f243d8c08",
+    "src/my_coding_agent/agent.py": "011152b286125e0baaef05968ffc3c207e52156f96d62c93a2e524a91811b7fc",
+    "src/my_coding_agent/settings.py": "f959645690f6184d4796f4e2d97723f62c53f4b00bd77e108be983f7ea802bed",
+    "src/my_coding_agent/rpc/session_handlers.py": "2fb6002c487e4632dbbc948f444e17570e276d5bfc0fcd1ebd29d71ec3079689",
+    "src/my_agent_core/agent.py": "7d693e2ce909fbc8a6b1f5edce0fa91acc7f38984a715ba2d00824fe4a0420bc",
+    "src/my_agent_core/context.py": "6786ffc7077a671ce297bd35147bb1721de62f59ef0609e45538badb5c898f85",
+    "src/my_agent_core/context_compaction.py": "8aca5dc9002e06b9a40630c0165978a87cd0a7a01372f4a68b08bf4849f87a64"
+  },
+  "raw_summary_sha256": "28ab82c0d591340c4a63467e6c90f90bb1611669e9c81550ba34abd9f7369869",
+  "dataset_manifest_sha256": "35c23b7102402f3ad9be183fcc9e82f401301914dc68a2f2007cad57c7bd1f23",
+  "dataset_entries": [
+    {
+      "id": "trace-0",
+      "task_id": "contract-train",
+      "split": "train",
+      "file": "trace-0.json",
+      "sha256": "dd7b62a222d7585bde728499123256ccdb4e03e3cbf18111fd1779aafd3494b4",
+      "provenance": "production CodingAgent measured visible-command trace"
+    },
+    {
+      "id": "trace-1",
+      "task_id": "contract-val",
+      "split": "holdout",
+      "file": "trace-1.json",
+      "sha256": "cd853b4a2f2cedba50edb9439bf4d7b9d7c9308444477252a849c67a7a4ada9f",
+      "provenance": "production CodingAgent measured visible-command trace"
+    }
+  ],
+  "optimizer": {
+    "kind": "synthetic",
+    "selected": {
+      "role": "c01",
+      "parameters": {
+        "max_width": 1,
+        "max_refine": 1
+      },
+      "policy_hash": "26d74e3cd4b10f0a9b3a6cfab361a062644fb89236b9ec4c27f93217ab1ff3fe"
+    },
+    "promotion_eligible": false,
+    "promoted": false,
+    "evaluations": 21,
+    "validation_gain": 0.3333333333333333,
+    "objective": "mean-recorded-best-ratio-v1",
+    "limits": [
+      "Bounded parameter search, not generated Python or the paper's reward/RSI loop.",
+      "Normalized recorded-score replay; no claim about unseen branches or task-quality improvement.",
+      "Observed is a caller declaration, not cryptographic proof of score provenance.",
+      "Synthetic datasets are function checks only and never production-active.",
+      "Holdout accepts the train-selected policy only if it strictly beats both frozen reference and incumbent."
+    ]
+  },
+  "arms": {
+    "A": {
+      "status": "completed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "completed_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "selected_candidate": "b0_a1",
+      "selected_visible_score": 1.0,
+      "selected_agent_terminal": "end_turn",
+      "final_success": null,
+      "quality": "unmeasured",
+      "auto_promoted": false,
+      "policy": {
+        "parameters": {
+          "max_width": 2,
+          "max_refine": 1
+        },
+        "policy_hash": "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8",
+        "registry_version": null
+      },
+      "budget": {
+        "root_id": "3bda2fb6778146db933b9ed2a6410100",
+        "requests": 12,
+        "used_tokens": 60,
+        "held_tokens": 0,
+        "reserved_tokens_total": 111756,
+        "usage_complete": true,
+        "blocked": false,
+        "evaluations": 6,
+        "cost_complete": false,
+        "cost_usd": null,
+        "wall_seconds": 0.7938611999852583,
+        "limits": {
+          "max_requests": 12,
+          "max_tokens": 300000,
+          "max_seconds": 90,
+          "max_evaluations": 6
+        }
+      },
+      "trace_sha256": "87107855e8dbeff080bde718e1a86729a2212f2e7709c3e924971667a7ec8b87",
+      "selected_patch_sha256": "1f33c0419a7ebe20735fad86555f295d9119cde67a64f1d0ece9398bf7e6688f",
+      "provenance": {
+        "client_class": "my_coding_agent.rsi_runtime.ScriptedWriter",
+        "provider_class": "builtins.NoneType",
+        "model": "scripted-rsi-contract",
+        "client_source_sha256": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+        "kind": "synthetic",
+        "request_projection_supported": false,
+        "native_cache_edits": "not_sent",
+        "boundary": "Host/runtime provenance evidence, not cryptographic proof of a real service."
+      },
+      "final_test": {
+        "raw_passed": true,
+        "independent_contract_only": true,
+        "selection_frozen": true
+      },
+      "attempts": [
+        {
+          "id": "b0_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 0
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "efe44153b7eefb66979ae29829ec9eb77072b0d94f1a70a7029092eebf15910f"
+        },
+        {
+          "id": "b1_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 0
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "4bc284f6fc998945a75da6f87b4f48adb28460b6f5c50de7fb0ef961bbd16551"
+        },
+        {
+          "id": "b0_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 0
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "7ab705b26638764eb5582552519822ecd7254a32118bcad76df0e0fab4e47da3"
+        },
+        {
+          "id": "b1_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 0
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "f07b5af3448e394a91134d9316ce4fac9a1a2663d943b82aacab35283f1a6914"
+        }
+      ],
+      "source_unchanged": true
+    },
+    "B": {
+      "status": "completed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "completed_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "selected_candidate": "b0_a1",
+      "selected_visible_score": 1.0,
+      "selected_agent_terminal": "end_turn",
+      "final_success": null,
+      "quality": "unmeasured",
+      "auto_promoted": false,
+      "policy": {
+        "parameters": {
+          "max_width": 2,
+          "max_refine": 1
+        },
+        "policy_hash": "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8",
+        "registry_version": null
+      },
+      "budget": {
+        "root_id": "bbf8841ad0df401295d47aadd18746af",
+        "requests": 12,
+        "used_tokens": 60,
+        "held_tokens": 0,
+        "reserved_tokens_total": 110108,
+        "usage_complete": true,
+        "blocked": false,
+        "evaluations": 6,
+        "cost_complete": false,
+        "cost_usd": null,
+        "wall_seconds": 0.8517148999962956,
+        "limits": {
+          "max_requests": 12,
+          "max_tokens": 300000,
+          "max_seconds": 90,
+          "max_evaluations": 6
+        }
+      },
+      "trace_sha256": "983fda2c8a689b80766bc05f5874ad17d1921b074d83d1070e2dd11268172832",
+      "selected_patch_sha256": "1f33c0419a7ebe20735fad86555f295d9119cde67a64f1d0ece9398bf7e6688f",
+      "provenance": {
+        "client_class": "my_coding_agent.rsi_runtime.ScriptedWriter",
+        "provider_class": "builtins.NoneType",
+        "model": "scripted-rsi-contract",
+        "client_source_sha256": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+        "kind": "synthetic",
+        "request_projection_supported": false,
+        "native_cache_edits": "not_sent",
+        "boundary": "Host/runtime provenance evidence, not cryptographic proof of a real service."
+      },
+      "final_test": {
+        "raw_passed": true,
+        "independent_contract_only": true,
+        "selection_frozen": true
+      },
+      "attempts": [
+        {
+          "id": "b0_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "7df1aad280eaacf93d317b9e2b4e293c391f8c9289db3e14cb7dbb741a73fe63"
+        },
+        {
+          "id": "b1_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "06a19be4564cf2de34b4c953acd02ae569335cdd518367e1f85701b515660173"
+        },
+        {
+          "id": "b0_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 1,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "77df5e39528350b7c26e6e79b8b78a7dcac6b7be1a46252536a0f76cd5ed163b"
+        },
+        {
+          "id": "b1_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 1,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "feb72504a8bde3843469bcd9ef21a7e25fa4ddc42693c023cd4dc1af5c903146"
+        }
+      ],
+      "source_unchanged": true
+    },
+    "C": {
+      "status": "completed",
+      "planned_attempts": 2,
+      "dispatched_attempts": 2,
+      "completed_attempts": 2,
+      "valid_attempts": 2,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "selected_candidate": "b0_a1",
+      "selected_visible_score": 1.0,
+      "selected_agent_terminal": "end_turn",
+      "final_success": null,
+      "quality": "unmeasured",
+      "auto_promoted": false,
+      "policy": {
+        "parameters": {
+          "max_width": 1,
+          "max_refine": 1
+        },
+        "policy_hash": "26d74e3cd4b10f0a9b3a6cfab361a062644fb89236b9ec4c27f93217ab1ff3fe",
+        "registry_version": null
+      },
+      "budget": {
+        "root_id": "d9be3d56281944cfa3cfba48e0ea2969",
+        "requests": 6,
+        "used_tokens": 30,
+        "held_tokens": 0,
+        "reserved_tokens_total": 55054,
+        "usage_complete": true,
+        "blocked": false,
+        "evaluations": 4,
+        "cost_complete": false,
+        "cost_usd": null,
+        "wall_seconds": 0.5164982000133023,
+        "limits": {
+          "max_requests": 12,
+          "max_tokens": 300000,
+          "max_seconds": 90,
+          "max_evaluations": 6
+        }
+      },
+      "trace_sha256": "1158d29582133e0a848f2e8abfda5ee637ccefd572929999da01b8105334c048",
+      "selected_patch_sha256": "1f33c0419a7ebe20735fad86555f295d9119cde67a64f1d0ece9398bf7e6688f",
+      "provenance": {
+        "client_class": "my_coding_agent.rsi_runtime.ScriptedWriter",
+        "provider_class": "builtins.NoneType",
+        "model": "scripted-rsi-contract",
+        "client_source_sha256": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+        "kind": "synthetic",
+        "request_projection_supported": false,
+        "native_cache_edits": "not_sent",
+        "boundary": "Host/runtime provenance evidence, not cryptographic proof of a real service."
+      },
+      "final_test": {
+        "raw_passed": true,
+        "independent_contract_only": true,
+        "selection_frozen": true
+      },
+      "attempts": [
+        {
+          "id": "b0_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "e5837e3f419a9045334654fa33d9bfbd8df9d9b2ce19a9ec202284818dd95088"
+        },
+        {
+          "id": "b0_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 1,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "dccad223bbd2f11e509739eb67f8646e10f1052c446514e683094e8a00d0ab38"
+        }
+      ],
+      "source_unchanged": true
+    },
+    "random": {
+      "status": "completed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "completed_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "selected_candidate": "b0_a1",
+      "selected_visible_score": 1.0,
+      "selected_agent_terminal": "end_turn",
+      "final_success": null,
+      "quality": "unmeasured",
+      "auto_promoted": false,
+      "policy": {
+        "parameters": {
+          "max_width": 2,
+          "max_refine": 1
+        },
+        "policy_hash": "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8",
+        "registry_version": null
+      },
+      "budget": {
+        "root_id": "211ba48050404f799055eb5d0c80a362",
+        "requests": 12,
+        "used_tokens": 60,
+        "held_tokens": 0,
+        "reserved_tokens_total": 110108,
+        "usage_complete": true,
+        "blocked": false,
+        "evaluations": 6,
+        "cost_complete": false,
+        "cost_usd": null,
+        "wall_seconds": 0.8782892000162974,
+        "limits": {
+          "max_requests": 12,
+          "max_tokens": 300000,
+          "max_seconds": 90,
+          "max_evaluations": 6
+        }
+      },
+      "trace_sha256": "9d839e2d2384fe39d51fe756254adba2584ea581b742ffa9dfb8da1482f75afc",
+      "selected_patch_sha256": "1f33c0419a7ebe20735fad86555f295d9119cde67a64f1d0ece9398bf7e6688f",
+      "provenance": {
+        "client_class": "my_coding_agent.rsi_runtime.ScriptedWriter",
+        "provider_class": "builtins.NoneType",
+        "model": "scripted-rsi-contract",
+        "client_source_sha256": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+        "kind": "synthetic",
+        "request_projection_supported": false,
+        "native_cache_edits": "not_sent",
+        "boundary": "Host/runtime provenance evidence, not cryptographic proof of a real service."
+      },
+      "final_test": {
+        "raw_passed": true,
+        "independent_contract_only": true,
+        "selection_frozen": true
+      },
+      "attempts": [
+        {
+          "id": "b0_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "4e986f8b58d33b9f14a51463fdbfb73f2d56f8c7c68f7affcd97542cf48b1960"
+        },
+        {
+          "id": "b0_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 1,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "fcf8f02462ce73897ba91792fe8834013256927c8af38ddcf59726404d2b1417"
+        },
+        {
+          "id": "b1_a0",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 0,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "142118ec08211e483e3292f4b90661539a72111ba05065ddc94049e3f7ac7173"
+        },
+        {
+          "id": "b1_a1",
+          "valid": true,
+          "stage": "completed",
+          "agent_terminal": {
+            "stop_reason": "end_turn",
+            "iterations": 3
+          },
+          "context_activity": {
+            "phase_fold_views": 1,
+            "micro_groups": 1
+          },
+          "tool_schema_sha256": "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae",
+          "session_sha256": "14b88302543b8506b3b56c54aac7c6186a206eb24b19657ed174440a0dcaa56c"
+        }
+      ],
+      "source_unchanged": true
+    }
+  },
+  "limitations": [
+    "Scripted responses and usage are synthetic, not actual model tokens or quality.",
+    "Validation gain is bounded recorded-score replay, not unseen-task improvement.",
+    "All arm parent ceilings equal; actual consumption differs and no dummy calls equalize it.",
+    "Low micro threshold 1 intentionally exercises context paths, not performance.",
+    "Private registry dry_run only; no promotion. No official hidden benchmark.",
+    "Workspace separation is not OS isolation. Optional memory checkpoints are disabled, not evaluated.",
+    "Raw outputs stay local under results/; this extract records hashes and reproducible command."
+  ],
+  "verification": {
+    "rsi_and_closed_loop": "44 passed in 13.19s",
+    "expanded_regression_before_final_path_cleanup_fixes": "190 passed in 17.57s",
+    "ruff": "All checks passed",
+    "final_cli": "exit 0; zero provider API calls; synthetic; quality unmeasured"
+  }
+}

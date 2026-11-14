@@ -1,150 +1,131 @@
 # my-agent-harness
 
-<p align="center">
-  <img src="docs/assets/banner.png" alt="my-agent-harness" width="100%" />
-</p>
+**面向长程任务的 Coding Agent Harness：长期记忆、可观测执行、受控策略自优化。**
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="license" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="python" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/tests-960%20passed-brightgreen.svg?style=flat-square" alt="tests" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/coverage-85%25-brightgreen.svg?style=flat-square" alt="coverage" /></a>
-</p>
+以长程代码任务为目标，补强多轮执行中的运行控制、上下文保真、跨会话事实记忆和可复核证据。CodingAgent、RPC 和终端界面是应用入口；自优化层自动选择并验证受限的探索策略参数，不训练模型权重、不任意重写执行器。
 
-用 Python 从零手写的 Agent 框架：内核（ReAct 循环、会话树、上下文压缩、工具并发）+ 基于 [Pi-TUI](https://github.com/badlogic/pi-mono) 的终端界面。
+项目用于 Agent / 大模型应用开发实习的工程实践：保留可阅读的模块接口，用实际故障、取舍、回归和成对实验解释技术价值。框架仍有明确限制，不把它描述为已经成熟的生产平台。
 
-不依赖 LangChain / LangGraph。目标是把 Agent 各环节亲手实现一遍，并保持每一层都能单独阅读和测试。
+当前应用场景收敛为**多轮 CPU 代码实验 Agent**：编辑 `train.py`、在固定容器内输出预测、宿主重算 RMSE、多轮保留最佳脚本、在完成边界暂停/恢复、最后独立 final。复用原 CodingAgent 和 RSI 分支，设计借鉴 AIDE 的实验树与 autoresearch 的固定测量协议。实现与验收状态见[场景实施账本](docs/plans/2026-11-14-research-agent-runtime.md)；不是官方长程 benchmark 或已证实的自优化收益。
 
-```bash
-npm install -g my-pi-agent    # npm 包名为历史名
-my-agent                      # 启动终端
+## 从哪里开始
+
+- [框架重设计](docs/architecture/HARNESS_VNEXT.md)：模块职责、不变量、依赖方向和本批边界。
+- [面试证据入口](docs/interview/README.md)：八模块讲解、开发问题与主张边界。
+- [代码实验真实演示](docs/experiments/results/research-agent-20261114/LIVE_REPORT.md)：两轮、跨进程恢复、宿主评分与独立final；包含首次失败和完整成本，不宣称RSI质量提升。
+- [简历项目稿](docs/interview/RESUME_READY.md)：三条工程表述、60秒口述、追问与事实账本；个人职责按实际参与确认。
+- [统一离线实验](experiments/harness_eval/README.md)：脚本 provider / 临时文件验证真实工程路径。
+- [本轮原始结果](docs/experiments/results/redesign/20261112T095857-2381042b458f/report.md)：manifest、raw.jsonl 和 summary 同目录。
+- [持续实验记录](docs/experiments/HARNESS_EXPERIMENT_LOG.md)：历史、失败、更正及交付状态。
+
+## 框架组织
+
+`my-tui → my_coding_agent → my_agent_core → my_agent_llm`
+
+- Runtime：单 Agent 同时仅有一个直接运行 owner，可选轮次 / 总时长上限，明确取消、预算和正常完成。
+- Model：多 provider 门面，统一同步 / 异步 / 流式调用和流关闭；生命周期观测覆盖主请求、摘要与记忆抽取。
+- Tools：注册表、schema、安全并发声明、依赖批次门控、超时与中断结果。
+- Session：JSONL 会话与分支路径恢复；摘要绑定 canonical 覆盖来源。
+- Context / Artifact：原始历史与发送视图区分，大输出保留全文并通过有界工具回读。
+- Memory：精确事实、替换历史、删除、脱敏与检索；可用本地CPU中文语义候选，不需embedding API，自动抽取默认关闭。
+- Permission：副作用前授权，默认 fail-closed；不等同完整信息流安全。
+- Observation：默认关闭的元数据记录、有界导出与可选 Langfuse 适配，导出错误不改变模型结果。
+
+本批实现Runtime生命周期、统一观测和三个适配。Mem0支持本地CPU中文及Qwen GPU profile；Langfuse提供配置与生命周期装配；Dream支持候选参数搜索、独立验证、active消费和回滚。研究campaign已产生真实评分树，SDK选择baseline，验证覆盖不足、未晋升；全局数据集配置与研究输出分开，状态以对应入口为准。
+
+## 安装与本地验证
+
+需要 Python >= 3.11、Node.js；新源码应从当前分支构建，旧 npm 发布包不自动包含这些变更。
+
+```sh
+uv sync --frozen
+npm ci
+npm run build
+uv run python -m pytest tests -q
+npm test
 ```
 
-> 数据目录：默认 `~/.my-agent-harness/`；若已存在旧的 `~/.my-pi-agent/` 会自动沿用，避免丢失登录态。也可用 `MY_AGENT_HOME` 指定。
+Windows 缺少 Git Bash 时，既有 pipefail 测试会因 cmd 不支持 cat 而失败；本轮本地报告明确排除这一环境项，GitHub 跨平台检查结果单独记录。真实模型调用需要单独配置供应商与凭据；离线实验不读取凭据或产生模型费用。
 
-<p align="center">
-  <img src="docs/assets/demo.png" alt="terminal demo" width="100%" />
-</p>
+## 有预算的 Agent 调用
 
----
+Python 接口保持 run / prompt_stream / abort，新增可选 RunLimits：
 
-## 结构
+```python
+import asyncio
+import os
+from pathlib import Path
 
-```text
-my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_agent_core → my_agent_llm
+from my_agent_core.agent import Agent
+from my_agent_core.run_lifecycle import RunLimits
+from my_agent_core.session import Session
+from my_agent_llm import Config, LLM
+from my_agent_llm.observation import InMemoryObserver
+
+async def main():
+    recorder = InMemoryObserver()
+    llm = LLM(Config(
+        provider="openai",
+        model="deepseek-v4.1-flash",
+        base_url=os.environ["LLM_BASE_URL"],
+        api_key=os.environ["LLM_API_KEY"],
+        max_tokens=2048,
+        max_retries=0,
+    ), observer=recorder)
+    agent = Agent(
+        llm=llm, tools=[],
+        session=Session(path=Path(".my-agent-harness/demo.jsonl")),
+        memory_dir=False,
+        run_limits=RunLimits(max_turns=6, max_seconds=120),
+    )
+    try:
+        print(await agent.run("用一句话说明工具调用的作用"))
+    finally:
+        await agent.aclose()
+    print("观测条数", len(recorder.records))
+
+# 确认供应商配置后才运行；本例会产生模型调用费用。
+# asyncio.run(main())
 ```
 
-| 模块 | 职责 |
-| --- | --- |
-| `src/my_agent_llm` | 多 provider 适配层，统一为流式事件与结构化 `ToolCall` |
-| `src/my_agent_core` | 通用内核：ReAct 循环、14 类事件、5 个 Hook、会话树、上下文压缩 |
-| `src/my_coding_agent` | 产品层：7 个基础编码工具、2 个受限产物回读工具、单文件写锁、权限门禁、stdio RPC 服务端 |
-| `my-tui` | 终端界面，复用 `@earendil-works/pi-tui` 渲染引擎，组件自行实现 |
-| `my-eval` | Terminal-Bench 评测适配器 |
+轮次 / 时长上限不等同费用上限。真实基准入口另用共享账本逐请求预留与结算；同步不协作代码及已经发生的外部副作用不能被强制回滚。
 
----
+只需要本地观测时使用 InMemoryObserver 或 JsonlSink + BoundedExporter。Langfuse 适配延迟导入，已通过真实5.2 SDK的内存导出契约，尚未确认真实服务上传。
 
-## 主要设计选择
+## Mem0、Langfuse、Dream-RSI
 
-**ReAct 循环写成纯函数。** `run_agent_loop` 是无状态的异步生成器，输入 LLM 与消息列表，输出事件流。这样单测不必装配整个 Agent——实测快约 10 倍、内存省 85%。
+```sh
+uv sync --frozen --extra mem0-local --extra langfuse --extra dream-rsi
+uv run --extra dream-rsi my-agent-dream --help
+```
 
-**工具并发按批门控。** 一个批次里只要有一个工具未声明 `is_parallel_safe`，整批串行。宁可慢，也不让「写后读」读到旧值——实测全并发快 3 倍，但 4 个读工具会全部读到写入前的数据。
+[安装、全局配置与使用说明](docs/integrations/README.md)包含本地模型准备、JSON及合成参数搜索演练。Mem0保留本地事实权威、infer=False和NeverLLM防双抽取，失败回退词法；Langfuse保留已有observer；Dream只调白名单参数，晋升须胜过baseline和当前active，原子指针/CAS支持回滚。项目settings不能改三项集成的全局配置。
 
-**上下文压缩优先 Append-Only。** 未超 80% 预算前只追加、不改历史，保持前缀稳定。真实 API 实测（glm-5.3-flash，6 轮）：命中率 53.5%，滑动窗口只有 17.9% 且从第 4 轮起归零。缓存最小块为 1088 token，短对话做 cache 优化没有意义。
-
-**会话用 JSONL 追加落盘。** 崩溃时最多丢最后一行——实测单个 JSON 文件损坏后 0 条可恢复，JSONL 可恢复 9/10。
-
-**运行态与摘要有明确来源。** 动态事实未变时复用已有快照，变化时追加完整新快照；摘要复用校验当前分支、覆盖消息和内容指纹，切分支或恢复会话时重新对齐。请求诊断保留组件指纹和变化原因。
-
-**长工具输出保留稳定产物引用。** 模型先看到有界头尾预览，可用 `artifact_read` 分页回读或 `artifact_search` 搜索；完整原文与会话记录保留，回读受工作区归属和大小上限约束。
-
-**长期记忆支持核对与删除。** `memory_read` 按精确键回读完整事实，`memory` 支持显式删除；写入与抽取入口进行常见凭据脱敏，琐碎输入跳过检索。可选的空闲 / 压缩前抽取默认关闭，使用方式及限制见[长期记忆说明](docs/memory.md)。
-
-**工具错误统一转成结果。** 不向上抛异常，让模型看到错误并自行修正；中断时自动补齐缺失的工具结果，避免孤儿调用触发 API 400。
-
-**权限默认 fail-closed。** 忘记传确认回调时阻断而非放行。
-
----
-
-## 已知问题
-
-- `fork()` 是 O(n²) 而非 O(1)：5000 条消息需 16.8 秒。树结构本身是 O(1)，但实现里逐条 `add_message` 各自触发全量重写。待修。
-- 权限门禁只看单次调用，无法识别组合风险（如 `read(".env")` + `write(public/)` 各自合规、组合泄密）。
-
----
-
-## 基准
-
-Terminal-Bench 2.1，89 题，统一底座 DeepSeek-V4.1-Flash：
-
-| 指标 | my-agent-harness | 官方 Pi |
-| --- | ---: | ---: |
-| 通过 | 71 / 89 (79.8%) | 72 / 89 (80.9%) |
-| 交叉胜负 | 独胜 6 | 独胜 7 |
-| Token | 41.7M | 122.3M |
-| 成本 | $4.62 | $18.84 |
-
-<p align="center">
-  <img src="docs/assets/terminal_bench_comparison.png" alt="Terminal-Bench 2.1" width="100%" />
-</p>
-
-双方仅差 1 题；6 胜 7 负的交叉分布说明是各自独立实现，而非同一逻辑的移植。
-
-**局限**：非全量重跑；本机缺 `/dev/kvm` 与 GPU 直通，部分题目超时属环境原因；原厂 Pi 未记录分项缓存数据。
-
----
+初版适配通过真实BGE CPU语义链路、Langfuse内存SpanExporter和Dream合成数据dry-run验证功能。后续固定历史Memory30题未支持当前Mem0配置优于词法；Qwen GPU目前是功能smoke。[真实HumanEval校准](docs/experiments/results/rsi-live-20261114/REPORT.md)的48测试槽已全部终态：47交付并通过final、1权限失败未执行final。train树同分、SDK选择baseline，holdout覆盖不足、发布拒绝，C为固定reference fallback，学习贡献不可识别。真实云上传及长程RSI收益仍待验证。
 
 ## 逐模块实验
 
-每个模块都有独立对照组实验（26 个，25 通过 / 1 暴露缺陷），另有 5 个真实 API 实验。
-
-```bash
-uv run python -m experiments.per_module.exp_module1_loop   # 1-A/B/C
-uv run python -m experiments.per_module.exp_module2_registry
-uv run python -m experiments.per_module.exp_m3_context
-uv run python -m experiments.per_module.exp_m4_session
-uv run python -m experiments.per_module.exp_m5_memory
-uv run python -m experiments.per_module.exp_m6_m9
-uv run python -m experiments.per_module.exp_m10_m12
-uv run python -m experiments.per_module.exp_api_cache      # 需 API 凭据
+```sh
+# 在仓库工作目录运行，确保 src 与仓库根可导入。
+PYTHONPATH=src:. uv run python -m experiments.harness_eval   --suite all --repeats 5 --seed 23 --output docs/experiments/results/redesign
 ```
 
-结果在 `experiments/per_module/results.json`。
+PowerShell 可先设置 `$env:PYTHONPATH='src;.'`。每次输出唯一目录，保留原始记录、环境、源码 hash、参数和失败，汇总从记录计算。真实 ablation、有限 comparison wrapper 和 contract 明确区分。
 
----
+已保存这一轮：8 模块、12 独立场景、100 条原始观测，断言失败 0。固定大输出夹具的发送视图从 120019B 变为 7041B，两组全文证据均可恢复；工具独立并发峰值 1→3，依赖违例 1→0。上述结果只代表夹具内工程行为，不能声称真实模型成功率或 KV cache 提升。两条记忆查询只是 smoke；重复次数不能充当新增问题数量。
 
-## 开发
+## 开源真实任务
 
-```bash
-uv sync
-npm install && npm run build
+[真实评测入口](experiments/benchmark_live/README.md)使用生产 Agent、ContextManager、Session 和容器 shell；先运行未修改官方任务的 oracle / gold，再开始模型 trial。测试 / solution 不进入 solver prompt，缺失环境单列，结果只代表预选小样本。
 
-uv run pytest          # 960 passed, ~40s
-npm test               # TUI 测试
-npm start              # 开发态启动
-```
+[历史SWE预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)采用当时授权的 DeepSeek V4.1 Flash 30美元上限。2026-11-14用户新授权继续测试，声明约20亿tokens，余额未向服务商核验；新campaign保留逐请求预留、固定episode额度及零隐式重试，旧账本不重置，币价未核时不计算金额。[历史v2真实结果](docs/experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、5题环境可用、10次模型trial，开启组通过2/5、关闭组1/5；7次空补丁。160请求保守账本$0.503462，非供应商核账。on产生11个外置产物但没有回读，on费用$0.252843、off$0.250619，不能宣称稳定质量、费用或KV收益。
 
-`my-tui/dist/` 被 gitignore，`uv build` 前需先 `npm run build`。
+通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留。[随后三题预算提示对照](docs/experiments/results/swe-budget-visibility-20261112/REPORT.md)双臂均1/3通过，未提供改善证据；加独立回读探针后累计保守账本$0.888355。Terminal首pair因验证器故障/超时未形成有效科学比较。上述不能当作三个适配器的消融；当前HumanEval只校准真实RSI链路，完整SWE与长程收益尚未证明。
 
----
+## 限制与历史
 
-## 文档
+进程内协作取消不保证强制抢占；后台记忆不是持久 worker；本地索引无跨进程写锁；权限不识别所有组合信息泄漏；有界摘要与抽取不能保证语义无损。详见[记忆说明](docs/memory.md)与各模块证据。
 
-| 文档 | 内容 |
-| --- | --- |
-| [docs/00_FACTS.md](docs/00_FACTS.md) | 事实基线：代码量、测试数、覆盖率 |
-| [docs/01_PI_DIFF.md](docs/01_PI_DIFF.md) | 与 Pi 的差异量化 |
-| [docs/02_LANDSCAPE.md](docs/02_LANDSCAPE.md) | 工业界 10 个 Agent 产品的并发范式对比 |
-| [docs/03_ACADEMIC.md](docs/03_ACADEMIC.md) | 52 篇文献综述与空白点 |
-| [docs/04_MODULES.md](docs/04_MODULES.md) | 12 个模块的设计取舍 |
-| [docs/05_VALIDATION.md](docs/05_VALIDATION.md) | 验证闭环与 14 个缺陷 |
-| [docs/09_EXPERIMENTS.md](docs/09_EXPERIMENTS.md) | 26 个逐模块实验报告 |
-| [docs/10_API_CACHE.md](docs/10_API_CACHE.md) | KV cache 真实 API 实测 |
-| [docs/coding/](docs/coding/) | 工具集、MCP、RPC、权限等实现规范 |
-| [docs/core/](docs/core/) | 内核层设计规范 |
+[基线 README](https://github.com/294962silent/my-agent-harness/blob/1f150e1a433c2b31ee83c8a2d11300e4a1fc3548/README.md)中的旧性能 / 评测数字属于历史记录，本轮没有重新复测，不能直接算成本批重设计收益。
 
----
-
-## 许可
-
-[MIT](LICENSE)
+代码按仓库 LICENSE 分发。外部基准数据、任务和第三方依赖遵循各自许可证，版本与可核验范围记入对应运行 manifest。

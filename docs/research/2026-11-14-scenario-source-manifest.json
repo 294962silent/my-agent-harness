@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-14",
+  "method": "GitHub connector GET metadata/default-branch commits; fixed-ref file reads; bounded source review by two existing SOL medium agents",
+  "target_role": "Agent / LLM application development internship",
+  "local_source_commit": "bee4cf7b607cbbd87d1fd8289dcfd9afe3f68fed",
+  "new_benchmark_model_calls": 0,
+  "new_dataset_downloads": 0,
+  "external_projects_installed_or_run": false,
+  "production_code_modified": false,
+  "proposal_status": "scenario_selection_proposal_not_implemented",
+  "repositories": [
+    {
+      "repository": "WecoAI/aideml",
+      "url": "https://github.com/WecoAI/aideml",
+      "commit_sha": "ad73d227af481bea3de06f884f41b2993dd6453a",
+      "default_branch": "main",
+      "archived": false,
+      "latest_push": "2026-10-16T14:33:42Z",
+      "metadata_license": "MIT",
+      "level": "three_file_source_review_plus_root_license",
+      "files": [
+        "README.md",
+        "aide/agent.py",
+        "aide/journal.py",
+        "LICENSE"
+      ],
+      "role": "primary execution-scored experiment-loop reference",
+      "license_note": "Root MIT text independently read; code reuse must retain attribution."
+    },
+    {
+      "repository": "karpathy/autoresearch",
+      "url": "https://github.com/karpathy/autoresearch",
+      "commit_sha": "228791fb499afffb54b46200aca536f79142f117",
+      "default_branch": "master",
+      "archived": false,
+      "latest_push": "2026-03-26T00:07:37Z",
+      "metadata_license": null,
+      "level": "readme_and_root_listing",
+      "files": [
+        "README.md"
+      ],
+      "role": "fixed experiment budget and keep-or-discard protocol",
+      "license_note": "README declares MIT; root listing has no separate LICENSE file in reviewed snapshot."
+    },
+    {
+      "repository": "anthropics/claude-quickstarts",
+      "url": "https://github.com/anthropics/claude-quickstarts",
+      "commit_sha": "4a4224bdf0e9cfb3332167b69c90457403813625",
+      "default_branch": "main",
+      "archived": false,
+      "latest_push": "2026-11-06T19:37:57Z",
+      "metadata_license": "MIT",
+      "level": "three_file_source_review_plus_root_license",
+      "files": [
+        "autonomous-coding/README.md",
+        "autonomous-coding/agent.py",
+        "autonomous-coding/prompts/initializer_prompt.md",
+        "LICENSE"
+      ],
+      "role": "alternate cross-session coding protocol",
+      "license_note": "Root MIT text read; autonomous-coding README says Internal Anthropic use; scope not resolved here."
+    },
+    {
+      "repository": "snarktank/ralph",
+      "url": "https://github.com/snarktank/ralph",
+      "commit_sha": "6c53cb0b831ebe8739c6a003e22af14902d8b0b5",
+      "default_branch": "main",
+      "archived": false,
+      "latest_push": "2026-02-02T01:46:21Z",
+      "metadata_license": "MIT",
+      "level": "readme_only",
+      "files": [
+        "README.md"
+      ],
+      "role": "fresh-context loop and persistent task/progress files"
+    },
+    {
+      "repository": "langchain-ai/deepagents",
+      "url": "https://github.com/langchain-ai/deepagents",
+      "commit_sha": "859257b0f538cfa99b59bb9e5341e162d4ac8433",
+      "default_branch": "main",
+      "archived": false,
+      "latest_push": "2026-11-14T02:47:15Z",
+      "metadata_license": "MIT",
+      "level": "readme_only",
+      "files": [
+        "README.md"
+      ],
+      "role": "planning/filesystem/context/checkpoint interface ideas; no migration proposed"
+    },
+    {
+      "repository": "NousResearch/hermes-agent",
+      "url": "https://github.com/NousResearch/hermes-agent",
+      "commit_sha": "4b40ffb0ad6d7da5d3260f5e499e1691508dd4d5",
+      "default_branch": "main",
+      "archived": false,
+      "latest_push": "2026-11-14T02:46:36Z",
+      "metadata_license": "MIT",
+      "level": "readme_only",
+      "files": [
+        "README.md"
+      ],
+      "role": "experience-to-skills and cross-session recall ideas; no skill-runtime source reviewed in this pass"
+    },
+    {
+      "repository": "facebookresearch/MLGym",
+      "url": "https://github.com/facebookresearch/MLGym",
+      "commit_sha": "9d40c1b5035202018cd7091fb4e83a9c68b377c0",
+      "default_branch": "main",
+      "archived": true,
+      "latest_push": "2025-08-10T20:00:53Z",
+      "metadata_license": "NOASSERTION",
+      "level": "readme_only",
+      "files": [
+        "README.md"
+      ],
+      "role": "benchmark protocol reference; excluded as current implementation base",
+      "license_note": "Archived true; README labels CC-BY-NC-4.0, API metadata NOASSERTION; no code reuse proposed."
+    },
+    {
+      "repository": "EpistasisLab/pmlb",
+      "url": "https://github.com/EpistasisLab/pmlb",
+      "commit_sha": "7c1f4bdc00136dc2e55c87fa6b8ba6e8af6d1a68",
+      "default_branch": "master",
+      "archived": false,
+      "latest_push": "2025-02-25T21:26:14Z",
+      "metadata_license": "MIT",
+      "level": "readme_only",
+      "files": [
+        "README.md"
+      ],
+      "role": "candidate CPU tabular dataset source; no datasets downloaded",
+      "license_note": "Repository metadata MIT; individual dataset provenance/license still to check."
+    }
+  ]
+}

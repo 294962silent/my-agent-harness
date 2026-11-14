@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-14T15:58:20.197Z",
+  "status": "passed_offline_with_known_e402_exception",
+  "tests": {
+    "command": "uv run --no-sync pytest -o addopts= --import-mode=importlib -q tests/experiments/test_multisession_protocol.py tests/experiments/test_multisession_adapter.py tests/experiments/test_multisession_embedding.py tests/experiments/test_multisession_observation.py tests/experiments/test_multisession_runner.py",
+    "passed": 41,
+    "failed": 0,
+    "seconds": 9.07,
+    "owner_runtime_sdk": {
+      "command": "uv run --no-sync pytest -o addopts= --import-mode=importlib -q tests/experiments/test_experiment_observation.py tests/integrations/test_langfuse_sdk.py tests/llm/test_observation_runtime.py",
+      "passed": 25,
+      "failed": 0,
+      "seconds": 4.64
+    }
+  },
+  "ruff": {
+    "core_and_tests": "All checks passed",
+    "standalone_worker": {
+      "status": "E402_intentional_syspath_bootstrap",
+      "source_changed_after_freeze": false,
+      "command": "uv run --no-sync ruff check --ignore E402 experiments/memory_validation/qwen_seccomp_worker.py",
+      "result": "All checks passed"
+    }
+  },
+  "diff_check": "passed",
+  "frozen_plan_verified_before_first_paid_request": true,
+  "source_hashes_file": "C:/Users/MLL/Desktop/my-agent-harness/.git/codex-delivery/effect-validation-20261114/memory-locomo-study/source-hashes.json",
+  "canvas": {
+    "path": "C:/Users/MLL/.cursor/projects/c-Users-MLL-Desktop-my-agent-harness/canvases/mem0-rsi-effects.canvas.tsx",
+    "sdk_typecheck_with_skipLibCheck": "passed",
+    "strict_typecheck": "blocked_by_installed_SDK_missing_internal_canvas-action-dispatch declaration",
+    "forbidden_pattern_audit": "passed"
+  }
+}

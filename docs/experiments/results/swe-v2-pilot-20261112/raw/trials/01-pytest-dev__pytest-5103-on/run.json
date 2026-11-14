@@ -1,0 +1,129 @@
+{
+  "instance_id": "pytest-dev__pytest-5103",
+  "base_commit": "10ca84ffc56c2dd2d9dc4bd71b7b898e083500cd",
+  "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103:latest",
+  "image_id": "sha256:6685f236ddea92e412c046f1276f178d34895e4efbda2830ac3ab81903364787",
+  "repo": "pytest-dev/pytest",
+  "catalog_sha256": "fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c",
+  "task_repository": "https://github.com/SWE-bench/swe-bench-tasks",
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "metadata_sha256": "db8b862c14233abcdb1929245aeba7810942d7f047dc53c86b59498dc6525c20",
+  "gold_evidence_sha256": "f2ee3b6c8d066f844ebe4fcee6ac06a7e6d188b87075ee945ebe7a90fb4f579e",
+  "run_id": "0dd198de18ef54eab0224ac808d978bc",
+  "adapter_protocol": "v2",
+  "arm": "on",
+  "status": "budget_exhausted",
+  "stage": "finished",
+  "error_code": null,
+  "error_type": null,
+  "initial_image_head": "5df4d131d551b79b9fcf258482eaa4f59bf238b8",
+  "requests": 16,
+  "stop_reason": "budget_exhausted",
+  "limit_details": {
+    "kind": "max_turns",
+    "limit": 16,
+    "observed": 16
+  },
+  "usage_available": true,
+  "usage": [
+    {
+      "prompt_tokens": 1301,
+      "completion_tokens": 89,
+      "total_tokens": 1390
+    },
+    {
+      "prompt_tokens": 301,
+      "completion_tokens": 75,
+      "total_tokens": 1656,
+      "cache_read_tokens": 1280
+    },
+    {
+      "prompt_tokens": 1343,
+      "completion_tokens": 524,
+      "total_tokens": 3403,
+      "cache_read_tokens": 1536
+    },
+    {
+      "prompt_tokens": 565,
+      "completion_tokens": 549,
+      "total_tokens": 3930,
+      "cache_read_tokens": 2816
+    },
+    {
+      "prompt_tokens": 1711,
+      "completion_tokens": 601,
+      "total_tokens": 5640,
+      "cache_read_tokens": 3328
+    },
+    {
+      "prompt_tokens": 295,
+      "completion_tokens": 737,
+      "total_tokens": 6024,
+      "cache_read_tokens": 4992
+    },
+    {
+      "prompt_tokens": 185,
+      "completion_tokens": 1067,
+      "total_tokens": 6500,
+      "cache_read_tokens": 5248
+    },
+    {
+      "prompt_tokens": 626,
+      "completion_tokens": 1253,
+      "total_tokens": 7255,
+      "cache_read_tokens": 5376
+    },
+    {
+      "prompt_tokens": 276,
+      "completion_tokens": 1811,
+      "total_tokens": 7975,
+      "cache_read_tokens": 5888
+    },
+    {
+      "prompt_tokens": 169,
+      "completion_tokens": 693,
+      "total_tokens": 7006,
+      "cache_read_tokens": 6144
+    },
+    {
+      "prompt_tokens": 245,
+      "completion_tokens": 1343,
+      "total_tokens": 7860,
+      "cache_read_tokens": 6272
+    },
+    {
+      "prompt_tokens": 261,
+      "completion_tokens": 2930,
+      "total_tokens": 9591,
+      "cache_read_tokens": 6400
+    },
+    {
+      "prompt_tokens": 558,
+      "completion_tokens": 1867,
+      "total_tokens": 9081,
+      "cache_read_tokens": 6656
+    },
+    {
+      "prompt_tokens": 710,
+      "completion_tokens": 1869,
+      "total_tokens": 9747,
+      "cache_read_tokens": 7168
+    },
+    {
+      "prompt_tokens": 1239,
+      "completion_tokens": 1305,
+      "total_tokens": 10352,
+      "cache_read_tokens": 7808
+    },
+    {
+      "prompt_tokens": 2695,
+      "completion_tokens": 2441,
+      "total_tokens": 14096,
+      "cache_read_tokens": 8960
+    }
+  ],
+  "cost_usd": 0.0507,
+  "official_reward": null,
+  "prediction_exists": true,
+  "cleanup_errors": []
+}

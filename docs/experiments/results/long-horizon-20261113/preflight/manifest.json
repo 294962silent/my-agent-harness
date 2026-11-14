@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "evo-conan-empty-report.json",
+      "bytes": 91099,
+      "sha256": "a036bf380b286c9c3ed7d4d58ca079ccf82e02c01a6812ac0b5e4ec9f5dbfd84"
+    },
+    {
+      "path": "evo-conan-gold-report.json",
+      "bytes": 91099,
+      "sha256": "95fe670b2cab3c8d0e1ffd1254e8edf3edea8614f92ed94a173ff26633f2dd00"
+    },
+    {
+      "path": "evo-dask-empty-report.json",
+      "bytes": 312968,
+      "sha256": "053b84ab8b63ff35db674c82676735a6f58c6e13512365328eb5ca41547c7dbd"
+    },
+    {
+      "path": "evo-dask-gold-report.json",
+      "bytes": 312967,
+      "sha256": "54eb51e59ac3819e181cc42d5b66a6002803443e441122e601ccb9ccadf2255f"
+    },
+    {
+      "path": "evo-oracles.json",
+      "bytes": 7441,
+      "sha256": "030adce2321fd8b5c09fd7259fda4a0362a430bb616144aceff18c0e6be594a6"
+    },
+    {
+      "path": "execution-source.json",
+      "bytes": 18297,
+      "sha256": "79444bcdb44afa38c1b39f55d55cb258ccf76a6a599b42cd3749418a9b2c7259"
+    },
+    {
+      "path": "terminal-oracles.json",
+      "bytes": 10978,
+      "sha256": "64e202a3c09448dbf7fcb51542e0811f3a1e8038d0409780d9e988cda3c9820a"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "source_sha256": "5cbf0dd4b29b5e68aa84e0370942ae2376c463648980ebd574d58baed88fbba6",
+  "results": {
+    "dataset": "UCI winequality-red normalized CSV",
+    "data_sha256": "d22f4f11db0456ff21745d2fa96d26fa348a8cdb889efda65bde802085be45fd",
+    "counts": {
+      "dev": 319,
+      "final": 319,
+      "train": 961
+    },
+    "seed": 23,
+    "final_scored": false,
+    "candidates": {
+      "mean": {
+        "valid": true,
+        "rmse": 0.8467093297076379,
+        "score": 0.5415037352729004,
+        "pins": {
+          "task_manifest_sha256": "7ba03f97c8c93948f384afdfe490dff2e49104d5f1470b18a52356aabc4899eb",
+          "verifier_sha256": "2886bd5b39b8c71c300827808700a9e28157692f0b24092b736e8e009af2d753",
+          "boundary_sha256": {
+            "research_task.py": "30442d0cb89901e7b2a592a1e7c34f2f675e9089be987cfc6967100fec1f4168",
+            "rsi_branch.py": "2a015754b07fb8ad9db3ed136ea80e91c2e8bb2e9a5f9e2c95c70480e8805c91"
+          },
+          "code_sha256": "cba011056a67daf4847579e4452675a8f42063cf3ca3178abc5e55c7187fa94f",
+          "features_sha256": "41681ca31da57ea5f161b645d8af985652edfd34a23b4342ed559f832c0972df",
+          "split": "dev",
+          "image_id": "sha256:896edfbcbf0c29ad15681617a8886cb9871b7f24c5fde4606114c8ee6bfe4c70"
+        },
+        "script_sha256": "55e413e3d1ffd256ad16ee8e4183edb19da23deafa027e84cd1eaa80cecf6a0a"
+      },
+      "ridge": {
+        "valid": true,
+        "rmse": 0.6841778883953096,
+        "score": 0.5937615063648671,
+        "pins": {
+          "task_manifest_sha256": "7ba03f97c8c93948f384afdfe490dff2e49104d5f1470b18a52356aabc4899eb",
+          "verifier_sha256": "2886bd5b39b8c71c300827808700a9e28157692f0b24092b736e8e009af2d753",
+          "boundary_sha256": {
+            "research_task.py": "30442d0cb89901e7b2a592a1e7c34f2f675e9089be987cfc6967100fec1f4168",
+            "rsi_branch.py": "2a015754b07fb8ad9db3ed136ea80e91c2e8bb2e9a5f9e2c95c70480e8805c91"
+          },
+          "code_sha256": "b25c63989c1aa48468c65ce852eb1aafe8331e1b9519abba592c74dfd27c2978",
+          "features_sha256": "41681ca31da57ea5f161b645d8af985652edfd34a23b4342ed559f832c0972df",
+          "split": "dev",
+          "image_id": "sha256:896edfbcbf0c29ad15681617a8886cb9871b7f24c5fde4606114c8ee6bfe4c70"
+        },
+        "script_sha256": "63d27da72af29ef380aea886986993a6034dbc60be5514f760ff0227b9eeadec"
+      }
+    }
+  }
+}

@@ -1,0 +1,317 @@
+# 开发问题与解决过程
+
+日期：2026-11-12。记录实际复现，不把预期故障写成已经发生，也不把开发中间版本缺陷归到干净基线。
+
+## P01：运行取消破坏工具调用配对
+
+触发：provider 已交付 ToolCallDone，但尚未交付 StreamDone，此时 abort / deadline / 消费者关闭。第一次直接取消迭代任务后，既有核心契约测试失败，Session 续跑可能带孤立工具调用。
+
+原因：运行归属和预算开始覆盖更多异步等待，原先循环内部补结果的收尾来不及执行。
+
+解决：集中终止收尾，只保存已经观察到的 assistant 工具意图，补恰一条 is_error 中断结果，不把纯 partial 文本当完整回答。增加三种终止后的 Session.load 回归；不放宽 deadline 来掩盖问题。
+
+证据：`tests/core/test_run_lifecycle.py`、`test_loop_run_limits.py`；主代理整套回归 1105 passed、1 skipped、1 deselected。局限：工具已经产生的外部副作用不能回滚。
+
+## P02：观测 exporter 线程退出不代表资源清理成功
+
+触发：Langfuse sink 的 flush 抛异常。独立假 client 探针发现线程已退出，但 own_client.shutdown 未被调用。
+
+解决：flush / shutdown 使用 try/finally，测试失败路径；分开表达 close_errors、is_alive 与 close 返回值。transport 永久阻塞时 timeout 返回失败，不宣称已回收线程。
+
+证据：`tests/llm/test_observation_export.py`，本地 fake client；未验证真实 Langfuse 服务。
+
+## P03：流暂停时错误继承 parent
+
+风险与验证：ContextVar 若跨生成器 yield 保持激活，会让消费者的 sibling 请求误变成前一请求子调用。
+
+解决：把 observation scope 限定在每次底层迭代内部，yield 前恢复消费者上下文。并发 r1/r2 探针四个 start 对应四个 end，根隔离；暂停流后的 sibling parent 为 None。
+
+证据：`tests/llm/test_observation.py`。默认不记录正文、参数或异常消息，observer 抛错不能改变任务结果。
+
+## P04：消融指标把“无回读工具”误写成“无证据”
+
+发现：初版 Artifact off 直接发送完整原文，artifact_readback=0 只能说明未提供外置工具，不能推断信息丢失。
+
+解决：分别记录 view_contains_full_source、artifact_readback_supported、artifact_readback_matches_source、evidence_recoverable 与磁盘开销。最终两组 evidence_recoverable 都是 1，视图从 120019B 变成 7041B，on 另外写盘 120361B。
+
+证据：离线运行 `20261112T095857-2381042b458f` 的 raw.jsonl；不能换算成真实 token / 费用 / KV 命中收益。
+
+## P05：开发依赖掩盖运行时缺依赖
+
+触发：独立 Linux 环境安装框架基础依赖后导入失败 `ModuleNotFoundError: PIL`。开发环境因 matplotlib 的间接依赖而未暴露。
+
+解决：确认 Session assets 与 image_processing 顶层使用 PIL，显式增加 `Pillow>=10` 并同步 uv.lock。所有 61 个已锁包版本保持不变，Pillow 仍锁 12.3.0；有少量锁格式 / marker 变化。Linux 安装 Pillow 13.0.0 后实际导入 Agent、Session、CodingAgent 成功。
+
+证据：pyproject.toml / uv.lock、`uv lock --check` 与独立环境导入；不是靠开发全量环境再次导入证明修复。
+
+## P06：预算耗尽被误记为正常完成
+
+发现：live adapter 只捕获异常，Agent 正常返回的 budget_exhausted 终态会被写成 completed，外部 CancelledError 也会遗漏。
+
+解决：订阅 AgentEnd 保存 stop_reason / limit_details，显式捕获取消并保留账本预留。账本 guard 放在调用前，不依赖可能被隔离的 observer 异常。
+
+证据：`tests/experiments/test_benchmark_live_budget.py`、`test_benchmark_live_harbor.py`。预算是客户端保守预留，不是服务端不可突破的账单保证。
+
+## P07：参考解通过必须与任务绑定
+
+风险：任意 reward=1 JSON 或别的任务的 oracle 结果不能解锁收费模型调用。
+
+解决：验证 agent=oracle、结束时间、无异常、reward=1、task_name；运行时再次匹配 Harbor Task.checksum。金标与测试字节仅参与 host 校验，不进入 solver prompt。模型 trial 使用新容器。
+
+证据：C/D 单独预算与 Harbor 假环境测试；真实环境必须另外通过官方判分，fake 不能替代。
+
+## P08：官方环境网络与依赖故障
+
+实际过程：WSL 继承的 localhost 代理不可用；清理当前进程代理后安装 Harbor / SWE-bench 成功，但官方 DockerHub registry 直连超时。临时网络转发进程的启动被自动策略拒绝，未继续该方式。采用 Windows 标准 HTTPS 下载官方 crane 发布包并校验官方 SHA256，再下载原始官方任务镜像为 tar，WSL docker load 后核对 image config digest；没有替换任务或评分器。
+
+后续参考解启动暴露未安装 Docker Compose v2，补装 Ubuntu 官方 docker-compose-v2 2.27.1。一次 CLI 退出码 0 的运行仍有 trial exception，必须读取官方 result.json，不能把命令成功当任务成功。
+
+SWE 单例 gold 预检因镜像下载超时报告 completed=0、errors=1，属于环境阻塞。后续状态只追加，不抹去失败。
+
+## P09：跨 Shell 参数影响环境准备
+
+发现：WSL 内联 shell 的变量传递使任务复制未实际发生，首次 oracle 因任务路径不存在退出。
+
+解决：环境准备改用显式 Python 参数列表、固定候选集合、每目录 task.toml 存在断言与持久 cache；不依赖跨 Shell 拼接变量。`/tmp` 在 WSL 重新启动后不可靠，实验使用持久目录并显式 TMPDIR。
+
+证据：环境准备日志；这不是模型失败，也没有用修改评分器来规避。
+
+## 后续维护
+
+新增问题按触发、原因、修复、验证、剩余限制追加。没有原始失败日志的推测保留为风险，不能写成已解决事故；真实基准结果见独立官方报告。
+
+
+## P10：官方镜像初始 HEAD 不等于题目 base commit
+
+首次真实模型试验在初始化阶段被严格检查挡住，requests=0、无费用请求。原镜像HEAD为5efaed257...，题目指定cffd4e0...；官方评分脚本本来会先切回该base。
+
+解决：在新建独立容器中先reset固定base，再核HEAD及clean状态，保持原image config绑定。新增偏移HEAD→reset→verify、reset失败证据和真实无模型Docker探针。之后两个真实trial各16请求，官方评分均resolved；不把零请求准备失败算模型成绩。
+
+## P11：真实开关未激活与适配器缺少回读工具
+
+实测后复核发现：两组真实SWE试验虽均通过，但on没有生成artifact文件，所以token差异不能证明Artifact收益。同时协议v1只给CoreAgent注册shell，却启用ArtifactStore，缺少模型侧artifact_read/search；生产CodingAgent已有工具，但这条独立评测适配器未复用。
+
+解决：原始v1结果、源码与局限保留，标pipeline smoke；协议v2两组均注册相同生产受限工具schema，只切投影开关。新增14KB输出中部marker被预览隐藏→handle→artifact_read真正恢复中部/末尾的往返，off全文保留，回读不递归外置。SWE和Harbor两个适配均经fake provider验证，Linux全D17项通过；v2未重新发真实请求，不能挪用v1成绩。
+
+证据：`docs/experiments/results/live-swe-20261112/`与`protocol-v2-offline/`。先确认机制确实激活，再判断数字是否有因果意义，是这次复核的实际改进。
+### P12：原始评测输出与 Git 换行、空白检查冲突
+
+- 复现：最终暂存后，官方 stdout 的终端回车和尾随空格触发 `git diff --cached --check`；Windows autocrlf 还可能使跨平台 checkout 的文件字节与 manifest 不同。
+- 原因：原始实验材料被当成普通源码文本处理。
+- 修复：用 `.gitattributes` 只对两组实验结果目录关闭文本换行转换，对官方 stdout 关闭 whitespace 检查，保留可查看的文本 diff；不清洗或改写原始输出。
+- 验证：重新暂存后核对 index blob 与本地证据逐字节相同，再运行 staged diff check。manifest 继续绑定原始字节。
+- 边界：不关闭项目其他源码或文档的空白检查；绝对路径和机器环境仍保留在原始记录中，不能当作可移植执行配置。
+
+## P13：SWE 入口只有两个硬编码实例
+
+- 复现：任务批准、Docker初始化和报告直接读取同一个两题常量，新增第三题需要同时改多处查表。
+- 修复：冻结官方catalog/TaskSpec，将安全metadata、base、原image/config与来源hash贯穿solver；旧两题fallback保持。
+- 验证：第三题数据驱动回归、篡改输入拒绝、五个真实eligible任务的独立新容器probe通过；实际模型是否解决问题另看官方评分。
+- 代价：数据批准和gold预检仍需宿主准备；catalog hash不等于第三方签名，通用入口不等于跑完300题。
+
+## P14：取消评分时只停止等待，没有回收子进程
+
+- 发现：另一助手交叉复核指出，取消await并不能结束评分器及Docker daemon中的容器。
+- 修复：独立进程组、terminate/kill/wait，并按本次instance/run_id精确清理评分容器；不匹配其他任务资源。
+- 验证：取消回归覆盖进程回收及容器匹配；增加同campaign跨进程排他锁，防止两个进程重复发起收费任务。
+- 边界：已发生的供应商调用不能回滚；未知用量保留预留并停止，不能当作免费重试。
+
+## P15：空补丁被自动汇总误标为评分执行错误
+
+- 复现：v2首个真实配对中，两组各16次请求后都生成空model_patch。原官方报告均empty_patch_instances=1、completed_instances=0、error_instances=0；自动汇总却把所有非completed结果统一归为environment_or_execution_error。
+- 更正：这两次是预算内没有产生修改，官方已知未解决，测试没有执行，不是评分环境故障。保留原报告、原state和错误分类作为历史证据，不重跑模型或评分来消除失败。
+- 处理顺序：先停后续收费、核原报告及补丁字节长度，再按冻结顺序继续；汇总修复放在该批模型生成结束后，防止改源码破坏冻结校验。公共收集层可追加带来源的派生分类，不能覆盖原始记录。
+- 边界：empty_patch、测试执行后unresolved、评分环境error与unknown须分开；已知结果数量与真正执行测试数量也要分开。
+- 完成更正：在全部生成/评分/原始归档后新增swe_results单一parser，_score与summary共用；重算先核原report hash，旧缓存只审计不写回。实际复算10个报告=7empty/3resolved、3次测试、5个known pairs；同时覆盖错题ID、计数矛盾、缺字段、completed与error重叠及档案篡改拒绝。可移植archive CLI允许事后分析版本单独演进，run/score仍检查原source drift。
+
+## P16：独立工作区可能导入原 checkout 的 editable 包
+
+- 复现：Windows直接运行新CLI但不设PYTHONPATH时，导入了原checkout安装的旧包；只看当前目录或Git分支不能证明实际执行了新代码。
+- 修复：Windows显式PYTHONPATH=src;.、Linux使用src:.；真实调用前核core/llm的__file__必须位于目标worktree/src，冻结输入与源码hash。
+- 验证：主代理在正确路径下完成64项实验回归和12项分段执行定点回归；真实worker先核导入路径再允许进入Agent。
+- 边界：源码hash可证明输入版本，不能证明供应商实际模型权重版本；模型与价格仍按请求/返回字段和供应商口径记录。
+
+## P17：固定预算下空补丁较多，模型没有使用回读
+
+- 本轮观察：160次请求、10个trial全部budget_exhausted；7次空补丁、3次官方测试通过。on外置11份，但read/search响应均0。两组均有空补丁，不能直接归因为Artifact。
+- 当前处理：保持本批参数、题目和原始失败，不用增加步数或重试美化结果；保留生成版本与只读重算接口。
+- 待验证：可以分别研究剩余预算提示、16/32请求上限、回读提示，每次只改变一个变量。尚未执行这些实验，不承诺它们能提高完成率。当前证据不支持直接扩成300题。
+
+## P18：80毫秒整体预算测试依赖CI机器速度
+
+- 复现：分析修复提交2857b9c的CI run43227265253，Ubuntu/Python3.11在prepare阶段的started断言失败。总0.08秒可能在初始化/文件I/O就耗尽，产品提前终止是合法行为；测试却假定目标阶段必然已经进入。
+- 确定性证据：给测试前置输入hook增加120毫秒延迟，旧测试稳定复现started=False；没有修改生产deadline语义。
+- 修复：只在参数化测试中注入RunBudget虚拟clock与run_lifecycle局部asyncio.wait代理，前置事件可完成，目标await进入后再推进原0.08秒deadline。仍走生产cancel/gather/finally，断言started、stopped、budget_exhausted/max_seconds和owner释放。
+- 复核补充：独立审查指出前置阶段可能意外挂起，再加5秒测试watchdog及finally a.aclose；watchdog不是被测产品预算。
+- 验证：主代理Windows定点15 passed in1.08s，执行助手Linux同版15 passed in1.43s，Ruff与独立review通过；本地未运行Python3.11，需GitHub最终矩阵验证。实验生成源码、raw报告和费用均不改，未重跑模型。
+- 后续实际复核：47a89aa的GitHub run43228948231四组全部成功，包含原失败的Ubuntu/Python3.11。原失败run链接与复现仍保留。
+- 再次更正：文档head f0d12c1的run43229586859暴露同文件另一项30ms模型等待假设：模型可能尚未进入，不能无条件断言closed。整份15项随后统一审查；model_wait、四stage、已交付工具意图的deadline都改用共用deadline_at_stage fixture，工具意图需等消费者实际收到MessageUpdate后才arm。唯一保留真实30ms的early-deadline用例只断预算、模型未启动与owner释放，允许在任何前置位置过期；0.5s close/5s收集限制均是同步后的防挂watchdog。
+- 最终该文件本地验证：主代理Windows15 passed in1.21s，作者Linux同版15 passed in1.59s，Ruff及整份独立复核无阻断。没有只靠增加timeout或反复重跑掩盖失败；最新提交CI通过状态以PR checks和PR正文实际记录为准，历史47通过不替代新head验证。
+
+## P19：回读能力成功，不等于最终任务完成
+
+- 复现：两份隐藏中段nonce日志，各做投影on/off。on均由生产工具回读到目标，第四次响应却仍在调用工具，四请求上限结束后未交付正确最终答案；off两次均在第二次正常答对。
+- 处理：把隐藏预览、handle、真实回读、目标进入模型输入和最终精确答案分别记录。on能力链路2/2、端到端0/2；不把前者当成功率，也不追加请求消除失败。
+- 证据：四trial/12个已结算请求/$0.009106，schema一致、无提前泄漏；独立助手核audit/result及Agent.run预算终态。审计只在SDK前Provider入口，正文/推理/finish reason未保存，不能解释继续读的动机。
+- 代价：回读引入额外请求；“少发工具正文”只有在完整任务质量、总请求和费用一起测量后才有价值。该探针不是SWE或KV缓存排名。
+
+## P20：Windows worktree的Git指针不能直接交给Linux Git
+
+- 发现：运维脚本在WSL执行git rev-parse时，`.git`中Windows绝对路径`C:/...`被当成Linux相对路径，模型启动前失败；消费未增加。
+- 处理：在Windows宿主核完整提交与源码无脏改，Linux核真实包导入路径和冻结输入/源码hash。保留共享Git文件原样，避免破坏Windows工作树。
+- 边界：提交名不能替代实际导入检查，文件hash也不代表服务端模型权重版本。本轮生成版本固定c69ff37，文档和事后分析版本单独标注。
+
+## P21：Mem0 SDK close不等于全部存储客户端已关闭
+
+- 发现：真实固定2.2.1 SDK的Memory.close仅关SQLite，Qdrant本地锁仍在，关闭后同路径重建失败。
+- 修复：适配器只关闭自己拥有的SQLite、向量和HTTP客户端；显式注入默认caller-owned。SDK工作失败时也走finally清理，完成与request_close共锁；工作失败和资源关闭状态分开，避免已清理后永久False阻断会话替换。
+- 验证：生产适配器→MemoryStore→真实本地Qdrant/SQLite，假embedding、LLM拒绝调用、socket拒绝网络；关闭后同路径重建成功。单worker在途超时仍False，不声称杀掉SDK请求、内部重试或做到exactly-once。
+
+## P22：外发集成配置不能被项目文件覆盖
+
+- 发现：新增Mem0/观测配置包含服务地址和凭据环境引用，原项目级合并规则只保护proxy/trust，新块如果直接合并会越过既有特权配置边界。
+- 修复：memory_index/observation加入既有全局专属键，项目整块剥离；普通theme覆盖与受信任Python显式注入保留。示例配置放可信全局目录。
+- 验证：新增4个有/无全局×有效/畸形项目块参数例先红后绿，Settings全13项通过；主代理最终整套也通过。不新增交互审批流程。
+
+## P23：Dream名为OptimalPolicy的模板没有实现
+
+- 发现：固定官方SHA的模板solve仅reset并返回空SimResult，不能根据类名宣称实际策略已运行。
+- 修复：首版只接真实可执行的官方baseline，标记fixed_reference；删除无效beta控制项，不加载任意候选Python文件。输入必须有真实评分树，Session不能编成评分树。
+- 验证：生产CLI→隔离worker→真实固定SDK的合成三节点契约，校验决策/预算/来源/manifest；未启动在线学习、不报告策略收益。
+
+## P24：共享LLM的订阅与清理所有权
+
+- 问题：覆盖llm.observer会破坏原观察者，会话重建若保留旧sink会重复导出或向关闭的client写入。
+- 修复：每调用快照base与订阅，逐观察者隔离异常；runtime只detach/关自身。RPC四种session变更先await旧Agent关闭，未完成就不假装替换成功；直接core与CodingAgent异常/取消路径均保留清理。
+- 验证：定点生命周期/所有权回归及真实Langfuse5.2内存SpanExporter；缺字段不补零，cached输入按total-completion映射。没有真实服务上传回读证据。
+
+## P25：发送SIGKILL早于进程组真正退出
+
+- 发现：ec0fcdc的Linux CI在normal-exit清理测试中观察到后代仍为R，Windows同head通过。Linux本地原样复现，返回时ShdPnd=0x100（SIGKILL排队），约1.25ms后进程消失；原实现只wait根进程。
+- 修复：生产Unix清理增加有界整组静默确认，Z/X视为不再运行，无法确认则报错；不用固定sleep延长测试，不引入全局subreaper。Windows已有Job Object active-count等待保持。
+- 验证：受控True/True/False存活序列、永不确认失败、/proc comm及Z/R解析和真实子进程回归；Linux、Windows各20项Dream测试通过，互审无阻断。
+
+## P26：后台任务可能在首轮内合法完成
+
+- 发现：同次Ubuntu/Python3.11 E2E首答为Completed而非Waiting；旧测试用0.1秒任务sleep假定首轮结束早于通知。让第2次假模型调用显式等待真实job后，Linux稳定复现旧断言失败；生产loop会在阶段末收割followup并继续同轮，是合法行为。
+- 修复：仅测试改为release文件gate，先保证后台仍running，再释放并await真实job，下一轮验证完成通知、输出与任务状态；finally取消/回收并关闭Agent。取消固定0.1/0.3秒阶段sleep，也不假定通知出现在第二轮第一次provider调用。
+- 验证：Linux/Windows定点各1项通过；生产后台调度未修改。主代理修订后24项定点（含三个真实SDK契约）通过，不是新增benchmark。
+
+## P27：Mem0原FastEmbed provider忽略CPU/缓存控制
+
+- 发现：固定Mem0 SDK只把model_name传给TextEmbedding，cache/threads/providers配置未转发；FastEmbed默认AUTO不能假称受控CPU。
+- 修复：固定SDK版本的局部装配层显式CPUExecutionProvider/cuda=False/2线程/本地路径，NeverLLM不构造OpenAI；7个官方固定权重文件逐项独立验hash，运行期不下载。可写候选缓存按adapter独占，关闭释放强引用和自身目录。
+- 验证：真实512维中文BGE经生产链路，禁词法fallback、拒绝socket仍检索成功，实际ORT provider仅CPU；模型弱引用在关闭后释放。功能smoke不是召回率实验，冷构造也不在search等待超时内。
+
+## P28：官方模型下载失败与匿名代理边界
+
+- 发现：直接urllib/curl TLS EOF或超时，WSL该域不可达；官方元数据可核不等于本机权重已下载。
+- 解决：仅显式采用Windows系统匿名代理，禁curlrc/netrc/HF token，TLS不降级，官方固定revision下载；ONNX按官方LFS SHA256，其余按官方Gitblob SHA1及字节数复验，再原子入缓存。空用户名但带口令的代理也拒绝。
+- 结果：7文件95332206B准备成功，不用镜像；缓存manifest哈希可复核。未把假向量当下载成功，模型留用户缓存不进Git。
+
+## P29：自动晋升必须比较当前active并防并发覆盖
+
+- 发现：候选胜过baseline仍可能弱于已有active；仅FileLock原子写不能避免训练期间另一个晋升/rollback后被过期报告覆盖。
+- 修复：冻结incumbent版本/参数/完整指针token；holdout只额外验证固定incumbent，候选须严格胜两者。锁内重核proof和CAS，revision nonce防ABA；同参数already_active不重发。先写中性prepared产物、指针最后提交，提交状态以registry为准，不宣称故障下exactly-once。
+- 验证：临时fixture/注入评估器覆盖低于active、prepare后active变化、ABA、损坏/重封hash、合法rollback；真实SDK合成闭环永不生产晋升。没有实绩策略收益证据。
+
+## P30–P35：长程评测的预算、因果与环境边界
+
+2026-11-13，用户要求每个问题能用于面试并可深入追问。完整九段证据链、取舍与问答见[长程评测工程问题深挖](10-长程评测工程问题深挖.md)。
+
+- P30：旧16请求/600s与长程任务不匹配，扩run级冻结限制并复用原$30账本；已核300请求/$0.888355，新增Guard离线回归45 passed，真实新调用待运行。
+- P31：旧记忆脚本含query expansion、额外抽取及隐式重试，不能直接用作Mem0单变量消融；改同历史、同chunk、同输出预算，真实指标待测。
+- P32：八个TB2.1 oracle在镜像拉取阶段失败，模型请求0；按environment-blocked保留，修任务专属网络，不改官方评分器。
+- P33：固定官方commit/LFS及实际执行文件hash；TB81文件、LongMemEval数据和SWE-EVO Arrow均已核，不用目录名或可移动main冒充版本证据。
+- P34：中文BGE面对英文官方历史，功能接通与跨语召回分别验证，不把中文翻译版成绩当官方成绩。
+- P35：Dream回放参数尚未在线影响Agent，Langfuse云上传尚未验证；按真实路径安排专项，避免把SDK名词直接写成质量提升。
+
+修复后的oracle、有效样本、真实费用与源码提交结果继续追加，不用规划值覆盖失败历史。
+
+## P36：源码冻结漏实际依赖，schema不一致仍算差值
+
+- 两位助手交叉review分别复现Memory plan漏paid/guard哈希、TB两已评分臂schema不同仍报delta。已补真实执行入口的付款前漂移拒绝回归，并要求完整且schema一致才给配对差值。
+- WSL记忆12项通过，配对修复独立复核；主代理整套1334 passed、4 skipped、5 subtests passed。真实任务效果尚未生成。详细因果、证据和追问见[深挖P36](10-长程评测工程问题深挖.md#p36有hash和两组分数为什么仍然不能直接下结论)。
+
+## P37：官方会话ID的answer_前缀泄漏证据身份
+
+- 首题真实索引的上下文显示带answer_前缀的证据会话，原has_answer虽未传仍有标注旁路。v2对所有SID同规则匿名化，原映射仅host评分使用，完整正文/日期保留。旧0API单题探针归档并排除正式成绩。
+- 行为回归覆盖真实Fact/索引/reader无标签、Recall可算、合法追加与已用上下文篡改拒绝；WSL15项通过。完整九段深挖见[问题深挖P37](10-长程评测工程问题深挖.md#p37没传has_answer为什么仍然发生评测泄漏)。
+
+## P38：验证器缺依赖仍写0分，实际任务名与fake契约不同
+
+- 实际官方脚本uv/uvx失败却reward0且CLI无exception；收集器现保留raw分数，另附严格组合证据的suspected标记，不误排正常代码collection失败。
+- 真实task_name带terminal-bench/namespace，原短名比较会漏收割；按冻结oracle身份严格兼容，恢复不重复执行。WSL21项通过，generic历史协议未改。完整九段追问见[深挖P38](10-长程评测工程问题深挖.md#p38官方0分cli成功和真实测试执行如何区分)。
+
+## P39–P41：镜像泄漏、评分来源与配置口径
+
+- P39：实际Dask image含4569个基线之外可达提交/303refs；同tree单root导出与旧objects不可读的三次探针通过，丢失合法历史能力的代价明确。
+- P40：唯一report glob和73项hash未覆盖真实输出身份/额外可执行文件，foreign报告与sitecustomize反例均复现；当前修复/复核中，不启动EVO付费。
+- P41：离线index等待1800秒不同产品10秒，首题约100秒包括首次921块索引，不当查询延迟或在线SLA。
+
+每点完整九段证据、替代方案与追问见[长程评测深挖](10-长程评测工程问题深挖.md)。
+
+## P42–P43：无效判分与不符合预期的真实收益
+
+- P42：180次API全部成功结算，但一条judge长度终止/空正文，没有合法yes/no。保留unavailable，不临时重试或补零；词法22/29并报29/30覆盖，三臂共同29题再比较。
+- P43：当前英文LongMemEval+中文BGE中，mem015/30，词法22/29；证据会话Recall@8为0.73077和0.86538。适配成功没有转化为本批质量增益，不泛化到Mem0整体或中文产品效果。首次建库耗时不冒充在线查询性能。
+
+完整30题的指标、180请求/客户端$0.049191和逐题关联hash见[Memory正式报告](../experiments/results/long-horizon-20261113/memory-v2/REPORT.md)。上面P40的两个阻断现已修复并独立复核，历史发现与修复验收分别保留在深挖文档；新head CI状态另核。
+
+## P44：测试原分数、运行超时与未知费用不能混成收益
+
+Terminal首配对raw reward为off0/on1，但off未执行测试（uv下载TLS失败），on发生AgentTimeoutError，最后usage未知。科学pair0、delta不可用；53调用已知$0.281062、另预留$0.045131保留。队列自动停止后续付费，未扩剩余14槽或EVO；没有将0→1写成成功率提升。
+
+实际配置与成功oracle相同，fresh同通道下载当前200也不能追溯原TLS原因；独立0LLM探针和原失败分开保留。完整九段分析、费用边界和追问见[深挖P44](10-长程评测工程问题深挖.md#p44原reward从0变1为什么仍然不能说框架提升)。
+
+## P45–P50：受控探索闭环与本机推理
+
+2026-11-13，本轮实现、问题反例、取舍与面试追问集中在[工程深挖](11-RSI闭环与本地推理工程深挖.md)，每点保留九段证据链。
+
+- P45：原active仅供replay；接CodingAgent真实分支、host可见评分、trace导出和下一episode冻结策略，final反馈后置且不入训练。脚本闭环不当泛化收益。
+- P46：分支各领额度会放大总消费；共享父请求/token/deadline/评分池，摘要计入、缺usage保留reservation并停止。同步磁盘IO仍非硬墙钟抢占。
+- P47：真实Windows junction越界、无尾换行patch与cleanup失败入库；增加lexical/reparse/containment检查、Git逐bytes应用测试、cleanup_failed禁trace。目录隔离不等于OS沙箱。
+- P48：Qwen本地模型之外仍有SDK懒下载；固定官方hash与独立cu128环境，owned SDK dense-only/禁NLP且不改全局。旧BGE30题BM25使用未记录，追加更正而不改旧分数。
+- P49：只给response加timeout仍会卡在pipe write/flush；统一发送/接收deadline、UTF8协议、有界帧及owned进程树退出确认。真实worker与venv launcher分别核验。
+- P50：压缩失败曾清合法旧摘要；auto/manual反例修为合法分支cache事务恢复并拒超限。分层机制对照不宣称KV或质量收益。
+
+主代理最终专项70 passed，整套1424 passed、11 skipped、5 subtests passed，批次重叠不累加。GPU两事实功能检查与RSI脚本四臂独立复跑均通过；真实模型质量仍待新实验。
+
+## P51：all-extras全绿仍漏掉默认依赖与Linux清理反例
+
+首次源码24aeca1的四矩阵CI失败，原Windows1424通过记录不覆盖。三项SDK测试局部importorskip，七项协议默认保留；Linux已终止worker的stdin.close重flush抛BrokenPipe覆盖TimeoutError，窄修只在实际worker确认退出后忽略该stdin错误，严格超时断言保留。主代理干净默认Py3.13修前3失败/6通过，修后7通过/3skip；作者Windows/WSL SDK各10通过，最终主代理all-extras1425通过/11skip/5subtests，最终GPU也另目录复验成功。
+
+原CI、红→绿、源码前后hash、最终GPU与wheel/checkout证据见[ci-repair](../experiments/results/context-rsi-20261113/ci-repair/REPORT.md)，九段追问见[深挖P51](11-RSI闭环与本地推理工程深挖.md#p51为什么windows-all-extras全绿ci仍抓到实际缺陷)。其他关闭异常传播为源码审查结论，不编造独立负例测试。远端修后状态另核最终head，0新增付费API。
+
+## 2026-11-14 追加：Memory 效果实验的工程难点与证据
+
+### 不可变 plan 内创建可变账本，会在首次请求后破坏精确清单
+
+- **触发条件**：prepare 将 ledger_path 设为 plan/ledger.json；严格 plan inventory 初始验证通过，TokenLedger 第一次创建 ledger／锁文件后，恢复或 paid harness 再验证时发现额外文件。该问题在真实回答调用前发现，当时本批0付费、0held、无unknown。
+- **根因**：把冻结输入的精确目录清单和运行中必须写入的预算状态放在同一目录；仅核验 plan.json 自身 hash 发现不了这个生命周期冲突。派生路径还包括 BudgetLedger .lock、TokenLedger .tokens.lock 与付费外层 .study.lock。
+- **取舍**：保持严格 inventory 与 source pins，不放宽成忽略未知文件；用新的 plan 版本只改记账位置，保留原失败。代价是显式 amendment、重复元数据及迁移验证。
+- **修复**：根批准 v2→v3，只移动 ledger_path 到 plan 外；24个既有result/state原字节复制，phase仅引用新plan，问题／模型／encoder／提示／预算不变，无重建索引。研究完成后 prepare 提前拒绝账本及真实派生锁与 plan 的相同／包含关系。初版漏 .tokens.lock 经根复核发现后补齐；BudgetLedger 随机 .budget- 临时文件实际写在 ledger.parent，合法 sibling 测试验证该路径。
+- **验证**：初版7红例→22专项通过；补 .tokens.lock 的2红例→最终24专项通过，Ruff通过，根独立重跑一致。真实三请求probe结清后同一ledger续到72settled／41852tokens，累计预算不重置。旧source pins／结果不改，旧runner的公开精确快照与当前修复版本分别保存。
+
+### Windows↔WSL 路径映射错误，使模型与冻结文件在另一侧不可定位
+
+- **触发条件**：Windows盘符路径转成/mnt/<drive>/…，再从WSL回传路径时，驱动器和路径尾部的下标偏移导致错误；另有以脚本路径直接启动时的模块导入问题。仅在Windows核对文件存在，不能证明WSL子进程读到同一文件。
+- **根因**：两种路径前缀长度不同，硬编码切片 off-by-one；脚本入口的sys.path也不同于包入口。
+- **取舍**：保留本机Windows编排和WSL seccomp执行，不降级成无隔离运行；将映射收敛为独立、可往返核验的边界，接受跨环境启动与路径校验成本。
+- **修复**：校正/mnt/前缀后的盘符及尾部位置，修复WSL脚本导入入口；核对模型revision／manifest及数据SHA，避免把“成功加载另一份文件”当正确。
+- **验证**：路径往返、计划篡改等最初14项专项通过；后续最终24项包含这些回归。真实首题seccomp链路在512维BGE CPU／2线程下读856chunks，约97.30秒冷建库与查询；最终12题36臂均valid且close_complete，无词法回退。该结果验证链路，未单独证明效果提升。
+
+### 强杀后保留五题已完成字节，避免把 started 当作可安全重放
+
+- **触发条件**：旧40分钟监督器终止运行，接管现场5completed、1started、6无状态。Windows父进程退出不保证WSL后代退出；started也不能说明付费请求一定未发出。
+- **根因**：进程树跨Windows／WSL，任务状态、输出manifest与预算请求状态是不同证据。盲目重跑可能重复建库、覆盖完成记录或在unknown时重复付费。
+- **取舍**：先精确匹配本study的进程及journal／ledger，只允许未提交的免费检索恢复；付费unknown/inflight保守阻断，不宣称任意崩溃下exactly-once。代价是需要人工查证与追加归档。
+- **修复**：确认旧任务进程已退出且研究付费为零，将未提交started原记录追加归档到phase外；保持输入pins，恢复其余七题；已完成五题及manifest逐一验hash，不覆盖。之后账本迁移仍保持24文件原字节。
+- **验证**：12/12检索完成、36/36valid和closed，旧五题SHA不变；真实answer/judge全72槽结清且0retry／0unknown／0held。恢复规则区分免费检索和付费请求，没有对unknown做自动重试。
+
+### session 命中更高却回答更差，需要检查实际进入上下文的块
+
+- **触发条件**：八题有session标签的宏平均recall，Mem0为0.84375、lexical为0.8125；总回答却分别9/12与11/12。
+- **根因**：session recall只问是否命中相关会话，不保证800字符切块中包含回答所需事实。两题lexical-only正确案例中，两臂均命中session，但Mem0返回top8漏了人工核对的支持块；上下文都未被6000字符上限截断。
+- **取舍与修复**：保留负结果，只追加三例匿名人工诊断；没有全量chunk标签时，answer evidence recall保持unavailable。下轮另行冻结更适合多会话共享语料的协议，分离embedding与事实提取贡献，不按成绩挑题。
+- **验证**：四题拒答均4/4；八题非拒答none0/8、lexical7/8、mem05/8。三例诊断无新API／重判；完整匿名位置与SHA清单见[报告第7节](../experiments/reports/effect-v1-sol2.md)和[case-diagnostics.json](../experiments/results/memory-effect-20261114/case-diagnostics.json)。

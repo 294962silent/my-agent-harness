@@ -1,0 +1,27 @@
+{
+  "plan_sha256": "89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/04-sympy__sympy-11400-off/score/analysis-outcome.json",
+      "sha256": "a11f821395d829078fd7402a68b7d5d55cf0a0576f1096a863f3358a5ab63541",
+      "bytes": 414
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/04-sympy__sympy-11400-off/score/command.json",
+      "sha256": "510486bcfb6d51c847aaf97ac416c531d84a9c0726fee268a2e43fdef3999c77",
+      "bytes": 822
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/04-sympy__sympy-11400-off/score/my-agent-harness-off.campaign-dce7744a9bde-04.json",
+      "sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404",
+      "bytes": 796
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/04-sympy__sympy-11400-off/score/score.log",
+      "sha256": "d0b2017c27c7c88d74cdbd5f99199ebae4aca3b5bf0b2e33f295a0aa71f2c975",
+      "bytes": 517
+    }
+  ],
+  "official_report": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/04-sympy__sympy-11400-off/score/my-agent-harness-off.campaign-dce7744a9bde-04.json"
+}

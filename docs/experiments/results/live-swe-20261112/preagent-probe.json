@@ -1,0 +1,9 @@
+{
+  "instance_id": "sympy__sympy-20590",
+  "model_requests": 0,
+  "passed": true,
+  "stage": "ready",
+  "initial_image_head": "5efaed257c694e4452b4c8361aae1cd9cdefd6d1",
+  "verified_base": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+  "cleanup": "completed"
+}

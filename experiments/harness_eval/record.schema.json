@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Harness evaluation raw record v1",
+  "type": "object",
+  "required": ["schema_version", "mode", "module", "case", "kind", "arm", "repeat", "seed", "duration_seconds", "metrics", "assertions", "passed", "error", "evidence", "tokens", "cache", "quality"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "mode": {"enum": ["offline", "live"]},
+    "module": {"type": "string"},
+    "case": {"type": "string"},
+    "kind": {"enum": ["ablation", "comparison", "contract"]},
+    "arm": {"type": "string"},
+    "repeat": {"type": "integer", "minimum": 0},
+    "seed": {"type": "integer"},
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "metrics": {"type": "object"},
+    "assertions": {"type": "object", "additionalProperties": {"type": "boolean"}},
+    "passed": {"type": "boolean"},
+    "error": {"type": ["string", "null"]},
+    "evidence": {"type": "object", "required": ["production_paths", "intervention", "observations"]},
+    "tokens": {"type": ["object", "null"]},
+    "cache": {"type": ["object", "null"]},
+    "quality": {"type": ["object", "null"]}
+  }
+}

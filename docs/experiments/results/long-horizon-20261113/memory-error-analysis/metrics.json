@@ -1,0 +1,227 @@
+{
+  "by_arm": {
+    "none": {
+      "nonabstention": {
+        "n": 26,
+        "correct": 0,
+        "wrong": 26,
+        "unavailable": 0
+      },
+      "evidence_recall_positive": {
+        "n": 0,
+        "correct": 0,
+        "wrong": 0,
+        "unavailable": 0
+      },
+      "evidence_recall_full": {
+        "n": 0,
+        "correct": 0,
+        "wrong": 0,
+        "unavailable": 0
+      },
+      "evidence_recall_zero": {
+        "n": 26,
+        "correct": 0,
+        "wrong": 26,
+        "unavailable": 0
+      },
+      "abstention": {
+        "n": 4,
+        "correct": 4,
+        "wrong": 0,
+        "unavailable": 0
+      }
+    },
+    "lexical": {
+      "nonabstention": {
+        "n": 26,
+        "correct": 18,
+        "wrong": 7,
+        "unavailable": 1
+      },
+      "evidence_recall_positive": {
+        "n": 23,
+        "correct": 18,
+        "wrong": 4,
+        "unavailable": 1
+      },
+      "evidence_recall_full": {
+        "n": 22,
+        "correct": 18,
+        "wrong": 3,
+        "unavailable": 1
+      },
+      "evidence_recall_zero": {
+        "n": 3,
+        "correct": 0,
+        "wrong": 3,
+        "unavailable": 0
+      },
+      "abstention": {
+        "n": 4,
+        "correct": 4,
+        "wrong": 0,
+        "unavailable": 0
+      }
+    },
+    "mem0": {
+      "nonabstention": {
+        "n": 26,
+        "correct": 11,
+        "wrong": 15,
+        "unavailable": 0
+      },
+      "evidence_recall_positive": {
+        "n": 20,
+        "correct": 11,
+        "wrong": 9,
+        "unavailable": 0
+      },
+      "evidence_recall_full": {
+        "n": 18,
+        "correct": 11,
+        "wrong": 7,
+        "unavailable": 0
+      },
+      "evidence_recall_zero": {
+        "n": 6,
+        "correct": 0,
+        "wrong": 6,
+        "unavailable": 0
+      },
+      "abstention": {
+        "n": 4,
+        "correct": 4,
+        "wrong": 0,
+        "unavailable": 0
+      }
+    }
+  },
+  "lexical_correct_mem0_wrong": [
+    {
+      "qid": "10e09553",
+      "type": "knowledge-update",
+      "lexical_recall": 1.0,
+      "mem0_recall": 1.0,
+      "mem0_missing_any_evidence": false
+    },
+    {
+      "qid": "2ebe6c90",
+      "type": "temporal-reasoning",
+      "lexical_recall": 1.0,
+      "mem0_recall": 0.0,
+      "mem0_missing_any_evidence": true
+    },
+    {
+      "qid": "3e321797",
+      "type": "single-session-assistant",
+      "lexical_recall": 1.0,
+      "mem0_recall": 1.0,
+      "mem0_missing_any_evidence": false
+    },
+    {
+      "qid": "a11281a2",
+      "type": "multi-session",
+      "lexical_recall": 1.0,
+      "mem0_recall": 0.5,
+      "mem0_missing_any_evidence": true
+    },
+    {
+      "qid": "af082822",
+      "type": "temporal-reasoning",
+      "lexical_recall": 1.0,
+      "mem0_recall": 1.0,
+      "mem0_missing_any_evidence": false
+    },
+    {
+      "qid": "ba61f0b9",
+      "type": "knowledge-update",
+      "lexical_recall": 1.0,
+      "mem0_recall": 1.0,
+      "mem0_missing_any_evidence": false
+    },
+    {
+      "qid": "faba32e5",
+      "type": "single-session-user",
+      "lexical_recall": 1.0,
+      "mem0_recall": 0.0,
+      "mem0_missing_any_evidence": true
+    },
+    {
+      "qid": "gpt4_98f46fc6",
+      "type": "temporal-reasoning",
+      "lexical_recall": 1.0,
+      "mem0_recall": 1.0,
+      "mem0_missing_any_evidence": false
+    }
+  ],
+  "mem0_correct_lexical_wrong": [
+    {
+      "qid": "e25c3b8d",
+      "type": "multi-session",
+      "lexical_recall": 0.5,
+      "mem0_recall": 1.0
+    }
+  ],
+  "disagreement_by_type": {
+    "knowledge-update": {
+      "lexical_correct_mem0_wrong": 2,
+      "mem0_correct_lexical_wrong": 0,
+      "lexical_unavailable": 0
+    },
+    "multi-session": {
+      "lexical_correct_mem0_wrong": 1,
+      "mem0_correct_lexical_wrong": 1,
+      "lexical_unavailable": 0
+    },
+    "single-session-assistant": {
+      "lexical_correct_mem0_wrong": 1,
+      "mem0_correct_lexical_wrong": 0,
+      "lexical_unavailable": 0
+    },
+    "single-session-preference": {
+      "lexical_correct_mem0_wrong": 0,
+      "mem0_correct_lexical_wrong": 0,
+      "lexical_unavailable": 1
+    },
+    "single-session-user": {
+      "lexical_correct_mem0_wrong": 1,
+      "mem0_correct_lexical_wrong": 0,
+      "lexical_unavailable": 0
+    },
+    "temporal-reasoning": {
+      "lexical_correct_mem0_wrong": 3,
+      "mem0_correct_lexical_wrong": 0,
+      "lexical_unavailable": 0
+    }
+  },
+  "tokenizer_character_chunk_check": {
+    "corpus_chunks": 27517,
+    "over_512_tokens": 0,
+    "max_tokens": 463,
+    "mem0_selected_chunks": 240,
+    "mem0_selected_over_512_tokens": 0
+  },
+  "two_case_chunk_evidence": [
+    {
+      "qid": "10e09553",
+      "supporting_chunk_count": 1,
+      "supporting_chunk_token_counts": [
+        163
+      ],
+      "lexical_selected_supporting_chunks": 1,
+      "mem0_selected_supporting_chunks": 0,
+      "both_session_recall_full": true
+    },
+    {
+      "qid": "3e321797",
+      "supporting_chunk_count": 1,
+      "supporting_chunk_token_counts": [
+        322
+      ],
+      "lexical_selected_supporting_chunks": 1,
+      "mem0_selected_supporting_chunks": 0,
+      "both_session_recall_full": true
+    }
+  ]
+}

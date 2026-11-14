@@ -5,12 +5,13 @@
 ## 1. 实验范围与当前状态
 
 - 实验开始：2026-11-11。
-- 最近复核：2026-11-12（北京时间；上下文交付见 E-GIT-CONTEXT，长期记忆改造见后续批次；缓存性能实验保持取消）。
+- 最近复核：2026-11-12（北京时间；框架重设计见 E-REDESIGN，真实小样本见 E-REDESIGN-LIVE；旧DSH/缓存对照保持取消）。
 - 项目基线：`a04e940`。
-- 本地工作分支：`codex/scheduler-reliability`；独立 GitHub 交付分支：`codex/context-memory-reliability`。
-- 目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
+- 当前重设计分支：`codex/interview-harness-redesign`（独立 worktree，基于已交付 `1f150e1`）；原 `codex/scheduler-reliability` 脏工作区保留，前一交付分支为 `codex/context-memory-reliability`。
+- 最初目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
+- 当前目标：面向 Agent / 大模型应用实习，形成清楚的模块职责、可复算消融、真实任务链路与开发问题证据。
 - 事件、Hook、Steering / Follow-up 和双层 Loop 在基线已经存在。本批补强它们的运行边界，不把已有能力重新包装成新增功能。
-- 当前交付状态：**上下文 `7531dadd`、记忆 `c7cd65e` 已推送，PR #1 的四组跨平台 CI 通过；调度未完成项仍留在本地工作区**。PR 尚未合并，原调度范围不因本批交付而自动完成；最新检查结果见 PR。
+- 当前交付状态：**Runtime / 观测 `9509262` 已推送；八模块离线证据与一题真实SWE配对已完成，本批后续提交 / CI 结果按尾部实际记录更新**。前一PR #1尚未合并，原调度账本 / RPC未完成项仍保留，不因本批完成而自动交付。
 - L20 工作区副本：已将 E10 时的工作区快照传至 `/data/llma/my-agent` 并完成逐文件校验；后续本地变更不自动同步。未安装服务器依赖，未据此宣称服务已启动或服务器测试通过。
 - 本批范围：进程内单执行器、唤醒与归属、运行期输入身份和撤回、轮次 / 时长预算。Redis、多进程恢复、模型请求 redirect、任意同步代码强制抢占均不在本批。
 
@@ -530,3 +531,571 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 - 最终复核：上述源码提交的 CI run `43135488211` 四个 job 均为 **completed / success**：Ubuntu-latest / Python 3.11、3.13，Windows-latest / Python 3.11、3.13。每组均完成依赖同步、Ruff、TUI 构建、完整 pytest、wheel 构建 / 入口检查及 TUI 测试。
 - 本批最后的实验记录更新只补交付与 CI 证据，不改变已通过检查的源码。后续检查状态以 PR 实际结果为准。
+
+
+### E-REDESIGN-CODE：2026-11-12 / 面向 Agent 实习的运行与观测重设计
+
+- 用户目标：重新设计整个框架，面向 Agent / 大模型应用开发实习，持续整理逐模块消融、实际数值、技术取舍和开发问题；随后指定只使用两名执行助手。主代理负责设计、集成和记录，执行助手为 GPT-6.1 Sol / medium，当前无 DS / DSH。
+- 工作区：从已交付的 `1f150e1` 创建 `.worktrees/interview-redesign` / `codex/interview-harness-redesign`，保留原 checkout 的调度中间实现和用户文档修改 / 删除。不是把原 checkout 的整个 Agent / RPC 文件复制过来。
+- 架构：详见 `docs/architecture/HARNESS_VNEXT.md`。统一 Runtime、Model、Tools、Session、Context/Artifact、Memory、Permission、Observation/Evaluation 的职责；选择渐进重设计，保留已验证模块，新增运行归属与统一观测接缝。不因为有新架构就宣称所有模块重写。
+- Runtime 改动：`agent.py/loop.py/events.py`、新 `run_lifecycle.py`；可选 RunLimits 默认无限制，同一 Agent 直接运行只有一个 owner，明确 run_id、signal、budget 和清理责任。轮次在主请求重试外计数，deadline 限制异步等待，abort / 外部取消 / budget_exhausted 有不同终态；关闭和异常后释放归属。
+- 开发中回归：provider 已交付部分 tool_calls 但尚未 StreamDone 时，立即取消使 Session 中工具配对缺失。集中终止收尾保存已观察工具意图并补恰一条中断结果；新增 abort / deadline / consumer close 后 Session.load 回归。不保存纯 partial 文本，不通过放宽 deadline 隐藏问题。
+- 观测改动：LLM门面五个入口及新 `observation.py/observation_export.py/langfuse_export.py`；不可变 start/end、root/parent/purpose、provider归一化usage快照，默认无正文 / 参数 / 异常消息。流在首次迭代开始，结束 / 错误 / 取消 / close 各一次终态，ContextVar不跨消费者yield泄漏。
+- 导出：本地 recorder / JSONL 与有界 worker，丢弃、传输失败、sink清理失败和线程存活分开；观测异常不影响模型结果。独立复核发现 flush异常跳过own_client.shutdown，已用try/finally及失败回归修复。Langfuse适配对照官方Python SDK5.2.0 `00e5098bd6511a2f7bc7b6813ac125a3af559697` 的 start_observation/update/end，仅fake client验证，未宣称真实上传接通。
+- 打包问题：独立Linux环境暴露PIL依赖未显式声明，开发环境的matplotlib间接依赖曾掩盖。新增 `Pillow>=10` 并同步uv.lock；61个既有包版本完全未变，锁中pillow仍12.3.0，只有direct依赖与少量revision/marker元数据变化。Linux另装Pillow13.0.0后实际import Agent/Session/CodingAgent成功，`uv lock --check`通过。
+- 主代理验证：`python -m pytest tests -q -o addopts= --import-mode=importlib -k 'not test_bash_pipefail_propagates_error'`，**1105 passed、1 skipped、1 deselected in55.93s**；skip为主Windowsvenv未安装Harbor的可选测试，deselect仍是既有cmd/cat pipefail环境差异。执行助手独立分批core+llm665项、coding399项通过，重叠数量不累加。
+- 静态与构建：`ruff check src tests experiments/harness_eval experiments/benchmark_live`通过；`npm test` **96 passed、2 skipped、0 failed**；TUI构建与wheel构建通过，实际检查wheel含RunLifecycle、观测模块、TUI入口及 `Requires-Dist: pillow>=10`。
+- 代价与限制：协作取消不能强停同步Python/同步SDK，外部副作用不能回滚；exporter transport永久阻塞可能close超时；observer不是硬费用预算。真实API账本、官方任务预检与模型评分作为单独实验追加，不把软件回归数量当模型成功率。
+- 原始基线：本轮改前干净core/llm **630 passed in21.01s**。本节完成本地实现与验证，GitHub提交 / CI 状态以后续实际记录为准，不预填。
+
+
+### E-REDESIGN-EVAL：2026-11-12 / 八模块统一离线证据与面试材料
+
+- 新增 `experiments/harness_eval/`：统一场景、原始记录 schema、唯一运行目录、manifest、从 raw 汇总与可读报告；记录 git SHA、dirty 状态、源码 hash（运行前后核对）、实际导入路径、seed、参数、环境、许可证和失败。
+- 主代理实际运行：`PYTHONPATH=src;. python -m experiments.harness_eval --suite all --repeats 5 --output docs/experiments/results/redesign --seed 23`，保存 `docs/experiments/results/redesign/20261112T095857-2381042b458f/`。覆盖 **8 模块、12 独立场景、100 条记录、0 assertion failures**。manifest source_sha256 `19d94923b9843545da609de18225815c71e2490e1f3360db98b3fe359d8cdfd7`，运行前后相同，git基底1f150e1 + 当时未提交改造；不把它称作干净旧基线。
+- 定量观测：独立工具并发峰值1→3且均完成3个工具；故意全并行对照的写读违例1→0；线性历史投影对照的跨分支泄漏1→0；2条标注记忆查询0/2→2/2、失效事实命中0；权限夹具未授权写副作用1→0；轮次预算把脚本模型调用5次截停至2次；辅助观测场景记录主调用与摘要2/2、隐私违例0。
+- Context/Artifact：原文120019B，off视图120019B、on视图7041B，on额外产物写盘120361B；**两组 evidence_recoverable均1**。摘要来源contract中 unchanged复用1、覆盖前缀改变后旧摘要泄漏0。字节不等于token，磁盘与回读成本不能省略。
+- 消融分类：真实开关/元数据配置称ablation，无生产开关而使用有限对照wrapper的Tools依赖与Session线性投影称comparison；流取消/关闭、single owner、摘要覆盖身份称contract。off如预期暴露缺陷也可满足其夹具断言，0 assertion failures不意味着off更安全。
+- 局限：五次重复不是五个独立问题，p95/median只描述本机小样本；2条记忆查询是smoke，不是长期记忆质量评测。所有离线tokens/cache/quality为null，不给真实模型质量/吞吐/KV提升比例。默认不触碰凭据或真实模型。
+- 文档：`docs/interview/` 为八模块分别整理问题、源码、方案取舍、原始指标、开发问题、优势代价、复现与追问；新增 DEVELOPMENT_PROBLEMS / CLAIMS 对齐真实证据。README改为项目定位与可核验入口，历史README旧性能/榜单数字保留Git固定链接，不继续作为新框架效果宣传。
+- 用户新授权：真实实验使用 **DeepSeek V4.1 Flash总预算$30**，优先SWE/Terminal官方开源任务，替代旧3美元/自造任务提案；预算文件保留授权变化。未恢复DSH对照或L20 GPU实验。
+- 官方预检：WSL Docker26.1.3、Compose2.27.1、Harbor0.25.0、SWE-bench5.0.2与Python3.12已准备。Windows本地代理无法直接用于WSL，网络转发helper启动被自动策略拒绝后未重试；改为标准下载官方crane v0.22.1并核SHA、拉取原官方镜像为tar再docker load，核image config。任务Git导出显式关闭autocrlf并核blob字节，没有修改评分脚本。
+- 开发中问题：CLI exit0但trial有exception不能算通过；缺Compose、CRLF shebang、UV依赖下载失败和gold测试超时分别保留。SWE requests1963的失败未当作模型失败；官方入门sympy20590作为模型结果出现前的环境补充候选已freeze，并真实gold **completed1/resolved1/errors0，20.40s**。
+- 后续真实模型配对：共用持久预算账本，oracle/gold通过且任务/镜像/报告hash匹配才能启动；隐藏测试/solution不进入prompt。真实结果另节追加，当前离线数字不能代替它。
+
+
+### E-REDESIGN-LIVE：2026-11-12 / 官方 SWE 单例真实试验、预算与协议更正
+
+- 用户授权是总预算30美元，实际模型使用已有OpenCode Go兼容端点的 `deepseek-v4.1-flash`，不是新接官方api.deepseek.com；未索要或打印密钥。Key只经host进程环境传入，未写CLI、容器环境、任务文件或Git记录。
+- 预检：原官方SWE-bench5.0.2、固定taskrepo `3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`，sympy20590官方image config `fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2`，任务base `cffd4e0f86fefd4802349a9f9b19ed70934ea354`；7文件逐字节Git blob核对，官方gold completed1/resolved1/errors0，20.40s。requests1963镜像错误和120秒gold超时均保留，未计作模型失败。
+- 实际模型设计：**1个独立任务、2个model trial**，顺序on→off，seed23只控制活动顺序，不是provider采样seed；温度0.7、16请求/4096输出/600秒、共享30美元原子预留账本。两个run目录的r2是启动命名，不是第二个模型重复。r1因镜像HEAD不等任务base而被挡住，requests0，修复容器内先reset再核clean后才启动。
+- 原始证据：`docs/experiments/results/live-swe-20261112/`含ledger、两个原始run.json、模型预测JSONL、官方aggregate / instance report、测试stdout、金标通过证据的hash及BSD-3-Clause许可；不含gold/test patch正文。`summary.json`从请求记录计算，manifest明确事后采集源码快照和协议版本。
+- 官方非gold评分：on整体21.85s（测试4.23s），off整体21.49s（测试3.75s），各completed1/resolved1/errors0；各FAIL_TO_PASS1成功、PASS_TO_PASS21成功、0失败。补丁没有被人工读取修改来纠正答案，评分反馈没有交给另一solver。两份aggregate统计相同故SHA可相同，独立runid、日志目录和stdout分别保留。
+- 真实运行终态：两组都是 `budget_exhausted` / 各16请求，补丁已产生并经官方判分；没有将截停美化成正常end_turn。32请求usage全部成功结算，cache_read字段各仅15/16覆盖，完整命中率保留null。
+- 计量：on输入80706、输出4533 token；off输入110165、输出4902 token（输入由provider总量减输出计算）。账本按输入$0.30/M、输出$1.20/M并把cached输入也按全冷价计，on$0.029658、off$0.038939，合计 **$0.068597**。这是客户端保守计价，不是已核对的服务端账单或实际订阅余额。
+- 关键更正：本题on没有生成artifact，外置未激活，所以这只是production Agent/Runtime/预算/官方评分的真实pipeline smoke，不能把80706 vs110165 token差异归因于外置，更不能宣称成功率提升。两组trajectory随机、cache状态未控制、小样本也不足以估计因果收益。
+- 协议v1复核还发现仅注册shell但开启store，缺artifact_read/search。保留v1源快照及既有真实成绩并明确标v1/smoke；修协议v2后，两arm注册相同生产受限工具schema，off只关闭投影。SWE/Harbor的14KB输出真实handle→artifact_read中部/尾部marker回读、off全文保留和schema相等已经fake provider验证，原始4份contract存 `protocol-v2-offline/`，标零真实请求、provider_usage_synthetic；Linux独立17项通过。**v2没有重新调用真实模型，不能挪用v1成绩。**
+- Terminal-Bench2.0固定repo `69671fbaac6d67a7ef0dfec016cc38a64ef7a77c`，先于模型结果选6个CPU候选；fix-git原oracle因UV0.9.5官方依赖下载HTTP2失败而reward0，保留原JSON/stdout，未给TB发模型请求。见 `benchmark-preflight/terminal-bench.json`，不替换评分标准或隐藏环境筛选。
+- 最终本地代码验证（含v2和SWE入口）：主代理全tests **1112 passed、2 skipped、1 deselected in57.54s**；两个skip是Windows缺可选Harbor，deselect为既有cmd/cat pipefail差异。全源码 / 测试 / 新实验Ruff与diff check通过，TUI96pass/2skip、wheel新增模块/TUI/Pillow依赖检查通过。没有GPU、没有DSH、没有榜单上传。
+- 收益与边界：获得可复现的真实任务链路和费用账本，发现并修复假环境测试遗漏的镜像初始化与回读接线问题；不宣称SWE/TB全量排名、Artifact因果提升、真实Langfuse上传或Mem0接通。源码重设计9509262已推送，后续实验 / 文档提交与PR状态以实际Git记录为准。
+
+- 最终暂存检查补充：官方原始stdout包含终端回车和尾随空格，首次staged diff check因此失败；新增 `.gitattributes` 对实验结果目录禁用autocrlf文本转换，仅对两份SWE测试stdout和Terminal原始stdout关闭whitespace检查。保留原始字节，不删除报错行；重新核对index blob与本地证据及staged diff，结果另以实际命令记录。其他源码与文档检查保持开启。
+- 暂存复核结果：对38份实验证据执行 `git show :<path>` 与本地原文件字节比较，全部一致；`git diff --cached --check`通过。JSON解析24份、16份入口文档相对链接检查无缺失；已用现有实际模型凭据进行精确匹配扫描，待提交文件中无匹配，不打印或保存凭据。两名助手额外复核104项源码hash、12项WSL原始证据与v1/v2边界，均一致。
+
+
+### E-GIT-REDESIGN：2026-11-12 / 框架重设计与实验材料交付
+
+- 已推送自己仓库的 `origin/codex/interview-harness-redesign`：运行 / 观测源码 [`9509262`](https://github.com/294962silent/my-agent-harness/commit/9509262)，实验框架 / 真实任务入口 / 原始证据 / 面试材料 [`e2181f6`](https://github.com/294962silent/my-agent-harness/commit/e2181f6)。原 checkout 的调度中间实现与用户文档修改保留，没有推 upstream。
+- PR [#2 Unify Agent runtime, model observation and reproducible evaluation](https://github.com/294962silent/my-agent-harness/pull/2)，base 为尚未合并的 #1 分支 `codex/context-memory-reliability`，只展示本批增量。两份 PR 均未自动合并。
+- GitHub 连接器创建 PR 返回403、无集成写权限；使用已能推送自己仓库的本机 Git 授权身份创建。凭据只在进程内存中使用，不输出、不落盘、不改全局认证。
+- `e2181f6` 的 [CI run 43208908713](https://github.com/294962silent/my-agent-harness/actions/runs/43208908713) 过程快照：Ubuntu / Python3.11与3.13均 completed/success，完成依赖、Ruff、TUI构建、pytest、wheel与TUI测试；Windows3.11/3.13当时仍queued，不能预填四组通过。后续文档补交会产生新head，最终状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
+- 收尾清理：确认没有运行中的Docker CLI或容器后，只删除本轮三份已经导入的官方镜像tar下载副本（逐个核绝对父目录与文件大小），共2261497856字节；Docker镜像缓存和原始实验材料保留。未同步L20，未运行GPU，未追加模型请求。
+- 本批已完成架构设计、关键接缝实现、八模块离线证据和SWE单例真实链路验证。尚未完成v2真实模型因果实验、Terminal-Bench模型评测、真实Langfuse上传、Mem0或Dream-RSI集成；这些不构成本次已交付效果。
+
+
+### E-SWE-V2-CODE：2026-11-12 / 扩展官方任务入口与小样本执行协议
+
+- 用户在核对第三方集成边界后，明确要求继续扩展SWE入口、完成v2真实小样本；沿用已授权30美元总预算和两名Sol/medium执行助手。设计与执行清单见 `docs/handoffs/2026-11-12-swe-v2-pilot-plan.md`，不是恢复DSH或完整300题实验。
+- 改前为 `db77a71`：SWE solver只接受写死的两题，没有通用配对调度；预算只有总额政策。现在新增 `swe_catalog.py` 的冻结catalog/TaskSpec，`swe_agent.py`贯穿安全metadata/base/image/config/source/hash绑定；CLI须成对提供catalog与批准的SHA，旧两题接口保留。可信宿主审批hash只检测变更，不伪称数字签名或恶意宿主防护。
+- 新增 `swe_campaign.py`：plan/run/score/summarize，固定输入与源码hash、seed23平衡先后、逐trial唯一输出与started/run_id、跨进程排他、完成项hash校验后跳过、未完成项不自动重试。独立官方评分不携带模型key；blocked、执行尝试、真实model attempts、scored与resolved分开，unknown usage停止后续消费。
+- `budget.py`新增可选绝对累计ceiling，在原FileLock预留锁内检查min(原30美元政策,本批ceiling)，不改变旧账本政策和provider归一化计量。历史消费0.068597美元，本批新增客户端准入3美元，上限字段为3.068597；供应商实际账单仍需另核。代码默认保持旧行为。
+- 交叉复核发现取消官方评分未回收进程的问题，已修同组terminate/kill/wait并限定本instance/run_id清理评分容器；新增取消回归。另补同campaign多进程排他和ledger正常增长不误判输入漂移，0request预代理失败单列，避免冒充模型任务失败。
+- 验证：SOL-1先取得catalog缺模块的22项红回归，再完成第三题数据驱动/gold绑定/hash篡改拒绝；SOL-2补ceiling和campaign缺口回归。作者Linux窄回归A43项、B19项通过（有重叠不累加）；另一名助手分别按db77a71定点diff复核，无剩余阻断。主代理明确 `PYTHONPATH=src;.` 后实际运行 `python -m pytest tests/experiments -q -o addopts= --import-mode=importlib`，**64 passed、2 skipped in10.31s**（可选Harbor未安装）；Ruff与diff check通过。本批生产core/llm/TUI未改，不重报旧构建为新验证。
+- 数据准备：官方taskrepo固定 `3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`，六题选择在模型结果前保存 `results/swe-v2-pilot-20261112/SELECTION.md`。通过GitHub连接器取52文件并两侧逐字节核Gitblob/SHA256；Windows原官方crane拉原镜像再Linux加载核config，不重建镜像或改测试。Go工具不读取Windows系统代理导致初次registry超时，显式在子进程内采用系统代理后恢复，未打印代理或凭据。
+- gold预检：20590复用之前原成功报告并重绑安全metadata；11400与pytest5103/5221/5227本轮原评分器通过，11870固定300秒窗口超时（318.39秒含清理、completed0/resolved0/error1），保留环境blocked，不替换、不收费。最终选定6、eligible5，计划最多10个真实model trial。此时尚未发本批模型请求，实际结果另节追加。
+- 价值与代价：解耦任务批准与solver、使消费与重入有证据且可阻断，避免环境问题混入模型成绩；增加catalog准备、冻结、状态和原始数据维护。评分仍依赖原官方Docker环境，小样本/两个项目/已知回归题不具有全量代表性；不声称Mem0、Dream-RSI或真实Langfuse已接入，也不预填Artifact或缓存收益。
+- 代码已提交并推送 `3e2d345`。正式模型前追加 `run --max-new-trials N`，仅限制本次新增eligible执行；完成/blocked不计数、不改冻结顺序或预算，便于先验首配对后resume。两个新增回归先红后绿，主代理实际campaign定点 **12 passed in6.03s**，另一助手只读复核无阻断。正式SDK的免费模型目录读取成功，确认请求模型仍可用；Config实际温度默认0.7已核对。普通urllib默认UA读取目录曾被403/1010拒绝，正式SDK正常，不把这种网络目录失败算成模型trial或模型费用。
+
+
+### E-SWE-V2-RUN：2026-11-12 / 固定六题真实小样本执行与更正
+
+- 模型生成使用已提交源码 `765216830b1972ba3b3c0d20171315343c63d288`；该提交GitHub CI run `43218293170` 四组Ubuntu/Windows × Python3.11/3.13均completed/success。运行前核真实core/llm导入来自目标worktree/src，温度默认0.7；原API profile通过正式SDK模型目录验证，密钥只经host环境转发。
+- 首个真实请求前冻结campaign `9684ed3b72784f52b939ac77d5ab46bf`，plan SHA256 `b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a`，catalog SHA256 `fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c`。184项输入/源码指纹经独立复核一致；选定6、eligible5、blocked1，eligible首发臂按seed23平衡为3 on/2 off，blocked单独分配不计模型先后平衡。
+- 先用max-new-trials=2完成pytest5103首配对：两组各16请求，终态budget_exhausted，所有请求usage已结算。保守账本on$0.050700、off$0.070654，新增合计$0.121354；on实际生成1个artifact，read/search响应0，off无artifact。两组模型patch长度均0，不能当作交付修改。
+- 首次自动summary将两份官方empty_patch报告误标为environment_or_execution_error，因此主代理先停后续收费排查。直接核原aggregate：两组empty_patch_instances=1、completed_instances=0、resolved_instances=0、error_instances=0、infra_failure_instances=0。这是预算内没有修改的已知未解决结果，测试没有执行；不是评分环境故障。没有重跑模型或评分、改补丁、改题、放宽预算。
+- 更正后按原冻结顺序恢复其余8个eligible trial；冻结源码在整批模型生成结束前不动，避免运行中引入新策略或输入漂移。原错误分类/state/report保留，公共收集层追加带来源的派生分类；源码统计修复与回归在本批生成结束后单独记录。整个任务的最终费用、成绩和回读以本节后续原始证据为准，不从首对差值宣称因果收益。
+- 最终真实结果：5个eligible任务/10个trial全部生成与独立原官方评分完成；160请求全结算、0在途/unknown，均budget_exhausted。on解决2/5、off1/5；总3resolved、7empty_patch，无模型评分error/infra/ambiguous。真正执行测试3次、已知结果10次、完整known pair5、双臂都执行测试的pair1。11870仍是gold超时blocked，不进模型分母，没有追加题目或重试。
+- 费用与用量：本批全冷价微美元逐请求向上取整合计$0.503462，on$0.252843、off$0.250619，开启总费用没有下降；历史$0.068597另计，全局$0.572059。on完整输入583228/输出64864，off输入617804/输出54369，总token1320265；归一化prompt字段140552不等全部输入。cache_read仅158/160覆盖、cache_write0/160，完整总量与命中率保持null，不用缺失补零制造排名。
+- 激活情况：5个on trial累计11产物，off0；read/search响应均0。真实投影链路已激活，但没有真实模型回读使用证据；不将离线往返或2/5对1/5的小样本差异宣传为稳定质量/费用/KV收益。7次空补丁是后续预算/交付策略要研究的问题，原因尚未通过新实验归因。
+- 归档：`results/swe-v2-pilot-20261112/raw/`为81个manifest列入文件+manifest自身，原manifest SHA `7321985b32f571baa37d96361b45ab51c1a91ea5343b1dd381b6e6219f69e282`。收集前184项输入及92项原结果hash全部匹配，复制后81项再核；保留原state/report与原错误category，empty更正单独派生，不复制gold/testpatch/hints/session或artifact正文。六份固定base许可证、14份原gold/预检证据另存同目录，准备阶段源码快照不冒充765生成版本。
+- 清理：所有模型/评分进程已结束，实际Docker ps无运行容器；逐个核已导入镜像下载副本的绝对父目录和字节数后删除五份本批tar，共5205992960字节，Docker原镜像缓存与原始记录保留。无L20/GPU/DSH，未继续使用预算扩题。
+
+
+### E-SWE-ANALYSIS：2026-11-12 / 空补丁分类修复与可移植离线重算
+
+- 整批模型/评分及原始归档完成后，新增 `swe_results.py` 单一 `parse_official_outcome`；_score与summary共用。对原始report bytes核hash后重派生，旧state只deepcopy审计、不写回；新增known_official_outcomes/test_executed_trials/complete_known_pairs，旧complete_pairs保留双臂实际执行测试的语义。
+- 官方SWE-bench5.0.2语义核验：total_instances可以是整个dataset规模，submitted需匹配单题；completed与error可能重叠，infra/ambiguous是附加标签。parser按真实语义校验ID/计数/集合，不用模拟schema误拒合法官方结果。empty明确False/False，completed unresolved为False/True，错误/矛盾/缺失保留unknown，错题不能冒充本题结果。
+- 新增纯stdlib `archive_outcomes`/CLI：只用归档相对路径、先验证manifest路径边界和hash，再从原报告重算；无需原宿主绝对路径/模型/Docker或生成源码仍与当前一致。输出分析parser版本 `swebench-5.0.2-outcome-v1`及其SHA，生成版本仍765；run/score的source drift保护没有放宽。当前81文件独立复算得到相同3resolved/7empty/5known pairs，archive_modified=false。
+- 数据分析脚本 `analysis/recompute_metrics.py`从plan.run_ids划分本批/历史，只解析plan/ledger，逐字段覆盖完整才给total。主代理重新执行后与 `analysis/metrics.json` 逐对象一致；同大小文件篡改、路径逃逸拒绝，换工作目录复算相同。此脚本与许可证/预检文件不改raw manifest。
+- 验证：原empty误分类回归先失败，再实现；作者Windows/Linux同版窄26项通过，另一助手三文件只读复核无阻断。主代理最终 `pytest tests/experiments -q -o addopts= --import-mode=importlib` 为 **80 passed、2 skipped、5 subtests passed in11.57s**（skip为缺可选Harbor），Ruff通过；CLI和精确费用重算已实际执行。批次数量不累加为独立测试总数。
+- 文档：更新README、面试CLAIMS/上下文/成本模块及开发问题P13–P17；完整报告见 `results/swe-v2-pilot-20261112/REPORT.md`。本批借用官方SWE任务/镜像/评分协议，调度、归档与分类为本项目实现，不将其他Harness分数混作对照；Mem0、Dream-RSI和真实Langfuse服务仍未接入。后续Git提交与CI状态以实际记录为准。
+
+
+### E-SWE-CI：2026-11-12 / 跨平台deadline测试稳定性修复
+
+- `3e2d345`交付catalog/campaign，`7652168`交付分段执行并作为本次实际生成版本；统计修复、121文件证据与面试材料已提交推送 `2857b9c`。PR #2标题/说明已按最终范围更新，未合并。
+- `2857b9c`的CI [run43227265253](https://github.com/294962silent/my-agent-harness/actions/runs/43227265253)暴露Ubuntu/Python3.11的 `test_deadline_interrupts_each_awaited_runtime_stage[prepare]`：总0.08秒deadline在前置阶段已过，started=False。先读取原失败日志定位，未只通过重跑掩盖失败。
+- 仅改 `tests/core/test_run_lifecycle.py`：120ms前置hook确定性复现旧断言；注入已有RunBudget的虚拟clock及模块局部wait代理，在选定await开始后触发原0.08deadline，保持真实取消/gather/finally、预算终态与owner释放断言。独立复核后补5秒外层测试watchdog+finally a.aclose，不改变产品预算或全局asyncio。
+- 主代理实际命令 `pytest tests/core/test_run_lifecycle.py -q -o addopts= --import-mode=importlib`，**15 passed in1.08s**；作者Linux/Python3.12同版15 passed in1.43s，Ruff/diffcheck与另一助手只读review通过。本地不宣称运行过3.11；后续新head矩阵以实际CI记录为准。
+- 这一修复只改测试和记录，生成源码765、已归档81文件、原评分、消费$0.503462均保持。没有新模型请求、评分重跑或上游推送。
+
+
+### E-SWE-DELIVERY：2026-11-12 / v2小样本最终交付
+
+- 运行入口与分段执行已推送 `3e2d345` / `7652168`，统计修复和121文件证据提交 `2857b9c`，CI测试稳定性修复提交 `47a89aa8538b2d5d061555e0a5c4048bc0b67ce7`，均在自己的 `origin/codex/interview-harness-redesign`。原checkout修改保留，无upstream推送或自动合并。
+- PR [#2 Unify Agent runtime, observation and reproducible SWE campaigns](https://github.com/294962silent/my-agent-harness/pull/2) 已更新标题、最终实现、真实结果与限制；仍以#1的 `codex/context-memory-reliability` 为base。实际模型生成版本为765，后续统计和测试修复均未重新调用模型。
+- 测试修复后的[CI run43228948231](https://github.com/294962silent/my-agent-harness/actions/runs/43228948231)四组 **completed/success**：Ubuntu/Python3.11、3.13，Windows/Python3.11、3.13。此前失败平台已实际重验成功，不将本地3.12/3.13替代3.11证据。后续本节仅文档补交，最新head状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
+- 提交前复核：121个明确路径通过实际现有API凭据精确匹配扫描（无匹配）、86个JSON解析、本批新增本地链接检查无缺失；两条交付前已存在的历史档案链接保留。108份本批证据的index blob与原文件逐字节相同，staged diff check通过；没有 `git add .`、金标patch/认证缓存/大镜像入库。
+- 已完成用户授权的通用SWE入口与v2小样本。最终selected6/eligible5、10模型trial、160真实请求；on2/5/off1/5、7empty；本批保守账本$0.503462，累计$0.572059。未运行完整300题，未恢复DSH、未接Mem0/Dream-RSI或Langfuse远端，未依据五题与缺失cache字段宣称稳定提升。
+- 最终head复核补充：文档提交f0d12c1的CI run43229586859在Ubuntu3.11暴露同文件另一项30ms模型启动假设（llm.closed=False，模型可以在前置deadline前根本未启动）。此前47的四组通过是历史事实，不能替代这个新head的检查。因此没有直接重跑CI取绿，而是审计整份15项测试并统一阶段同步fixture。
+- 最后一批仅测试修订：model_wait(.03)、四stage(.08)、消费者已收到MessageUpdate的部分工具意图deadline共用deadline_at_stage，原预算值不增；120ms受控延迟分别复现旧失败。仅early-deadline保留真实30ms且允许任何前置位置耗尽；0.5s close和5s收集均是阶段同步后的watchdog。生产代码、归档、模型/评分/费用不改。
+- 这批主代理Windows定点15 passed in1.21s，作者Linux同版15 passed in1.59s，Ruff/diffcheck与另一助手整份复核无阻断；新提交矩阵仍逐项跟踪。此后不再为写入CI终态而重复文档提交触发新矩阵，最终检查证据更新在PR正文及checks，最终答复只在新head实际四组通过后报告成功。
+
+
+### E-BUDGET-READBACK-DIAG：2026-11-12 / 空补丁与未回读的只读调查
+
+- 用户继续授权查明两项现象，并提供旧f0d12c1 CI失败邮件。两名Sol/medium继续执行，主代理负责设计/验收；子代理现场核PR2当前d437650/run43231106780四组success，旧30ms启动假设已修，不因历史邮件回退、重跑或更改通知设置。
+- 空补丁调查：10份原Session结构与原官方空/非空结果绑定。7个empty最支持未进入源码编辑，未见编辑失败/回滚/提取丢失正证据；唯一非零shell是读取/grep诊断错误。3个resolved首次可识别写入在10/13/14次模型调用附近。没有逐步git差异快照，不能绝对排除隐式修改；“均budget_exhausted”只是共同终止条件，不等于预算不足的因果证明。
+- 回读调查：相关四源码hash与765一致；11个artifact与canonical完整工具结果相同，生产只读回读全部匹配，重建预览隐藏中段合计32281字符并含完整handle/正确read指令，工具参数吻合。5个on中86个结构化调用均为shell，未见格式错误或可记录的回读意图。但Session不是原始Provider请求抓包，重建不能冒充实际传输；原SWE任务也没有“必须读隐藏中段”的标注，0回读本身不是已证实的接线缺陷。
+- 设计取舍：当前system要求实际编辑，但无16请求预算提示。首实验仅加初始静态cap信息，不增步数/其它策略，避免尚无安全追加接线时动态改写前缀。每shell后新增不入模型的只读worktree计数，改进“没有编辑”与“提取遗漏”的证据边界。隔离回读探针另测必要隐藏中段，不强制所有真实任务回读、不混作SWE成功率。
+- 方案与固定面板见 `docs/handoffs/2026-11-12-budget-visibility-readback-plan.md` 和 `results/swe-budget-visibility-20261112/SELECTION.md`。沿用原30美元账本与累计$0.572059，本批额外准入至多$2：probe阶段至多$0.25，随后SWE阶段至多$1.75。此记录时仅离线调查/方案，尚无新增模型请求或新效果结论。
+
+### E-BUDGET-READBACK-CODE：2026-11-12 / 静态预算可见性与受控回读探针
+
+- 改前 `d437650` 已修复截图所示旧 f0d12c1 的测试计时假设；主代理现场再核 run43231106780 四组 completed/success。旧失败通知仍是真实历史，不更改邮件通知或通过重跑掩盖失败。
+- `swe_agent.py` 新增默认关闭的 static guidance，初始 system 只告知真实 API 上限（含辅助），同 run 不改前缀。`budget.py` 新增本地 request_ceiling 与只读 effective_request_limit，预留和提示共用；旧账本的16请求/$30根政策保持。`swe_campaign.py` / `swe_results.py` 明确区分实验条件、artifact_projection、budget_guidance；预算实验两臂投影均开启，官方预测/评分标签仍跟随条件，旧计划默认解释为投影实验。
+- 每 shell 响应后新增宿主只读差异计数 sidecar，包含失败 shell；git --no-optional-locks 不写 index、不向模型反馈。观察或写盘失败隔离为 unavailable，不能掩盖原工具结果。指标是“响应后可见工作树差异”，新文件不自动称为源码编辑。
+- 新 `artifact_probe.py` 通过生产 Agent / Context / Artifact factory 验证隐藏中段回读，真实 Provider 入口只记元数据（SDK 前、非 wire）。四 trial、每 trial 四请求，且在原 FileLock 内执行 min(root16,local4)；提前泄漏在 reserve 前拒绝，用量未知停全批。合成输入 SHA、成功条件、费用见独立 probe README，未硬编码模型回读决策。
+- 作者 Windows/Linux 定点各17项、双方独立互审无阻断；主代理实际 `PYTHONPATH=src;.`，`python -m pytest tests/experiments -q -o addopts= --import-mode=importlib`：**114 passed、2 skipped、5 subtests passed in14.13s**。`python -m ruff check experiments/benchmark_live tests/experiments` 与 `git diff --check` 通过。CLI 实际动作为 plan/run/score/summarize（一次误用 create 的本地帮助命令被 argparse 拒绝，未发模型）。
+- 运维脚本离线准备初次按 list 读取旧任务文件，实际是 tasks 对象，已按原 schema 修正；首次冻结的 fixture 未重生、未覆盖。此时账本仍192请求/全部已结算/$0.572059；fixture SHA `e0babe0f79fa847f79eea3f42a6d0d71bdb00d75cfe6db4ac9e24fc2795c223d`，三题输入 SHA `e7cf61df7dc418648f677526e0e12bfaa19dc6bb630d21a37799ed106957c89f`。先提交冻结源码并验 CI，再发新模型请求。
+- 优势是把预算可见性与产物投影解耦，并补充真实回读/工作树证据；代价是额外观察开销和诊断脚手架。借鉴的是前批 DSH 的稳定前缀与 oh-my-pi/Hermes 的受限回读思路，本轮不调用 DSH、不将外部 Harness 成绩当基线，也未新增 Mem0/Dream-RSI/Langfuse 远端集成。尚无新模型效果结论。
+
+### E-READBACK-PROBE：2026-11-12 / 真实回读与最终交付分开计数
+
+- 源码提交 `c69ff37ed148f53d526b458b9b36233860b85f26` 在模型前通过[CI run43241787757](https://github.com/294962silent/my-agent-harness/actions/runs/43241787757)四组矩阵。Windows主机运维脚本最初在WSL调用git rev-parse，Windows worktree的gitdir `C:/...` 被Linux按相对路径解释而失败；当时尚未启动收费。改为Windows侧核完整HEAD/源码无脏改，Linux侧保留实际导入路径和冻结hash校验，不改共享.git指针或已提交源码。
+- 实验输入保持首次冻结的两份日志；probe plan SHA `b0f50a8e40bfd33c65edda3800e3020ce0b2879e6a7528e763bf21aeec03f366`。顺序fixture-a on/off、fixture-b off/on，四trial共12请求全部结算，新增$0.009106，累计204请求/$0.581165。没有未知用量、提前目标泄漏或schema漂移，临时Session/产物正文已由所有者清理。
+- on两次均观察到隐藏预览与handle、实际read/search、后续Provider输入目标可见；能力链路2/2。但第4次响应仍为工具调用，随后4请求上限耗尽，最终答案正确0/2。off两次均2请求正常end_turn并答对，2/2。读到和完成分开统计，不把回读能力冒充端到端质量，不提高上限补成功。
+- SOL-1独立核四份audit/result及Agent.run终态：budget_exhausted映射为预算终态文本，probe按最终准确值判定；当前元数据不含响应正文/推理/finish reason，不能解释模型为何继续读。方法入口审计仍为pre-SDK而非wire。结果详见独立probe README，后续只归档元数据。
+- 下一阶段维持三道固定诊断题、每题两条件的原方案：两臂artifact_projection均on，仅静态预算提示不同。新plan SHA `89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5`，本阶段新增额度1.75，绝对ceiling $2.331165（前累计0.581165+1.75，未另加2）。三题按既有结果选定、不代表未见随机样本；此时先执行5227首配对，未评分，不预填成功率。
+
+### E-BUDGET-VISIBILITY-RUN：2026-11-12 / 三题对照与用户调整优先级
+
+- 实际生成及评分均已结束，仍为冻结源码c69ff37。六trial各16请求且usage全部结算；官方5227双臂resolved，11400/5103双臂empty_patch，合计on1/3、off1/3、4empty、2次实际测试、unknown/环境blocked均0。没有通过换题、追加请求或放宽评分消除失败。首次响应后可见差异为5227 off14/on11次请求，另外四条无响应后差异；100/100观察available，不能把该指标等同首次源码编辑。
+- 费用：SWE off48请求/$0.148623，on48请求/$0.158567；合计96请求/$0.307190。probe另12请求/$0.009106，本阶段共108请求/$0.316296；加此前192请求/$0.572059，累计300请求/$0.888355。300是请求数、不是300道SWE；客户端保守冷价不等于供应商账单。cache_read仅92/96覆盖、cache_write0/96覆盖，完整缓存总量null，不给完整任务KV排名。
+- 本次条件是budget_visibility，两臂projection均on。off产生8份/75999B，on15份/140052B；六份canonical Session均可解析，read/search均0。Session工具响应不是wire证据，原SWE没有必须回读隐藏中段的标注；独立probe的真实回读能力和最终0/2交付另记，不混入SWE成功率。
+- 归档60个manifest列入文件+manifest，共61；manifest SHA `18888467ad123eb0b70f850e40ab1d2c93fa974f1fcefd17a02e02a2ba4883dd`。采集前核148项输入、100项原结果；108个runtime py同时核原SHA和c69 Git规范化blob，关闭此前仅比较commit常量的来源缺口。只复制安全metadata、官方结果、无正文侧车/探针审计；旧raw不改。所有JSON/JSONL、hash/大小校验通过，双方互审无阻断。
+- 主代理实际执行新raw的`swe_results --archive --manifest-sha256 …`，得到6known/2resolved/4empty/3pairs、archive_modified=false；复用前批通用stdlib账本脚本独立重算96请求/$0.307190并保存analysis两JSON，均先核全部60文件。详见 `results/swe-budget-visibility-20261112/REPORT.md`，默认static仍关闭，未提供质量提升证据。
+- 用户随后要求先适配Mem0、Langfuse、Dream-RSI，SWE/benchmark以后再测。本批运行在该指令前已全部结束；后续不新增benchmark/收费试验，保留以上记录。新适配将作为下一批独立设计、实现和提交，不把适配完成冒充真实远端接通或质量消融。
+
+### E-THREE-INTEGRATIONS：2026-11-12 → 2026-11-13 / 三项可选适配
+
+- 用户调整优先级后，仅复用两名GPT-6.1 Sol/medium实现，主代理负责接口取舍、集成和验收。旧结果收尾e81d424已推送；本批未新增模型/embedding/云端上传或SWE/效果benchmark，原账本保持300请求/$0.888355。方案见 `docs/handoffs/2026-11-12-three-integrations-plan.md`。
+- Mem0固定OSS mem0ai2.2.1/git f1791daa86d469249c9b002f62644d58a1eb96a0，Apache-2.0。新增memory_semantic.py/memory_mem0.py与MemoryStore.aretrieve；core Agent实例注入，CodingAgent/Settings/RPC装配。改前仅本地词法；现在可选语义候选，但本地active/tombstone/scope/revision复验后才提供正文，infer=False避免二次抽取，错误回退词法。未测真实语义质量。
+- Mem0成本与边界：每adapter单daemon worker，超时永久熔断避免叠加，不能杀死SDK同步请求/内部重试；owned资源逐一关闭，caller-owned保留。真实SDK回归发现Memory.close只关SQLite、Qdrant锁仍占用，补关自有vector/HTTP客户端并验证同路径重建；后续review补工作失败时finally清理、关闭/完成共锁以及工作失败但实际已关闭时不永久误报False。direct Agent.aclose也用finally保护ownedindex清理。
+- Langfuse固定5.2.0/已核SDK源码00e5098bd6511a2f7bc7b6813ac125a3af559697，发行元数据MIT。新增LLM订阅句柄与observation_runtime.py，保留base observer，五入口每次开始快照并独立隔离异常。全局配置创建有界导出器，缺凭据清晰报错；close只detach/关闭自身，保留dropped/errors/alive。usage按完整total-completion映射input，prompt/cache仅数字metadata，缺失不补零；避免将仅未缓存prompt当全部输入和缓存双计。
+- 运行期接线：Settings新增memory_index/observation；两块沿用既有特权字段规则，仅全局可设，项目不能修改外发地址/凭据环境引用。显式Python注入仍允许，memory_dir=False优先全局开关。RPC new/switch/fork/clone改内部async，先结束旧Agent在途和owned资源；未关完不假装替换成功。构造失败、取消、core关闭异常均尝试清理并保留原错误，外部LLM/observer不关闭。
+- Dream身份由作者zhengkid/Dream-RSI README到Google正式代码仓库闭环；固定dream-rsi0.1.0/git8ec35bd2538220517ce1bfca4282db21b8c518db，Apache-2.0。新增dream_rsi_replay.py/_dream_rsi_worker.py与my-agent-dream入口，真实调用TraceEnv.replay+官方baseline，验证v1评分树/固定来源/预算，输出新目录与hash manifest。OptimalPolicy模板实际为空，因此未使用；删除无效beta调节项。Windows Job Object/Unix进程组限时清完整子树，不继承API凭据且禁网络。未启动online exploration/自动RSI或声称学得更优策略。
+- 依赖/交付：pyproject三个optional extras+固定Git引用，uv.lock冻结88包；默认安装不启用服务、不导入SDK/建线程。主代理实际`uv sync --frozen --all-extras --python 3.13`，元数据核Mem0/Dream commit与版本；新增CI Ubuntu3.13 all-extras SDK契约lane和wheel模块/入口核验。用户说明与三份JSON示例在docs/integrations，面试材料同步，示例树明确合成契约数据。
+- 验证：作者关键回归与对称只读review已完成，最后配置权限4参数例先红后绿，Settings13项通过；计数不与前146/42累加。主代理最终命令在worktree、PYTHONPATH=src;.、MEM0_TELEMETRY=false、PI_BASH_PATH=D:/soft/Git/bin/bash.exe，`uv run --frozen --all-extras python -m pytest -q -o addopts= --import-mode=importlib --tb=short` 为 **1254 passed、2 skipped、5 subtests passed in64.49s**。skip为缺可选Harbor，不是三个SDK缺失；Ruff/lockcheck/diffcheck与CLI --help通过。
+- 真实SDK层级：tests/integrations三个用例经生产适配器；Mem0为本地Qdrant/SQLite+确定性假embedding、拒绝LLM与网络；Langfuse为真实SDK内存SpanExporter+生产sink/flush，非云端收录；Dream为CLI/worker→真实SDK的合成评分树，非效果benchmark。主代理wheel build成功，6项必需模块/TUI入口、Dream console及optional metadata均核验。环境无pyright，未声称类型检查通过。
+- 本机初次全套失败为直接调用新venv Python时，工具子进程仍从PATH选全局Conda造成stdlib错配；改uv run后剩余原cmd无cat/pipefail差异，指定已存在Git Bash后用例通过、整套无排除通过。未改无关Bash产品实现或靠跳过用例取绿。最终source提交/最新head CI以本次实际PR/checks为准，此日志不预填远端成功。
+- 优势是外部能力具有真实可用接缝、配置/所有权明确、结果可解释；代价是可选SDK/向量缓存、额外embedding/导出成本和回放输入准备。借鉴Mem0的索引API、Langfuse官方SDK/OTel、Dream官方trace/policy格式，不照搬外部论文/榜单数字；新增质量/消融指标依用户要求留待后续独立计划。
+
+### E-THREE-CI：2026-11-13 / Linux退出确认与后台E2E时序
+
+- 适配ec0fcdc240a1cb2cfe9760f9bdb113db95ef181f已推送，PR2范围/说明已更新。实际[run43257245212](https://github.com/294962silent/my-agent-harness/actions/runs/43257245212)的Windows3.11/3.13均success，Linux3.11/3.13失败；不以本地1254或Windows绿灯代替Linux验收，也不简单重跑取绿。
+- Dream normal-exit后代/proc状态仍R：两Linux均失败。SOL-2原样复现并读取pending signal，证实SIGKILL已排队但约1.25ms后才退出，原代码只wait根。仅dream_rsi_replay.py补Unix整组有界退出确认（非Z/X成员），无法确认5秒报错，不引入全局subreaper/新依赖，不用sleep改测试窗口。测试覆盖受控存活序列、永不确认失败、comm/Z/R解析与真实清理；作者Linux3.12和Windows3.13各20项通过，SOL-1只读复核无阻断。
+- 另一失败仅Linux3.11：[background E2E job](https://github.com/294962silent/my-agent-harness/actions/runs/43257245212/job/131318683497)首答Completed而非Waiting。SOL-1用真实job完成事件门控第2次假模型响应，稳定复现原断言；后台完成即add_followup，loop阶段末继续同run是合法语义，没有产品逻辑缺陷证据。仅改test_coding_agent_tasks_e2e.py，用release文件控制真实子进程、await真实job、第二轮全调用范围查通知/状态，finally回收；移除小sleep阶段假定。Linux3.12和Windows3.13各1项通过，SOL-2只读复核无阻断。
+- 主代理修订后实际 `uv run --frozen --all-extras python -m pytest tests/coding/test_coding_agent_tasks_e2e.py tests/coding/test_dream_rsi_replay.py tests/integrations -q -o addopts= --import-mode=importlib --tb=short`：**24 passed in6.30s**，含三个真实SDK离线契约；Ruff与diffcheck通过。该批与旧1254/作者20有重叠，不累加。新的完整矩阵仍须由最新head实际验证，最终终态写PR/checks，不为记录绿灯再触发docs-only矩阵。
+- 这批没有模型、embedding、云上传、SWE或效果benchmark；账本仍300请求/$0.888355。WindowsJob路径、三项适配范围及默认关闭不变，旧CI失败和全部原始实验保留。
+
+### E-LOCAL-CPU-OPT：2026-11-13 / 本地中文记忆与受控参数自优化
+
+- 用户解释需求后已明确选“本地CPU中文embedding”“受控策略参数优化”“暂无真实评分树，先闭环和功能验证”。项目定位收敛为面向长程任务的Coding Agent Harness，副线长期记忆/可观测执行/受控策略自优化；不是宣称任意代码进化、权重训练或持续提升。计划见 `docs/handoffs/2026-11-13-local-memory-controlled-optimization.md`。
+- Mem0 SDK原已安装，optional仅是分发依赖和运行时开关。新增mem0-local extra，fastembed0.9.1/ORT1.31.1，uv.lock解析100包。固定BGE-small-zh-v1.5，中文512维/512-token、MIT，官方Qdrant模型repo revision46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59；7文件95332206B，ONNX94781076B/SHA1294ea4b6331115a353d81f96b85e8c8d7fdcc284453d5b2fab5b016230aad38，另外6个独立Gitblob校验。缓存manifest SHA03283f4998f67e65623a88a408716bd8e8f22af9753c4c3132c28e3e59a6ab42。
+- 下载实际问题：官方域直接TLS EOF/超时；显式采用WinINet匿名代理后成功，未降TLS/读HF认证或用镜像。prepare已有缓存也重验全部文件，不覆盖坏缓存；运行期仅本地路径。模型留用户.cache，不进项目Git。
+- 新memory_local.py固定SDK局部构造真实Memory，因原Mem0 fastembed provider忽略CPU/cache实参；显式CPU/cuda=False/threads2/NeverLLM，不构造OpenAI或读取Harness认证。每adapter独占SQLite/Qdrant缓存，权重只读共享；ownedclose释放模型强引用及自身目录。冷构造同步加载，不在reconcile/search等待超时内；不宣称强杀SDK线程或RSS收益。互审补空userinfo代理拒绝、部分初始化逐项清理且保留原异常。
+- 主代理实际运行本地/配置定点39 passed in2.42s，包括真实CPU模型生产链路：禁词法fallback并拒绝socket仍取得事实，实际ORT provider仅CPU、512维；另一例真实Mem0配假Dense验证装配/双实例独占/清理。代码功能证据不等于召回消融。作者Linux3.12无Mem0/FastEmbed/Langfuse/Dream环境另测本地模块与Settings，37 passed in2.19s、无skip，证明分发默认导入兼容。
+- Dream新增contract/optimizer/registry，参数只允许max_width/max_refine，不执行生成Python；固定网格候选在结果前冻结，只train选一个，holdout验baseline/该候选/冻结incumbent。父进程从冻结原始score、action/cost重算，不信summary布尔；source/currenttask/语义树防split泄漏。指标为归一化回放best均值，非论文reward或真实任务成功率；SDK reset best实际为0，没有把baseline分数伪造为初始已达。
+- 自动晋升只有observed声明、完整验证且严格胜baseline及active；锁内CAS核target/version/完整token，nonce防ABA、同参不重复，原子指针最后提交，previous/rollback可核。replay实际消费合法active参数，损坏回退baseline，优化内部use_active=False冻结基线。总墙钟300s+每worker剩余时间、候选/树/步数上限；失败不丢样本或改预算。源声明不是密码学评分认证，仍不能伪造Session/SWE单链成评分树。
+- 无真实数据：所有observed晋升用例仅临时fixture/注入评估器；真实SDK用synthetic验证参数改变真实决策、搜索/active消费/损坏回退，不宣传提升。主代理又用文档synthetic manifest f2242a11ab5d17cfc6dfb7daff56ae9765ecb4bea51c0cc6141e93946dc1b74d经真实CLI完成dry-run，status=completed/promoted=false；没有写生产active。示例在docs/integrations/dream-demo。
+- 本机已merge-only启用：全局C:/Users/MLL/.my-pi-agent/settings.json，原文件在同目录.integration-backups留备份，不进Git、不输出内容；其他所有字段逐项相等。memory_index使用绝对mem0-local.zh-cpu.json、timeout10/close1；本地profile无key。dream_optimization enabled=true、dataset_manifest=null，实际status为needs_dataset/no_active_policy；正确optimize --output NEW仅返回needs_dataset，未创建目录。已有进程需重启读配置，不强行终止其他会话。
+- 最终本地主代理命令以私有MY_AGENT_HOME测试目录隔离实际用户配置，显式模型缓存env、MEM0_TELEMETRY=false、PI_BASH_PATH与src路径，`uv run --frozen --all-extras python -m pytest -q -o addopts= --import-mode=importlib --tb=short`：**1302 passed、2 skipped、5 subtests passed in77.78s**。两个skip为Harbor，真实CPU模型例已执行；Ruff/lockcheck/diffcheck通过。作者Dream Windows40/Linux38有重叠不累加，双方最终只读互审无阻断。
+- 本批不需要额外模型提案：参数网格搜索完全CPU/已记录结果，未调用付费模型、embedding API、Langfuse云上传、SWE或效果benchmark。旧账本和两份原始归档保持。优势是本机记忆可用且费用/外发边界清楚、受控优化有真实active/验证/回滚；代价是约95MB模型缓存、本地CPU/冷启动、额外候选回放与真实数据准备。借鉴Mem0 API、FastEmbed官方模型控制、Dream评分树/固定策略类，未冒称其完整自动代码RSI已启用。
+
+- 交付前增验：本批wheel构建成功（188项），memory_local、Dream contract/optimizer/registry/worker等8个必需模块及TUI入口、Dream console和mem0-local/fastembed元数据均核验；再次status仍needs_dataset/no_active_policy。Ruff/lockcheck通过，按仓库行尾规则diffcheck通过；最终提交及CI状态以PR/checks为准，不把旧head绿灯外推为新head。
+
+### E-LONG-PILOT-PLAN：2026-11-13 / 恢复小样本长程与记忆实验
+
+- 用户在基准选型建议后明确要求设计并开始；先前暂停不再阻止本批已授权实验。新计划见docs/handoffs/2026-11-13-long-horizon-pilot.md，两名Sol/medium分别拥有benchmark_live与longmemeval，主代理负责协议/成本/材料。
+- 固定TB2.1八题、SWE-EVO两题、LongMemEval cleaned按六类型各5题；代码只切artifact_projection，记忆只切none/production lexical/Mem0，不做全框架一次开关或Dream在线效果宣称。数据/官方Git blob与LFS均核，源SHA和限制见计划。
+- 环境核验更正：L20可连但无Docker，历史官方任务实际运行于本机WSL Ubuntu-20.04/Docker26.1.3；本批优先WSL CPU，所有子进程CUDA_VISIBLE_DEVICES=2，无GPU训练或推理。原数据、原checkout和旧结果保留。
+- 原账本实际300请求/888355微美元，unknown held0，根上限$30不重置。记忆阶段绝对cap$3.888355，代码阶段绝对cap$15.888355，本批最多新增$15；保守客户端价格不是供应商核账。run级冻结64请求/任务原时限(上限1800秒)，旧16/600默认不改。
+- 原样TB首轮八oracle均registry连接超时，属于environment-blocked，无模型新请求。旧fix-git verifier uv下载失败也保留。定位到WSL旧代理端口失效，正用仅WSL客户端可访问的临时转发和官方crane匿名拉镜像，再由Docker导入；不改共享daemon或官方task/test/solution。crane0.22.1官方release digest已核；第一镜像已导入，完整oracle尚未通过，不能写成模型成绩。
+- 新开发问题P30–P35同步写入问题账本和九段深挖文档，明确当前技术验证阶段、取舍、失败路径、责任边界和待补证据。规划指标、任务成功率、召回率与本批费用全部待实际产物计算。
+
+### E-LONG-PILOT-IMPLEMENT：2026-11-13 / 预算、驱动与付款前验证
+
+- 新long_horizon.py提供freeze/run/summary，源/输入/oracle/ledger/模型/任务时限绑定，run需显式execute，首轮默认最多2trial；journal与ledger trial_started防跨目录重复执行。只对完整且schema一致的配对计算差值；缺缓存用量保留None。Harbor原task不改，环境代理冻结为HTTPS-only/HTTP direct，避免代理使Debian apt返回502。
+- 新harness_ablation/corpus/retrieval/paid提供30题冻结、同语料生产三臂、独立Linux seccomp worker、回答与judge固定不同1请求/180s run；输入标签隔离、响应逐字重建、无效结果保留、付款前hash核验、BudgetStop封阶段不重试。上述是固定历史索引实验，不测自动事实抽取效果。
+- 实际依赖安装曾多次失败：uv内部Git仍命中失效URL级代理，普通HTTP_PROXY/进程Git配置不足；用仅本任务PATH内git wrapper显式-c覆盖后成功，未修改共享Git配置。按uv.lock导出安装Linux mem0-local，真实CPU+seccomp单chunk经生产链路成功，close_complete=True，0API。
+- 公共镜像通过官方crane0.22.1匿名下载后dockerload；8个镜像均可inspect，customheap大镜像load客户端超时后daemon仍完成导入，未仅凭CLI超时就断言导入失败。未改共享Docker daemon；保留最初registry失败、后续uv依赖失败和HTTP代理502的各次oracle原始证据。HTTPS-only第四次第一题cancel-async-tasks官方oracle实际reward1/noexception，其他仍进行中，不提前写为8题全过。
+- 交叉review抓到P36：Memory计划漏真实付费/guard源码，TB汇总在schema不同时仍算delta。双方修复并互相复核，付款前篡改反例不写ledger。主代理最终Windows命令沿用隔离MY_AGENT_HOME、真实模型缓存及Git Bash，全套 **1334 passed、4 skipped、5 subtests passed in94.93s**；Ruff/diffcheck通过。WSL记忆12项及实际Harbor定点另有重叠，不累加。
+- 本批此刻模型新调用仍0，旧300条/$0.888355不变；下一步冻结源码/选题、先首个检索和付费对照再扩展。所有收益和完整费用以实际原始记录为准。面试P30–P36已附深入取舍/反例/证据与个人边界。
+
+### E-LONG-MEMORY-PROTOCOL-V2：2026-11-13 / 真实数据探针纠偏
+
+- dfcdc5b代码与设计a55aa3a已推origin，新head四平台CI已实际completed/success。记忆plan冻结30题，首题921chunks经真实CPU/生产MemoryStore/Mem0及seccomp完成；此时无新模型请求。
+- 主代理读取真实context发现官方SID的answer_前缀暴露证据身份。即使未传has_answer也可能泄漏；该单题探针排除正式成绩，旧memory-plan/retrieval不覆盖。SOL2把所有SID等价映射为sid_<24hex>，原映射与gold仅host references，协议升fixed-history-index-ablation-v2-anonymous-sessions。正式实验另开memory-plan-v2/retrieval-v2，完整历史/日期/30ID选择规则不变。
+- 新行为回归经真实Fact磁盘/索引/reader验证原SID标签与gold canary未入公共材料，Recall仍可算；source/旧plan拒绝和append稳定性同测。已用retrieval/已判答案hash变化会在付款前拒绝；WSL15tests通过。没有把排除探针的Recall1或冷构建耗时当正式召回/性能收益。
+- 临时urllib models GET曾被403/1010拒绝；改用项目真实SDK（既有项目UA与稳定session header，未伪造官方客户端身份）实际GET成功、flash可用。此为零generation连通检查，不是Agent基线或付费任务完成。
+- TB HTTPS-only runtime下已有7/8官方oracle reward1；git-multibranch仍uv release TLS失败/uvx缺失，保留blocked并继续基础设施诊断，不换题。SWE-EVO固定fork73文件/471797B已逐Gitblob验证，真实评分入口导入与help通过，镜像准备中，尚无EVO成绩。
+
+### E-LONG-VERIFIER-CONTRACT：2026-11-13 / 官方结果与归因资格
+
+- 真实oracle证明缺uvx仍可能reward0/noexception，另有namespace名称和fake短名不一致。SOL1最小修long_horizon，保留official_reward/category，不改generic解析；缺预期ctrf+明确安装器失败/uvx缺失+无测试执行才suspected，证据有path/bytes/hash且有界读取。正常代码/collection失败继续scored0。suspected或schema不一致不能计算科学配对delta。
+- 名称按冻结oracle身份仅接受短名或terminal-bench/<短名>，拒绝其他namespace；started恢复收割真实result不重跑。最终WSL21项、Ruff通过，无模型请求。SWE-EVO两官方镜像也已导入、config ID保存，固定forkgold/empty CPU预检开始准备，仍未宣称EVO通过。
+
+### E-LONG-SMOKE-AND-LOCAL-RUN：2026-11-13 / 正式首题与本机批次
+
+- 用户明确暂不迁移，继续本机；全部执行器、Docker与CPU索引留WSL，生成/judge仍调用既有远端DeepSeek接口。不在L20跑任务。
+- v2匿名SID正式首题06db6396完成3回答+3judge，none0/1、lexical1/1、mem01/1；两检索证据会话Recall/MRR均1。独立源码/输入清单核对和原文人工辅助审验支持答案5，模型输入仅匿名SID（重建SHA证据，不是抓包）。n=1不能做质量收益结论。
+- 六请求全ok，prompt3062/completion470，客户端按全冷参考价逐请求结算1485微美元；原账本现306请求/889840微美元，unknown0，cache未提供保留unavailable。原始六条metadata/usage和首题指标存docs/experiments/results/long-horizon-20261113/smoke-v2，不含密钥、prompt、gold或完整历史。
+- 实际Mem0建库等待1800秒/close60秒与产品工作等待10秒不同；首题约100秒包含921块首次embedding/索引，不称query-only延迟。原始历史分块检索不测自动抽取/巩固/脱敏写入。详见首题报告和P41。
+- 30题Memory批量resume已启动，由专属进程顺序retrieve→answer→judge→summary，已完成首题不会重付；TB另进程等待Memory成功且无unknown才freeze实际计划、先跑2trial，再仅在完整/同schema/无疑似verifier故障的配对后续跑余下。两个进程只读旧123源补充清单，原账本$30、本批最多新增$15保持；没有自动恢复已失败API。
+- TB原8题最新7oracle通过，git-multibranch追加同配置网络复查仍0且依赖问题，保留所有轮次不替题。SWE-EVO固定fork四项gold/empty已真实评分：Dask gold F2P44/44、P2P2861/2861，empty0/44、2861/2861；Conan gold72/72、640/649，empty0/72、630/649，因此仅Dask可进入生成，未把gold失败归因模型。
+- Dask原镜像Git含4569个不属于base祖先的可达提交和303refs，存在基线之外信息通道。新接缝同tree单root清理三次探针通过，原objects/reflog不可读；丢失合法历史能力的代价记录在P39。EVO交叉review另发现foreign report路径/额外sitecustomize可执行清单缺口，修复复核中，尚未EVO付费。
+- 已推16bdae0的CI run43408977540实际completed/success；新增EVO文件未据此宣称CI已覆盖。首题报告、后续完整结果、官方预检与不同协议探针保持独立，不覆盖历史。
+
+### E-LONG-MEMORY-COMPLETE：2026-11-13 / 30题真实三臂结果
+
+- v2固定30题已完成90回答+90judge，180请求全部ok、unknown/pending0，客户端49191微美元（$0.049191）；全账本480请求/$0.937546，仍受原$30约束，未重置起点。原单题6请求包含在180中，不重复相加。
+- none4/30、mem015/30、lexical22/29有效且另1不可用。lexical的75f70248判分在1024输出上限以length结束、正文空，invalid_judge_format；不补零、不从推理猜分、不加请求重跑。三臂共同29题：lexical22、mem015、none4；mem0-lexical为-7/29。4弃答三臂全对，召回分母26。
+- 检索90槽位valid且全部close完成，词法session Recall@8/MRR为0.86538/0.80449，mem0为0.73077/0.61255。总耗时均值4.32/99.13秒含首次建库，不当warm查询或线上SLA；中文BGE面对原英文数据，固定历史索引不等于自动抽取管线。本次结果不支持语义优于词法，不改默认值、换题或覆盖负结果。
+- 独立stdlib审计核完全部manifest、输入重建SHA、检索/答案关联、exact判分及ledger一对一，require-complete/summary对照通过。公开metadata在results/long-horizon-20261113/memory-v2（6份机器证据，含manifest），无prompt/gold/历史。使用原summary bytes，并可从90行独立重算统计。
+- usage合计prompt95175/completion17067/total112498；有一条另列cache256，全输入按total-completion为95431。按每请求全冷参考价向上取整重算49191微美元，与ledger一致；cache_read覆盖仅1/180、write0/180，完整KV命中率不可用，不排名。供应商账单未核。
+- 面试材料新增P42判分可用性与P43负结果定位，均按九段证据深入，保留个人责任和适用边界。[完整报告](results/long-horizon-20261113/memory-v2/REPORT.md)。
+
+### E-LONG-EVO-REPAIR：2026-11-13 / 官方评分闭包与可复现接缝
+
+- 新增evo_agent.py、evo_cache_adapter.py及test_evo_agent.py，不改Memory/TB/预算/src/uv.lock既有冻结文件。EVO支持freeze/solve/probe/score、官方双gate、64请求/1800秒、源/模型/预算绑定和独立fresh评分；仅Dask符合前gate，Conan仍blocked。生成清理原Git历史，同tree固定单root，不声称完全消除泄漏。
+- 修复前只glob唯一report、只核已知73hash，会接受foreign报告或额外sitecustomize。修复后绑定固定run/model/iid报告路径、外层iid及父路径无symlink；校额外可执行inventory，并从原bytes建立clean snapshot，不复制旧pyc。-I -B隔离启动，解释器/site-packages仍信任，不是任意代码沙箱。
+- adapter公开为可配置根路径，原60672af1…文件/前gate不改；新dda7435e…的cached_pull和ALLOWED经独立AST核相同。公开73文件manifest与原8abe773c…hash一致，docs/experiments/SWE_EVO_ADAPTER.md给下载/核验/CLI和信任边界，不再依赖私有硬编码路径。
+- 作者WSL19 passed；主代理Windows实际13 passed/6 skipped（WSL评分及Unix symlink边界），Ruff/diffcheck通过；独立复核原反例11项通过，不把重叠计数相加。真实clean75file逐hash、0pyc、-I-B --help通过；新head CI尚待本批提交后核验。
+- 为避免源码稳定前自动freeze，主代理核原Terminal等待器waiting_for_memory、无child/无已开始trial后只停止该等待器，保留停前快照和stopped_before_freeze原因；Memory未中断。待源码稳定另开Terminal调度阶段，不重跑已消费任务。
+- 真实clean-Dask-empty零LLM契约首次在官方评分前因私有脚本漏mkdir(output_final)失败；产品score已有mkdir。仅修私有脚本，保留首失败目录，新v2目录重试；不影响账本或原gold/empty。最终评分结果另行追加，不预填成功。
+
+验收追加：主代理实际执行新v2 clean-Dask-empty已通过：官方CLI退出0、F2P0/44、P2P2861/2861、resolved=false，原report SHA仍053b84ab…，与旧empty一致；75份快照逐hash一致、pyc0、无cleanup_error。0模型请求、没有伪造generation run.json。安全证据存[evo-contract](results/long-horizon-20261113/evo-contract/REPORT.md)，它是评分装配契约，不是Agent解题成功。
+
+本批集成回归：主代理Windows在冻结依赖下实际执行 `uv run --frozen --all-extras python -m pytest tests/experiments -q -o addopts= --import-mode=importlib --tb=short`，**171 passed、10 skipped、5 subtests passed in32.47s**；包含上面13项EVO，不重复累加。skip含6个明确WSL/Unix边界和既有可选环境条件；不是当前整库总测。独立EVO源码审查与真实clean评分覆盖关键Linux路径，最新远端四平台CI待推送后核实。
+
+跨平台追加：提交前LF→CRLF提示表明新adapter和源码manifest的固定字节pin可能在Windows fresh checkout失效。仅.gitattributes追加最小LF规则，保留原stdout与旧证据规则；执行助手用真实`git -c core.autocrlf=true checkout-index --prefix=<新的私有目录>/ -- <27目标文件>`核验27文件hash全同、CRLF0，adapter dda743…与manifest8abe773…不变。主代理随后核34个暂存文件、21份JSON、三份产物manifest及暂存bytes与原证据相同，实际API/Git凭据精确匹配0。未将缓存、模型、auth或本机配置提交。
+
+### E-LONG-CODE-START：2026-11-13 / 源码CI与本机正式首配对
+
+- 实现/档案已推自己的origin，源码head455915743ee687006698eaeefe3a98d43b55609e；PR2正文按最终实现与真实Memory负结果重写，base仍codex/context-memory-reliability，未合并。该head的[run43422249290](https://github.com/294962silent/my-agent-harness/actions/runs/43422249290)已completed/success，四组Ubuntu/Windows × Py3.11/3.13实际全部成功，Ubuntu3.13 SDK专项实际运行成功；主代理核run/head与四个jobs，不用旧绿灯外推。
+- Terminal新调度器terminal-queued-v2已在本机启动，实际计划8cb76c1479c97638eed024e627e13397a1fe63078b4209105886ac4442e16216，首cancel-async-tasks off/on。七题通过oracle可候选配对、一题双槽blocked；首个完整/同schema/无suspected配对后续跑其余槽位。此刻尚无完整结果，不预填质量/费用收益。
+- [启动快照](results/long-horizon-20261113/terminal-start/REPORT.md)保留源码、任务、约束和预算，不公开运行时凭据或代理。后续SWE-EVO仅Dask可运行，须前阶段完成、账本无unknown及源码CI已核；Conan不因失败换题，继续blocked。所有执行留本机，L20未运行任务。
+
+### E-LONG-CODE-STOP：2026-11-13 / 实际故障触发停止，费用不补零
+
+- 首off正常end_turn，raw reward0但uv0.9.5下载TLS35→env/uvx缺失，无ctrf、未执行测试，suspected=true。on在原900秒上限取消、Harbor AgentTimeoutError；验证器执行且raw reward1，但分类结果execution_or_verifier_error/official_reward=null。两者原分数、执行异常与配对资格分开，科学有效pair0，delta=null，不能宣称投影0→1提升。
+- 两trial共53请求，52已结算、1cancelled缺完整usage。已知$0.281062，完整任务费用unavailable；45131微美元预留保留。全账本533请求，已知$1.218608+未知预留$0.045131=客户端已知加预留$1.263739，不是完整实际费用或供应商账单。原$30不重置，unknown未补0；队列核到unknown后stop，剩余14槽未启动、EVO未发模型。
+- 定点调查未见代理漏配：实际off job/Harbor/trial与成功oracle同HTTPS-only策略，env.exec确实传递。独立fresh同镜像运输探针只丢弃下载体、不test.sh/评分，CONNECT GitHub→302→CONNECT release-assets→200/exit0，NO_PROXY未绕过；当前可通不能追溯原TLS原因。首私有probe解析器None stderr失败另存，不把探针当前成功改写原trial。
+- [首配对停止报告](results/long-horizon-20261113/terminal-first-pair/REPORT.md)公开安全原reward/分类/证据hash、53请求与未知预留、运输元数据；原result/ctrf/stdout/Session和ledger留本机。终态不是跑满八题，不把运行失败当完整benchmark成绩。Memory180请求/30题仍是独立已完成实验。
+- 付费进程均结束；主代理确认本批队列/Harbor PID已不存在、精确任务及探针容器剩余0，核cmdline/父子身份后关闭自有临时代理41392/18360及17913监听，用户原7897服务仍在。没有迁移L20、改共享Docker或重启用户代理。worktree和失败档案保留。
+
+### E-LONG-ERROR-AND-RSI-AUDIT：2026-11-13 / 解释负结果，纠正融合口径
+
+- 用户追问Mem0为何落后、RSI是否融合、如何证明长程能力。两位既有Sol/medium分别只读核评分分解与RSI调用链，0新增API、未改原数据或未知账本；主代理独立从90行重算15组计数通过，诊断存[memory-error-analysis](results/long-horizon-20261113/memory-error-analysis/REPORT.md)。
+- 词法对/Mem0错8题、反向1题；前8中3题标注会话覆盖不全、5题会话全命中仍错。抽查其中2题，词法送入具体答案chunk而Mem0没有。故session Recall=1不等于答案证据已送入，不能直接归因reader。真实BGE tokenizer重建27517条索引文本最长463tokens、超过512为0，本批没有512截断证据；语言/阈值/无rerank贡献仍待单因素实验。
+- 实际Mem0 infer=False、top8、threshold0.1、rerank=False；本轮是原始历史索引，不是整套记忆抽取/巩固质量。未换模型或重新付费选答案，原负结果保留。
+- RSI源码确认optimizer默认评估器replay_trace，worker为TraceEnv.replay→ParallelRefineMethod.solve，active只被replay消费。真实Agent未自动产出对应独立评分树，也未用active控制在线动作。已完成的是离线受控参数研究通道，线上主链尚缺接线；纠正“适配完成”可能造成的完整融合误解。默认registry只读no_active_policy，未核任意自定义registry，不推广配置结论。
+- 更新integrations说明与CLAIMS，分别说明已实现机制、已完成Memory实验、无效Terminal对照、缺失在线RSI和真实长程收益。新报告给出相同预算/工具/模型、仓库隔离与隐藏最终测试不反馈选分支的建议；属于待讨论方案，不是已实现或已跑的新实验。执行源码未修改，不因文档更新重跑模型。
+
+### E-LAYERED-COMPACTION：2026-11-13 / 先低损投影，再有界摘要
+
+- 用户采纳真实RSI闭环优先/三臂等预算，并给Claude Code五层压缩截图要求改造。复用两名Sol/medium，SOL-2拥有Context管线，SOL-1接真实RSI并独占Agent/配置工厂；主代理负责集成。起点0e9ef15，初始工作树干净；Git改前归档SHA256 439fbae0dca996e43a3ca1fe12e2cf59af445f6c5bf4078364c8be6e37a7f586，旧context-cache基线不覆盖。实施约束见handoffs/2026-11-13-online-rsi-layered-compaction.md。
+- 新context_compaction.py的CompactionPolicy支持baseline兼容路径与layered显式启用。canonical/分支摘要身份先验→既有大结果外置→旧完整成功tool组micro成可回读handle→显式完成前缀fold→预算内结构化摘要。当前user turn、首条user契约与host标记context_protected原文保留；未知/错误/未闭合/近期tool组不误删。原canonical不改、cut使用原坐标，不能适用的前缀或无法容纳保护文本时拒绝请求。
+- 涉及context.py、新context_compaction.py、core Agent三个policy透传点、test_context_layered.py及docs/context-compaction.md。动态micro不作为缓存身份；fold复用Session已有覆盖指纹和持久化桥，不新增任意中段schema。保留输出/安全/摘要reserve和purpose=summary，复用原注入LLM，不新建裸client或隐式重试。
+- 官方[context editing文档](https://platform.claude.com/docs/en/build-with-claude/context-editing)说明清理工具结果会使对应缓存前缀失效；截图cache_edits不作为DeepSeek/OpenAI能力依据。本版不发送provider cache edits、不启用模型任意删句、不宣称完整复刻五层或KV收益。结构化摘要是有损的，回读与保护文本不能证明所有语义无损。
+- 交叉review复现P2：新摘要不能fit时曾清除内存中仍合法的旧摘要。auto/manual两个反例先红后绿，改为只对当前canonical先验有效的旧cache保存事务快照，失败恢复并pending=None继续拒绝；失配分支绝不恢复，磁盘Session未被错误覆盖。SOL-1修后只读复核通过。
+- 作者Windows组合101项通过；修前WSL新用例10项通过不外推为修后结果（批次有重叠）。主代理修后实际Context/Session/Artifacts组合 **94 passed in1.55s**，Ruff通过。使用fake摘要provider与真实磁盘Session/ArtifactStore，不计作模型任务成绩，最终跨平台状态另核CI。
+- 独立synthetic机制对照见[compaction-contract](results/context-rsi-20261113/compaction-contract/REPORT.md)：同29984B canonical、5000输入预算、512输出reserve；baseline fake摘要1次后4108B，layered fake摘要0次后12044B，6份真实产物nonce回读成功，两臂canonical不变/重复稳定。baseline最终更小，layered只证明先micro避免一次合成摘要；不编造成质量、速度、总token或缓存提升。显式前缀fold的静态host摘要与LLM摘要分列，Session保存/恢复已验。
+- 本批付费API仍0新增，旧unknown/预留保持。RSI和本地Qwen GPU适配仍在独立文件实施，不能据本次Context验收提前宣称它们已完成；后续分批追加真实接线/本地模型验证结果。
+
+交付前补充：主代理在新的私有输出目录实际运行`python -m experiments.context_rsi.compaction_ablation --output <新目录>`，所得metrics与公开指标JSON完全一致；11个本批暂存文件实际API/Git凭据精确匹配0。只暂存本批Context、三点透传、独立机制证据与计划/日志，不纳入仍在实现的RSI/GPU文件。
+
+### E-RSI-EXECUTION-LOOP：2026-11-13 / 补齐真实分支与冻结策略消费
+
+- 之前active只供离线replay，Agent不会自行产对应评分树。本轮新增rsi_runtime.py/rsi_branch.py，CodingAgent.run显式接portfolio，现有core loop/文件工具执行独立分支、host可见命令评分，合法完成前缀导出train/holdout trace。FrozenPolicy可在下一episode读registry active或复制已验参数，真实控制width/refine；无active失败、运行中不热换。
+- ParentBudget/SharedLLM共享请求、token预留、deadline与评估池，包含摘要/辅助异步调用及后置final；未知usage保留reservation并停止。total-completion兼容另列cache。无通用裸client透传、同步provider入口明确unsupported。children首版禁MCP/skills/plugins/memory/background/retry，不复制Agent loop、不从生产导入experiments预算。
+- visible用于探索，独立final仅选定产物后在副本执行，反馈不进选择或训练；TaskSplits校任务隔离，synthetic永不生产晋升。选定tree/patch只供显式review/apply。目录隔离非OS沙箱、apply非原子、不消除所有TOCTOU；同步snapshot/copy/export可阻塞IO，非所有操作硬墙钟抢占。RSI首版串行、单次runtime，TUI流式run_stream明确unsupported。
+- 交叉review修复无尾换行patch、真实Windows junction越界和cleanup失败仍导trace三类问题；Git应用五组LF/CRLF/无换行逐bytes正例、junction拒绝与普通copy、取消传播均有回归。作者最终44项，早先190项属修前历史；主代理最终70项组合通过，包含44 RSI及26 memory，不重复累计。
+- 实际CLI使用真实CodingAgent/工具/本地测试与固定Dream SDK optimize dry-run；A/B/random各4有效尝试、12脚本请求/6评估，C为2尝试、6请求/4评估。ceilings全部12请求/300000tokens/90秒/6评估，SDK21次离线replay选择width1/refine1。四臂独立final通过、源answer仍0；quality=unmeasured、final_success=null、未promote。C少调用为合成夹具行为，不写成50%真实节费。A→B同时切layered与artifact，是工程增强组合。
+- 主代理在全新目录独立复跑，源码hash/参数/计数/上限与公开证据一致，见[rsi-contract](results/context-rsi-20261113/rsi-contract/REPORT.md)。保留作者与复跑raw hash，不覆盖旧档案。真实模型/未见长程收益尚未测；下一批四臂[实验协议](RSI_CLOSED_LOOP_EVALUATION.md)已设计但真实任务manifest未冻，不自动恢复付费benchmark。
+
+### E-QWEN-GPU：2026-11-13 / 本机独立embedding与SDK边界
+
+- 本机RTX5060 Laptop 8151MiB/cuda:0/sm120，独立Torch2.9.1+cu128与Transformers4.57.6；默认应用venv不装Torch。官方Qwen3-Embedding-0.6B revision97b0c614…10文件1,207,470,234B逐官方Git blob/LFS校验。大权重httpx成功、小文件TLS EOF后改官方native curl，TLS不降级、不用镜像/认证token；下载失败不伪装成功。GPU只embedding，不能生成摘要。
+- 新memory_qwen.py/_memory_qwen_worker.py及mem0工厂分派：独立-I -X utf8 -u stdio worker，fp16 SDPA/last-token/L2归一化1024维；batch1..4/max_length64..1024，超长显式报错。local_files_only/trust_remote_code=False/token=False，剥离凭据代理、拒PythonInternet socket，非OS网络沙箱。1024维新Qdrant目录，不复用BGE512旧库。
+- 真实路径暴露Mem0会懒下载BM25/spaCy，改Qwen-owned dense-only建库及隔离SDK函数globals禁NLP；固定版本/commit/10方法LF规范hash，未知源码失败。不是SDK全局patch，也不是完整原版混合语义。**旧结果更正**：当前BGE只读装配BM25 slot=true、原NLP函数，但历史30题实际是否触发未记录；不能无条件称旧臂纯稠密，未来模型比较须控制此变量，原负结果与raw档案不改。
+- 修复Windows GBK中文stdio、worker不读导致write/flush无限阻塞、venv launcher与真实worker PID不同。统一发送/接收deadline、有界1MiB帧、熔断终止owned树并确认线程/native handle；清理窗口独立，不宣称瞬时OS退出。SOL-1对send_deadline独立1项复核通过。
+- 主代理最终GPU实测禁词法回退、host/worker拒Internet socket：两事实中英文均返回语义候选，1024维norm约1；冷构造16.45s、文档batch2约1.30s、两查询0.467/0.053s，短文本峰值allocator1,207,842,816B。这是功能smoke，不是质量/吞吐/SLA benchmark。close_complete与worker退出核验；owned终止returncode1如实保留，桌面显存2437→2435MiB不当作零显存承诺。
+- 全局settings私有备份后merge-only启用layered（output reserve16384）、GPU profile与memory等待60s；CPU profile/模型保留，其余字段与Dream入口原值不变。实际Settings→RPC→CodingAgent→Context/GPU factory构造后关闭验证0provider调用。新配置需本分支worktree，旧checkout切回需恢复CPU配置；本机配置/模型/向量缓存不进Git。
+- 最终主代理Windows冻结依赖整库：`uv run --frozen --all-extras python -m pytest -q -o addopts= --import-mode=importlib --tb=short`，**1424 passed、11 skipped、5 subtests passed in107.00s**；Ruff src/tests/experiments/context_rsi、uv lock --check、wheel新模块/TUI与源码bytes比对通过。新增CI专项含RSI闭环与GPU CPU契约，不冒充CI有真实GPU。当前最终head远端CI待提交后核验。
+- [GPU安全证据](results/context-rsi-20261113/qwen-gpu/REPORT.md)与[面试P45–P50](../interview/11-RSI闭环与本地推理工程深挖.md)已同步。付费API本轮0新增，不改旧账本533请求/已知$1.218608/未知预留$0.045131；所有进程留本机，不迁移L20。真实RSI收益与Qwen召回效果保持未测，Langfuse云上传状态不因本轮变更。
+
+交付字节核验追加：Git暂存暴露5个源码文件CRLF与提交LF指纹差异，仅做换行规范化；历史source hash不覆盖，另存before/after/CRLF行数映射与最终checkout-validation。最小.gitattributes规则保护11份RSI/Qwen源码，实际autocrlf=true导出11文件逐bytes相同。规范化后专项44 passed in17.98s，新目录CLI四臂计数/上限一致、0provider、未晋升；重新构建wheel按最终源码bytes核验。没有以格式变化改写旧实验结果。
+
+### E-QWEN-CI-REPAIR：2026-11-13 / 默认依赖与Linux异常因果
+
+- 已提交并推origin的24aeca1，其CI43444322518四矩阵默认pytest失败；保留首失败，不将之前Windows all-extras1424通过外推为跨平台。三项SDK用例无条件import可选Mem0，主代理独立干净Windows/Py3.13复现3失败/6通过。
+- SOL-2本机WSL复现生产close问题：deadline正确杀worker，stdin TextIO.close二次flush抛BrokenPipe覆盖原TimeoutError，owned worker/读写线程其实已退出。新增跨平台注入反例先红后绿；生产仅在实际owned worker确认退出后忽略stdin BrokenPipe，其他流/其他异常/未确认退出继续报错；TimeoutError断言不放宽。SOL-1定点只读复核通过；其他关闭错误传播为源码审查证据，不捏造独立负例成绩。
+- 三项真实SDK测试局部importorskip，七项纯协议仍跑；all-extras专项不跳过这些SDK测试。作者Windows/WSL各10 passed，主代理干净默认7 passed/3 skipped in4.81s；修后最终Windows整库 **1425 passed、11 skipped、5 subtests passed in112.77s**。批次有重叠不累加，1424为原修前历史。
+- 主代理最终memory_qwen源码ae27a019…重新跑真实GPU：1024维两事实检索、禁词法回退/受控Python socket、close与实际worker退出通过；冷构造19.21s，查询0.522/0.073s，短文本峰值allocator1,207,842,816B。新raw与安全指标另目录，不覆盖原16.45s运行，时间差不当性能对照。0付费API、不改旧账本、不迁移L20。
+- 最终wheel与11源码bytes、真实autocrlf=true checkout一致，Ruff/diffcheck通过；失败/诊断/最终sourcehash与GPU见[ci-repair](results/context-rsi-20261113/ci-repair/REPORT.md)。面试P51追加默认安装、OS差异与清理异常覆盖原因果的九段深挖；修后远端CI需核新head，结果更新PR正文，不用旧绿灯代替。
+
+### E-LIVE-RSI-AUTH：2026-11-14 / 新授权与固定开源校准
+
+- 用户明确继续真实模型，声明约20亿DeepSeek V4.1 Flash tokens，不再沿用上一轮0新增API范围；余额未查服务商。仍本机、两名Sol/medium，不恢复DS/DSH、不迁L20。原533请求账本只读hash495d9e656deccd64ff67ca5c4db9d4c391520700bd0bb672e8fad72a45018e3d保持，已知$1.218608与未知预留$0.045131不改。
+- 现有SWE/Terminal/EVO依赖容器，不能把任务目录直接交host LocalBranchFactory。先固定官方HumanEval commit b9453e8f1865df0a0057a1383767caa400acfbcf、blob998d25196e17af24daf9b6cb3a975fe752528e46、SHA b796127e635a67f93fb35c04f4cb03cf06f38c8072ee7cee8833d7bee06979ef、MIT。train7/11/27，val32/45，test1/6/9/20/33/40，seed23/47为调度重复。属于短代码真实闭环校准，不是长程或仓库外泛化。
+- 单独连通请求55tokens（41输入+14输出）、8.23s、精确READY、无重试，currency=null；只证明当前端点可用，不当Agent原生基线或余额核验。凭据在host内存读取，未写任务/日志。[连通元数据](results/rsi-live-20261114/connectivity.json)。
+
+### E-RSI-PUBLIC-EVIDENCE：2026-11-14 / 不用分数曲线代替任务身份
+
+- 已复现不同官方输入/7与/32同全1曲线被旧loader当跨split重复；反例分数为synthetic，0API。新增contract公开内容证据、runtime冻结/基线绑定/trace-report-export digest、loader内容身份：同输入改ID/path/spec/scores仍拒；不同已核输入可共享曲线；legacy/mixed仍原保守规则。评分与优化目标未改，未删题或伪造分数。
+- 只支持单个UTF8公开输入文件，输入/visible spec均可重算hash，不导出canonical/final；trusted-host来源，不证明恶意host/远端执行或语义等价。生产默认无evidence保持兼容。借鉴沿用Dream固定SDK的评分树/replay入口，新增实际host任务绑定，不称完整任意代码RSI/权重训练。
+- 主代理真实组合94 passed in17.87s，涵盖runtime/evidence/optimizer/replay/SDK闭环；原重复改名保护保留。接口与边界见docs/rsi-task-evidence.md，面试P52已记录。
+
+### E-LIVE-ORACLE-V3：2026-11-14 / 评分器与候选进程分离
+
+- 初版普通11题44次empty/gold预检通过，交叉review仍实证stub可读取同进程__main__.t['test']并改DocTestRunner伪造visible通过。修前报告保留，v2准备材料禁止付费用；不是模型成绩。
+- live_tasks.py改visible/final物理分JSON、host checker与persistent candidate worker分进程，typed JSON只传args/kwargs/primitive-list-tuple返回，不传expected/final、不pickle/eval对象。host只exec固定官方checker，seed0；owned Windows Job/Unix组回收。发现者独立复用原两探针确认visible exit1/final对象不可达；仍非OS沙箱，同用户文件访问不保证对抗隔离。
+- 最终v3-seed0的11题44checker+44worker均empty0/gold1；manifest SHA cc28f20d6303100f4fe8d5b550937643fdb9e88239b0601c1f144f9356763339。作者任务专项22 passed in132.77s，主代理后续整套包含这些路径。原/32零例初判是误取首helper poly；按entry_point find_zero取到2个官方例，无人工补例或替题。新[安全预检报告](../../experiments/context_rsi/reports/humaneval-preflight-20261114-v3.json)与P53记录边界。
+
+### E-LIVE-JOURNAL：2026-11-14 / 真实调用前的持久与逐步核验
+
+- 新live_runner.py独立campaign/hashchain JSONL/fsync/FileLock，ParentBudget公共接缝付款前写reserve、后写settle，保留raw规范usage与total-completion依据，不套使来源变synthetic的旧GuardedLLM，也不复用旧prompt+cache求和/价格。unknown/pending保留预留、禁止跨ID重试；币价未核currency=null。
+- 交叉review复现任务仅入口verify、低层failed后新ID绕block、模型env凭据可能进shell。修为每reserve与begin_evaluation核代码/任务/checker/privateinputs/env、统一低层slot/blocked、CLI取key后净化env，库拒脏环境。host完成、Agent完成与final分别报告；正常score0/可信已知干净quota保留分母，unknown/漂移/cleanup不吞。只读互审通过，P54记录。
+- 主代理调额前全库1502 passed、11 skipped、5 subtests passed in241.86s；source证据组合94与该套有重叠不加总。最终v2轮额修改后独立runner45 passed in13.95s；Ruff/diffcheck通过。CI扩SDK专项执行evidence/live runner/tasks，最终head状态提交后另核。
+
+### E-LIVE-QUOTA-CALIBRATION：2026-11-14 / 首train负结果与test前修订
+
+- v1冻结117源文件与53槽，首train7实际4API/8496tokens（输入8139+输出357），ls/find/read/edit/bash各1真实调用，可见1，但4轮后budget_exhausted无endturn→invalid_attempt，无selected/final/trace；hostcompleted不是Agent成功。无pending/unknown/held；cache字段3/4覆盖、已知5760，不报完整命中率。[独立校准审计](../../experiments/context_rsi/reports/live-v1-calibration-20261114.json)保留hash与工具配对。
+- 按先首slot再核计划，停止v1余52未运行槽，0test数据；不删负结果、不重复该campaign槽、不改旧unknown（确实0）。test前预注册v2：同11题与四臂，统一attempt12轮、父64请求/1Mtokens/1800秒/6评估，MODEL4096输出/180秒/零重试不变；context显式4096输出reserve/512margin/1024summary。五轮实际工具契约12轮可成功、4轮control仍失败，未把quota定义成成功。
+- v2重新保存117源文件快照与53槽，[start-v2](results/rsi-live-20261114/start-v2.json)付款前冻结。首train7四个有效尝试均endturn，真实来源observed，visible1、独立final1、trace已生成，16请求39208tokens、无unknown。校准/训练暴露单列，后续不把准备成本藏掉；没有比较提升结论。
+- v2其余训练/val与48个test交错槽已开始执行，源码/数据/策略在阶段边界冻结，不看test重选。当前详细协议见handoffs/2026-11-14-live-rsi-evaluation.md；[面试P52–P55](../interview/12-真实RSI实验的数据与评分可信度.md)。后续终态/完整指标继续追加，不提前写成功率、KV或节费收益。
+
+### E-LIVE-COLLECTION-INCOMPLETE：2026-11-14 / 全分母与探索性恢复r1登记
+
+- 实际5个collection共84请求237239tokens（223250输入+13989输出）、0pending/unknown/held。train7/11/27均4个有效尝试且final1；val45同，val32在12轮额度耗尽，visible1但无valid trace/selected/final。完整交付4/5，final只执行4/5；不把未执行final补0或仅报4/4。cache字段82/84、已知195840，不报完整率。含连通与v1准备，本轮合计89调用245790tokens；currency保持null。
+- 原optimize_collection写optimizer_started后，export_dataset因val32无合法trace拒绝，actual SDK搜索尚未运行，0test。原partial导出目录保留；[独立全5题统计](results/rsi-live-20261114/collection-v2.json)绑定全部输入/最终侧证据hash与失败分母，不能把hostcompleted当Agent成功。
+- 观察此失败之后、首test之前登记exploratory recovery r1：117冻结执行源/数据/预算/48槽不变，保留完整5行及成本，另建明确available-tree投影3train+1可用val调用实际SDK；完整train才可选唯一候选，partial holdout不参与排序/平局/重选，不用于完整验证或晋升。overall gain=None、publication强制validation_incomplete_rejected_for_publication。不是原holdout完整通过，不伪造分数/trace、不重跑模型。
+- 若SDK选baseline/null，保留raw role/params/hash，在线C只用预先登记的reference2/1 fallback及独立effective hash；不能声称该条件代表学习干预、与SDK默认完全等价或证明0%学习提升。若选参数则冻结train唯一研究候选。全部规则在实际SDK选择与test之前固定。
+- 新recover_research_policy.py对5sealed输入/sourcepin/0test/0unknown核验、原子登记唯一恢复、新目录封印、只补同候选提交；不改原raw/partial/registry或117源。两助手独立方法/源码复核无阻断，主代理最终整文件12 passed in50.81s（实际SDK回归为synthetic，无provider）；Ruff/diffcheck通过。真实恢复尚待单次执行，后续终态追加，不能拿离线测试当真实策略收益。[恢复协议](../rsi-live-recovery.md)。
+
+### E-LIVE-RECOVERY-EXECUTED：2026-11-14 / baseline回退与测试启动
+
+- 实现/恢复协议已提交推origin为c927650f1f0e07f2db8901df33ec529ab8428467。主代理先误把恢复output设在campaign子目录，被付款/搜索前独立目录校验拒绝，0SDK/0provider；保留该调用，再换正确独立新目录执行，原恢复marker为0才允许进入，不是重复搜索。
+- actual SDK单次运行48个离线tree-action评估，kind=observed，objective=mean-recorded-best-ratio-v1，train选择baseline/parameters=null，未选新参数。保留raw SDK hash f46ca7…，effective online C固定reference2/1/hash330301…另列，不称SDK默认等价；C_condition=reference_fallback_not_trained_intervention，学习贡献不可识别。完整validation gain=null、覆盖1/2、publication拒绝、promoted=false，不拿partial诊断声称通过。
+- 原117执行源、数据与48槽未改；恢复独占封印并追加唯一optimizer_finished后，原runner跳过5已完成collection，开始48未执行test，无重采或重选。[紧凑恢复证据](results/rsi-live-20261114/recovery-r1.json)保留脚本/输入/seal/SDK hash；原raw/partial/journal前缀保留。短代码校准不支持长程优势或RSI改善声明。
+
+### E-LIVE-CI-SHELL：2026-11-14 / 测试命令按实际shell引用
+
+- c927650的CI43483613293两Linux成功（含3.13 SDK专项）、两Windows默认pytest失败，均为新增4/12轮工具契约tested.flag缺失。不是本次真实Agent数据失败，原CI记录保留。
+- 本机独立复现：原fixture按os.name用list2cmdline；cmd可执行，真实Git Bash把Windows反斜线吞掉，exit127且无marker。仅测试改按实际_resolve_shell().is_bash选quote：Bash用shlex.join+as_posix可执行路径，cmd保留list2cmdline。保留真实工具/marker和4/12终态断言，不skip或假执行。
+- 作者两shell各2通过；主代理最终cmd2 passed/43 deselected in8.17s、GitBash2 passed/43 deselected in7.85s。Ruff/diffcheck通过，117冻结执行源未变、0修复验证provider调用；[失败/双shell证据](results/rsi-live-20261114/ci-shell.json)，新head远端状态后核。
+
+### E-LIVE-TEST-INTERRUPTION：2026-11-14 / 权限失败与误导性退出信息
+
+- 最新已推head `5cd6e75ec532ff59e6e98469f912c1ab7820d7f8` 的 [CI 43487624350](https://github.com/294962silent/my-agent-harness/actions/runs/43487624350) 四组 Windows/Ubuntu × Python3.11/3.13 均 completed/success，Ubuntu3.13 可选SDK专项实际成功；不是用前一head绿灯代替。
+- 正式v2在test `HumanEval/6`、seed23、C条件出现 `PermissionError`，host将该槽记录failed后停止。原run_batch把所有blocked状态统称为“new unknown usage stops the campaign”；主代理起初照退出信息报告未知用量，核journal后更正：实际298次请求全部settled、870205已知tokens，pending/unknown/held均0。错误文字不作为费用缺失证据。
+- 停止时test共11/48个终态：A完成2/12、B完成3/12、C完成2/12加失败1/12、random完成3/12，余37槽未启动。失败C槽10次请求22670tokens，两个attempt正常end_turn，后续attempt在新请求前失败；独立final未执行，保持unavailable，不补为0、不删除分母或用另ID重跑。
+- collection为84请求237239tokens，test为214请求632966tokens；再计v1四请求8496tokens及独立连通一请求55tokens，本轮303请求878756已知tokens。币价未核，currency/cost继续null；旧533请求账本与未知预留不改。本轮完整cache字段覆盖另见报告，不凭缺失补零。
+- 新增只读 `experiments/context_rsi/analyze_live.py`，从plan、hash-chain journal及sealed result/final重算全53槽；不读prompt/candidate/gold。total-completion为输入权威，无total仅在四个分项齐全时求和；cache缺失不影响已知input、不产生完整命中率。主代理最新版专项 **29 passed in4.03s**。历史preview保留，新[停止态报告](../../experiments/context_rsi/reports/live-v2-analysis-stopped-20261114-r1/REPORT.md)不覆盖旧结果。
+- 当前对照不完整，只报告coverage，不能排名；C使用reference fallback，与B同参数，RSI学习贡献not_identifiable。权限路径、非付费复现与是否可仅续未启动槽仍在调查；任何续跑须另行登记操作协议，不能把原batch写成无修订完成。
+
+训练侧诊断追加（0API、未改策略）：SOL-2只提取三棵train数值，12个节点可见分数均1；五策略×三树×预算1/2/4的45个回放叶best全1。SDK baseline是完整树reference，不是原始prompt stub的0分；fixed-reference优先tie规则选择baseline。c00在各预算均1个tree action，reference为1/2/4，目标未奖励较少action，不能解释为候选更贵；action不等同API/token。新[训练诊断](../../experiments/context_rsi/reports/train-tree-diagnostic-20261114.json)绑定3个源与SDK/evals hash。下一批须先登记有区分度任务和质量/效率目标；当前test不用于重选或改目标。
+
+### E-LIVE-CONTINUATION-IMPLEMENTATION：2026-11-14 / 仅续原未启动槽的独立控制器
+
+- 非付费调查发现原sealed报告只存异常类型，无法追溯路径/WinError；现有20份产物可读且无readonly属性，自有temp按原b0→a1拷贝成功，未见相关runner/worker。主代理据完整结算和当前环境检查接受一次根因未知的运维例外，不宣称已修复权限、未改ACL。
+- 新`continue_live.py`与专项测试独立于原117源，incident侧证据在campaign外独占封印：精确唯一旧failed、旧journal前缀、result/final/plan/source/task/policy、原未started37槽及controller bytes。原`_state/summary`不改、original blocked仍真；只在锁内CAS开始门控允许旧例外共存，原failed永不重跑/换ID/补final。
+- 不调用旧run_batch，只按原顺序逐槽调用原run_prepared_trial；每请求/评分前保留原守卫并校新增封印。首批强制只1新槽，新异常/未知/漂移再停。异常只输出安全type/数值错误码/可证实在trial内的相对文件名；底层只给type时路径继续None，不伪称已获得原权限路径。具体协议见[续跑设计](../rsi-live-continuation.md)。
+- 作者17离线测试通过；主代理实际执行continuation+analysis+原runner组合 **91 passed in35.30s**，Ruff通过。包含CAS竞争、逐付款/评分前漂移、旧槽/错元组拒绝、额外failed/unknown/pending停止、注册0API和安全诊断。此时只验证代码，真实incident尚未注册/运行，独立审查和实际首新槽另行追加。
+- 上批e213ac02b9fe5310a914687c8661c81df4d306e5的[CI43490480318](https://github.com/294962silent/my-agent-harness/actions/runs/43490480318)四矩阵及3.13 SDK专项已核成功。新controller的CI状态不据此外推；所有历史停止态与成本不覆盖。
+
+续跑前审查追加：SOL-2只读复核新controller关键gate通过，最终bytes SHA256 `cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34`。确认register不构造模型、锁内CAS、原付款/评分验证链、独立run锁、首批1槽和安全诊断。主代理组合91通过与独立审查为不同证据，未重复计数；真实运行另记。
+
+### E-LIVE-CONTINUATION-FIRST：2026-11-14 / 实际封印与首新槽核验
+
+- controller已推origin `5a737ca6980f39f9c3672c3108e39bf531a9adbe`；[CI43492669264](https://github.com/294962silent/my-agent-harness/actions/runs/43492669264)四矩阵及Ubuntu3.13 SDK专项全部success，主代理核了本head/jobs。
+- 真实register为0模型请求，独占sidecar绑定原634行journal、16已started/37未started、原298请求870205tokens与唯一旧failed。原journal前缀、源码117、任务与策略不变，新的操作事件只追加。根因未知的修订身份单列，不把旧failed解除或改完成。
+- 主代理实际先运行首未started `test-HumanEval-6-s23-A`：18请求52611tokens全settled，4个attempt均end_turn（6/5/3/4轮），valid4、cleanup0、独立final valid/score1/exit0。SOL-1只读复核terminal→final→result封印、逐请求账与source/wrapper/incident/task/policy全部通过。
+- 此检查点全局316请求922816tokens，pending/unknown/held0，original summary仍blocked且failed1；独立operational gate ready、剩36。包括v1/连通后的准备总量另计，不把316当完整总任务成本。[安全首检查点](results/rsi-live-20261114/continuation-r1.json)。
+- 首槽核验后主代理已启动其余36个原槽；执行与新增wrapper均冻结，任何新异常再停，不根据test改策略。最终coverage/比较/成本待整批终态后独立重算，本节不是48任务已全部完成。
+
+续跑披露追加：新增独立stdlib只读`summarize_continuation.py`，稳定analyzer与所有执行源不改。它核sidecar/receipt/controller、旧journal前缀与37槽集合、后续事件绑定和原failed不变，输出仅ID/hash/状态/计数，诊断不复制任意消息或filename。作者10项synthetic通过；主代理实际10 passed in1.45s、Ruff通过。首[运行中披露](../../experiments/context_rsi/reports/live-v2-continuation-disclosure-20261114-r1/continuation.json)为2续槽完成/1运行中时快照，正常在途pending不是unknown；旧快照不覆盖，最终另存新目录。该工具0模型调用，不调run或重采。
+
+### E-LIVE-RSI-TERMINAL：2026-11-14 / 全部终态、全成本与未形成的学习干预
+
+- 主代理实际续跑先1后36，两进程均exit0；37个原未started槽全部完成，原634行journal prefix与唯一旧failed bytes保持。最终53槽全部sealed终态（52hostcompleted、1原failed）；test48为47正常交付且独立final通过、1权限失败未执行final。A/B/random各12通过，C11通过+1未评分；不是HumanEval pass@1、完整SWE或长程成绩。
+- test48共885请求2629233tokens；collection5为84请求237239tokens；v1为4请求8496tokens；独立连通1请求55tokens。**本批全成本974请求2875023tokens，输入2695287、输出179736**，全部settled，pending/unknown/held0。v2自身969请求2866472tokens，续37槽671请求1996267tokens；实际SDK48个离线回放评估叶、合计82次tree action，不计API。价格未核，currency/cost=null；旧533请求及未知预留不改。
+- 主代理实际运行新独立输出目录的analyzer与continuation披露CLI均exit0。严格分析status=schema_mismatch，唯一组6-seed23来自原failed第三attempt未发请求、schema=null；其余190份已记录attempt指纹一致。它是证据缺失，不是已观察到工具定义改变。显式allow-incomplete发布完整coverage，comparisons不排名；不删null、重采旧槽或补造final。最终[报告](results/rsi-live-20261114/REPORT.md)、[53槽数据](../../experiments/context_rsi/reports/live-v2-analysis-final-20261114-r1/analysis.json)和[完整续跑披露](../../experiments/context_rsi/reports/live-v2-continuation-final-20261114-r1/continuation.json)均另目录保留历史快照。
+- 策略仍是SDK raw baseline/null与线上reference2/1分列；train12节点/45回放叶同分，完整val只覆盖1/2，未晋升，C与B同参数，learning_contribution=not_identifiable。工程真实闭环已接通，不能写成0%学习提升或RSI改善。借鉴沿用固定Dream SDK与既有layered/Session路径，新增实际模型审计与精确续接，不恢复DS/DSH或引入新外部优化器。
+- 缓存字段v2覆盖964/969，已知read2378240；test覆盖882/885。A/B/C缺字段，完整命中率null；random219/219字段完整、read/input0.8844757880，仅为该条件的API报告值，不做缺失组排名或KV提升解释。cache_write字段未提供，不能补零。
+- 实际触发：v2全部969请求purpose=agent，summary请求0；artifact_read/search recorded starts0。B/C/random的phase-fold snapshot-derived views为24/22/24，micro snapshot groups为0/2/1，A均0；这不是操作次数或成功回读次数。只支持短题中视图出现的机制证据，不证明长程收益。
+- SOL-1独立[26项运行审计](results/rsi-live-20261114/runtime-audit-final.json)通过：source117/wrapper/sidecar/task/policy、全部result/final封印、usage与严格一次续槽；owned runner/worker进程匹配0、cleanup_errors全空。SOL-2独立指标核验另见metrics-detail-final.json；主代理统一文档，不混用假模型测试与真实结果。
+- 本批同时更新README、集成说明、闭环协议、交接、CLAIMS和面试P56–P58，纠正“无真实评分树/benchmark暂停”的过时入口。代价与限制包含追加的审计/续接复杂度、串行执行、协议事后修订、短题饱和、完整验证与schema证据缺失。下一批应先登记有区分度train与质量/效率目标、完整holdout和configured/actual schema分离，当前test不重选策略。
+- 源码/辅助工具head64884425d06e8fcbc3a9e9a317795d6e52c149d6的[CI43494451220](https://github.com/294962silent/my-agent-harness/actions/runs/43494451220)四矩阵与SDK专项已核成功；最终报告提交的CI另核，不外推旧绿灯。
+
+独立指标终态追加：SOL-2已保存metrics-detail-final.json并核实四臂、全部准备成本、缓存字段和实际触发；已记录190个attempt schema指纹完全相同、另1个原失败指纹缺失。SDK口径进一步拆分为48个回放评估叶与82次离线tree action，旧记录里的“48次评估”不是48个动作或API请求。原始评分、策略与历史快照均不改。
+
+交付前复核追加：SOL-2只读审查最终REPORT无阻断的数字/口径问题，按建议区分v2的969次与含准备总量974次。主代理从原journal独立重算969+4+连通1及全部tokens一致；27个新增本地链接有效，14个暂存文件实际API/Git凭据精确匹配0，两份最终分析/披露JSON的Git暂存bytes与SHA一致。仅列明确路径暂存，未纳入模型、凭据或私有原文。
+
+### E-LIVE-NO-GAIN-DIAGNOSIS：2026-11-14 / 饱和信号、退化搜索与输入压力
+
+- 用户要求详细解释无提升。复用两位Sol/medium只读分工：源码目标/调度与候选范围，封印数值/逐题成本与上下文观测；新增模型请求0、重评分0，原数据与策略不改。新[分析](results/rsi-live-20261114/NO_GAIN_ANALYSIS.md)及[安全可重算JSON](results/rsi-live-20261114/no-gain-diagnostic.json)单独保存。
+- train12节点满分；test首48个attempt的visible全1，47个有效final所选全为b0_a0且通过。全部190个有可见评分的test attempt均1，另1权限失败attempt无分数。不把未选候选推为隐藏测试全通过，C与B同参数仍不可识别学习贡献。
+- 源码确认optimizer只按recorded-best-ratio均值排序，平分优先reference，没有真实tokens/requests成本。四候选来自网格前缀，均width1、refine0/1/4/64；已有树只深度1，后两回放裁成1，有效覆盖重复。fixed/rsi走同一计划，random主要改变四节点顺序；无满分早停，同分保留先胜者。这是本批实现/设置的范围限制，尚未修改源码。
+- test首attempt已发生259请求649834tokens，后续626请求1979399tokens（约75.3%test tokens），scope全部可归属。这不是提前停止后能省75.3%的保证；下批须在同一合法动作集合及独立任务上验质量/成本。
+- A/B原始成本分别221/231请求、701172/670237tokens：B少4.41%tokens却多4.52%请求。12个task/seed差值7负5正；题20两重复合计−56233，其余五题合计+25298。这里只事后描述，不放宽原主门禁，不排名或宣称稳定降本；C失败提前结束的低成本也不当收益。
+- 实际provider输入峰值A7627/B5090/C5897/random4598；layered估计视图峰值B5254/C6019/random4951，记录阈值25600、配置窗32000。已记录视图无触阈值证据，canonical全历史峰值和服务端有效窗未知。总调用量大不等于单链长，0summary只是辅助证据。本轮没有Mem0召回或Langfuse可靠性消融。
+- 补充范围澄清：test fold为70个snapshot-derived views，collection另8，v2总78；micro为test3/collection0。原REPORT同一段把v2请求与test视图并列，现加明确scope，原JSON/计数不变。借鉴仍是固定Dream受控参数路径与既有分层上下文；新增工作仅解释实验适用范围与搜索退化，不恢复DSH、不新发模型任务。
+
+审查追加：SOL-1复核目标/网格/调度源码结论无阻断，收窄“算法生成”措辞为优化器不生成新策略程序，执行Agent仍生成代码。SOL-2复核数值和推断边界无阻断，明确v2约286.6万分属53槽，另加先导/连通8551才是本批287.5万。新增面试P59/P60解释有效候选数与单链压力；没有发布新策略或改变原评分。
+
+本批验证：主代理核对诊断指向的两份原分析来源SHA、53份sealed runtime result SHA全部一致；重算885请求/2629233test tokens、首/后attempt分账、A/B逐题差值与48/47饱和计数通过。12个新增本地链接有效，5个暂存文件均为docs、生产源码变更0，实际API/Git凭据扫描0命中，diff check通过。仅文档与事后数值诊断，不重跑无关模型或整库性能实验。
+
+### E-SCENARIO-SOURCE-RESEARCH：2026-11-14 / 借鉴已有方案，收敛简历场景
+
+- 用户将推进重点转向GitHub已有场景与可复用设计，目标Agent／大模型应用开发实习；长程方向保持可讨论。主代理按项目事实/证据组织定位，复用两位Sol/medium做有界源码核查，没有恢复DSH。新增Agent/benchmark模型运行0、数据下载0、外部项目安装/执行0、生产源码变更0。
+- 核8仓库固定HEAD/README/元数据，AIDE与Anthropic各深入3文件；结果保存在docs/research/2026-11-14-*，包括[来源清单](../research/2026-11-14-scenario-source-manifest.json)和[主研究方案](../research/2026-11-14-scenario-selection.md)。AIDE MIT正文补核；Anthropic根MIT与子README Internal Anthropic use字样并列未下许可结论；MLGym已归档/README CC-BY-NC-4.0，不选为快速代码基础。未引用star数或上游效果数字作为本项目成绩。
+- 推荐具体场景为可恢复、多轮代码实验Agent，AIDE的draft/debug/improve树与autoresearch固定预算/测量协议作主线；Ralph/Anthropic跨会话任务清单为持久化参考，Hermes经验复用、DeepAgents接口作为补充。备选为5–10功能项的软件交付场景；没有同时建设两个产品或替换现有框架。
+- 三项目计划角色明确：Mem0检索经验证的实验经验，不存进度真值；Langfuse关联调用/分支/分数与成本，真实服务回读仍待验；Dream-RSI消费有区分度的评分树，在统一预算下选受控策略。当前实测无学习收益结论不改，不把新场景计划包装成已融合或已提升。
+- AIDE所读源码由反馈模型提取指标、holdout主要提示约束；Journal序列化不足以证明可靠恢复。Anthropic所读host用fresh SDK client和文件续接，功能flag主要由Agent改，未见独立宿主验收门，且不能只换模型名就适配DeepSeek。借鉴这些结构，同时拟补宿主可信数值评分与场景checkpoint。
+- 当前本地两文件接缝核验确认：Runtime限制VisibleCommandEvaluator类型，默认score仅exit0/1；单文件证据只核baseline、候选整树导出；Runtime为single-use。待补范围明确为数值评分/feedback schema、固定数据且候选写入受限的task adapter、校验加载的实验checkpoint，未在本批实现。
+- 方案补充任务内部train/dev/final与任务集合策略train/holdout/test两层划分，正式对照经验库只从策略train写入、其余仅读冻结快照。首版少量CPU任务先预检差异与资源，再真实运行、恢复与公平消融，不承诺8GB已跑通或固定天数完成。既有CLAIMS追加计划/已证实边界，简历不编造新场景指标。
+
+审查/验证追加：SOL-2复核主方案无新指标冒领，按建议明确test provider输入scope、Mem0“经验证经验”的计划性质和两层split；SOL-1核本地接缝，数值评分/候选写入范围/checkpoint缺口已写入方案。主代理验证8个固定commit为完整40位、来源清单无重复、10个新增本地链接有效；6个暂存文件均docs、生产变化0，实际API/Git凭据精确匹配0，diff check通过。本批没有安装或复跑外部项目，源码事实与性能实测保持区分。
+
+### E-RESEARCH-RUNTIME：2026-11-14 / 从方案落到可信代码实验链路
+
+- 用户批准快速实现。沿用两位GPT-6.1 Sol/medium，SOL-1负责任务/评分/分支与优化器，SOL-2负责campaign/持久预算/CLI/集成；主代理设计、预检、集成与验收，不恢复DSH、不迁L20、不重跑旧HumanEval。详见[实施账本](../plans/2026-11-14-research-agent-runtime.md)和两位助手的[执行报告](reports/research-sol1-20261114.md)。
+- 新增research_task/evaluator/runtime/cli/integrations，复用CodingAgent、SharedLLM和LocalBranchFactory。原exit-code评分保留默认兼容；新评分只接受预测CSV，由宿主标签重算RMSE/utility，非法候选不补造分数。Agent仅可改train.py和使用五个受限文件工具；固定镜像、无网络/只读根/非root/资源限制、三输入只读和单预测文件可写。借鉴AIDE实验树与autoresearch固定测量协议，不移植整个框架。
+- 新场景journal在请求/评分前预留，结算后追加；完整round提交checkpoint，恢复重建累计请求/token/评分/活跃时长。未知或在途工作停止，不自动重放。冻结数据/实现/策略/记忆/脚本/报告/预测hash；final单次且封闭后续搜索。成本是更多磁盘证据和保守阻断，不声称任意时刻恢复或exactly-once。
+- 审查发现旧runtime只在Agent候选中选优，可能丢弃更好的baseline；新场景提交时将输入baseline也比较，平分保留旧脚本，独立记录原Agent候选与实际选择。修复内存manifest原地变更、预测产物hash漏验及final resolved imageID漏比；预算不因保底而退款。见[面试P61–P65](../interview/13-代码实验Agent的可信评分与恢复.md)。
+- 优化器候选从单width前缀改为宽/深交错，按全部train任务和预算的实际wave签名去重后截，baseline另计且可以胜出。新增显式ratio_cost和fixed/random候选搜索顺序；成本为verified evaluator_calls/budget代理，不能冒充真实token/金额。默认ratio和旧plan解释保持兼容；random候选顺序不等同随机Agent行动。
+- Mem0场景明确none/lexical/mem0入口，复用已验证本地CPU中文profile；经验正文保留schema与有界候选方法及证据，train写、val/test读冻结快照，状态/预算不由向量库决定。观测复用现有有界导出，关联task/round/branch；Langfuse环境与global settings均无凭据，远端上传仍unverified。配置接线不能当作效果消融。
+- 本机WSL Docker26.1.3可用但daemon直接pull超时；Windows从官方Registry下载并验证manifest/config/layer及diff_ids，再Docker load得到固定imageID。有限重试复用已验缓存，未改全局代理/daemon。UCI Wine Quality与Airfoil三份CSV、CC-BY-4.0来源和SHA留档于[本轮证据目录](results/research-agent-20261114/data-sources.json)。不将完整标签原文提交Git。
+- 零模型API的真实Docker八场景通过：均值/线性不同分、stdout伪分无效、NaN/错ID无分、私有标签不可见及额外输出拒绝、超时/取消后CID均确认不存在。合成线性RMSE0只是边界夹具。另在真实红酒1599行seed23上预检train961/dev319/final319，均值dev RMSE0.8467093297、手写标准库ridge0.6841778884，final未评分；证明评分非饱和且可区分，不是Agent/RSI增益。[预检](results/research-agent-20261114/uci-preflight.json)保存数据与实际代码pins。
+- 首次主代理误用Shell默认老Conda Python，类型注解在收集期失败；改用项目3.13 venv后定向通过。整库直启venv又导致子工具PATH仍选Conda而stdlib不匹配，已终止核实归属的该次测试完整进程树；改用uv run --no-sync。默认cmd缺cat的旧pipefail项，通过显式PI_BASH_PATH指向本机Git Bash后18项全部通过。没有为环境问题改生产代码或skip断言。
+
+本节初稿时真实模型实验尚未开始；[事前smoke协议](results/research-agent-20261114/LIVE_SMOKE_PLAN.md)先登记red train两轮暂停/恢复、airfoil独立val、真实trace导出优化及合法冻结参数供white test消费。整库回归、真实模型用量、最终成绩与GitHub交付状态在本节后续追加，未测数据不按计划填值。
+
+真实首轮与环境故障追加：v1 red在Mem0初始化、baseline评分和首个模型响应/ls/find工具消息后MemoryError，0round提交；实际1请求1252tokens全部settled、1评分、21.2123297活跃秒、cleanup_errors空。主代理曾误判为初始化前0API，核journal后当场更正，原失败不覆盖。相同response工具调用离线重放成功，具体异常行已丢，不能宣称确定根因或已修复。随后本机进程启动出现Windows STATUS_COMMITMENT_LIMIT且执行服务重启，数次整库日志无终态，全部记为incomplete而非通过。当前无本轮pytest/research残留，资源恢复后按独立v2新ID串行运行，事前追加运维修订并从原ceiling扣除v1消耗，旧round保持永久阻断。
+
+交付前软件验收追加：27项campaign/integration定向通过、相关源/测试Ruff与diff check通过；uv build成功，实际wheel198项包含五个research模块及python -m CLI入口，CI补同样ZIP清单检查。既有81/86定向与27有重叠不相加，真实Docker八场景单列。28个明确暂存路径实际模型/Git凭据精确扫描0命中；将先推功能版本由GitHub执行完整四矩阵回归，远端结果与后续真实smoke另记，不把配置矩阵视作已过。
+
+### E-RESEARCH-CI-COMPAT：2026-11-14 / 候选去重后的历史恢复兼容
+
+- 功能版160118f已推origin PR2。CI43562920689发现历史恢复测试按c01编号代表(1,1)；平衡候选顺序后该角色实际是(2,0)。只改测试按参数语义选真实role后，本机真实SDK又揭示恢复器_train_only_choice固定要求4候选，与有效签名去重后的清单不兼容，不能只改断言掩盖。
+- 最小修改仅experiments/context_rsi/recover_research_policy.py和对应测试：从optimizer/plan.json冻结max_candidates与版本重建候选，严格比对候选清单；旧版用legacy grid，新版复用生产train trace SHA/执行签名去重，不读取holdout重选。原117执行档案、旧journal、评分/策略/结果不改，不重跑旧campaign；当前research实现pins未变。
+- 助手原12项（含两真实SDK）与新增2项分别通过，主代理完整14项独立复跑57.22秒通过；Ruff/diffcheck通过。新增legacy/holdout干扰和候选/trace篡改拒绝回归。真实SDK使用合成/固定评分树，无新增模型调用。
+- 用户追加“一天内可写简历”要求后，交付收敛为可信代码实验、完成边界恢复和可复查证据；大规模benchmark与质量消融不阻塞首版，不将未验证的RSI/Mem0提升写简历。新求职稿和主张账本由great-resume技能生成，个人职责与源码掌握程度独立标记待确认。
+
+### E-RESEARCH-LIVE-DELIVERY：2026-11-14 / 两轮真实恢复演示与首版求职材料
+
+- v2 red真实完成两轮：首进程第一轮提交后暂停（12请求48915tokens/4评分），另进程resume延续相同root和累计预算，第二轮后24请求106826tokens/8dev评分；独立final增加第9次评分、不增加模型调用，valid=true/RMSE0.7554124334834056。活跃时间786.9840692秒，held=0、usage完整；final后状态closed。最终代码是原均值baseline，不是Agent改进。
+- 原v1失败保留1请求1252tokens/1dev评分，全部red共25请求108078tokens/10评分（9dev+1final），价格未核保持null。v2扣减原总ceiling的事后运维修订单列；未修订首计划没有被宣称完整完成。两轮各3个attempt，2个轮次上限无效/1个正常结束，trace均None；无完整train+holdout，CLIoptimize返回blocked/promoted=false，没有训练或发布新策略。Airfoil/white和正式三组未启动，不做效果排名。
+- 第二轮Mem0真实CPU检索1个有效语义候选、3次embedding调用、fallback=false/closed=true；首轮空库无命中。仅证明单经验功能，不证明优于词法。v1/v2本地调用start/end各1/24一一覆盖并逐请求tokens对账，v2两次export closed、0drop/0error，provider clients均关闭；Langfuse云上传仍unverified。
+- SOL-2独立校验两journal链、调用结算、checkpoint/result/最终预测hash、恢复前后预算、11研究源码pins和经验key；两条经验精确由dev commit重建，未含final值，final后无新事件。公开交付仅聚合/hash，完整labels、候选/session、模型响应保留本机私有目录。[报告](results/research-agent-20261114/LIVE_REPORT.md)与[live-summary.json](results/research-agent-20261114/live-summary.json)给出来源与局限；optimize证据明确为工具输出转录，非journal封印实验。
+- 修后代码head47eee1bc48c9e6b242d3b5bc0e849cfec7f4da63的[CI43563738685](https://github.com/294962silent/my-agent-harness/actions/runs/43563738685)四矩阵pytest/Ruff/TUI/wheel及ZIP模块检查全success，Ubuntu3.13可选SDK专项成功；仅跳过真实权重smoke和Linux不适用Windowsjunction。功能版160118f失败不覆盖；后续文档提交状态另核，不借旧绿灯冒称新head。
+- 新[简历交付稿](../interview/RESUME_READY.md)含3条客观工程表述、60秒口述、HR短文和5个追问；[8项事实账本](../interview/research-career-claims.json)结构校验通过。个人参与时间、负责模块和源码掌握程度仍由本人确认。新增面试P66深挖正常交付/可评分/完整策略训练树的区别，下一批需校准轮次再冻结对照，不仅给RSI额外机会。
+- 相对改前：原退出码评分→固定私有标签数值评分；原单运行快照→完成round事务式提交与预算续接；原网格前缀→训练执行签名去重；原候选专属选优→baseline也参与；原三SDK接线→场景级经验/观测/策略角色。优势是可复查、失败可定位、预算不随恢复清零；代价是容器依赖、更多落盘、保守阻断和SDK本地资源成本。借鉴AIDE实验树、autoresearch固定边界，沿用既有Session/Artifact与Dream固定SDK，没有声称新的AutoML算法或长程胜率提升。
+
+## 2026-11-14｜Memory 新十二题真实效果、恢复与账本布局修订
+
+本批执行者为 DeepSeek V4.1 Flash / 原生 max / full write；根代理设计并独立验收。固定 LongMemEval 新 12 题（六类型各 2、seed24、与旧 30 题无重合），none / lexical / mem0 三臂共用 800 字符匿名 chunk、top8、6000 字符上下文。BGE small zh v1.5 固定 revision、512 维 CPU / 2 线程；Mem0 使用 infer=False 写入已切分历史块，验证的是受控索引检索，没有验证自动事实抽取、更新或巩固质量。检索保持 WSL Linux seccomp 边界，gold 只在宿主 reference/判分阶段，36/36 检索 valid 且 close_complete，无静默词法回退。
+
+| arm | correct / expected | 有效 judge | session recall@8（8 题宏平均） | 平均每题冷建库/检索/关闭秒 |
+| --- | ---: | ---: | ---: | ---: |
+| none | 4/12（33.33%） | 12/12 | 0 | 0.000004 |
+| lexical | 11/12（91.67%） | 12/12 | 0.8125 | 4.3291 |
+| mem0 | 9/12（75.00%） | 12/12 | 0.84375 | 99.9319 |
+
+36 回答 + 36 盲 judge = 72 次真实请求全部 settled，prompt 36,211 + completion 5,641 = 41,852 actual tokens；held=0、unknown=false、retry=0。全部 finish_reason=stop，length/invalid/unavailable 均 0。lexical 对 Mem0 配对为 2 胜、0 负、10 平（9 题共同正确、1 题共同错误）。实际供应商金额未核验，USD 保持 null；旧 USD30 ceiling 仅是兼容代理值。官方 LongMemEval 判分模板由 DeepSeek 执行，不能称官方模型成绩。
+
+接管时 5 completed / 1 started / 6 untouched，先确认旧 Windows/WSL 任务已退出及零付费，再追加归档未提交 started，只恢复七个免费检索，原五题字节不变。付费前发现 ledger 位于 immutable plan 会使严格清单失效；批准 v2→v3 bookkeeping amendment 仅移动 ledger_path，复制 24 个既有 result/state 原字节、只更新 phase 对 plan 的引用，无重建索引。v3 plan SHA e45e2ca7d9453787136243a9779b438760400a5461161199683d5c96b1a39727；先三臂 3 请求 / 2748 tokens 结算，再同账本续至 72，不重置累计预算。
+
+研究结束后另批加 prepare-time 路径守卫：拒绝 ledger、.lock、.study.lock 与 plan 目录相同、位于其内或成为其祖先；先观察七个冲突回归失败，再完整专项 22 passed、Ruff 通过，允许同前缀 sibling run 目录。13 项实验时源码已私有封存，旧 plan/source pins 与结果未改；新守卫不是本次实验时的代码。根代理独立读回 36 行 / 12 题、重算 4/11/9、逐行 token 合计 41852、judged_answer_sha 对齐及四个公开文件 hash/bytes，属于读回与重算，不是独立人工重判。
+
+公开证据：[效果汇总](results/memory-effect-20261114/effect-summary.json)、[逐题元数据](results/memory-effect-20261114/effect-rows.jsonl)、[配对与类型分项](results/memory-effect-20261114/effect-pairs.json)、[修订](results/memory-effect-20261114/bookkeeping-amendment.json)、[清单](results/memory-effect-20261114/effect-metadata-manifest.json)，完整过程追加于 [DS-2 报告](reports/effect-v1-sol2.md)。公开文件不含原始问答、历史、gold 或凭据。
+
+限制：仅 12 题小样本，中文 encoder 处理英文历史；没有证明 Mem0 优于词法。四个 abstention 无 session label 召回分母，session recall 只有 8 题且不等于答案证据块 recall；无 answer-bearing chunk 标注，后者 unavailable。冷时间包含建库/索引，不能当 warm 查询延迟或线上 SLA。Langfuse 21 项本地 SDK 验证保留，云上传/读回仍 pending。RSI v2 STOP 保留，v3 artifact_budget_v1 开发/验证中，尚无策略学习提升结论。
+
+### Memory 本批收束修订：拒答分项、三例抽查与真实锁路径（2026-11-14）
+
+追加更正最终守卫验收：上段 22 passed 是首次实现阶段。根复核发现 TokenLedger 实际使用 .tokens.lock，已再加入两个冲突负例，先失败后修复，最终 **24 passed，Ruff All checks passed**；根独立重跑也为 24 项通过。守卫覆盖 ledger、.lock、.tokens.lock、.study.lock 的相同／后代／祖先重叠。已核真实 BudgetLedger._write 使用 ledger.parent 下随机 .budget- 临时文件再 os.replace；合法 sibling 测试真实 reserve/settle，并核对锁属性、临时文件位置和 plan 清单。旧实验与 source pins 未改。
+
+按冻结 references.json.is_abstention 核实：四题拒答三臂均 4/4；八题非拒答 none 0/8、lexical 7/8、mem0 5/8。本样本标记与官方 _abs suffix 全部一致，统计依据是冻结标记，不只看命名。none 4/12 来自正确拒答。两题 lexical-only correct 的匿名人工抽查均显示两臂 session 命中，但支持块只进入 lexical；Mem0 上下文分别 4828、2494 字符，均无 6000 字符截断，遗漏发生在返回 top8 之前。共同错题两臂均漏相关 session/支持块并拒答；单题不能分别确定 encoder、排序或生成器责任。无完整块标签，人工抽查不变成量化 evidence recall。
+
+新增 [三例匿名诊断](results/memory-effect-20261114/case-diagnostics.json)、[拒答分项](results/memory-effect-20261114/subgroup-summary.json) 和 [诊断清单](results/memory-effect-20261114/diagnostics-manifest.json)。全部 13 个实验时 source pins 已与 base0b63386 比对：8 项 Git 原字节可得，另 5 项源码保存为 [公开最小快照](results/memory-effect-20261114/source-snapshot/README.md)，其 manifest 列出旧 SHA、bytes、基线差异及恢复方法。快照不含数据／问答／gold／session／auth；已接受的 effect-summary/rows/pairs 与 bookkeeping-amendment 四文件未改。
+
+实际结果保持 none4/12、lexical11/12、mem09/12；72 requests／41852 tokens 全部 settled，0 新 API、0 新 embedding。infer=False 的冷索引对照没有证明 Mem0 长程／多轮收益，也没有测完整事实提取巩固。详细触发条件、根因、取舍与验证见 [报告第7–9节](reports/effect-v1-sol2.md) 和 [技术难点追加](../interview/DEVELOPMENT_PROBLEMS.md)。RSI v3 的独立审查与真实运行另由 DS-1 记录，不从机制实现推断学习提升。
+
+### Langfuse 真正云端接通与独立实验 owner（2026-11-14）
+
+用户看到云端 0 traces 后，本批重新核验发现：之前只有 SDK 适配和离线契约验证；全局 observation 块缺失且关闭，旧 Memory 独立入口只有 observation_context，没有创建/attach 云 runtime。已运行的 RSI 请求也未启用云端追踪。此前“适配完成”不能表述为“实验已云端跟踪”。
+
+用户授权后，凭据仅从 Windows 授权环境载入子进程内存；全局 C:/Users/MLL/.my-pi-agent/settings.json 仅开启 observation 并设 EU base https://cloud.langfuse.com，其余块逐项比较保持一致。不使用聊天中的旧凭据，不写入仓库、日志或收据。官方 Langfuse skill 按 docs-first 重新获取 get-started、best-practices、sessions 文档，保留已安装 SDK 5.2.0。
+
+首先通过既有 ObservationRuntime→attach raw LLM→GuardedLLM 独立账本执行一个新真实请求：DeepSeek V4.1 Flash，input 38/output 19/total 57；flush、owned shutdown 与 provider clients close 均完成。官方 CLI observations list 按 trace ID 远端 HTTP 200 读回 1 个 GENERATION，模型/usage/project 一致；root 又独立读回核验。该 probe 未设置 sessionId，不能据此宣称会话分组已通。
+
+随后新增 experiments/benchmark_live/observation.py、observation_probe.py 与 OBSERVATION.md，提供将来实验的显式 owner 与 --single-paid-probe CLI，不修改既有 BudgetLedger/GuardedLLM 或 DS1 冻结源。SessionScopeSink 在单 exporter 工作线程调用官方 propagate_attributes，把稳定 campaign 映射 session_id，并仅传 campaign/arm/stage/匿名 task_id。将来 Memory 使用新 source pins 后可将直接 GuardedLLM 调用换为 owner.achat，并在所有请求结算后 owner.aclose；仅改全局开关不会补追踪旧独立入口。
+
+为验收这个新版本，额外获准的唯一新请求实际走公开 CLI，input 38/output 18/total 56，0 retry；远端 HTTP 200 返回 sessionId=langfuse-owner-live-20261114，campaign/arm/stage/task_id、模型及 usage 全部匹配。该版本 source SHA 写入收据，未把原 probe 伪装为新入口运行。两次验证合计 **2 请求/113 实际 tokens**，held=0、unknown=false、导出错误/丢弃均 0；与旧 Memory **72 请求/41852 tokens** 独立记账。云端 totalCost=null，实际金额 unavailable。
+
+公开证据：[verification.json](results/langfuse-live-20261114/verification.json)。新入口 trace：https://cloud.langfuse.com/project/cmwg5sagt00ksad0j6au0463n/traces/a6249bf9c98cadede781b034e58ea58d；北京时间 2026-11-14 21:32:55.538，environment=default。单 generation 携带 sessionId 已读回；实际多轮/跨 trace 分组、完整 agent/retriever 树仍未实测。应用 metadata-only 不上传 prompt/response/gold/history，云端内容回放和基于内容的评测不在本批能力内；远端读取按字段白名单排除 SDK resource/scope 附加属性。历史结果若另行导入，必须标为 backfill。
+
+离线命令：uv run --no-sync pytest -q tests/experiments/test_experiment_observation.py tests/integrations/test_langfuse_sdk.py tests/llm/test_observation_runtime.py，exit 0，**17 项通过**（新 owner/CLI 10 项 + 既有 7 项）；相同三个新增 Python 文件 Ruff All checks passed。覆盖真实 SDK in-memory session 传播、owned 生命周期、未知用量保留、导出失败不重复付费、显式单次付费开关和旧 output 拒绝。独立公开说明含可复用命令；已有冻结 Memory 科学结果与 RSI 14 个 source hashes 均未更改。
+
+
+### 2026-11-14：多会话 Memory 下一轮预检（尚无正式效果结果）
+
+已按固定 Qwen revision `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3` 对本机 1,191,586,416B 权重计算真实 SHA256，结果 `0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd` 与官方 HF 固定 revision API 的 LFS 元数据一致。私有隔离 WSL Python 3.12 环境中 Torch 2.8.0/CUDA12.8 在 RTX5060 Laptop 8GB 上完成合成文本前向，输出1024维有限向量；此为环境验证，不是检索或学习效果。随后相同环境的原生 Mem0 2.2.1 ADD/search + Linux seccomp GPU worker 合成 smoke 通过，使用假抽取器，0模型API调用。环境收据在私有交付 ROOT，正式公开证据待协议验收后集中导出。
+
+多轮 owner 定向命令 `uv run --no-sync python -m pytest tests/experiments/test_experiment_observation.py tests/llm/test_observation_runtime.py tests/integrations/test_langfuse_sdk.py -q` 得到25项通过（18 owner/6 runtime/1 SDK）；Ruff通过。Root另行组合 observer/RSI observation/continuation 42项通过；此前凭据fixture问题已在测试隔离中修复，未松动生产检查。owner修订源已冻结供RSI使用。RSI v4的协议/历史anchors/sourcepins经root核验后获真实启动放行；首2调用2702tokens已结算且云端元数据存在，但读回解析器把已解码的parent_id字典再次json.loads，导致已知STOP。修复由RSI owner处理；不得因此重复已结算调用。Memory读回已添加str/dict两型兼容回归。
+
+LoCoMo预选dev conv-47六道、test conv-41/42各十二道原题；来源固定在snap-research/locomo commit `3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376`，数据SHA `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`，官方LICENSE.txt为CC BY-NC4.0。完整92sessions含359条官方提供的图像文字caption；不读取图片像素，不宣称视觉理解。四臂预计92次共享原生抽取+48次dev回答/判分+192次test回答/判分=332模型调用，受384requests/3M记账units/4h/0retry约束。抽取上限固定2048output；合法空memory单独审计，JSON/length/未知用量停止。预选和准备不能当正式实验结果；旧12题none4/lexical11/Mem09负结果保留。
+
+### 2026-11-14：LoCoMo 四臂真实启动在抽取契约处失败性停止
+
+本批完成 prepare/freeze CLI、源/数据/gold manifest、四臂执行接线和 41 项离线定向回归。冻结计划 SHA256 为 `a88552fdd51734c7f5acc883cdf5870fa264705987a1bca5cd7c504b0dd5cd9d`，plan manifest SHA256 为 `d06c783114af1b72507d9e680c5a8f31980ca74e3f2cefe9df5933c6a6967da4`，gold SHA256 为 `3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf`。30 道原题固定为 dev 6、test 24，覆盖92 sessions；调用分母固定为92 extraction + 120 answer +120 judge =332。
+
+原预检上限168 requests /1,500,000 accounting units小于332起步调用，属于协议冲突。按用户已声明的20亿token总预算授权，在**任何新付费调用前**将冻结门禁扩至384 requests /3,000,000 units，保留原门禁、差值、332起步成本和变更理由；没有删题、扩题或按成绩选择。extraction/answer/judge output caps分别固定2,048/1,024/512，retry=0，任何未知/inflight用量停止全部后续派发。
+
+真实 host仅枚举GPU0（RTX5060 Laptop），没有L20或物理GPU2；manifest如实记录项目曾要求`CUDA_VISIBLE_DEVICES=2`、实际枚举仅0并选择0。Qwen3-Embedding 0.6B固定revision、1,191,586,416B权重、1024维、4096 token无截断；两台索引冷启动、raw写入和首会话准备均完成，首付费请求前模型/数据/source pins一致。
+
+dev首笔正常抽取请求已结算：input 9,303 + output 2,048 = **11,351 tokens**，completion恰好占满冻结输出cap；应用返回`native extraction did not finish normally`，外层停止原因为`LLMError`。适配器没有保存无法确认的精确finish字符串，也没有把截断当合法事实。该请求对应Langfuse trace已按run_id、campaign session、project、model和usage云端读回，状态为`verified_single_failed_extract_trace`；没有第二笔请求，因此“首两次正常抽取回读”门禁未达到。
+
+错误使用是一次已付款、已知usage的抽取格式/终止契约失败，不是provider billing未知。ledger立即把campaign标为blocked；并发起第二请求0次、自动重试0次、答案0次、判分0次，也没有在观察到失败后改上限或另起campaign重跑。结果因此是**无有效四臂成绩**：正确率、paired comparisons、session recall/MRR、类别和跨session子组均 unavailable，不把0/0当0%；旧LongMemEval none4/12、lexical11/12、mem0 9/12保持原样。
+
+最终离线验证为`41 passed in9.07s`；四臂/CLI协议源Ruff通过。独立WSL worker因先设置`sys.path`再导入而触发E402，已作为冻结源保留，没有为格式重写已付费实验源；此前native+seccomp CUDA联合smoke继续作为运行时证据。新增CLI提供prepare/freeze/verify/run/report，冻结source/data/gold/READY和重复启动阻断；真实失败摘要见[failure-summary.json](results/locomo-memory-20261114/failure-summary.json)，不含原题、history、gold、模型正文或凭据。
+
+代价与限制：首会话事实抽取没有形成可消费JSON，四臂比较无法开始；提高extraction output cap会构成观察失败后的协议修订，需显式新决定，本批未自行重试。当前主机硬件与项目预期的L20冲突已经披露。RSI部分未因本批失败而改状态；当前Canonical Canvas仅展示已验收的LongMemEval结果、LoCoMo失败边界以及RSI兼容运行的`STOP_BEFORE_PAID`阶段。
+
+### 2026-11-15：LoCoMo v2 提高抽取上限后在首两笔云端回读门禁停止
+
+在全新 `memory-locomo-v2` 目录建立 `locomo-multisession-four-arm-v2`，没有改写或重放 v1 的失败请求。v2 保持 dev 6 + test 24、92 sessions、原题/数据/gold、四臂、top-8、6000 字符上下文与评分 prompt 不变；仅把共享 extraction 输出上限从 2048 提高到 8192，并把门禁明确设为 384 requests / 5,000,000 accounting units / 每 split 8 小时、0 retry。前两笔正常抽取改为每 trace 只做一次 Langfuse metadata/usage 回读，任一遗漏立即停止。
+
+v2 plan SHA256 为 `b0e9edc48fffb75b0ca69c64bcf36813eed86a8a5e3ad9ab287e2119d3a7368e`，plan manifest SHA256 为 `d80b9cd89841bd3bde6af85118f48a16c278a9b01728005b904f2f0f1883b3b0`；原始数据 SHA256 继续为 `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`，gold SHA256 继续为 `3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf`，Qwen revision 继续固定为 `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`。
+
+dev 两笔抽取均正常 `finish_reason=stop`，分别产出 17 与 10 条 fact：第一笔 prompt 9303 / completion 2178 / total 11481，第二笔 prompt 1586 / completion 5259 / cache-read 7680 / total 14525。合计 2 requests、prompt 10889、completion 7437、provider total 26006，保守成本 `$0.014496`；供应商实际账单仍为 unavailable。两笔输出均未触及 8192 上限。
+
+两笔模型结果均已结算，但一次性的首两次云端回读未形成匹配收据，门禁按协议停止，外层记录 `LLMError`、`automatic_retry=false`，campaign 立即封锁。没有第三笔抽取、answer、judge、题替换或 test 运行，也没有在失败后轮询云端。由于没有验证收据，不能区分单次回读时远端暂未可见与字段不匹配；两笔 trace 不能宣称通过云端验收。
+
+结果是四臂均 `0/0` 已实现 denominator，计划 30/臂，正确数、paired difference、类别、跨 session、session recall@8 与 MRR 全部 unavailable，不按 0 分统计。公开逐题文件 120 行均明确标记 `not_dispatched`。从 dev conversation 开始到 STOP 的 wall time 为 336.830356 秒，其中 ledger 两请求跨度 89.814669 秒。
+
+冻结前 51 项定向测试通过、Ruff 通过；测试新增覆盖 8192 上限、单 trace 单次回读、回读缺失停止、v2 协议/预算冻结和既有四臂 fail-closed 契约。v1 的 1 请求 / 11351 tokens / `$0.005249` 及 Langfuse 回读文件哈希保留在 [v1-preservation.json](results/locomo-memory-v2-20261115/v1-preservation.json)。公开机器结果、逐题未派发状态、两笔调用收据和冻结 provenance 见 [v2 REPORT](results/locomo-memory-v2-20261115/REPORT.md) 与同目录 manifest。

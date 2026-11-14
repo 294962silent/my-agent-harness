@@ -1,0 +1,22 @@
+{
+  "plan_sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/09-sympy__sympy-20590-off/score/command.json",
+      "sha256": "a197d77d4047d922c5d4fdec1480b1d1894225558d638652186faba2201b2dc2",
+      "bytes": 838
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/09-sympy__sympy-20590-off/score/my-agent-harness-off.campaign-9684ed3b7278-09.json",
+      "sha256": "15e330d17c186fbd1b7c874a542ced6ac4b8859f742bb8f85e72b012048ed080",
+      "bytes": 796
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/09-sympy__sympy-20590-off/score/score.log",
+      "sha256": "befd6413904b759643b8e05a0fe2f3930ecfb44acc2e211598f1fc19e78a5c9b",
+      "bytes": 525
+    }
+  ],
+  "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/09-sympy__sympy-20590-off/score/my-agent-harness-off.campaign-9684ed3b7278-09.json"
+}

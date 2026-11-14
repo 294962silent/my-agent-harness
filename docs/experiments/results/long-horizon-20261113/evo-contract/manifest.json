@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "metrics.json",
+      "bytes": 1328,
+      "sha256": "a997cb0acb08cd0170d66e2d849dfbf38f59f059afd8b4abda5fe956fa0277b0"
+    },
+    {
+      "path": "official-report.json",
+      "bytes": 312968,
+      "sha256": "053b84ab8b63ff35db674c82676735a6f58c6e13512365328eb5ca41547c7dbd"
+    },
+    {
+      "path": "scorer-files.json",
+      "bytes": 8619,
+      "sha256": "bd333beed6a9a1f5a6339816d6342b49a40e04e36fcf6f153ee7b9eaf9662323"
+    }
+  ]
+}

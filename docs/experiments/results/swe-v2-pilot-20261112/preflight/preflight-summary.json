@@ -1,0 +1,319 @@
+{
+  "recorded_at": "2026-11-12T12:22:55.478800+00:00",
+  "stage": "preflight_complete",
+  "real_model_requests": 0,
+  "selected_tasks": 6,
+  "gold_passed": 5,
+  "gold_blocked": 1,
+  "official_file_count": 52,
+  "official_byte_checks": "all52 Git blob SHA1 and SHA256 reverified after official gold scoring",
+  "official_task_repository": "https://github.com/SWE-bench/swe-bench-tasks",
+  "official_task_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "catalog_path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/catalog.json",
+  "catalog_sha256": "fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c",
+  "task_inputs_path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/task-inputs.json",
+  "task_inputs_sha256": "e76852df41c643a869b0d3132a4012ce9933f7f5b37cf0fdbfe68392b2293dab",
+  "framework_head": "db77a71d7a261b02a59aa09059c73e6815fb0f7f",
+  "framework_head_note": "A/B source changes remain uncommitted at this preflight; use source hashes below, not HEAD alone, for current interfaces. Campaign must freeze its own final runtime source inputs.",
+  "framework_interface_sources": {
+    "experiments/benchmark_live/swe_agent.py": "da5c62c547dcec43171f3e2ffa881602b9cc57fde71c8c271dc7288c5e9895fb",
+    "experiments/benchmark_live/swe_catalog.py": "95c81f4f6f89ec831f920ca633c513ca96d418114fc102803c06a99a6d27ce48",
+    "experiments/benchmark_live/budget.py": "f34cee9827f979494fbeadf93764cc866cc64358dbdc3422056cf4524e7c5131",
+    "experiments/benchmark_live/swe_campaign.py": "f09675e61de16497283653ee65b2e8d3ad16f9959e6c237b4fa0c1069cb869ef"
+  },
+  "official_harness": {
+    "distribution": "swebench",
+    "version": "5.0.2",
+    "run_evaluation_source_sha256": "39b7e95f726df65c67f19f8d79a0f5f10f9d9e12e224076c8cb011851d060016"
+  },
+  "infrastructure_script_hashes": {
+    "finalize_preflight.py": "fa93447905f7883f984f4dcb2a64eca9df1faa7676aaf89d140503439f17bb54",
+    "gold_preflight.py": "ff14544be5ec6aa2d2cf7598af8e4567583b74d2632447e79e04f60c0c0c967c",
+    "make_catalog.py": "382cfb8e3ba98a92ce32fbf625a94644823d129cb794b3e0eb6ff607e5094e2b",
+    "prepare_canonical.py": "6f1fb4690f6e5ad3297721f31a2e2b23ae43d994a6135821900ea865cbf8f1bd",
+    "prepare_images.py": "c8a6973109ecf9fe6afc71a99cb08eb0537b88b67b30c49b1c465c99d28bb0fa"
+  },
+  "gold_protocol": {
+    "max_workers": 1,
+    "timeout_seconds": 300,
+    "new_gold_attempts": 5,
+    "reused_gold_reports": 1,
+    "reused_instance": "sympy__sympy-20590",
+    "scoring": "unaltered official harness/images/task bytes; failed11870 retained without replacement"
+  },
+  "image_status": {
+    "sympy__sympy-20590": {
+      "stage": "local_image_verified",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+      "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+      "compressed_layer_bytes": 1088520303,
+      "downloaded": false
+    },
+    "sympy__sympy-11400": {
+      "stage": "downloaded",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11400:latest",
+      "image_id": "sha256:694e41d09e3262a8e21d90f0f8ad60188a6a38bf0b2ae70c1510a9046e92edd8",
+      "compressed_layer_bytes": 1061116118,
+      "tar": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\swe-v2-pilot\\images\\sympy__sympy-11400.tar",
+      "downloaded": true,
+      "tar_bytes": 1061132288
+    },
+    "sympy__sympy-11870": {
+      "stage": "downloaded",
+      "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11870:latest",
+      "image_id": "sha256:d1809dbea998c18c082722ffaec74f2d8f811aec28b36a49351b7190b0089742",
+      "compressed_layer_bytes": 1067973573,
+      "tar": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\swe-v2-pilot\\images\\sympy__sympy-11870.tar",
+      "downloaded": true,
+      "tar_bytes": 1067990016
+    },
+    "pytest-dev__pytest-5103": {
+      "stage": "downloaded",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103:latest",
+      "image_id": "sha256:6685f236ddea92e412c046f1276f178d34895e4efbda2830ac3ab81903364787",
+      "compressed_layer_bytes": 1025755902,
+      "tar": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\swe-v2-pilot\\images\\pytest-dev__pytest-5103.tar",
+      "downloaded": true,
+      "tar_bytes": 1025772032
+    },
+    "pytest-dev__pytest-5221": {
+      "stage": "downloaded",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221:latest",
+      "image_id": "sha256:1718609d2c1e3a6d929eb4643f8474ee9e8f551cab77847f6c492dd0df6f1701",
+      "compressed_layer_bytes": 1025500530,
+      "tar": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\swe-v2-pilot\\images\\pytest-dev__pytest-5221.tar",
+      "downloaded": true,
+      "tar_bytes": 1025517056
+    },
+    "pytest-dev__pytest-5227": {
+      "stage": "downloaded",
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5227:latest",
+      "image_id": "sha256:6faff6caa94117d96d7f8818c812d33306d34ecd9937ba82ef0bb56faa67f664",
+      "compressed_layer_bytes": 1025565171,
+      "tar": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\swe-v2-pilot\\images\\pytest-dev__pytest-5227.tar",
+      "downloaded": true,
+      "tar_bytes": 1025581568
+    }
+  },
+  "gold_status": {
+    "recorded_at": "2026-11-12T12:20:08.784385+00:00",
+    "source_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+    "model_requests": 0,
+    "tasks": {
+      "sympy__sympy-20590": {
+        "stage": "gold_passed",
+        "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+        "resolved": true,
+        "wall_seconds": null,
+        "exit_code": 0,
+        "official_report": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+        "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+        "counts": {
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "error_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0
+        }
+      },
+      "sympy__sympy-11400": {
+        "stage": "gold_passed",
+        "image_id": "sha256:694e41d09e3262a8e21d90f0f8ad60188a6a38bf0b2ae70c1510a9046e92edd8",
+        "run_id": "pilot-gold-20261112-sympy__sympy-11400",
+        "test_timeout_seconds": 300,
+        "resolved": true,
+        "wall_seconds": 23.197386647000002,
+        "exit_code": 0,
+        "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/sympy__sympy-11400/gold.pilot-gold-20261112-sympy__sympy-11400.json",
+        "official_report_sha256": "930dd3f0aef1736d80bcaf57775f6b438399ea352b1dbe579cf65e6a98d046fe",
+        "counts": {
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "error_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0
+        }
+      },
+      "sympy__sympy-11870": {
+        "stage": "gold_failed",
+        "image_id": "sha256:d1809dbea998c18c082722ffaec74f2d8f811aec28b36a49351b7190b0089742",
+        "run_id": "pilot-gold-20261112-sympy__sympy-11870",
+        "test_timeout_seconds": 300,
+        "resolved": false,
+        "wall_seconds": 318.38776003299995,
+        "exit_code": 0,
+        "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/sympy__sympy-11870/gold.pilot-gold-20261112-sympy__sympy-11870.json",
+        "official_report_sha256": "787e8e0442a49425945403922923810c9fcac21083137fd7744d8c54e67a2128",
+        "counts": {
+          "completed_instances": 0,
+          "resolved_instances": 0,
+          "error_instances": 1,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 1
+        }
+      },
+      "pytest-dev__pytest-5103": {
+        "stage": "gold_passed",
+        "image_id": "sha256:6685f236ddea92e412c046f1276f178d34895e4efbda2830ac3ab81903364787",
+        "run_id": "pilot-gold-20261112-pytest-dev__pytest-5103",
+        "test_timeout_seconds": 300,
+        "resolved": true,
+        "wall_seconds": 26.249372878999907,
+        "exit_code": 0,
+        "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5103/gold.pilot-gold-20261112-pytest-dev__pytest-5103.json",
+        "official_report_sha256": "8baf02c582bd77983cc578cef735d213284798653b4fe5b1a80130c2dd2ef999",
+        "counts": {
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "error_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0
+        }
+      },
+      "pytest-dev__pytest-5221": {
+        "stage": "gold_passed",
+        "image_id": "sha256:1718609d2c1e3a6d929eb4643f8474ee9e8f551cab77847f6c492dd0df6f1701",
+        "run_id": "pilot-gold-20261112-pytest-dev__pytest-5221",
+        "test_timeout_seconds": 300,
+        "resolved": true,
+        "wall_seconds": 30.311397051000085,
+        "exit_code": 0,
+        "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5221/gold.pilot-gold-20261112-pytest-dev__pytest-5221.json",
+        "official_report_sha256": "ce9ad9d66bb99c0120865829a5ad562496eab9de14d53b1774a2e9e12f1091b9",
+        "counts": {
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "error_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0
+        }
+      },
+      "pytest-dev__pytest-5227": {
+        "stage": "gold_passed",
+        "image_id": "sha256:6faff6caa94117d96d7f8818c812d33306d34ecd9937ba82ef0bb56faa67f664",
+        "run_id": "pilot-gold-20261112-pytest-dev__pytest-5227",
+        "test_timeout_seconds": 300,
+        "resolved": true,
+        "wall_seconds": 26.10169358600001,
+        "exit_code": 0,
+        "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5227/gold.pilot-gold-20261112-pytest-dev__pytest-5227.json",
+        "official_report_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+        "counts": {
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "error_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0
+        }
+      }
+    }
+  },
+  "owned_official_containers_remaining": [],
+  "tasks": [
+    {
+      "instance_id": "sympy__sympy-20590",
+      "resolved": true,
+      "safe_metadata_sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7",
+      "gold_evidence_sha256": "96f94b3ae684efd7f1afb6d5a8767e69285e1f09de9c043ebf7ef7a51f576fde",
+      "evaluation_dataset_sha256": "35e31272815cfee79e2aeec18382d2a7819897c2825dc84438543e30f1ba752e",
+      "official_report": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+      "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+      "production_gate": "passed",
+      "production_environment_probe": {
+        "instance_id": "sympy__sympy-20590",
+        "model_requests": 0,
+        "passed": true,
+        "stage": "ready",
+        "initial_image_head": "5efaed257c694e4452b4c8361aae1cd9cdefd6d1",
+        "verified_base": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+        "cleanup": "completed"
+      }
+    },
+    {
+      "instance_id": "sympy__sympy-11400",
+      "resolved": true,
+      "safe_metadata_sha256": "dc958547065bbfc685fd36bbc8ecb9c0071e888e05b407e7c651c4fbd9afb0b3",
+      "gold_evidence_sha256": "f31e074a51feedf59e6537667eb87212fe0b9eea8e5e9c4b59c44ca31c29d391",
+      "evaluation_dataset_sha256": "1bda7402d9b5ab980de6f909fdc30c3f52998545318fa32a0789fe9ba3441b1b",
+      "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/sympy__sympy-11400/gold.pilot-gold-20261112-sympy__sympy-11400.json",
+      "official_report_sha256": "930dd3f0aef1736d80bcaf57775f6b438399ea352b1dbe579cf65e6a98d046fe",
+      "production_gate": "passed",
+      "production_environment_probe": {
+        "instance_id": "sympy__sympy-11400",
+        "model_requests": 0,
+        "passed": true,
+        "stage": "ready",
+        "initial_image_head": "ad66da6126af3052568e03020490129d7667237a",
+        "verified_base": "8dcb12a6cf500e8738d6729ab954a261758f49ca",
+        "cleanup": "completed"
+      }
+    },
+    {
+      "instance_id": "sympy__sympy-11870",
+      "resolved": false,
+      "safe_metadata_sha256": "ce067fcf0915f2b00c2cdc78262bd97f4164647de33dac50778930c16b17ef2f",
+      "gold_evidence_sha256": "b1ec00f53a9ba27945507b121bf0e446e5cbb677bbbe2afca14c8f1151a99734",
+      "evaluation_dataset_sha256": "d91f3887d75746782ee829dcf9a151b2aaa49062716de07e8991e71fe93b32b3",
+      "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/sympy__sympy-11870/gold.pilot-gold-20261112-sympy__sympy-11870.json",
+      "official_report_sha256": "787e8e0442a49425945403922923810c9fcac21083137fd7744d8c54e67a2128",
+      "production_gate": "blocked"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "resolved": true,
+      "safe_metadata_sha256": "db8b862c14233abcdb1929245aeba7810942d7f047dc53c86b59498dc6525c20",
+      "gold_evidence_sha256": "f2ee3b6c8d066f844ebe4fcee6ac06a7e6d188b87075ee945ebe7a90fb4f579e",
+      "evaluation_dataset_sha256": "1ebc91cc746c921d472c1ca3ad0a7efba2c21ddecd61916c14f9ce6964eae1ce",
+      "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5103/gold.pilot-gold-20261112-pytest-dev__pytest-5103.json",
+      "official_report_sha256": "8baf02c582bd77983cc578cef735d213284798653b4fe5b1a80130c2dd2ef999",
+      "production_gate": "passed",
+      "production_environment_probe": {
+        "instance_id": "pytest-dev__pytest-5103",
+        "model_requests": 0,
+        "passed": true,
+        "stage": "ready",
+        "initial_image_head": "5df4d131d551b79b9fcf258482eaa4f59bf238b8",
+        "verified_base": "10ca84ffc56c2dd2d9dc4bd71b7b898e083500cd",
+        "cleanup": "completed"
+      }
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5221",
+      "resolved": true,
+      "safe_metadata_sha256": "851a30a537dfb2f58c6cb1696b3eecf000910be4b4503fcee9499af5fd3b8196",
+      "gold_evidence_sha256": "99b109d2762075d092af69e8cd60f8d4dffc0087e56c2634de1cc7645f4f6e4b",
+      "evaluation_dataset_sha256": "2ab8b1637aade02920fd067f77b34cb7b7adc2a4097b9d8b4d6b280d677c91a3",
+      "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5221/gold.pilot-gold-20261112-pytest-dev__pytest-5221.json",
+      "official_report_sha256": "ce9ad9d66bb99c0120865829a5ad562496eab9de14d53b1774a2e9e12f1091b9",
+      "production_gate": "passed",
+      "production_environment_probe": {
+        "instance_id": "pytest-dev__pytest-5221",
+        "model_requests": 0,
+        "passed": true,
+        "stage": "ready",
+        "initial_image_head": "c0698ad6368fb4dfda4e3d2b8dab498874793848",
+        "verified_base": "4a2fdce62b73944030cff9b3e52862868ca9584d",
+        "cleanup": "completed"
+      }
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5227",
+      "resolved": true,
+      "safe_metadata_sha256": "cf7ac733a7492a656fe0f13520edb9ff9204549856c9c76c17c069efa8ee5a7f",
+      "gold_evidence_sha256": "c8797dee36e9fc5003c4a8707b0a86ec07b0f37e1dc6892ad7e15453450e8781",
+      "evaluation_dataset_sha256": "89271c182d21e6eea3e4136f6a70972e58cef0d00d6fb8e3d3bfe1664a73333d",
+      "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5227/gold.pilot-gold-20261112-pytest-dev__pytest-5227.json",
+      "official_report_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+      "production_gate": "passed",
+      "production_environment_probe": {
+        "instance_id": "pytest-dev__pytest-5227",
+        "model_requests": 0,
+        "passed": true,
+        "stage": "ready",
+        "initial_image_head": "aa6a504d7ea32c59ae245f90682906db5ac5213c",
+        "verified_base": "2051e30b9b596e944524ccb787ed20f9f5be93e3",
+        "cleanup": "completed"
+      }
+    }
+  ]
+}

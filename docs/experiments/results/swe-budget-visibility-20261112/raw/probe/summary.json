@@ -1,0 +1,96 @@
+{
+  "protocol": "artifact-capability-probe-v1",
+  "evidence_level": "isolated_capability_probe_not_SWE_quality",
+  "trials": [
+    {
+      "trial_id": "fixture-a-on",
+      "fixture_id": "fixture-a",
+      "fixture_sha256": "b6403f9aa6bce813c7e15740df4f04df14a0ac46aacd179b17a34162db2a255f",
+      "arm": "on",
+      "run_id": "50708cd4f1a04112b9980d1ae1feee8b",
+      "status": "budget_exhausted",
+      "requests": 4,
+      "usage_available": true,
+      "cost_usd": 0.002889,
+      "success": false,
+      "final_correct": false,
+      "fetch_preview_hidden_with_handle": true,
+      "read_search_result_revealed_target": true,
+      "hidden_fetch_preceded_read": true,
+      "premature_target_exposure": false,
+      "schema_hashes": [
+        "68c9031d4f22abaf2d4ec24aa07344ca44ea6c032e3e9fa2405985e9c72b54b7"
+      ],
+      "audit_boundary": "provider_method_entry_pre_sdk_not_wire",
+      "temporary_bodies_deleted": true
+    },
+    {
+      "trial_id": "fixture-a-off",
+      "fixture_id": "fixture-a",
+      "fixture_sha256": "b6403f9aa6bce813c7e15740df4f04df14a0ac46aacd179b17a34162db2a255f",
+      "arm": "off",
+      "run_id": "48762a145eab4dd289c5c195627717fc",
+      "status": "end_turn",
+      "requests": 2,
+      "usage_available": true,
+      "cost_usd": 0.001862,
+      "success": true,
+      "final_correct": true,
+      "fetch_preview_hidden_with_handle": false,
+      "read_search_result_revealed_target": false,
+      "hidden_fetch_preceded_read": false,
+      "premature_target_exposure": false,
+      "schema_hashes": [
+        "68c9031d4f22abaf2d4ec24aa07344ca44ea6c032e3e9fa2405985e9c72b54b7"
+      ],
+      "audit_boundary": "provider_method_entry_pre_sdk_not_wire",
+      "temporary_bodies_deleted": true
+    },
+    {
+      "trial_id": "fixture-b-off",
+      "fixture_id": "fixture-b",
+      "fixture_sha256": "49751ceaa4611042ea0c918dc6e5c3dadfceb6ca23eb96087b11142037158327",
+      "arm": "off",
+      "run_id": "a452dbd74c064d8ca835b47bac6b9761",
+      "status": "end_turn",
+      "requests": 2,
+      "usage_available": true,
+      "cost_usd": 0.00175,
+      "success": true,
+      "final_correct": true,
+      "fetch_preview_hidden_with_handle": false,
+      "read_search_result_revealed_target": false,
+      "hidden_fetch_preceded_read": false,
+      "premature_target_exposure": false,
+      "schema_hashes": [
+        "68c9031d4f22abaf2d4ec24aa07344ca44ea6c032e3e9fa2405985e9c72b54b7"
+      ],
+      "audit_boundary": "provider_method_entry_pre_sdk_not_wire",
+      "temporary_bodies_deleted": true
+    },
+    {
+      "trial_id": "fixture-b-on",
+      "fixture_id": "fixture-b",
+      "fixture_sha256": "49751ceaa4611042ea0c918dc6e5c3dadfceb6ca23eb96087b11142037158327",
+      "arm": "on",
+      "run_id": "f829e1d86aa54b0ba23a0b3d4af209ab",
+      "status": "budget_exhausted",
+      "requests": 4,
+      "usage_available": true,
+      "cost_usd": 0.002605,
+      "success": false,
+      "final_correct": false,
+      "fetch_preview_hidden_with_handle": true,
+      "read_search_result_revealed_target": true,
+      "hidden_fetch_preceded_read": true,
+      "premature_target_exposure": false,
+      "schema_hashes": [
+        "68c9031d4f22abaf2d4ec24aa07344ca44ea6c032e3e9fa2405985e9c72b54b7"
+      ],
+      "audit_boundary": "provider_method_entry_pre_sdk_not_wire",
+      "temporary_bodies_deleted": true
+    }
+  ],
+  "halt_reason": null,
+  "schema_hashes_equal": true
+}

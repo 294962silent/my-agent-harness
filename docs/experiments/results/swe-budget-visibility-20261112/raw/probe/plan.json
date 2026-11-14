@@ -1,0 +1,32 @@
+{
+  "protocol": "artifact-capability-probe-v1",
+  "fixtures_sha256": "e0babe0f79fa847f79eea3f42a6d0d71bdb00d75cfe6db4ac9e24fc2795c223d",
+  "seed": 23,
+  "trials": [
+    {
+      "fixture_id": "fixture-a",
+      "arm": "on"
+    },
+    {
+      "fixture_id": "fixture-a",
+      "arm": "off"
+    },
+    {
+      "fixture_id": "fixture-b",
+      "arm": "off"
+    },
+    {
+      "fixture_id": "fixture-b",
+      "arm": "on"
+    }
+  ],
+  "max_requests_per_run": 4,
+  "max_turns": 4,
+  "max_output_tokens": 1024,
+  "max_seconds": 60,
+  "root_policy_max_requests": 16,
+  "phase_baseline_micro_usd": 572059,
+  "absolute_spend_ceiling_usd": "0.822059",
+  "audit_boundary": "provider_method_entry_pre_sdk_not_wire",
+  "wire_capture": false
+}

@@ -1,0 +1,130 @@
+{
+  "instance_id": "sympy__sympy-11400",
+  "base_commit": "8dcb12a6cf500e8738d6729ab954a261758f49ca",
+  "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-11400:latest",
+  "image_id": "sha256:694e41d09e3262a8e21d90f0f8ad60188a6a38bf0b2ae70c1510a9046e92edd8",
+  "repo": "sympy/sympy",
+  "catalog_sha256": "fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c",
+  "task_repository": "https://github.com/SWE-bench/swe-bench-tasks",
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "metadata_sha256": "dc958547065bbfc685fd36bbc8ecb9c0071e888e05b407e7c651c4fbd9afb0b3",
+  "gold_evidence_sha256": "f31e074a51feedf59e6537667eb87212fe0b9eea8e5e9c4b59c44ca31c29d391",
+  "run_id": "30f0f5452c315286a013e95a01393312",
+  "adapter_protocol": "v2",
+  "arm": "off",
+  "status": "budget_exhausted",
+  "stage": "finished",
+  "error_code": null,
+  "error_type": null,
+  "initial_image_head": "ad66da6126af3052568e03020490129d7667237a",
+  "requests": 16,
+  "stop_reason": "budget_exhausted",
+  "limit_details": {
+    "kind": "max_turns",
+    "limit": 16,
+    "observed": 16
+  },
+  "usage_available": true,
+  "usage": [
+    {
+      "prompt_tokens": 125,
+      "completion_tokens": 59,
+      "total_tokens": 824,
+      "cache_read_tokens": 640
+    },
+    {
+      "prompt_tokens": 2,
+      "completion_tokens": 86,
+      "total_tokens": 984,
+      "cache_read_tokens": 896
+    },
+    {
+      "prompt_tokens": 1655,
+      "completion_tokens": 82,
+      "total_tokens": 2633,
+      "cache_read_tokens": 896
+    },
+    {
+      "prompt_tokens": 225,
+      "completion_tokens": 55,
+      "total_tokens": 2712,
+      "cache_read_tokens": 2432
+    },
+    {
+      "prompt_tokens": 365,
+      "completion_tokens": 74,
+      "total_tokens": 2999,
+      "cache_read_tokens": 2560
+    },
+    {
+      "prompt_tokens": 486,
+      "completion_tokens": 57,
+      "total_tokens": 3359,
+      "cache_read_tokens": 2816
+    },
+    {
+      "prompt_tokens": 1184,
+      "completion_tokens": 416,
+      "total_tokens": 4800,
+      "cache_read_tokens": 3200
+    },
+    {
+      "prompt_tokens": 349,
+      "completion_tokens": 114,
+      "total_tokens": 4815,
+      "cache_read_tokens": 4352
+    },
+    {
+      "prompt_tokens": 824,
+      "completion_tokens": 476,
+      "total_tokens": 5908,
+      "cache_read_tokens": 4608
+    },
+    {
+      "prompt_tokens": 1082,
+      "completion_tokens": 59,
+      "total_tokens": 6517,
+      "cache_read_tokens": 5376
+    },
+    {
+      "prompt_tokens": 2413,
+      "completion_tokens": 1502,
+      "total_tokens": 10315,
+      "cache_read_tokens": 6400
+    },
+    {
+      "prompt_tokens": 395,
+      "completion_tokens": 360,
+      "total_tokens": 9459,
+      "cache_read_tokens": 8704
+    },
+    {
+      "prompt_tokens": 1333,
+      "completion_tokens": 843,
+      "total_tokens": 11264,
+      "cache_read_tokens": 9088
+    },
+    {
+      "prompt_tokens": 163,
+      "completion_tokens": 880,
+      "total_tokens": 11411,
+      "cache_read_tokens": 10368
+    },
+    {
+      "prompt_tokens": 174,
+      "completion_tokens": 117,
+      "total_tokens": 10787,
+      "cache_read_tokens": 10496
+    },
+    {
+      "prompt_tokens": 374,
+      "completion_tokens": 716,
+      "total_tokens": 11714,
+      "cache_read_tokens": 10624
+    }
+  ],
+  "cost_usd": 0.035465,
+  "official_reward": null,
+  "prediction_exists": true,
+  "cleanup_errors": []
+}

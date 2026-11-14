@@ -1,0 +1,351 @@
+{
+  "status": "running_not_final",
+  "source_head": "455915743ee687006698eaeefe3a98d43b55609e",
+  "plan_sha256": "8cb76c1479c97638eed024e627e13397a1fe63078b4209105886ac4442e16216",
+  "protocol": "tb21-long-pilot-v1",
+  "model": "deepseek-v4.1-flash",
+  "slots": [
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/cancel-async-tasks:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-563807a4acf8a5c7fee8e175d9d8e444",
+      "task": "cancel-async-tasks"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/cancel-async-tasks:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-b5e19d6feaa07898e472a4be01b71bb5",
+      "task": "cancel-async-tasks"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-0a7c3adfd61210de7c8bbb0bd305b951",
+      "task": "large-scale-text-editing"
+    },
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-aa8a7b01eaded796d39d20cdf8428cc2",
+      "task": "large-scale-text-editing"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/log-summary-date-ranges:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-0114b06c8a0bb826d54874d591c431c2",
+      "task": "log-summary-date-ranges"
+    },
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/log-summary-date-ranges:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-c7876fef0fb0477649b9208517b2f1c9",
+      "task": "log-summary-date-ranges"
+    },
+    {
+      "arm": "on",
+      "blocked": "oracle_failed",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/git-multibranch:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-de4ad4d343e7c9ee550bca8487e432c3",
+      "task": "git-multibranch"
+    },
+    {
+      "arm": "off",
+      "blocked": "oracle_failed",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/git-multibranch:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-f7df63ad3b1df06e116ad6e3780305e0",
+      "task": "git-multibranch"
+    },
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-24734832ef50b28f03099af738b4decb",
+      "task": "fix-git"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-e471e2357d764620f3cbcfddcd25279e",
+      "task": "fix-git"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/regex-log:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-68323ef0b1ad5360cda761039b0e8c4c",
+      "task": "regex-log"
+    },
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/regex-log:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-48b23d1623dabbb575847d03cd6c04e0",
+      "task": "regex-log"
+    },
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/db-wal-recovery:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-45df306d1be871c4fcd08621f58e6630",
+      "task": "db-wal-recovery"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/db-wal-recovery:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-c4878787296d33d1af7c307889989c75",
+      "task": "db-wal-recovery"
+    },
+    {
+      "arm": "off",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-f33e87a4d0ceed5ccba7cbe160620533",
+      "task": "custom-memory-heap-crash"
+    },
+    {
+      "arm": "on",
+      "blocked": null,
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "run_id": "tb21-acd09ee75a3c9bde264b14ef5a3d5140",
+      "task": "custom-memory-heap-crash"
+    }
+  ],
+  "original_queue_stopped_before_freeze": true,
+  "ledger_at_memory_completion": {
+    "requests": 480,
+    "settled_micro_usd": 937546,
+    "unknown_or_pending": 0
+  }
+}

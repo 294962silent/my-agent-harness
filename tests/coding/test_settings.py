@@ -205,6 +205,42 @@ def test_settings_privileged_global_keys_stripping(tmp_path: Path) -> None:
     assert loaded_no_global.project_trust == "ask"
 
 
+@pytest.mark.parametrize("global_enabled", [False, True])
+@pytest.mark.parametrize("project_integrations", [
+    {
+        "memory_index": {"enabled": True, "config_file": "repository-controlled.json"},
+        "observation": {"enabled": True, "base_url": "https://untrusted.invalid",
+                        "public_key_env": "OTHER_PUBLIC_KEY", "secret_key_env": "OTHER_SECRET_KEY"},
+    },
+    {
+        "memory_index": {"enabled": True, "timeout": 0, "unknown": "invalid"},
+        "observation": {"enabled": True, "capacity": "invalid", "secret_key_env": []},
+    },
+])
+def test_project_cannot_enable_or_override_integrations(tmp_path, global_enabled, project_integrations):
+    paths = AgentPaths(home=tmp_path / "trusted-global")
+    paths.ensure_directories()
+    workspace = tmp_path / "untrusted-project"
+    workspace.mkdir()
+    trusted = {"theme": "light"}
+    if global_enabled:
+        trusted.update(
+            memory_index={"enabled": True, "config_file": str(paths.home / "mem0.json"), "timeout": 3},
+            observation={"enabled": True, "base_url": "https://trusted.invalid",
+                         "public_key_env": "TRUSTED_PUBLIC_KEY", "secret_key_env": "TRUSTED_SECRET_KEY"},
+        )
+    paths.settings_path.write_text(json.dumps(trusted), encoding="utf-8")
+    project_path = paths.project_settings_path(workspace)
+    project_path.parent.mkdir(parents=True, exist_ok=True)
+    project_path.write_text(json.dumps({**project_integrations, "theme": "project-theme"}), encoding="utf-8")
+
+    loaded = load_settings(paths, cwd=workspace)
+    expected = Settings.model_validate(trusted)
+    assert loaded.memory_index == expected.memory_index
+    assert loaded.observation == expected.observation
+    assert loaded.theme == "project-theme"
+
+
 def test_settings_array_replacement() -> None:
     """测试合并算法中的数组替换语义（非追加合并）。"""
     base = {
@@ -339,3 +375,42 @@ def test_load_settings_cwd_str_and_package_exports(tmp_path: Path) -> None:
 
     loaded = load_settings(paths, cwd=str(work_dir))
     assert loaded.theme == "light"
+
+
+def test_dream_optimization_defaults_and_needs_dataset():
+    from my_coding_agent.settings import DreamOptimizationSettings
+    settings = Settings()
+    assert settings.dream_optimization.enabled is False
+    assert settings.dream_optimization.budgets == [1, 2, 4]
+    assert settings.dream_optimization.max_candidates == 16
+    assert settings.dream_optimization.max_seconds == 300.0
+    assert DreamOptimizationSettings(enabled=True).status == "needs_dataset"
+
+
+@pytest.mark.parametrize("invalid", [
+    {"max_candidates": True}, {"max_candidates": 17}, {"max_candidates": 0},
+    {"budgets": [True]}, {"budgets": [1, 1]}, {"budgets": []},
+    {"budgets": [0]}, {"budgets": [100001]}, {"budgets": [1, 2, 3, 4, 5]},
+    {"max_seconds": True}, {"max_seconds": float("inf")}, {"max_seconds": 0}, {"max_seconds": 3601},
+])
+def test_dream_optimization_bounds_reject_invalid_values(invalid):
+    from my_coding_agent.settings import DreamOptimizationSettings
+    with pytest.raises(ValueError):
+        DreamOptimizationSettings(**invalid)
+
+
+def test_dream_optimization_is_global_only(tmp_path):
+    paths = AgentPaths(home=tmp_path / "trusted")
+    paths.ensure_directories()
+    workspace = tmp_path / "untrusted"
+    workspace.mkdir()
+    paths.settings_path.write_text(json.dumps({"dream_optimization": {"enabled": True}}), encoding="utf-8")
+    project = paths.project_settings_path(workspace)
+    project.parent.mkdir(parents=True, exist_ok=True)
+    project.write_text(json.dumps({"dream_optimization": {"enabled": False, "max_seconds": 0},
+                                   "theme": "project-theme"}), encoding="utf-8")
+    settings = load_settings(paths, cwd=workspace)
+    assert settings.dream_optimization.enabled is True
+    assert settings.dream_optimization.max_seconds == 300.0
+    assert settings.dream_optimization.status == "needs_dataset"
+    assert settings.theme == "project-theme"

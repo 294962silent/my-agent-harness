@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "metrics.json",
+      "bytes": 3894,
+      "sha256": "48eb8723f635f7d738747b4b7e884b5a77fa326af89d2717d2b7c97135fd986a"
+    },
+    {
+      "path": "requests.json",
+      "bytes": 24786,
+      "sha256": "96a4c7a3696d5fc1ef3d03690c4bcc5c9d09dbfe7c14d27874428136bc09865f"
+    },
+    {
+      "path": "transport-probe.json",
+      "bytes": 2229,
+      "sha256": "3f54b021b9406a74a2c05cfa5365effa4b66177c0b5163d1adf8da39903152c7"
+    }
+  ]
+}

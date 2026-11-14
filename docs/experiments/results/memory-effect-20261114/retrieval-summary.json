@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "protocol": "memory-effect-v1-disjoint12-bge-cpu",
+  "plan_sha256": "cc2a53c54bceb9e78e3f2ed4634bd029725e733db0d705d5fca4be3a1a671ee9",
+  "retrieval_manifest_sha256": "2095a80b3ef8742f3d4804ab22898e7e2e1d0c1ad3ae2ba503126588873cb624",
+  "source_revision": "98d7416c24c778c2fee6e6f3006e7a073259d48f",
+  "arms": {
+    "none": {
+      "questions": 12,
+      "retrieval_valid": 12,
+      "close_complete": 12,
+      "session_labeled_nonabstention_questions": 8,
+      "mean_session_recall_at_8": 0,
+      "mean_session_mrr": 0,
+      "retrieval_total_seconds_mean": 0.00000383825000790002,
+      "retrieval_total_seconds_median": 0.0000037775000016893046,
+      "retrieval_total_seconds_sum": 0.00004605900009480024
+    },
+    "lexical": {
+      "questions": 12,
+      "retrieval_valid": 12,
+      "close_complete": 12,
+      "session_labeled_nonabstention_questions": 8,
+      "mean_session_recall_at_8": 0.8125,
+      "mean_session_mrr": 0.875,
+      "retrieval_total_seconds_mean": 4.329053163166679,
+      "retrieval_total_seconds_median": 4.293355989500016,
+      "retrieval_total_seconds_sum": 51.94863795800015
+    },
+    "mem0": {
+      "questions": 12,
+      "retrieval_valid": 12,
+      "close_complete": 12,
+      "session_labeled_nonabstention_questions": 8,
+      "mean_session_recall_at_8": 0.84375,
+      "mean_session_mrr": 0.8125,
+      "retrieval_total_seconds_mean": 99.93189676716666,
+      "retrieval_total_seconds_median": 96.830004591,
+      "retrieval_total_seconds_sum": 1199.182761206
+    }
+  },
+  "definitions": {
+    "session_recall": "Official session labels; macro average over non-abstention questions with labels. This is not answer-block evidence recall.",
+    "latency": "Per-question cold store/index setup plus retrieval and closure; index_and_query_seconds combines semantic indexing and query, not isolated warm query latency.",
+    "answer_evidence_recall": "Unavailable: no annotated answer-bearing chunks.",
+    "accuracy": "Not measured: no answer or judge request started."
+  },
+  "limits": {
+    "question_count": 12,
+    "chunk_chars": 800,
+    "top_k_chunks": 8,
+    "budget_chars": 6000,
+    "no_semantic_fallback": true,
+    "network_boundary": "linux_seccomp_no_non_unix_socket_or_connect"
+  },
+  "limitations": [
+    "Chinese BGE encoder applied to English histories",
+    "Exploratory 12-question fixed-history study, not full memory lifecycle",
+    "Interrupted uncommitted free retrieval archived; persisted successful trial times exclude that interrupted overhead"
+  ],
+  "rows_count": 36,
+  "rows_file": "retrieval-rows.jsonl",
+  "rows_sha256": "badf4d83d8a9b7d5d1da0f53e7bb4b2db29220fd1a759841d1ca10d6c5eeee14"
+}

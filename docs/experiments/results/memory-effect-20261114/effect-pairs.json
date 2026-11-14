@@ -1,0 +1,502 @@
+{
+  "schema_version": 1,
+  "protocol": "memory-effect-v1-disjoint12-bge-cpu",
+  "questions": [
+    {
+      "question_id": "5831f84d",
+      "question_type": "knowledge-update",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "fec350e8da742716cce00f7bd3d7726acd45f66bd835e3693b3894f882953adf",
+          "judge_sha256": "c4622a4fcb66ec4f32688a42a41613840d40db9755d5c235680879d15d366ed3"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "f515e56a65bbbbef2f05d3ebd441cded4a415ff83864e7acdcf0b7d62628a5b9",
+          "judge_sha256": "4bb18d72143d2e7c4a1d8e4b56ae6ef1f4e59484764c7ec7bba38189665d789b"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "abbe46b7c39bcf79c6cd531f08b8ce04e8d80aa6a52f946fcc4cd1b285311e35",
+          "judge_sha256": "1478a5310d2640b73ef6ca02c27fe7c067d135cb4202060d04ca178d523af36b"
+        }
+      }
+    },
+    {
+      "question_id": "6aeb4375_abs",
+      "question_type": "knowledge-update",
+      "arms": {
+        "none": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "76085f3aae533903f8eb3a3c3a8b2ce39bf949dcaaf077b010340e1ff34aed8b",
+          "judge_sha256": "0a3d280abf007f569f64451c30b7dd16104ec2c98f0f00f986fdd547e37bdc86"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "d15b006a71ea57dd98640662887faba89596c8c34a7c2604f659b5301a9d93a2",
+          "judge_sha256": "e021e8c7624a425266a8c8c4969c85d1039a4f28b21db563514cb2b775184071"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "54a0c80f7c23841d4ccfa9527792502c9663e7ba322db1a5070f4b8774e02db1",
+          "judge_sha256": "8e7f62cd24e4e656834741c94036548021c18a8a65fd7c51daa797cfc7b91537"
+        }
+      }
+    },
+    {
+      "question_id": "2e6d26dc",
+      "question_type": "multi-session",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "773df37668c40e0dd8c15aa27278ac14910d3e861a0736e94bb94b5c55c21f12",
+          "judge_sha256": "1c197b393647aeda2a0dfeaa5038653d1520df62540569a365e2c0cc7dd440ff"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 0.5,
+          "answer_sha256": "9858eed3377b989d2e55d712a111c248661e6eb3695eabac17fbc50c88127eb6",
+          "judge_sha256": "93babd9c88f58a3a0e848c79279fb247fe0e6d0ca91051efd7d42e21d99b42bb"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 0.75,
+          "answer_sha256": "c573883f4ed120f52c30e9f2f5a42c36a889591db698c8ef1a36ceebc1b26813",
+          "judge_sha256": "0d1ea136d1a65c118f622a30abc7c27b194ea9436b409d657063e05315928398"
+        }
+      }
+    },
+    {
+      "question_id": "6456829e_abs",
+      "question_type": "multi-session",
+      "arms": {
+        "none": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "b6999dc8b038d27e732513786de3867b3ac9d55a4414077dae35524e0035f879",
+          "judge_sha256": "a7a368c4644088bbbc02c3d55cdde8c698f8bed718fa0250bf61cb9d67be1c5e"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "d5fc3e98a40e8ad9fcda1c69c21d458b0b0bde3682c7566ce19a788ae1e75e93",
+          "judge_sha256": "604d5d727c7ff60653fcb7d771117e5f631d0469bd6b4b9520a8a12628349908"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "1f5eda8ba79d3a3414abd8d17cc1c4a5bb68382cff34882aa53e70a5fa204cee",
+          "judge_sha256": "b74e02e558531692a0b1bc74ff9f67546d1b804e13d11d2ddd28e76bbbdfc127"
+        }
+      }
+    },
+    {
+      "question_id": "352ab8bd",
+      "question_type": "single-session-assistant",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "1db9bdc62513901e284c5908049b6cd813f0cf9cf07afc04884827cc4324c569",
+          "judge_sha256": "ec94acfe7d88947729707e4f2459333f3face6d5a28cac157cadc0a2ce711853"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "8f8e878c0febc50f46c18e77540d463fc6fa40b992b3399686af54186f034d8d",
+          "judge_sha256": "48053ba25a7967d9fa3228ac4399f9cc112a99a662676fd338c0ce1bb624e653"
+        },
+        "mem0": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "ce7bd273010cee6892c1c6f3457a613af0141bf95d51b47968ce3e2ef5a65999",
+          "judge_sha256": "d140d7ecce33e4e051e721b0186b122222e447c85b76eea48459e0e8679ed57a"
+        }
+      }
+    },
+    {
+      "question_id": "488d3006",
+      "question_type": "single-session-assistant",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "1b6b1ef3458e40235242374efc0493c0abfd5ed95e90178ab3291f0dce388786",
+          "judge_sha256": "10211f98d79486dd249716d590ee766f7fe7d458ae72841e49aa09eee1324632"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "2610893e5c3f11c3d4cbf116c2c7a2613811fda37a05cb28ae2db6ac10f59459",
+          "judge_sha256": "19676fb08357022debc8ea4ee01bfd7bcec0da470b639c0564adda9abd62fc2d"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "59498cbfcbbbc5fc1ae3c7c277e4c85f9a66994e6e59b02e7f18b5ec4cb7f321",
+          "judge_sha256": "5334997cce4d7a00a53b0d3ded05e30254324e56f22d2328f3a18e3a0cd8a8f9"
+        }
+      }
+    },
+    {
+      "question_id": "0a34ad58",
+      "question_type": "single-session-preference",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "2d890cf52ea255b984fdf73cd91373b0d094a60507625d0f7c4ce45226b5e9e4",
+          "judge_sha256": "0d1328b1783c6de0bb5717b3cc39ad0fbe9633ea1bd05fd9e06582e3c39d251b"
+        },
+        "lexical": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "1a1718f59aa28b72f4862886f6f9f03525810b8c062e45f9e445267d62afb3aa",
+          "judge_sha256": "2895321f8db78f43b28f01455932e2bf78aaa503e088b55155f570a43ac2b9ff"
+        },
+        "mem0": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "a1621496faece935fad2782dde76e78ac80b8d14fa4196511f2aba0ae0321f22",
+          "judge_sha256": "a0123e0fd5bcb04c915a4daee26b0e760625add98400ea4ab2f1cd571364b3f1"
+        }
+      }
+    },
+    {
+      "question_id": "b6025781",
+      "question_type": "single-session-preference",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "0f0143fb4bba6f7fa8150c66108d4bb5f7cafd70fcd34628b4880ac50cae94bb",
+          "judge_sha256": "426bdd99ddb3902c3e4553dd06bb3bed20be5aac91bc4c2e0da7c638a22089bc"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "19cf818adaf01d68f90f2557872b5852072fc62d8cd5d71784f2b3fb52cb0cfd",
+          "judge_sha256": "8a97f93ee8b6208affa6ddfa7d1b06d52e17f86c8c5e87dd77b03aec3297dada"
+        },
+        "mem0": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "a68f21363d4c24cfa1245283f5f2cbcebd69ff78701f06ab9f19564a0914c76c",
+          "judge_sha256": "28f29e1449518b852a5919512dd8836e91c1987b2e957af0c21f2c961c2e3d07"
+        }
+      }
+    },
+    {
+      "question_id": "19b5f2b3_abs",
+      "question_type": "single-session-user",
+      "arms": {
+        "none": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "139290b5dc484322e0cf77c0f51e354e802b7a98fb26b2696c7e4e94a36b3ad3",
+          "judge_sha256": "0c6e55fe8083a17d0bb6464fb36eacf626c9d4e39c7e5d139848c0cbf4ce9888"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "0db2e4a70a77e091630dfde958b20c3738471d78a648ee9a0deed625a23216d8",
+          "judge_sha256": "5e71a371348fac8d7726ddfbec5eef27c0cc42e00618a5d385bc93bd18ab2449"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "40ccf015c931c8caaaf4aee4877d012ea08382d6d6f703fd50d1c726555774a4",
+          "judge_sha256": "17df89ea4711d09b12e78bd784bd8ba119fc299dd21dec275f5b860097c910f3"
+        }
+      }
+    },
+    {
+      "question_id": "c8c3f81d",
+      "question_type": "single-session-user",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "96919dca10076af31fd1cc2a99da28bad9f47711c972e0c9c1f3dd0bc98767ea",
+          "judge_sha256": "780e5f06336876917802024dafac2a060f359bc683b9e415049e1d898ac82541"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "14f7952ed9dc3b9f02a75b93e70c0c0a27dfa76f122e956484725d7395bd6375",
+          "judge_sha256": "85ba0e532c7c4ecf07131b74e393f5321aff101843b010ba043cbb63ac16ab00"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "18f1d2dcae510b3a8be198cee63d2667e64639bfdc9b2e3826af3df7f6fd52e0",
+          "judge_sha256": "68d365f860e4c886aeb276a6778716c8cf3e348ff71abeb3ab56d86885539e78"
+        }
+      }
+    },
+    {
+      "question_id": "gpt4_85da3956",
+      "question_type": "temporal-reasoning",
+      "arms": {
+        "none": {
+          "correct": false,
+          "judge_status": "completed",
+          "session_recall_at_8": 0,
+          "answer_sha256": "8a85458239099b18bd34ee39ac6a68305f5867823d5384e58a281fba346e33ec",
+          "judge_sha256": "838bddb47f416e6e01f9507c890b4c3c5944d6e2e332d8d20f724a3a38bcb4df"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "79287763438c9607daf95e2ca73821a0c739bc4d3d16bdfdffcf258c2e2c9cb3",
+          "judge_sha256": "e8d766aff60973f575363ee95055e686f7b2d6f7e9b6385c975a6d6f9e3a6d49"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": 1,
+          "answer_sha256": "c1c805c9c77796090fe4a7a0cfabb20fc040f66586ffea7c6b13367a8284e034",
+          "judge_sha256": "db162308c7130770acb5b1c2d4ebf8f15d0199f9328153a64c47c17975945623"
+        }
+      }
+    },
+    {
+      "question_id": "gpt4_93159ced_abs",
+      "question_type": "temporal-reasoning",
+      "arms": {
+        "none": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "6d2e2df0925927f7772542e172481c400129d84b3601a8ef4e64299a83387301",
+          "judge_sha256": "f95c636a3e83fee91d9e3ea692c1cf71642bcbbb1b797ca4f33cb29919fccd9e"
+        },
+        "lexical": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "581f38482762a7e00afbbe13b8bf4c1657c99e4b7af50f4ff4006b6fb9f53cb3",
+          "judge_sha256": "d7f3c83d07ef80c75cf4ee39e378dbc5cd2ea7fde4eb8a5063fe65b6fcaf3313"
+        },
+        "mem0": {
+          "correct": true,
+          "judge_status": "completed",
+          "session_recall_at_8": null,
+          "answer_sha256": "cd57aac053a6b1d53284f3522deb1bfc60c0541c735ee2be2ba4a3f6f4997678",
+          "judge_sha256": "8be02b883ba9b0527bf0a2d225c80dfecacf598e37353482261530ade3c849e1"
+        }
+      }
+    }
+  ],
+  "per_type": [
+    {
+      "question_type": "knowledge-update",
+      "arm": "none",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 1,
+      "accuracy_over_expected": 0.5
+    },
+    {
+      "question_type": "knowledge-update",
+      "arm": "lexical",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "knowledge-update",
+      "arm": "mem0",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "multi-session",
+      "arm": "none",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 1,
+      "accuracy_over_expected": 0.5
+    },
+    {
+      "question_type": "multi-session",
+      "arm": "lexical",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "multi-session",
+      "arm": "mem0",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "single-session-assistant",
+      "arm": "none",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 0,
+      "accuracy_over_expected": 0
+    },
+    {
+      "question_type": "single-session-assistant",
+      "arm": "lexical",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "single-session-assistant",
+      "arm": "mem0",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 1,
+      "accuracy_over_expected": 0.5
+    },
+    {
+      "question_type": "single-session-preference",
+      "arm": "none",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 0,
+      "accuracy_over_expected": 0
+    },
+    {
+      "question_type": "single-session-preference",
+      "arm": "lexical",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 1,
+      "accuracy_over_expected": 0.5
+    },
+    {
+      "question_type": "single-session-preference",
+      "arm": "mem0",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 0,
+      "accuracy_over_expected": 0
+    },
+    {
+      "question_type": "single-session-user",
+      "arm": "none",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 1,
+      "accuracy_over_expected": 0.5
+    },
+    {
+      "question_type": "single-session-user",
+      "arm": "lexical",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "single-session-user",
+      "arm": "mem0",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "temporal-reasoning",
+      "arm": "none",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 1,
+      "accuracy_over_expected": 0.5
+    },
+    {
+      "question_type": "temporal-reasoning",
+      "arm": "lexical",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    },
+    {
+      "question_type": "temporal-reasoning",
+      "arm": "mem0",
+      "expected": 2,
+      "valid_judges": 2,
+      "correct": 2,
+      "accuracy_over_expected": 1
+    }
+  ],
+  "comparisons": {
+    "lexical_vs_none": {
+      "common_valid": 12,
+      "a_correct_b_incorrect": 7,
+      "a_incorrect_b_correct": 0,
+      "both_correct": 4,
+      "both_incorrect": 1,
+      "correct_count_delta_over_expected": 0.5833333333333333
+    },
+    "mem0_vs_none": {
+      "common_valid": 12,
+      "a_correct_b_incorrect": 5,
+      "a_incorrect_b_correct": 0,
+      "both_correct": 4,
+      "both_incorrect": 3,
+      "correct_count_delta_over_expected": 0.4166666666666667
+    },
+    "mem0_vs_lexical": {
+      "common_valid": 12,
+      "a_correct_b_incorrect": 0,
+      "a_incorrect_b_correct": 2,
+      "both_correct": 9,
+      "both_incorrect": 1,
+      "correct_count_delta_over_expected": -0.16666666666666663
+    }
+  }
+}

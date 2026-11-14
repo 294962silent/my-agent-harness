@@ -5,9 +5,9 @@ from __future__ import annotations
 import contextlib
 import json
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from my_coding_agent.paths import AgentPaths
 
@@ -17,6 +17,10 @@ PRIVILEGED_GLOBAL_KEYS: set[str] = {
     "httpProxy",
     "project_trust",
     "projectTrust",
+    "memory_index",
+    "observation",
+    "dream_optimization",
+    "context_compaction",
 }
 
 
@@ -28,6 +32,77 @@ class CompactionSettings(BaseModel):
     keep_recent_tokens: int = Field(default=20000, alias="keepRecentTokens")
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class MemoryIndexSettings(BaseModel):
+    """Opt-in OSS candidate cache; credentials belong in provider environment."""
+    enabled: bool = False
+    provider: Literal["mem0"] = "mem0"
+    config_file: str | None = None
+    config: dict[str, Any] = Field(default_factory=dict)
+    timeout: float = Field(default=2.0, gt=0, allow_inf_nan=False)
+    close_timeout: float = Field(default=0.1, ge=0, allow_inf_nan=False)
+    model_config = ConfigDict(extra="forbid")
+
+
+class ContextCompactionSettings(BaseModel):
+    """Host-controlled deterministic context policy; baseline remains the default."""
+    mode: Literal["baseline", "layered"] = "baseline"
+    recent_tool_groups: int = Field(default=2, strict=True, ge=0)
+    micro_min_chars: int = Field(default=1000, strict=True, ge=1)
+    model_context_window: int | None = Field(default=None, strict=True, gt=0)
+    output_reserve: int = Field(default=1024, strict=True, ge=0)
+    safety_margin: int = Field(default=256, strict=True, ge=0)
+    summary_max_tokens: int = Field(default=1024, strict=True, ge=1)
+    model_config = ConfigDict(extra="forbid")
+
+    def to_policy(self):
+        from my_agent_core.context_compaction import CompactionPolicy
+        return CompactionPolicy(**self.model_dump())
+
+    @model_validator(mode="after")
+    def validate_reserves(self):
+        self.to_policy()
+        return self
+
+
+class ObservationSettings(BaseModel):
+    """Credential environment names only; never serialize credential values."""
+    enabled: bool = False
+    backend: Literal["langfuse"] = "langfuse"
+    public_key_env: str = "LANGFUSE_PUBLIC_KEY"
+    secret_key_env: str = "LANGFUSE_SECRET_KEY"
+    base_url: str | None = None
+    capacity: int = Field(default=1024, gt=0)
+    network_timeout: float = Field(default=5.0, gt=0, allow_inf_nan=False)
+    close_timeout: float = Field(default=5.0, ge=0, allow_inf_nan=False)
+    model_config = ConfigDict(extra="forbid")
+
+
+class DreamOptimizationSettings(BaseModel):
+    """Trusted global optimizer defaults; no task execution or activation here."""
+    enabled: bool = False
+    dataset_manifest: str | None = None
+    registry_path: str | None = None
+    max_candidates: int = Field(default=16, strict=True, ge=1, le=16)
+    budgets: list[Annotated[int, Field(strict=True, ge=1, le=100000)]] = Field(
+        default_factory=lambda: [1, 2, 4], min_length=1, max_length=4,
+    )
+    max_seconds: float = Field(default=300.0, strict=True, gt=0, le=3600, allow_inf_nan=False)
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("budgets")
+    @classmethod
+    def unique_budgets(cls, values):
+        if len(values) != len(set(values)):
+            raise ValueError("Dream optimization budgets must not repeat")
+        return values
+
+    @property
+    def status(self) -> str:
+        if not self.enabled:
+            return "disabled"
+        return "configured" if self.dataset_manifest else "needs_dataset"
 
 
 class Settings(BaseModel):
@@ -52,6 +127,10 @@ class Settings(BaseModel):
 
     # ── 会话与压缩管线 ──
     compaction: CompactionSettings = Field(default_factory=CompactionSettings)
+    context_compaction: ContextCompactionSettings = Field(default_factory=ContextCompactionSettings)
+    memory_index: MemoryIndexSettings = Field(default_factory=MemoryIndexSettings)
+    observation: ObservationSettings = Field(default_factory=ObservationSettings)
+    dream_optimization: DreamOptimizationSettings = Field(default_factory=DreamOptimizationSettings)
     auto_save_session: bool = Field(default=True, alias="autoSaveSession")
 
     # ── 权限与安全 ──
@@ -109,6 +188,9 @@ def load_settings(paths: AgentPaths | None = None, cwd: Path | str | None = None
     try:
         return Settings.model_validate(merged)
     except Exception:
+        if any(isinstance(merged.get(key), dict) and merged[key].get("enabled")
+               for key in ("memory_index", "observation", "dream_optimization")):
+            raise ValueError("Invalid enabled optional integration settings") from None
         return Settings()
 
 

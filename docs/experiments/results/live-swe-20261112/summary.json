@@ -1,0 +1,98 @@
+{
+  "task": "sympy__sympy-20590",
+  "unique_tasks": 1,
+  "model_trials": 2,
+  "excluded_pre_agent_attempts": 1,
+  "provider": "OpenCode Go OpenAI-compatible",
+  "requested_model": "deepseek-v4.1-flash",
+  "order": [
+    "on",
+    "off"
+  ],
+  "campaign_order_seed": 23,
+  "provider_sampling_seed": null,
+  "temperature": 0.7,
+  "max_requests_per_trial": 16,
+  "output_tokens_per_request": 4096,
+  "context_budget": 32000,
+  "campaign_authorization_usd": 30,
+  "arms": {
+    "on": {
+      "requests": 16,
+      "solver_stop_reason": "budget_exhausted",
+      "official_resolved": true,
+      "official_completed_instances": 1,
+      "official_errors": 0,
+      "input_tokens_from_reported_total": 80706,
+      "completion_tokens": 4533,
+      "cache_read_tokens_observed": 69888,
+      "cache_read_field_coverage": 15,
+      "conservative_cost_usd": 0.029658,
+      "request_latency_median_seconds": 4.583996057510376,
+      "request_window_seconds": 94.4025444984436,
+      "official_test_runtime_seconds": 4.23,
+      "official_evaluation_wall_seconds": 21.85,
+      "official_test_counts": {
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 21,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      }
+    },
+    "off": {
+      "requests": 16,
+      "solver_stop_reason": "budget_exhausted",
+      "official_resolved": true,
+      "official_completed_instances": 1,
+      "official_errors": 0,
+      "input_tokens_from_reported_total": 110165,
+      "completion_tokens": 4902,
+      "cache_read_tokens_observed": 92032,
+      "cache_read_field_coverage": 15,
+      "conservative_cost_usd": 0.038939,
+      "request_latency_median_seconds": 5.878226399421692,
+      "request_window_seconds": 142.17800664901733,
+      "official_test_runtime_seconds": 3.75,
+      "official_evaluation_wall_seconds": 21.49,
+      "official_test_counts": {
+        "FAIL_TO_PASS": {
+          "success": 1,
+          "failure": 0
+        },
+        "PASS_TO_PASS": {
+          "success": 21,
+          "failure": 0
+        },
+        "FAIL_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        },
+        "PASS_TO_FAIL": {
+          "success": 0,
+          "failure": 0
+        }
+      }
+    }
+  },
+  "cost_basis": "Client conservative cold-input peak-price accounting at input $0.30/M, output $1.20/M; cached input receives no discount. This is not a reconciled provider invoice.",
+  "cache_hit_ratio": null,
+  "conclusion": "Both arms resolve this one official task. Artifact externalization did not activate, so this pair cannot establish an artifact benefit; task trajectories and latency/cost differ stochastically.",
+  "requests": 32,
+  "conservative_cost_usd": 0.068597,
+  "budget_held_or_accounted_usd": 0.068597,
+  "artifact_externalizations_observed_on": 0,
+  "contrast_activation": "No artifact files were created in the on trial; this pair is end-to-end smoke, not an activated artifact ablation.",
+  "adapter_protocol": "v1 before read-tool-registration correction; source snapshot preserved below"
+}

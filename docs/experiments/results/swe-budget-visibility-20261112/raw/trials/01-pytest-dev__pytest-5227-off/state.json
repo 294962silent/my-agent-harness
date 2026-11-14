@@ -1,0 +1,62 @@
+{
+  "plan_sha256": "89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5",
+  "run_id": "710d1e7f070751ccae75d8730d3d5cc8",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/.session.jsonl.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/artifacts/.my_agent_core/artifacts/e2f116df60e20a8c/2a027593eedf207b665649e5c7ae040b.json",
+      "sha256": "6411b9e87a2b9bd159ca3e2573cc2a67f17105c911ab4480369ada3e787976fe",
+      "bytes": 422
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/artifacts/.my_agent_core/artifacts/e2f116df60e20a8c/2a027593eedf207b665649e5c7ae040b.txt",
+      "sha256": "2a027593eedf207b665649e5c7ae040bc43e0016005aaed3c141eddc905f9330",
+      "bytes": 7965
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/artifacts/.my_agent_core/artifacts/e2f116df60e20a8c/557bde475017230b1bb328f87f48b3e6.json",
+      "sha256": "a63d20e3b94350062e94fb38163ca398ab59d1ee9e9176dc7df09d947b47c209",
+      "bytes": 422
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/artifacts/.my_agent_core/artifacts/e2f116df60e20a8c/557bde475017230b1bb328f87f48b3e6.txt",
+      "sha256": "557bde475017230b1bb328f87f48b3e6dc25df8c4b9a92794d4d890772c0fddd",
+      "bytes": 7077
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/artifacts/.my_agent_core/artifacts/e2f116df60e20a8c/7384093aa68f2b151bcbb92093d064ac.json",
+      "sha256": "239b78b932420f55a3b7142028b8ce27d34b064258c85ffe76a5123dfd7c54b2",
+      "bytes": 422
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/artifacts/.my_agent_core/artifacts/e2f116df60e20a8c/7384093aa68f2b151bcbb92093d064ac.txt",
+      "sha256": "7384093aa68f2b151bcbb92093d064acd391ee60d269eccdec164c096d1e5a31",
+      "bytes": 7112
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/model_patch.jsonl",
+      "sha256": "2b54f91da5d2e1a69fefdb57a0f304eb3bb16b13d1783deab6f497c5b6c927c9",
+      "bytes": 1688
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/run.json",
+      "sha256": "830bba25f2f34d58f7dcc1eee30b343659685a0cf586d1cdfecf2bf72b8c0125",
+      "bytes": 3707
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/session.jsonl",
+      "sha256": "c7770c6343d77eff6d8e8a9142a3bcbb6f8ebf6648bbbd9b6e86bd4ac433753e",
+      "bytes": 71816
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/01-pytest-dev__pytest-5227-off/agent/worktree-observations.jsonl",
+      "sha256": "18f583ee6971a559d410e9bb9af1a3c17ab023d4a1a1b946a18a0ecc2236bcbc",
+      "bytes": 5140
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "stage": "test_blind_exploratory_recovery_r1",
+  "registration": "after_collection_failure_before_first_test",
+  "source_commit": "c927650f1f0e07f2db8901df33ec529ab8428467",
+  "script_sha256": "d64a6d9fc542f09225645eab88af17e9959f1176d8abe91ee173f7ef08d52553",
+  "paid_execution_source_changed": false,
+  "provider_calls": 0,
+  "full_collection_tasks": 5,
+  "train_trace_coverage": [
+    3,
+    3
+  ],
+  "holdout_trace_coverage": [
+    1,
+    2
+  ],
+  "unavailable_task": "HumanEval/32",
+  "missing_result_not_replaced_with_zero": true,
+  "raw_sdk_selected": {
+    "parameters": null,
+    "policy_hash": "f46ca7adbe15280bc7ec375255bee72fd0d5f55cb237e672ce05b8918d6aecc6",
+    "role": "baseline"
+  },
+  "sdk_objective": "mean-recorded-best-ratio-v1",
+  "sdk_evaluations": 48,
+  "sdk_budget_unit": "recorded scored-tree actions; not API requests or tokens",
+  "partial_holdout_gains_not_exported_as_overall_validation": true,
+  "research_policy": {
+    "C_condition": "reference_fallback_not_trained_intervention",
+    "incumbent_gain": null,
+    "kind": "observed",
+    "online_parameter_rule": "online_reference_fallback",
+    "optimizer_summary_sha256": "cae5d6746b93c24c72ba100eb9fdc01114f77c559c7241d0dd468042f59a6116",
+    "parameters": {
+      "max_refine": 1,
+      "max_width": 2
+    },
+    "policy_hash": "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8",
+    "promoted": false,
+    "publication_status": "validation_incomplete_rejected_for_publication",
+    "raw_sdk_selected": {
+      "parameters": null,
+      "policy_hash": "f46ca7adbe15280bc7ec375255bee72fd0d5f55cb237e672ce05b8918d6aecc6",
+      "role": "baseline"
+    },
+    "recovery_id": "exploratory_recovery_r1_after_collection_before_first_test",
+    "research_rule": "freeze train-selected candidate even if holdout rejects publication; label rejection explicitly",
+    "selected_parameters": null,
+    "selected_role": "baseline",
+    "selected_sdk_policy_hash": "f46ca7adbe15280bc7ec375255bee72fd0d5f55cb237e672ce05b8918d6aecc6",
+    "selection": "single_train_selected_candidate",
+    "validation_coverage": {
+      "replayable": 1,
+      "total": 2,
+      "unavailable": [
+        "HumanEval/32"
+      ]
+    },
+    "validation_gain": null
+  },
+  "C_learning_contribution": "not_identifiable_reference_fallback",
+  "seal_sha256": "db7c582ed24095ecefcc0ca553956603e5d9a7454c86847442ffd7fd4c097dcc",
+  "input_manifest_sha256": "53dfe2626d217b9b85c8100e769530fb0cc4e04626bf4b3f3ae0fe5c873e2d1e",
+  "raw_sdk_return_sha256": "cae5d6746b93c24c72ba100eb9fdc01114f77c559c7241d0dd468042f59a6116",
+  "initial_operator_argument_rejection": {
+    "cause": "output_directory_must_be_separate_from_campaign",
+    "sdk_started": false,
+    "provider_calls": 0
+  },
+  "method_limitations": [
+    "Exploratory amendment after observing holdout failure, not original complete validation.",
+    "No new trained parameter policy was selected; C uses the fixed online reference fallback.",
+    "No policy promoted; overall validation unavailable."
+  ]
+}

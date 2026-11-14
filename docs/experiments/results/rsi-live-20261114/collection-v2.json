@@ -1,0 +1,204 @@
+{
+  "stage": "all_collection_before_any_test",
+  "campaign_id": "rsi-live-20261114-v2",
+  "protocol_id": "rsi-humaneval-calibration-v2-turn12",
+  "collection_episodes": 5,
+  "final_successes": 4,
+  "final_executed": 4,
+  "final_unavailable": 1,
+  "train_trace_coverage": {
+    "available": 3,
+    "planned": 3
+  },
+  "holdout_trace_coverage": {
+    "available": 1,
+    "planned": 2
+  },
+  "validation_status": "unavailable_incomplete_do_not_promote",
+  "requests": 84,
+  "tokens": 237239,
+  "input_tokens": 223250,
+  "output_tokens": 13989,
+  "cache_read_coverage": 82,
+  "cache_read_known_tokens": 195840,
+  "cache_read_rate": null,
+  "cost_usd": null,
+  "unknown_requests": 0,
+  "held_tokens": 0,
+  "test_episodes_started": 0,
+  "optimizer_status": "export_failed_before_sdk_no_policy",
+  "optimizer_error_type": "ValueError",
+  "optimizer_error": "unverified trace or task split",
+  "journal_sha256": "6ac401df4ff172f20f3ca42fa41d94ba474d9634fd29a51117c91fbbe9be8e5b",
+  "rows": [
+    {
+      "trial_id": "collect-HumanEval-11-s23",
+      "task_id": "HumanEval/11",
+      "split": "train",
+      "host_status": "completed",
+      "agent_status": "completed",
+      "provenance": "observed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "trace_available": true,
+      "final_executed": true,
+      "final_success": true,
+      "visible_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "terminal_reasons": [
+        "end_turn",
+        "end_turn",
+        "end_turn",
+        "end_turn"
+      ],
+      "requests": 18,
+      "tokens": 47421,
+      "evaluations": 6,
+      "report_sha256": "0a60d2b652bad728cd12abe146cf6eeb8d119df22b2eee391ba46c1033a287b7",
+      "final_evidence_sha256": "97bce8a763efb49ac626b219d75a56d411c0e6230e7f0c375df0cd83b8dce3da"
+    },
+    {
+      "trial_id": "collect-HumanEval-27-s23",
+      "task_id": "HumanEval/27",
+      "split": "train",
+      "host_status": "completed",
+      "agent_status": "completed",
+      "provenance": "observed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "trace_available": true,
+      "final_executed": true,
+      "final_success": true,
+      "visible_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "terminal_reasons": [
+        "end_turn",
+        "end_turn",
+        "end_turn",
+        "end_turn"
+      ],
+      "requests": 20,
+      "tokens": 49400,
+      "evaluations": 6,
+      "report_sha256": "9b3d9ff70ed6aeeb9f36da372c218c2e059fd034a07d4bc237d24aba7e35458f",
+      "final_evidence_sha256": "d5fadc6d84a5a3f49e74543dd1cb3ad88daff9c4a643d91f3864770dd094bfab"
+    },
+    {
+      "trial_id": "collect-HumanEval-32-s23",
+      "task_id": "HumanEval/32",
+      "split": "val",
+      "host_status": "completed",
+      "agent_status": "invalid_attempt",
+      "provenance": "observed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 1,
+      "valid_attempts": 0,
+      "invalid_attempts": 1,
+      "not_dispatched_attempts": 3,
+      "trace_available": false,
+      "final_executed": false,
+      "final_success": false,
+      "visible_scores": [
+        1.0
+      ],
+      "terminal_reasons": [
+        "budget_exhausted"
+      ],
+      "requests": 12,
+      "tokens": 58011,
+      "evaluations": 2,
+      "report_sha256": "89a8141843516e72d7f600da2c65181820977db2d9e0317de1e1551cb692d044",
+      "final_evidence_sha256": "3cec15d60db3050189ec7fe5144cf010316b61ac69475560be7562a84f77718a"
+    },
+    {
+      "trial_id": "collect-HumanEval-45-s23",
+      "task_id": "HumanEval/45",
+      "split": "val",
+      "host_status": "completed",
+      "agent_status": "completed",
+      "provenance": "observed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "trace_available": true,
+      "final_executed": true,
+      "final_success": true,
+      "visible_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "terminal_reasons": [
+        "end_turn",
+        "end_turn",
+        "end_turn",
+        "end_turn"
+      ],
+      "requests": 18,
+      "tokens": 43199,
+      "evaluations": 6,
+      "report_sha256": "f1ab16b7c937690f8dce792aa7455ddd640b30f26f7686165d1a291336f04119",
+      "final_evidence_sha256": "48555bcb84f430567254670e6ab2d9558c0d52ba2c395ac44d3b0c163fd14f9b"
+    },
+    {
+      "trial_id": "collect-HumanEval-7-s23",
+      "task_id": "HumanEval/7",
+      "split": "train",
+      "host_status": "completed",
+      "agent_status": "completed",
+      "provenance": "observed",
+      "planned_attempts": 4,
+      "dispatched_attempts": 4,
+      "valid_attempts": 4,
+      "invalid_attempts": 0,
+      "not_dispatched_attempts": 0,
+      "trace_available": true,
+      "final_executed": true,
+      "final_success": true,
+      "visible_scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "terminal_reasons": [
+        "end_turn",
+        "end_turn",
+        "end_turn",
+        "end_turn"
+      ],
+      "requests": 16,
+      "tokens": 39208,
+      "evaluations": 6,
+      "report_sha256": "da8ade82ff251f86c8e80998ec4c5e6c9ea9f159667343458dec362d7bff7d76",
+      "final_evidence_sha256": "056bb6813adae3ff044b1eace986178d8b0f6d773513ea40b46a353d61969563"
+    }
+  ],
+  "preparation_extra": {
+    "connectivity_requests": 1,
+    "connectivity_tokens": 55,
+    "v1_calibration_requests": 4,
+    "v1_calibration_tokens": 8496
+  },
+  "all_new_authorization_totals_at_this_stage": {
+    "requests": 89,
+    "tokens": 245790
+  }
+}

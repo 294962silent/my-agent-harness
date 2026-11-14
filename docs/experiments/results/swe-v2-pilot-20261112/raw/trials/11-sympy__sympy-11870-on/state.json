@@ -1,0 +1,7 @@
+{
+  "plan_sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+  "run_id": "3cc3280484b35eacb6f44f496ff0796a",
+  "status": "blocked",
+  "outputs": [],
+  "error_code": "gold_gate_rejected"
+}

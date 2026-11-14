@@ -1,0 +1,120 @@
+{
+    "id": "6782c603-2953-47ca-8fdc-d1dc9a479a45",
+    "task_name": "fix-git",
+    "trial_name": "fix-git__sWvxn7J",
+    "trial_uri": "file:///home/mll/.cache/my-agent-bench/jobs/oracle-fix-git-20261112-v5/fix-git__sWvxn7J",
+    "task_id": {
+        "path": "/home/mll/.cache/my-agent-bench/tasks/tb2-69671fba-raw/fix-git"
+    },
+    "source": null,
+    "task_checksum": "7fa0a681f751d73f290d862522a82a5e448fa529834987ee1b80e5665c51aa7e",
+    "config": {
+        "task": {
+            "path": "/home/mll/.cache/my-agent-bench/tasks/tb2-69671fba-raw/fix-git",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "fix-git__sWvxn7J",
+        "trials_dir": "/home/mll/.cache/my-agent-bench/jobs/oracle-fix-git-20261112-v5",
+        "install_only": false,
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": "oracle",
+            "import_path": null,
+            "model_name": null,
+            "base_url": null,
+            "model_api_key_name": null,
+            "model_api_format": null,
+            "skip_model_parsing": false,
+            "n_concurrent": null,
+            "concurrency_group": null,
+            "skills": [],
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "resume_trajectory": false,
+            "load_trajectory": null,
+            "extra_allowed_hosts": [],
+            "kwargs": {},
+            "mcp_servers": []
+        },
+        "user_agent": null,
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "stream": false,
+            "cpu_enforcement_policy": "auto",
+            "memory_enforcement_policy": "auto",
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "override_tpu": null,
+            "mounts": null,
+            "extra_docker_compose": [],
+            "kwargs": {},
+            "extra_allowed_hosts": []
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "artifacts": [],
+        "extra_instruction_paths": [],
+        "extra_instructions": [],
+        "job_id": "35074373-ac99-4da6-b794-8b162b445dcf",
+        "source_trial": null
+    },
+    "agent_info": {
+        "name": "oracle",
+        "version": "1.0.0",
+        "model_info": null
+    },
+    "agent_result": {
+        "n_input_tokens": null,
+        "n_cache_tokens": null,
+        "n_output_tokens": null,
+        "cost_usd": null,
+        "model_usage": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 0.0
+        }
+    },
+    "verifier_environment_mode": "shared",
+    "exception_info": null,
+    "started_at": "2026-11-12T10:20:44.548141Z",
+    "finished_at": "2026-11-12T10:23:27.848407Z",
+    "environment_setup": {
+        "started_at": "2026-11-12T10:20:44.592859Z",
+        "finished_at": "2026-11-12T10:20:48.133490Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-11-12T10:20:48.133533Z",
+        "finished_at": "2026-11-12T10:20:48.133578Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-11-12T10:20:48.133641Z",
+        "finished_at": "2026-11-12T10:20:50.837673Z"
+    },
+    "verifier": {
+        "started_at": "2026-11-12T10:20:53.260626Z",
+        "finished_at": "2026-11-12T10:23:16.858368Z"
+    },
+    "step_results": null
+}

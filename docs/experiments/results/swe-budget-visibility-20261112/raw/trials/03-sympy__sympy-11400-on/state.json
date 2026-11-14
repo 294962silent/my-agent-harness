@@ -1,0 +1,102 @@
+{
+  "plan_sha256": "89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5",
+  "run_id": "e1c2b908450f5e28a7c012ad379b4882",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/.session.jsonl.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/3b7677f224ddaf92b95ddda57ca7cbe4.json",
+      "sha256": "0e0093d69945b37a59fd1a127d1c505c03e6f21b1a82935964c6929423a4edbf",
+      "bytes": 419
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/3b7677f224ddaf92b95ddda57ca7cbe4.txt",
+      "sha256": "3b7677f224ddaf92b95ddda57ca7cbe4b071f803c47f80f1fdd3e876719f0f49",
+      "bytes": 8588
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/5dd3956e766fb14393f3ab0e2584f8d7.json",
+      "sha256": "cb8a25f2101cecc20ccd07b9b37e0160ca113a0b341f39396b77581e192f2280",
+      "bytes": 419
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/5dd3956e766fb14393f3ab0e2584f8d7.txt",
+      "sha256": "5dd3956e766fb14393f3ab0e2584f8d713f19d7f6ff44f99076c66b2b74930b1",
+      "bytes": 6788
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/75271bcb02b83ab1fb0f8bdad3b3bebf.json",
+      "sha256": "aa9df67503aa5e9446165b116c6de4447d0493d620982f7910e6ca9166eb1042",
+      "bytes": 419
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/75271bcb02b83ab1fb0f8bdad3b3bebf.txt",
+      "sha256": "75271bcb02b83ab1fb0f8bdad3b3bebf51812fc1f6b57e7e314a81b7fac01856",
+      "bytes": 6558
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/8b7db0ff7d8eac91d09a80be214693ab.json",
+      "sha256": "a747071f8d8fbf0690d3fb207692795226ba13ffc626bbc8ab52cc9faea50722",
+      "bytes": 419
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/8b7db0ff7d8eac91d09a80be214693ab.txt",
+      "sha256": "8b7db0ff7d8eac91d09a80be214693ab206ea55e84c28411c8086a5006fa9a43",
+      "bytes": 6088
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/9835f38f134f4ab3071c91de860bbb07.json",
+      "sha256": "692bfd8ec9fd7d4fb269e26b196143ed958ff495cbf0422facdfb81ddd1eb223",
+      "bytes": 419
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/9835f38f134f4ab3071c91de860bbb07.txt",
+      "sha256": "9835f38f134f4ab3071c91de860bbb0769ebd76957e63fc5a6359d9ab5840c27",
+      "bytes": 6886
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/a541064cb15897d9b800518d99c03367.json",
+      "sha256": "da8ea57f1a081584df2ce94359fc4a0a1f8e0982db5b104ee4ff07b76ab245f5",
+      "bytes": 420
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/a541064cb15897d9b800518d99c03367.txt",
+      "sha256": "a541064cb15897d9b800518d99c03367134d17daa7eec6195bda494268530b6c",
+      "bytes": 10514
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/f0ec2df53f87054418f9e30f075d6d37.json",
+      "sha256": "703c1c0c46bd80c3f1b8e40b2d35da2eb9d59c3b60b2cfd1ec28b72f2d12ec54",
+      "bytes": 420
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/4948914fea523a38/f0ec2df53f87054418f9e30f075d6d37.txt",
+      "sha256": "f0ec2df53f87054418f9e30f075d6d37651963d204dbc697c6f65df62880ad4f",
+      "bytes": 14383
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/model_patch.jsonl",
+      "sha256": "125e0cc8b943e798cfe7dd25e292401d17c26815b8062cafd4e82a72a014907c",
+      "bytes": 102
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/run.json",
+      "sha256": "7607cbbe18d000ff7aa0335d1ed3321ae46ba46a4e1065d2954a81cf7b8309fe",
+      "bytes": 3707
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/session.jsonl",
+      "sha256": "1e940718dc3ac93be1471bd524dff3713b3eb1b0ff83d24355895508a8096404",
+      "bytes": 98290
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/03-sympy__sympy-11400-on/agent/worktree-observations.jsonl",
+      "sha256": "4dd8a567e7707d172577eb286c41b02d2d60e95af3f2d9ce7c4ef9733063525e",
+      "bytes": 4110
+    }
+  ]
+}

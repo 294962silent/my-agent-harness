@@ -1,0 +1,40 @@
+# Keep experiment evidence byte-for-byte identical across checkout platforms.
+docs/experiments/results/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/experiments/benchmark-preflight/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Official stdout contains terminal control characters and trailing spaces.
+# Preserve it as evidence rather than applying source formatting rules.
+docs/experiments/results/**/test-output.txt -whitespace
+docs/experiments/benchmark-preflight/terminal-raw/verifier-bootstrap-output.txt -whitespace
+
+# Fixed-byte EVO pins and new machine-readable evidence must survive autocrlf.
+experiments/benchmark_live/evo_cache_adapter.py text eol=lf
+experiments/benchmark_live/evo_agent.py text eol=lf
+docs/experiments/SWE_EVO_SOURCE_MANIFEST.json text eol=lf
+docs/experiments/results/long-horizon-20261113/**/*.json text eol=lf
+docs/experiments/results/long-horizon-20261113/**/*.jsonl text eol=lf
+
+# RSI/Qwen evidence records exact source bytes; preserve those across checkout.
+src/my_agent_core/agent.py text eol=lf
+src/my_agent_core/context.py text eol=lf
+src/my_agent_core/context_compaction.py text eol=lf
+src/my_agent_core/memory_mem0.py text eol=lf
+src/my_agent_core/memory_qwen.py text eol=lf
+src/my_agent_core/_memory_qwen_worker.py text eol=lf
+src/my_coding_agent/agent.py text eol=lf
+src/my_coding_agent/settings.py text eol=lf
+src/my_coding_agent/rpc/session_handlers.py text eol=lf
+src/my_coding_agent/rsi_runtime.py text eol=lf
+src/my_coding_agent/rsi_branch.py text eol=lf
+experiments/context_rsi/*.json text eol=lf
+src/my_coding_agent/dream_rsi_contract.py text eol=lf
+src/my_coding_agent/dream_rsi_optimizer.py text eol=lf
+experiments/context_rsi/live_runner.py text eol=lf
+experiments/context_rsi/live_tasks.py text eol=lf
+experiments/context_rsi/recover_research_policy.py text eol=lf
+experiments/context_rsi/continue_live.py text eol=lf
+experiments/context_rsi/analyze_live.py text eol=lf
+experiments/context_rsi/reports/live-v2-analysis-*/analysis.json text eol=lf
+experiments/context_rsi/reports/train-tree-diagnostic-20261114.json text eol=lf
+experiments/context_rsi/summarize_continuation.py text eol=lf
+experiments/context_rsi/reports/live-v2-continuation-*/continuation.json text eol=lf
