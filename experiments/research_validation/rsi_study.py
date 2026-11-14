@@ -424,3 +424,4 @@ def freeze_protocol():
 def cli(argv):
     """Run a study subprocess with private argv (no shell); returns CompletedProcess."""
     return subprocess.run(argv, cwd=str(WORKTREE), capture_output=True, text=True, encoding='utf-8')
+
