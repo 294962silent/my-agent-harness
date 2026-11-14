@@ -967,3 +967,15 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 审查追加：SOL-1复核目标/网格/调度源码结论无阻断，收窄“算法生成”措辞为优化器不生成新策略程序，执行Agent仍生成代码。SOL-2复核数值和推断边界无阻断，明确v2约286.6万分属53槽，另加先导/连通8551才是本批287.5万。新增面试P59/P60解释有效候选数与单链压力；没有发布新策略或改变原评分。
 
 本批验证：主代理核对诊断指向的两份原分析来源SHA、53份sealed runtime result SHA全部一致；重算885请求/2629233test tokens、首/后attempt分账、A/B逐题差值与48/47饱和计数通过。12个新增本地链接有效，5个暂存文件均为docs、生产源码变更0，实际API/Git凭据扫描0命中，diff check通过。仅文档与事后数值诊断，不重跑无关模型或整库性能实验。
+
+### E-SCENARIO-SOURCE-RESEARCH：2026-11-14 / 借鉴已有方案，收敛简历场景
+
+- 用户将推进重点转向GitHub已有场景与可复用设计，目标Agent／大模型应用开发实习；长程方向保持可讨论。主代理按项目事实/证据组织定位，复用两位Sol/medium做有界源码核查，没有恢复DSH。新增Agent/benchmark模型运行0、数据下载0、外部项目安装/执行0、生产源码变更0。
+- 核8仓库固定HEAD/README/元数据，AIDE与Anthropic各深入3文件；结果保存在docs/research/2026-11-14-*，包括[来源清单](../research/2026-11-14-scenario-source-manifest.json)和[主研究方案](../research/2026-11-14-scenario-selection.md)。AIDE MIT正文补核；Anthropic根MIT与子README Internal Anthropic use字样并列未下许可结论；MLGym已归档/README CC-BY-NC-4.0，不选为快速代码基础。未引用star数或上游效果数字作为本项目成绩。
+- 推荐具体场景为可恢复、多轮代码实验Agent，AIDE的draft/debug/improve树与autoresearch固定预算/测量协议作主线；Ralph/Anthropic跨会话任务清单为持久化参考，Hermes经验复用、DeepAgents接口作为补充。备选为5–10功能项的软件交付场景；没有同时建设两个产品或替换现有框架。
+- 三项目计划角色明确：Mem0检索经验证的实验经验，不存进度真值；Langfuse关联调用/分支/分数与成本，真实服务回读仍待验；Dream-RSI消费有区分度的评分树，在统一预算下选受控策略。当前实测无学习收益结论不改，不把新场景计划包装成已融合或已提升。
+- AIDE所读源码由反馈模型提取指标、holdout主要提示约束；Journal序列化不足以证明可靠恢复。Anthropic所读host用fresh SDK client和文件续接，功能flag主要由Agent改，未见独立宿主验收门，且不能只换模型名就适配DeepSeek。借鉴这些结构，同时拟补宿主可信数值评分与场景checkpoint。
+- 当前本地两文件接缝核验确认：Runtime限制VisibleCommandEvaluator类型，默认score仅exit0/1；单文件证据只核baseline、候选整树导出；Runtime为single-use。待补范围明确为数值评分/feedback schema、固定数据且候选写入受限的task adapter、校验加载的实验checkpoint，未在本批实现。
+- 方案补充任务内部train/dev/final与任务集合策略train/holdout/test两层划分，正式对照经验库只从策略train写入、其余仅读冻结快照。首版少量CPU任务先预检差异与资源，再真实运行、恢复与公平消融，不承诺8GB已跑通或固定天数完成。既有CLAIMS追加计划/已证实边界，简历不编造新场景指标。
+
+审查/验证追加：SOL-2复核主方案无新指标冒领，按建议明确test provider输入scope、Mem0“经验证经验”的计划性质和两层split；SOL-1核本地接缝，数值评分/候选写入范围/checkpoint缺口已写入方案。主代理验证8个固定commit为完整40位、来源清单无重复、10个新增本地链接有效；6个暂存文件均docs、生产变化0，实际API/Git凭据精确匹配0，diff check通过。本批没有安装或复跑外部项目，源码事实与性能实测保持区分。
