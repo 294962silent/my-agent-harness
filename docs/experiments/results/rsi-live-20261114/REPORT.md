@@ -25,7 +25,7 @@
 
 5个collection共84请求237239tokens，完整交付4/5。val32达到12轮上限，虽然可见分数1，但没有合法trace、selected或final；完整验证覆盖不足。原导出失败和全5题分母保留，首test前登记available-tree探索性恢复，只用全部3个train选唯一候选，partial holdout不参与排序或重选，未生产晋升。
 
-3棵train树各4节点，12个可见分数全1；5策略×3树×预算1/2/4的45个train回放叶best全1。当前质量目标没有奖励少用action，按fixed-reference优先平局规则选baseline。SDK baseline不是起始stub的0分；tree action也不是API请求。见[训练诊断](../../../../experiments/context_rsi/reports/train-tree-diagnostic-20261114.json)。
+3棵train树各4节点，12个可见分数全1；5策略×3树×预算1/2/4的45个train回放叶best全1。当前质量目标没有奖励少用action，按fixed-reference优先平局规则选baseline。SDK baseline不是起始stub的0分；tree action也不是API请求。见[训练诊断](../../../../experiments/context_rsi/reports/train-tree-diagnostic-20261114.json)和[事后无增益原因分析](NO_GAIN_ANALYSIS.md)，后者不修改原选择或放宽主分析门禁。
 
 raw SDK baseline/parameters=null/hash `f46ca7adbe15280bc7ec375255bee72fd0d5f55cb237e672ce05b8918d6aecc6`；effective在线reference2/1/hash `33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8`。两种身份分开，publication为`validation_incomplete_rejected_for_publication`，promoted=false，learning_contribution=`not_identifiable`。这不是“0%学习提升”。
 
@@ -51,7 +51,7 @@ test的cache_read字段覆盖为A220/221、B230/231、C213/214、random219/219�
 - 主代理真实执行最终analyzer与continuation披露CLI均exit0：48/48 test终态、37/37续槽终态，原failed保留；所有53槽均有sealed终态。
 - 独立[运行审计](runtime-audit-final.json)核26项：原prefix/failed bytes、严格一次续槽、用量、117份原执行源码、新wrapper、任务/策略封印及所有result/final链均通过；相关owned进程匹配0，cleanup_errors全空。
 - 分组与实际触发指标见[独立指标](metrics-detail-final.json)；summary purpose请求、artifact_read调用和snapshot-derived micro/fold视图分别计量，缺失观察保持unavailable。
-- v2自身969次provider请求purpose均为agent，summary请求0；artifact_read/search recorded starts均0，成功回读次数不可由该元数据判定。phase-fold snapshot-derived views为B24/C22/random24，micro snapshot groups为B0/C2/random1，A均0；记录到投影视图不等于测得操作次数或语义无损。
+- v2自身969次provider请求purpose均为agent，summary请求0；artifact_read/search recorded starts均0，成功回读次数不可由该元数据判定。test阶段phase-fold snapshot-derived views为B24/C22/random24共70，collection另8，v2合计78；test micro snapshot groups为B0/C2/random1，collection为0，A为0。记录到投影视图不等于测得操作次数或语义无损。
 - 新controller/原runner/analyzer本机组合91 passed；独立披露工具10 passed，批次不混成模型成功率。源码及辅助工具head6488442四组CI和SDK专项已核成功，最终文档head检查另见PR。
 - 下一批先在独立train先导确认评分区分度，预注册质量与效率目标、补齐完整holdout，并分别记录configured和实际发送的schema。当前test不用于重选策略或修改目标；长程收益仍需适配容器任务后的独立评测。
 

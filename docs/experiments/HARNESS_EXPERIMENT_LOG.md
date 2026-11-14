@@ -953,3 +953,17 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 独立指标终态追加：SOL-2已保存metrics-detail-final.json并核实四臂、全部准备成本、缓存字段和实际触发；已记录190个attempt schema指纹完全相同、另1个原失败指纹缺失。SDK口径进一步拆分为48个回放评估叶与82次离线tree action，旧记录里的“48次评估”不是48个动作或API请求。原始评分、策略与历史快照均不改。
 
 交付前复核追加：SOL-2只读审查最终REPORT无阻断的数字/口径问题，按建议区分v2的969次与含准备总量974次。主代理从原journal独立重算969+4+连通1及全部tokens一致；27个新增本地链接有效，14个暂存文件实际API/Git凭据精确匹配0，两份最终分析/披露JSON的Git暂存bytes与SHA一致。仅列明确路径暂存，未纳入模型、凭据或私有原文。
+
+### E-LIVE-NO-GAIN-DIAGNOSIS：2026-11-14 / 饱和信号、退化搜索与输入压力
+
+- 用户要求详细解释无提升。复用两位Sol/medium只读分工：源码目标/调度与候选范围，封印数值/逐题成本与上下文观测；新增模型请求0、重评分0，原数据与策略不改。新[分析](results/rsi-live-20261114/NO_GAIN_ANALYSIS.md)及[安全可重算JSON](results/rsi-live-20261114/no-gain-diagnostic.json)单独保存。
+- train12节点满分；test首48个attempt的visible全1，47个有效final所选全为b0_a0且通过。全部190个有可见评分的test attempt均1，另1权限失败attempt无分数。不把未选候选推为隐藏测试全通过，C与B同参数仍不可识别学习贡献。
+- 源码确认optimizer只按recorded-best-ratio均值排序，平分优先reference，没有真实tokens/requests成本。四候选来自网格前缀，均width1、refine0/1/4/64；已有树只深度1，后两回放裁成1，有效覆盖重复。fixed/rsi走同一计划，random主要改变四节点顺序；无满分早停，同分保留先胜者。这是本批实现/设置的范围限制，尚未修改源码。
+- test首attempt已发生259请求649834tokens，后续626请求1979399tokens（约75.3%test tokens），scope全部可归属。这不是提前停止后能省75.3%的保证；下批须在同一合法动作集合及独立任务上验质量/成本。
+- A/B原始成本分别221/231请求、701172/670237tokens：B少4.41%tokens却多4.52%请求。12个task/seed差值7负5正；题20两重复合计−56233，其余五题合计+25298。这里只事后描述，不放宽原主门禁，不排名或宣称稳定降本；C失败提前结束的低成本也不当收益。
+- 实际provider输入峰值A7627/B5090/C5897/random4598；layered估计视图峰值B5254/C6019/random4951，记录阈值25600、配置窗32000。已记录视图无触阈值证据，canonical全历史峰值和服务端有效窗未知。总调用量大不等于单链长，0summary只是辅助证据。本轮没有Mem0召回或Langfuse可靠性消融。
+- 补充范围澄清：test fold为70个snapshot-derived views，collection另8，v2总78；micro为test3/collection0。原REPORT同一段把v2请求与test视图并列，现加明确scope，原JSON/计数不变。借鉴仍是固定Dream受控参数路径与既有分层上下文；新增工作仅解释实验适用范围与搜索退化，不恢复DSH、不新发模型任务。
+
+审查追加：SOL-1复核目标/网格/调度源码结论无阻断，收窄“算法生成”措辞为优化器不生成新策略程序，执行Agent仍生成代码。SOL-2复核数值和推断边界无阻断，明确v2约286.6万分属53槽，另加先导/连通8551才是本批287.5万。新增面试P59/P60解释有效候选数与单链压力；没有发布新策略或改变原评分。
+
+本批验证：主代理核对诊断指向的两份原分析来源SHA、53份sealed runtime result SHA全部一致；重算885请求/2629233test tokens、首/后attempt分账、A/B逐题差值与48/47饱和计数通过。12个新增本地链接有效，5个暂存文件均为docs、生产源码变更0，实际API/Git凭据扫描0命中，diff check通过。仅文档与事后数值诊断，不重跑无关模型或整库性能实验。
