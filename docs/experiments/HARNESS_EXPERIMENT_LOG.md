@@ -1115,3 +1115,15 @@ v3 初跑先通过首两次云回读，但第 8 笔抽取在 8192 completion tok
 冻结 plan 还把 92 个唯一 session 写成 92 次抽取，但现有 `session_documents` 为满足 6000 字符上限，将 2 个超长 session 各拆成 2 个 document，真实抽取为 94 次、v3 模型调用为 334 次。以 ledger 为准；下一版需按实际 document 数冻结调用数。另有一处不涉及模型/评分的编排缺陷：test 的 253 次调用和两个 conversation 全部终态后，写第二个同名 `owner-close.json` 触发 `FileExistsError`；STOPPED 原样保留，离线 report/finalization 标记 `stopped_after_all_terminal_calls`，停止后模型请求为 0。
 
 冻结前相关测试 66 passed，Ruff 通过；覆盖轮询成败、超时、重复/歧义、未知 usage、旧 receipt 隔离、32K 预算预留、累计 lineage 去重和原有 fail-closed 契约。最终证据见 [v3 REPORT](results/locomo-memory-v3-20261115/REPORT.md)、[summary.json](results/locomo-memory-v3-20261115/summary.json)、[rows.jsonl](results/locomo-memory-v3-20261115/rows.jsonl)、[usage.json](results/locomo-memory-v3-20261115/usage.json) 和 [finalization.json](results/locomo-memory-v3-20261115/finalization.json)。
+
+### E-INTERVIEW-RESUME-V1：2026-11-15 / 面试验收快照与 RSI compat5 部分 STOP
+
+本轮只做文档、只读证据整理与 Canvas 更新，不新增模型请求，不修改 RSI 源码、plan、journal 或实验账本。新增 [interview-resume-v1.md](reports/interview-resume-v1.md)，给出简历项目名、四条不夸大的量化 bullet、Mermaid 架构与执行流、普通 Agent Harness 对比、真实技术难点、失败实验、四类消融表、用量和 13 个面试追问；同步 `mem0-rsi-effects.canvas.tsx` 展示真实成绩、95% Wilson 边界、valid judge、paired p 值和运行用量。
+
+Memory 口径沿用已提交 `f3e0d4d` 与上一节：LongMemEval 12 题为 none 4/12、lexical 11/12、Mem0 9/12，lexical 对 Mem0 2 胜 0 负 10 平，exact McNemar `p=0.500`；LoCoMo 30 题四臂为 16/17/12/15，raw Mem0 对 lexical 为 3 对 2 right-only（`p=1.000`），facts Mem0 对 facts lexical 为 4 对 1 right-only（`p=0.375`）。不把数值差写成显著提升；12 个 `length` judge 按冻结规则计错，valid-only 只作敏感性分析。
+
+RSI compat5 在只读轮询期间达到安全 STOP，未完成原定八臂。QSAR fixed-reference 与 random 均完成 final，RMSE `1.432272`、utility `0.411138`、final/均值基线 RMSE 比 `1.000`；两臂各 12 requests / 5 evaluations。QSAR trained-frozen 因 Wine holdout 无完整可晋升记录，先写入 `policy_fallback_applied`，有效参数等同于 width 2 / refine 1；随后到 1,200 秒边界 STOP。该臂已发起 12 requests，其中 11 个 settled、provider total 149017 tokens，第 12 个为 `cancelled` 且 usage null；完成 3 个 evaluation，但没有 committed round 或 final。安全 STOP receipt 的 `error_type` 为 `RuntimeError`、`provider_unknown_may_have_occurred=false`，同时保留在途 usage 未知这一事实，不重试。QSAR fixed-greedy 与 Auto-MPG 四臂均未启动。因此只能报告 fixed/random 相同和训练贡献不可识别，不能报告 RSI 改善。
+
+可确认用量为：两个完成 QSAR final 合计 24 requests / 303197 tokens / 10 evaluations / 2309.024 秒；含 stopped frozen 后为 36 dispatched、35 settled + 1 unknown、已知 452214 tokens、13 evaluations / 3509.071 秒。由于 1 个在途 usage 未知，本轮 token 与 USD 均不能完整汇总；历史账本仍保留 71 requests / 2 unknown / 746600 settled tokens / 802180 accounting units，货币金额 unavailable。
+
+验收使用定向只读检查：核对 LoCoMo REPORT、summary、usage、finalization 与 LongMemEval旧结果；解析 compat5 `last-summary.json`、`STOP.json`、`c-qsar-frozen/journal.jsonl` 和 `calls.jsonl`；检查 Markdown 标题、表格与相对链接，并对 Canvas 做 TypeScript 语法/模块导入与本地静态一致性检查。本批没有运行 RSI、Python 全量测试或新增付费请求。
