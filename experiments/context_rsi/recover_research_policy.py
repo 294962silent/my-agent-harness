@@ -153,8 +153,17 @@ def inspect_recovery(campaign_root):
         "publication_status": PUBLICATION_STATUS, "validation_gain": None, "incumbent_gain": None}
 
 
-def _train_only_choice(result, max_candidates):
-    choices = [{"role": "baseline", "parameters": None, "policy_hash": policy_identity(None)}, *optimizer.candidate_grid(max_candidates)]
+def _train_only_choice(result, max_candidates, optimizer_root):
+    frozen = _read(Path(optimizer_root) / "plan.json")
+    if type(frozen.get("max_candidates")) is not int or frozen["max_candidates"] != max_candidates:
+        raise RecoveryError("frozen candidate limit differs")
+    try:
+        candidates = optimizer._planned_candidates(Path(optimizer_root), frozen)
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        raise RecoveryError("frozen candidate reconstruction failed") from exc
+    if frozen.get("candidates") != candidates:
+        raise RecoveryError("frozen candidate inventory differs")
+    choices = [{"role": "baseline", "parameters": None, "policy_hash": policy_identity(None)}, *candidates]
     scores = result["train_scores"]
     if set(scores) != {c["role"] for c in choices}:
         raise RecoveryError("training score inventory differs")
@@ -259,7 +268,7 @@ def recover(campaign_root, output):
     projection = _read(manifest)
     if result["status"] != "completed" or result["kind"] != projection["kind"] or result["promoted"] is not False:
         raise RecoveryError("SDK search must finish as same-kind nonpublishing dry run")
-    chosen = _train_only_choice(result, plan["optimization"]["max_candidates"])
+    chosen = _train_only_choice(result, plan["optimization"]["max_candidates"], output / "optimizer")
     fallback = chosen["role"] == "baseline"
     parameters = {"max_width": 2, "max_refine": 1} if fallback else chosen["parameters"]
     policy = {"parameters": parameters, "policy_hash": policy_identity(parameters), "kind": result["kind"], "promoted": False,

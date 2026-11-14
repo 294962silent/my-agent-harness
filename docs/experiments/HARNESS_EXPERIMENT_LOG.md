@@ -997,3 +997,10 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 真实首轮与环境故障追加：v1 red在Mem0初始化、baseline评分和首个模型响应/ls/find工具消息后MemoryError，0round提交；实际1请求1252tokens全部settled、1评分、21.2123297活跃秒、cleanup_errors空。主代理曾误判为初始化前0API，核journal后当场更正，原失败不覆盖。相同response工具调用离线重放成功，具体异常行已丢，不能宣称确定根因或已修复。随后本机进程启动出现Windows STATUS_COMMITMENT_LIMIT且执行服务重启，数次整库日志无终态，全部记为incomplete而非通过。当前无本轮pytest/research残留，资源恢复后按独立v2新ID串行运行，事前追加运维修订并从原ceiling扣除v1消耗，旧round保持永久阻断。
 
 交付前软件验收追加：27项campaign/integration定向通过、相关源/测试Ruff与diff check通过；uv build成功，实际wheel198项包含五个research模块及python -m CLI入口，CI补同样ZIP清单检查。既有81/86定向与27有重叠不相加，真实Docker八场景单列。28个明确暂存路径实际模型/Git凭据精确扫描0命中；将先推功能版本由GitHub执行完整四矩阵回归，远端结果与后续真实smoke另记，不把配置矩阵视作已过。
+
+### E-RESEARCH-CI-COMPAT：2026-11-14 / 候选去重后的历史恢复兼容
+
+- 功能版160118f已推origin PR2。CI43562920689发现历史恢复测试按c01编号代表(1,1)；平衡候选顺序后该角色实际是(2,0)。只改测试按参数语义选真实role后，本机真实SDK又揭示恢复器_train_only_choice固定要求4候选，与有效签名去重后的清单不兼容，不能只改断言掩盖。
+- 最小修改仅experiments/context_rsi/recover_research_policy.py和对应测试：从optimizer/plan.json冻结max_candidates与版本重建候选，严格比对候选清单；旧版用legacy grid，新版复用生产train trace SHA/执行签名去重，不读取holdout重选。原117执行档案、旧journal、评分/策略/结果不改，不重跑旧campaign；当前research实现pins未变。
+- 助手原12项（含两真实SDK）与新增2项分别通过，主代理完整14项独立复跑57.22秒通过；Ruff/diffcheck通过。新增legacy/holdout干扰和候选/trace篡改拒绝回归。真实SDK使用合成/固定评分树，无新增模型调用。
+- 用户追加“一天内可写简历”要求后，交付收敛为可信代码实验、完成边界恢复和可复查证据；大规模benchmark与质量消融不阻塞首版，不将未验证的RSI/Mem0提升写简历。新求职稿和主张账本由great-resume技能生成，个人职责与源码掌握程度独立标记待确认。

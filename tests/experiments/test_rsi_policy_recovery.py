@@ -90,11 +90,22 @@ def fake_sdk(monkeypatch):
         calls.append((manifest, output, kwargs))
         Path(output).mkdir()
         (Path(output) / "synthetic-only.json").write_text('{"not_actual_SDK":true}')
-        choices = recovery.optimizer.candidate_grid(4)
+        data = recovery.optimizer.load_dataset(manifest)
+        entries = []
+        for index, entry in enumerate(data["entries"]):
+            name = f"trace-{index}.json"
+            (Path(output) / name).write_bytes(Path(entry["path"]).read_bytes())
+            entries.append({"split": entry["split"], "frozen_file": name, "sha256": entry["sha256"]})
+        choices = recovery.optimizer.effective_candidates(
+            [e["trace"] for e in data["entries"] if e["split"] == "train"], kwargs["budgets"], kwargs["max_candidates"])
+        (Path(output) / "plan.json").write_text(json.dumps({"candidate_selection": "effective-balanced-v2",
+            "max_candidates_excludes_baseline": True, "max_candidates": kwargs["max_candidates"],
+            "budgets": list(kwargs["budgets"]), "entries": entries, "candidates": choices}))
+        selected = next(p for p in choices if p["parameters"] == {"max_width": 1, "max_refine": 1})
         scores = {"baseline": .5, **{p["role"]: .5 for p in choices}}
-        scores["c01"] = .9
-        return {"status": "completed", "kind": "synthetic", "selected": choices[1], "train_scores": scores,
-            "holdout_scores": {"baseline": 0, "c01": 1}, "promoted": False,
+        scores[selected["role"]] = .9
+        return {"status": "completed", "kind": "synthetic", "selected": selected, "train_scores": scores,
+            "holdout_scores": {"baseline": 0, selected["role"]: 1}, "promoted": False,
             "validation_gain": 999, "incumbent_gain": 999}
     monkeypatch.setattr(recovery.optimizer, "optimize", optimize)
     return calls
@@ -110,6 +121,39 @@ def test_preflight_retains_full_denominator_and_does_not_search(campaign, fake_s
     assert failed["usage"]["requests"] == 12 and failed["usage"]["used_tokens"] == 60
     assert result["validation_gain"] is result["incumbent_gain"] is None
     assert not fake_sdk and campaign.path.read_bytes() == before
+
+
+def test_train_choice_reconstructs_legacy_grid_and_ignores_holdout(tmp_path):
+    choices = recovery.optimizer._legacy_candidate_grid(4)
+    selected = next(p for p in choices if p["parameters"] == {"max_width": 1, "max_refine": 1})
+    plan = {"max_candidates": 4, "candidates": choices}
+    (tmp_path / "plan.json").write_text(json.dumps(plan))
+    result = {"train_scores": {"baseline": .5, **{p["role"]: .9 if p == selected else .5 for p in choices}},
+              "selected": selected, "holdout_scores": {"baseline": 999, selected["role"]: -999}}
+    assert recovery._train_only_choice(result, 4, tmp_path) == selected
+    plan["candidates"] = recovery.optimizer.candidate_grid(4)
+    (tmp_path / "plan.json").write_text(json.dumps(plan))
+    with pytest.raises(recovery.RecoveryError, match="candidate inventory"):
+        recovery._train_only_choice(result, 4, tmp_path)
+
+
+def test_train_choice_rejects_new_plan_candidate_and_trace_tampering(campaign, fake_sdk, tmp_path):
+    output = tmp_path / "recovery"
+    recovery.recover(campaign.root, output)
+    root = output / "optimizer"
+    result = json.loads((output / "sdk-return.json").read_text())
+    plan = json.loads((root / "plan.json").read_text())
+    original = (root / "plan.json").read_bytes()
+    assert recovery._train_only_choice(result, 4, root) == result["selected"]
+    plan["candidates"][0]["parameters"]["max_width"] = 64
+    (root / "plan.json").write_text(json.dumps(plan))
+    with pytest.raises(recovery.RecoveryError, match="candidate inventory"):
+        recovery._train_only_choice(result, 4, root)
+    (root / "plan.json").write_bytes(original)
+    entry = next(e for e in plan["entries"] if e["split"] == "train")
+    (root / entry["frozen_file"]).write_text('{}')
+    with pytest.raises(recovery.RecoveryError, match="candidate reconstruction"):
+        recovery._train_only_choice(result, 4, root)
 
 
 def test_recovery_commits_only_unpublished_train_choice_preserving_raw(campaign, fake_sdk, tmp_path):
@@ -234,4 +278,4 @@ def test_actual_sdk_recovery_is_synthetic_unpublished_and_keeps_validation_null(
         assert result["policy"]["parameters"] == {"max_width": 2, "max_refine": 1}
         assert result["policy"]["C_condition"] == "reference_fallback_not_trained_intervention"
     else:
-        assert result["policy"]["selected_role"] == "c01"
+        assert result["policy"]["parameters"] == {"max_width": 1, "max_refine": 1}
