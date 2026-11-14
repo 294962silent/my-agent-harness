@@ -1004,3 +1004,13 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 最小修改仅experiments/context_rsi/recover_research_policy.py和对应测试：从optimizer/plan.json冻结max_candidates与版本重建候选，严格比对候选清单；旧版用legacy grid，新版复用生产train trace SHA/执行签名去重，不读取holdout重选。原117执行档案、旧journal、评分/策略/结果不改，不重跑旧campaign；当前research实现pins未变。
 - 助手原12项（含两真实SDK）与新增2项分别通过，主代理完整14项独立复跑57.22秒通过；Ruff/diffcheck通过。新增legacy/holdout干扰和候选/trace篡改拒绝回归。真实SDK使用合成/固定评分树，无新增模型调用。
 - 用户追加“一天内可写简历”要求后，交付收敛为可信代码实验、完成边界恢复和可复查证据；大规模benchmark与质量消融不阻塞首版，不将未验证的RSI/Mem0提升写简历。新求职稿和主张账本由great-resume技能生成，个人职责与源码掌握程度独立标记待确认。
+
+### E-RESEARCH-LIVE-DELIVERY：2026-11-14 / 两轮真实恢复演示与首版求职材料
+
+- v2 red真实完成两轮：首进程第一轮提交后暂停（12请求48915tokens/4评分），另进程resume延续相同root和累计预算，第二轮后24请求106826tokens/8dev评分；独立final增加第9次评分、不增加模型调用，valid=true/RMSE0.7554124334834056。活跃时间786.9840692秒，held=0、usage完整；final后状态closed。最终代码是原均值baseline，不是Agent改进。
+- 原v1失败保留1请求1252tokens/1dev评分，全部red共25请求108078tokens/10评分（9dev+1final），价格未核保持null。v2扣减原总ceiling的事后运维修订单列；未修订首计划没有被宣称完整完成。两轮各3个attempt，2个轮次上限无效/1个正常结束，trace均None；无完整train+holdout，CLIoptimize返回blocked/promoted=false，没有训练或发布新策略。Airfoil/white和正式三组未启动，不做效果排名。
+- 第二轮Mem0真实CPU检索1个有效语义候选、3次embedding调用、fallback=false/closed=true；首轮空库无命中。仅证明单经验功能，不证明优于词法。v1/v2本地调用start/end各1/24一一覆盖并逐请求tokens对账，v2两次export closed、0drop/0error，provider clients均关闭；Langfuse云上传仍unverified。
+- SOL-2独立校验两journal链、调用结算、checkpoint/result/最终预测hash、恢复前后预算、11研究源码pins和经验key；两条经验精确由dev commit重建，未含final值，final后无新事件。公开交付仅聚合/hash，完整labels、候选/session、模型响应保留本机私有目录。[报告](results/research-agent-20261114/LIVE_REPORT.md)与[live-summary.json](results/research-agent-20261114/live-summary.json)给出来源与局限；optimize证据明确为工具输出转录，非journal封印实验。
+- 修后代码head47eee1bc48c9e6b242d3b5bc0e849cfec7f4da63的[CI43563738685](https://github.com/294962silent/my-agent-harness/actions/runs/43563738685)四矩阵pytest/Ruff/TUI/wheel及ZIP模块检查全success，Ubuntu3.13可选SDK专项成功；仅跳过真实权重smoke和Linux不适用Windowsjunction。功能版160118f失败不覆盖；后续文档提交状态另核，不借旧绿灯冒称新head。
+- 新[简历交付稿](../interview/RESUME_READY.md)含3条客观工程表述、60秒口述、HR短文和5个追问；[8项事实账本](../interview/research-career-claims.json)结构校验通过。个人参与时间、负责模块和源码掌握程度仍由本人确认。新增面试P66深挖正常交付/可评分/完整策略训练树的区别，下一批需校准轮次再冻结对照，不仅给RSI额外机会。
+- 相对改前：原退出码评分→固定私有标签数值评分；原单运行快照→完成round事务式提交与预算续接；原网格前缀→训练执行签名去重；原候选专属选优→baseline也参与；原三SDK接线→场景级经验/观测/策略角色。优势是可复查、失败可定位、预算不随恢复清零；代价是容器依赖、更多落盘、保守阻断和SDK本地资源成本。借鉴AIDE实验树、autoresearch固定边界，沿用既有Session/Artifact与Dream固定SDK，没有声称新的AutoML算法或长程胜率提升。

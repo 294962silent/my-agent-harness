@@ -12,6 +12,8 @@
 
 - [框架重设计](docs/architecture/HARNESS_VNEXT.md)：模块职责、不变量、依赖方向和本批边界。
 - [面试证据入口](docs/interview/README.md)：八模块讲解、开发问题与主张边界。
+- [代码实验真实演示](docs/experiments/results/research-agent-20261114/LIVE_REPORT.md)：两轮、跨进程恢复、宿主评分与独立final；包含首次失败和完整成本，不宣称RSI质量提升。
+- [简历项目稿](docs/interview/RESUME_READY.md)：三条工程表述、60秒口述、追问与事实账本；个人职责按实际参与确认。
 - [统一离线实验](experiments/harness_eval/README.md)：脚本 provider / 临时文件验证真实工程路径。
 - [本轮原始结果](docs/experiments/results/redesign/20261112T095857-2381042b458f/report.md)：manifest、raw.jsonl 和 summary 同目录。
 - [持续实验记录](docs/experiments/HARNESS_EXPERIMENT_LOG.md)：历史、失败、更正及交付状态。

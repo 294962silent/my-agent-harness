@@ -39,3 +39,9 @@
 - 三份 UCI CSV 已下载并记录 SHA；尚未形成新模型成绩。Langfuse 环境变量均未配置，待核全局设置 presence。
 
 失败、变化与最终命令追加到 [统一实验日志](../experiments/HARNESS_EXPERIMENT_LOG.md)，不得将本页待办视为完成结论。
+
+## 首版验收结果
+
+已交付可信评分、受限容器、持久预算、完整round检查点、CLI与三项场景入口。真实red完成两轮、独立进程resume与一次final；含v1失败共25请求108078tokens/10评分，final保留均值baseline。研究源冻结后未因CI修复变化，功能head47eee1b四矩阵及SDK/wheel检查通过。
+
+用户要求一天内可写简历，首版收敛为这条工程流程：[最终报告](../experiments/results/research-agent-20261114/LIVE_REPORT.md)、[简历稿](../interview/RESUME_READY.md)及事实账本已整理。两轮都含无效attempt，无完整策略训练树；Airfoil/white/正式三组未启动，RSI未晋升、Mem0无质量对照、Langfuse无云端回读。原计划的质量实验仍为后续工作，不影响本次工程首版交付，也不被记为已完成。
