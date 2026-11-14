@@ -1,0 +1,57 @@
+{
+  "all_requests": {
+    "cache_read_tokens": 791680,
+    "cache_write_tokens": 0,
+    "completion_tokens": 256086,
+    "prompt_tokens": 412183,
+    "requests": 345,
+    "total_tokens": 1459949
+  },
+  "conservative_cost_usd": {
+    "cumulative_ledger": 0.668615,
+    "v3": 0.595242
+  },
+  "inherited": {
+    "cache_read_tokens": 63616,
+    "cache_write_tokens": 0,
+    "completion_tokens": 34916,
+    "prompt_tokens": 41278,
+    "requests": 11,
+    "total_tokens": 139810
+  },
+  "provider_billed_cost_usd": null,
+  "v3": {
+    "cache_read_tokens": 728064,
+    "cache_write_tokens": 0,
+    "completion_tokens": 221170,
+    "prompt_tokens": 370905,
+    "requests": 334,
+    "total_tokens": 1320139
+  },
+  "v3_by_stage": {
+    "answer": {
+      "cache_read_tokens": 256,
+      "cache_write_tokens": 0,
+      "completion_tokens": 18198,
+      "prompt_tokens": 133753,
+      "requests": 120,
+      "total_tokens": 152207
+    },
+    "extract": {
+      "cache_read_tokens": 727808,
+      "cache_write_tokens": 0,
+      "completion_tokens": 183697,
+      "prompt_tokens": 210593,
+      "requests": 94,
+      "total_tokens": 1122098
+    },
+    "judge": {
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 0,
+      "completion_tokens": 19275,
+      "prompt_tokens": 26559,
+      "requests": 120,
+      "total_tokens": 45834
+    }
+  }
+}

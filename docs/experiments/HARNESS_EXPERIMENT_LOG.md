@@ -1099,3 +1099,19 @@ dev 两笔抽取均正常 `finish_reason=stop`，分别产出 17 与 10 条 fact
 结果是四臂均 `0/0` 已实现 denominator，计划 30/臂，正确数、paired difference、类别、跨 session、session recall@8 与 MRR 全部 unavailable，不按 0 分统计。公开逐题文件 120 行均明确标记 `not_dispatched`。从 dev conversation 开始到 STOP 的 wall time 为 336.830356 秒，其中 ledger 两请求跨度 89.814669 秒。
 
 冻结前 51 项定向测试通过、Ruff 通过；测试新增覆盖 8192 上限、单 trace 单次回读、回读缺失停止、v2 协议/预算冻结和既有四臂 fail-closed 契约。v1 的 1 请求 / 11351 tokens / `$0.005249` 及 Langfuse 回读文件哈希保留在 [v1-preservation.json](results/locomo-memory-v2-20261115/v1-preservation.json)。公开机器结果、逐题未派发状态、两笔调用收据和冻结 provenance 见 [v2 REPORT](results/locomo-memory-v2-20261115/REPORT.md) 与同目录 manifest。
+
+### 2026-11-15：LoCoMo v3 recovery 完成四臂真实结果，保留首跑与收尾异常
+
+在独立 `memory-locomo-v3r1` 中完成四臂真实比较。新源把首两次抽取的 Langfuse metadata/usage 回读改为 180 秒有界指数轮询，模型请求仍 `retry=0`，未知 usage 立即停止；每 trace 要求且只接受一个精确匹配 observation。v1、v2 和 v3 初跑的 terminal ledger 以累计 lineage 继承，v3 恢复调用统一使用 `v3r1.` namespace，未重放旧 call identity。题目、数据、四臂、top-8、6000 字符上下文和 judge 规则不变。
+
+v3 初跑先通过首两次云回读，但第 8 笔抽取在 8192 completion tokens 达到 `length` 且正文为空，故保留 8 requests / 102453 tokens 并停止，未重放。恢复批次只把抽取上限提高到 32768、模型请求窗口提高到 600 秒；冻结 plan SHA `716d25917f028793ed4a4f1263dc5aa03287fa7b0ceb6973eb975ad8a1c6bc1b`，source SHA `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`，gold SHA `3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf`。恢复批次首两 trace 在 13.4118 秒内通过轮询，分别查询 1/4 次，额外模型请求 0；实际 334 个 v3 请求全部 `ok`，held/unknown/inflight 均为 0。
+
+固定 30 题、四臂、`length` judge 计错的正式结果为：raw_lexical 16/30、raw_mem0 17/30、facts_lexical 12/30、facts_mem0 15/30；对应 judge valid 数 30/28/25/25。120 answer 均 valid，judge 为 108 valid、12 length、0 invalid。按冻结规则正确率为 53.33%/56.67%/40.00%/50.00%；若只看 valid judge，分别为 53.33%/60.71%/48.00%/60.00%。因此不能把排名差异解释为纯检索质量。
+
+`raw_mem0` 相对 `raw_lexical` 的配对差为 -1（2 左独胜、3 右独胜）；`facts_mem0` 相对 `facts_lexical` 为 +3（1 左独胜、4 右独胜）。跨 session 10 题正确数分别为 2/3/0/1；session recall@8 为 0.8299/0.8125/0.8913/0.9140，MRR 为 0.7837/0.7722/0.7678/0.8689。facts_mem0 的 session 排序最高，但 multi-hop 仅 1/10。
+
+真实 v3 用量为 334 requests、prompt 370905、completion 221170、cache read 728064、provider total 1320139，保守账本 `$0.595242`；连同 v1/v2/v3 初跑，累计 345 requests、provider total 1459949、保守 `$0.668615`，供应商账单 unavailable。模型请求首末跨度 3910.827 秒；dev 从冷索引到完成 1153.818 秒，test 从开始到末笔判分 2983.688 秒。
+
+冻结 plan 还把 92 个唯一 session 写成 92 次抽取，但现有 `session_documents` 为满足 6000 字符上限，将 2 个超长 session 各拆成 2 个 document，真实抽取为 94 次、v3 模型调用为 334 次。以 ledger 为准；下一版需按实际 document 数冻结调用数。另有一处不涉及模型/评分的编排缺陷：test 的 253 次调用和两个 conversation 全部终态后，写第二个同名 `owner-close.json` 触发 `FileExistsError`；STOPPED 原样保留，离线 report/finalization 标记 `stopped_after_all_terminal_calls`，停止后模型请求为 0。
+
+冻结前相关测试 66 passed，Ruff 通过；覆盖轮询成败、超时、重复/歧义、未知 usage、旧 receipt 隔离、32K 预算预留、累计 lineage 去重和原有 fail-closed 契约。最终证据见 [v3 REPORT](results/locomo-memory-v3-20261115/REPORT.md)、[summary.json](results/locomo-memory-v3-20261115/summary.json)、[rows.jsonl](results/locomo-memory-v3-20261115/rows.jsonl)、[usage.json](results/locomo-memory-v3-20261115/usage.json) 和 [finalization.json](results/locomo-memory-v3-20261115/finalization.json)。

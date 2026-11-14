@@ -1,0 +1,65 @@
+{
+  "created_at": "2026-11-14T15:47:50.349Z",
+  "critical_versions": {
+    "langfuse": "5.2.0",
+    "mem0ai": "2.2.1",
+    "qdrant-client": "1.20.0",
+    "torch": "2.8.0+cu128"
+  },
+  "hardware": {
+    "compute_capability": [
+      12,
+      0
+    ],
+    "cuda_visible_devices": "0",
+    "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "enumerated_windows_devices": [
+      "0"
+    ],
+    "project_requested_cuda_visible_devices": "2",
+    "selection_reason": "the current host exposes exactly one physical GPU; requesting nonexistent GPU 2 would fail closed",
+    "total_bytes": 8546484224
+  },
+  "linux_python": "/home/mll/.cache/my-agent-bench/qwen3-probe-venv/bin/python",
+  "model": {
+    "files": 10,
+    "license": "apache-2.0",
+    "repo": "Qwen/Qwen3-Embedding-0.6B",
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "weight_bytes": 1191586416
+  },
+  "schema_version": 1,
+  "smokes": {
+    "longest_input": {
+      "fixed_cap": 4096,
+      "input_tokens": 1710,
+      "path": "ds2-qwen-longest-input-smoke.json",
+      "sha256": "a90bd9dd8ea972a67b0068985b7c0ed7db4137ab24947816b76138ce3d70f785",
+      "status": "passed"
+    },
+    "native_wsl": {
+      "native_adds": 1,
+      "native_search_hits": 1,
+      "path": "ds2-windows-native-wsl-gpu-smoke.json",
+      "sha256": "5916301665a816a5da15d552b9a728ff39a72d8e8e38c450e1b700b038a43e67",
+      "status": "passed"
+    },
+    "official_model_pin": {
+      "path": "ds2-qwen-official-pin.json",
+      "sha256": "fcc5b64ab803277b85e71f0bf175c4c2a38021caff866e85efef28e7d8a6a3d0",
+      "status": "passed"
+    }
+  },
+  "status": "passed",
+  "versions": {
+    "anthropic": "1.5.0",
+    "filelock": "3.32.6",
+    "langfuse": "5.2.0",
+    "mem0ai": "2.2.1",
+    "numpy": "2.5.4",
+    "openai": "3.13.0",
+    "pydantic": "2.13.5",
+    "qdrant-client": "1.20.0"
+  },
+  "wsl_distribution": "Ubuntu-20.04"
+}

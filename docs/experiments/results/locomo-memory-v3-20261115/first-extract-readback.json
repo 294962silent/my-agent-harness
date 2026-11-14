@@ -1,0 +1,63 @@
+{
+  "attempts_per_trace": {
+    "extract.v3r1.s_067187554733c33d1a8f04a4": 1,
+    "extract.v3r1.s_21822e0027340ac212567b59": 4
+  },
+  "backoff": {
+    "initial_seconds": 1.0,
+    "kind": "exponential",
+    "max_seconds": 30.0,
+    "waits_seconds": [
+      1.0,
+      2.0,
+      4.0
+    ]
+  },
+  "campaign": "memory-locomo-four-arm-20261115-v3r1",
+  "distinct_traces": true,
+  "elapsed_seconds": 13.411830400000326,
+  "extra_model_requests": 0,
+  "model": "deepseek-v4.1-flash",
+  "one_observation_per_trace": true,
+  "project": "cmwg5sagt00ksad0j6au0463n",
+  "protocol": "locomo-multisession-four-arm-v3",
+  "query_errors_per_trace": {},
+  "readback_mode": "bounded_polling",
+  "rows": [
+    {
+      "metadata_only": true,
+      "model": "deepseek-v4.1-flash",
+      "observation_id": "b1a605f3a07c575d",
+      "project_id": "cmwg5sagt00ksad0j6au0463n",
+      "root_id": "extract.v3r1.s_067187554733c33d1a8f04a4",
+      "session_id": "memory-locomo-four-arm-20261115-v3r1",
+      "task_id": "s_067187554733c33d1a8f04a4",
+      "trace_id": "8114881aa8291ec7e162ab61673b487e",
+      "usage_details": {
+        "input": 9303,
+        "output": 1653,
+        "total": 10956
+      }
+    },
+    {
+      "metadata_only": true,
+      "model": "deepseek-v4.1-flash",
+      "observation_id": "53e9f55577e764fa",
+      "project_id": "cmwg5sagt00ksad0j6au0463n",
+      "root_id": "extract.v3r1.s_21822e0027340ac212567b59",
+      "session_id": "memory-locomo-four-arm-20261115-v3r1",
+      "task_id": "s_21822e0027340ac212567b59",
+      "trace_id": "0346c346ca5a9b05798c11dd2f269881",
+      "usage_details": {
+        "input": 9267,
+        "output": 5597,
+        "total": 14864
+      }
+    }
+  ],
+  "same_campaign_session": true,
+  "sample_count": 2,
+  "schema_version": 3,
+  "status": "verified",
+  "window_seconds": 180.0
+}

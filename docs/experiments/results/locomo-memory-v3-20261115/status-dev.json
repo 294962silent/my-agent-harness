@@ -1,0 +1,21 @@
+{
+  "already_completed": [],
+  "credential_source": "configured_openai_endpoint",
+  "finished_at": "2026-11-14T17:09:37.288167+00:00",
+  "first_two_cloud_verified": true,
+  "plan_sha256": "716d25917f028793ed4a4f1263dc5aa03287fa7b0ceb6973eb975ad8a1c6bc1b",
+  "processed": [
+    "conv-47"
+  ],
+  "protocol": "locomo-multisession-four-arm-v3",
+  "ready_sha256": "d6fd017b05eb64c09e8418a024383a145ecf3d809d50144ae1cc8cdb39ce9873",
+  "schema_version": 1,
+  "split": "dev",
+  "status": "completed",
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 90,
+    "unknown_or_inflight": false,
+    "used_tokens": 543602
+  }
+}

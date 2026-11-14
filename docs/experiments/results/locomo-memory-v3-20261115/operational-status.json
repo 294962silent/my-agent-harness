@@ -1,0 +1,17 @@
+{
+  "answer_status": {
+    "valid": 120
+  },
+  "judge_status": {
+    "length": 12,
+    "valid": 108
+  },
+  "stage_requests": {
+    "answer": 120,
+    "extract": 94,
+    "judge": 120
+  },
+  "terminal_requests": {
+    "ok": 334
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "close_errors": 0,
+  "dropped": 0,
+  "export_errors": 0,
+  "llm_clients_closed": true,
+  "runtime_alive_after_close": false,
+  "runtime_close_complete": true
+}

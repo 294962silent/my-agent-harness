@@ -1,0 +1,59 @@
+{
+  "longmemeval_preserved": {
+    "questions": 12,
+    "none": {"correct": 4, "expected": 12},
+    "lexical": {"correct": 11, "expected": 12},
+    "mem0": {"correct": 9, "expected": 12}
+  },
+  "v1": {
+    "protocol": "locomo-multisession-four-arm-v1",
+    "requests": 1,
+    "prompt_tokens": 9303,
+    "completion_tokens": 2048,
+    "total_tokens": 11351,
+    "finish_reason": "length",
+    "answers": 0,
+    "judges": 0,
+    "status": "preserved_not_replayed"
+  },
+  "v2": {
+    "protocol": "locomo-multisession-four-arm-v2",
+    "plan_sha256": "b0e9edc48fffb75b0ca69c64bcf36813eed86a8a5e3ad9ab287e2119d3a7368e",
+    "requests": 2,
+    "prompt_tokens": 10889,
+    "completion_tokens": 7437,
+    "cache_read_tokens": 7680,
+    "total_tokens": 26006,
+    "finish_reasons": ["stop", "stop"],
+    "answers": 0,
+    "judges": 0,
+    "stop": "single remote readback per trace did not become visible before the one-shot gate",
+    "status": "preserved_not_replayed"
+  },
+  "v3_initial": {
+    "protocol": "locomo-multisession-four-arm-v3",
+    "plan_sha256": "026d599347dc8d1224dfe539a81ecacd508023564e9463b8cd7347586bd63b82",
+    "requests": 8,
+    "prompt_tokens": 21086,
+    "completion_tokens": 25431,
+    "cache_read_tokens": 55936,
+    "total_tokens": 102453,
+    "valid_extracts_before_failure": 7,
+    "failed_extract": {
+      "run_id": "extract.v3.s_58e82fe02860689e3f2d2ba7",
+      "finish_reason": "length",
+      "completion_tokens": 8192,
+      "content_chars": 0
+    },
+    "answers": 0,
+    "judges": 0,
+    "status": "preserved_not_replayed"
+  },
+  "v3_recovery": {
+    "protocol": "locomo-multisession-four-arm-v3",
+    "recovery_revision": 1,
+    "plan_sha256": "716d25917f028793ed4a4f1263dc5aa03287fa7b0ceb6973eb975ad8a1c6bc1b",
+    "call_namespace": "v3r1.",
+    "prior_call_identities_replayed": 0
+  }
+}

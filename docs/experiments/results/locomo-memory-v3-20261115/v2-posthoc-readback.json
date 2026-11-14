@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "status": "verified_after_v2_stop",
+  "protocol": "locomo-multisession-four-arm-v2",
+  "campaign": "memory-locomo-four-arm-20261115-v2",
+  "project_id": "cmwg5sagt00ksad0j6au0463n",
+  "model": "deepseek-v4.1-flash",
+  "readback_mode": "exact_one_observation_per_trace",
+  "preserved_stop_was_reversed": false,
+  "extra_model_requests": 0,
+  "rows": [
+    {
+      "root_id": "extract.s_067187554733c33d1a8f04a4",
+      "trace_id": "280c31ff49d71d9fb579c7c1e5eaefbb",
+      "observation_id": "0499f31ca8d98ad5",
+      "usage_details": {"input": 9303, "output": 2178, "total": 11481},
+      "nonmatching_v1_generation_on_same_trace": true
+    },
+    {
+      "root_id": "extract.s_21822e0027340ac212567b59",
+      "trace_id": "fe75cfe2cab35946f447ad6e65707c68",
+      "observation_id": "25c4b27b831bb8d0",
+      "usage_details": {"input": 9266, "output": 5259, "total": 14525},
+      "nonmatching_v1_generation_on_same_trace": false
+    }
+  ]
+}

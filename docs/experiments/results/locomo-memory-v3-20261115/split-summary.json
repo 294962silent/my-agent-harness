@@ -1,0 +1,62 @@
+{
+  "dev": {
+    "facts_lexical": {
+      "accuracy_over_expected": 0.16666666666666666,
+      "accuracy_over_valid_judges": 0.2,
+      "correct": 1,
+      "expected": 6,
+      "valid_judges": 5
+    },
+    "facts_mem0": {
+      "accuracy_over_expected": 0.3333333333333333,
+      "accuracy_over_valid_judges": 0.5,
+      "correct": 2,
+      "expected": 6,
+      "valid_judges": 4
+    },
+    "raw_lexical": {
+      "accuracy_over_expected": 0.6666666666666666,
+      "accuracy_over_valid_judges": 0.6666666666666666,
+      "correct": 4,
+      "expected": 6,
+      "valid_judges": 6
+    },
+    "raw_mem0": {
+      "accuracy_over_expected": 0.8333333333333334,
+      "accuracy_over_valid_judges": 0.8333333333333334,
+      "correct": 5,
+      "expected": 6,
+      "valid_judges": 6
+    }
+  },
+  "test": {
+    "facts_lexical": {
+      "accuracy_over_expected": 0.4583333333333333,
+      "accuracy_over_valid_judges": 0.55,
+      "correct": 11,
+      "expected": 24,
+      "valid_judges": 20
+    },
+    "facts_mem0": {
+      "accuracy_over_expected": 0.5416666666666666,
+      "accuracy_over_valid_judges": 0.6190476190476191,
+      "correct": 13,
+      "expected": 24,
+      "valid_judges": 21
+    },
+    "raw_lexical": {
+      "accuracy_over_expected": 0.5,
+      "accuracy_over_valid_judges": 0.5,
+      "correct": 12,
+      "expected": 24,
+      "valid_judges": 24
+    },
+    "raw_mem0": {
+      "accuracy_over_expected": 0.5,
+      "accuracy_over_valid_judges": 0.5454545454545454,
+      "correct": 12,
+      "expected": 24,
+      "valid_judges": 22
+    }
+  }
+}
