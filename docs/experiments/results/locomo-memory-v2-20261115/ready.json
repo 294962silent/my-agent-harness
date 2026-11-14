@@ -1,0 +1,39 @@
+{
+  "budget": {
+    "expected_model_calls": 332,
+    "frozen_accounting_units": 5000000,
+    "frozen_requests": 384,
+    "original_accounting_units": 1500000,
+    "original_requests": 168,
+    "output_caps": {
+      "answer": 1024,
+      "extract": 8192,
+      "judge": 512
+    },
+    "wall_clock_hours": 8
+  },
+  "campaign_id": "memory-locomo-four-arm-20261115-v2",
+  "counts": {
+    "answer_calls": 120,
+    "dev_qa": 6,
+    "expected_model_calls": 332,
+    "extract_calls": 92,
+    "judge_calls": 120,
+    "sessions": 92,
+    "test_qa": 24
+  },
+  "embedding_calls": 0,
+  "environment_sha256": "2b0d5af414b598b5d4aa6e3539881b0132b7851873e6ca33784950e47e8fb01f",
+  "frozen_at": "2026-11-14T16:11:07.935025+00:00",
+  "gold_sha256": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf",
+  "ledger_created": false,
+  "model_manifest_sha256": "05bec2826e2d492f4146087960647fea98a694204ab14662dc0a96a800af8b3d",
+  "paid_calls": 0,
+  "plan_manifest_sha256": "d80b9cd89841bd3bde6af85118f48a16c278a9b01728005b904f2f0f1883b3b0",
+  "plan_path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v2\\plan\\plan.json",
+  "plan_sha256": "b0e9edc48fffb75b0ca69c64bcf36813eed86a8a5e3ad9ab287e2119d3a7368e",
+  "protocol": "locomo-multisession-four-arm-v2",
+  "schema_version": 1,
+  "source_dataset_sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4",
+  "status": "ready"
+}

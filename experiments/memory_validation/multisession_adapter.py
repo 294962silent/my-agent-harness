@@ -91,7 +91,7 @@ class GuardedMem0LLM:
     ):
         if not owner.required:
             raise ValueError("native extraction requires observation")
-        if type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 2048:
+        if type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 8192:
             raise ValueError("invalid frozen extraction output cap")
         self.owner, self.ledger = owner, ledger
         self.run_id, self.task_id = safe_id(run_id), safe_id(task_id)

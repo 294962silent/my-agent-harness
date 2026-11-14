@@ -1085,3 +1085,17 @@ dev首笔正常抽取请求已结算：input 9,303 + output 2,048 = **11,351 tok
 最终离线验证为`41 passed in9.07s`；四臂/CLI协议源Ruff通过。独立WSL worker因先设置`sys.path`再导入而触发E402，已作为冻结源保留，没有为格式重写已付费实验源；此前native+seccomp CUDA联合smoke继续作为运行时证据。新增CLI提供prepare/freeze/verify/run/report，冻结source/data/gold/READY和重复启动阻断；真实失败摘要见[failure-summary.json](results/locomo-memory-20261114/failure-summary.json)，不含原题、history、gold、模型正文或凭据。
 
 代价与限制：首会话事实抽取没有形成可消费JSON，四臂比较无法开始；提高extraction output cap会构成观察失败后的协议修订，需显式新决定，本批未自行重试。当前主机硬件与项目预期的L20冲突已经披露。RSI部分未因本批失败而改状态；当前Canonical Canvas仅展示已验收的LongMemEval结果、LoCoMo失败边界以及RSI兼容运行的`STOP_BEFORE_PAID`阶段。
+
+### 2026-11-15：LoCoMo v2 提高抽取上限后在首两笔云端回读门禁停止
+
+在全新 `memory-locomo-v2` 目录建立 `locomo-multisession-four-arm-v2`，没有改写或重放 v1 的失败请求。v2 保持 dev 6 + test 24、92 sessions、原题/数据/gold、四臂、top-8、6000 字符上下文与评分 prompt 不变；仅把共享 extraction 输出上限从 2048 提高到 8192，并把门禁明确设为 384 requests / 5,000,000 accounting units / 每 split 8 小时、0 retry。前两笔正常抽取改为每 trace 只做一次 Langfuse metadata/usage 回读，任一遗漏立即停止。
+
+v2 plan SHA256 为 `b0e9edc48fffb75b0ca69c64bcf36813eed86a8a5e3ad9ab287e2119d3a7368e`，plan manifest SHA256 为 `d80b9cd89841bd3bde6af85118f48a16c278a9b01728005b904f2f0f1883b3b0`；原始数据 SHA256 继续为 `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`，gold SHA256 继续为 `3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf`，Qwen revision 继续固定为 `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`。
+
+dev 两笔抽取均正常 `finish_reason=stop`，分别产出 17 与 10 条 fact：第一笔 prompt 9303 / completion 2178 / total 11481，第二笔 prompt 1586 / completion 5259 / cache-read 7680 / total 14525。合计 2 requests、prompt 10889、completion 7437、provider total 26006，保守成本 `$0.014496`；供应商实际账单仍为 unavailable。两笔输出均未触及 8192 上限。
+
+两笔模型结果均已结算，但一次性的首两次云端回读未形成匹配收据，门禁按协议停止，外层记录 `LLMError`、`automatic_retry=false`，campaign 立即封锁。没有第三笔抽取、answer、judge、题替换或 test 运行，也没有在失败后轮询云端。由于没有验证收据，不能区分单次回读时远端暂未可见与字段不匹配；两笔 trace 不能宣称通过云端验收。
+
+结果是四臂均 `0/0` 已实现 denominator，计划 30/臂，正确数、paired difference、类别、跨 session、session recall@8 与 MRR 全部 unavailable，不按 0 分统计。公开逐题文件 120 行均明确标记 `not_dispatched`。从 dev conversation 开始到 STOP 的 wall time 为 336.830356 秒，其中 ledger 两请求跨度 89.814669 秒。
+
+冻结前 51 项定向测试通过、Ruff 通过；测试新增覆盖 8192 上限、单 trace 单次回读、回读缺失停止、v2 协议/预算冻结和既有四臂 fail-closed 契约。v1 的 1 请求 / 11351 tokens / `$0.005249` 及 Langfuse 回读文件哈希保留在 [v1-preservation.json](results/locomo-memory-v2-20261115/v1-preservation.json)。公开机器结果、逐题未派发状态、两笔调用收据和冻结 provenance 见 [v2 REPORT](results/locomo-memory-v2-20261115/REPORT.md) 与同目录 manifest。

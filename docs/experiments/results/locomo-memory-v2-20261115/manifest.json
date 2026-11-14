@@ -1,0 +1,50 @@
+{
+  "REPORT.md": {
+    "bytes": 5285,
+    "sha256": "0c63577fa5edb4c7fe500b89fdc3d48b3722da9efc7d827f11ca77d02ab3ba1f"
+  },
+  "extract-calls.json": {
+    "bytes": 950,
+    "sha256": "79c0ce8630b3594ba8996b94ccb8c5fb78cf51f5b3965bfbf2458c1861bf3dd0"
+  },
+  "failure.json": {
+    "bytes": 785,
+    "sha256": "9a8fc339c8edcf308194299298a3d2befa403cde66893c4eb1f007fe59367961"
+  },
+  "planned-subgroups.json": {
+    "bytes": 489,
+    "sha256": "df8406d2bf9cc81b79c94cd891fa16e4e050f2a3a11b7567fb3523cee04811e8"
+  },
+  "provenance.json": {
+    "bytes": 1523,
+    "sha256": "9fa774f53d8077c565597ee5b75aeeb6f1a8e1e4c431d8035c41c68f1f609d5b"
+  },
+  "question-outcomes.jsonl": {
+    "bytes": 48236,
+    "sha256": "298d3a04ac8404202afe22f6a8851d7bbf82d024321e525a78703eeb992ce163"
+  },
+  "ready.json": {
+    "bytes": 1493,
+    "sha256": "2f652330d566fff8ab1442fcdb0cf9ab5830a2b6b0b26131d6e5a50e49922691"
+  },
+  "rows.jsonl": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source-pins.json": {
+    "bytes": 3772,
+    "sha256": "04d3324d87bc33465b9250fcf3cd747677fae93d7643bef25f5b485fb86e6960"
+  },
+  "stopped.json": {
+    "bytes": 167,
+    "sha256": "0d17ef5bcaf9ab98ef06967a218519834ff5099f98beb6e344e61eb3511824d9"
+  },
+  "summary.json": {
+    "bytes": 5930,
+    "sha256": "bf08137801b7ea926d3e961dc7473b88101c016deb117ba1964cdae5e293e424"
+  },
+  "v1-preservation.json": {
+    "bytes": 871,
+    "sha256": "a045928444a4a3cc0c5e7c141053dccc5b8e19206d52ed05ab70a048db9804b2"
+  }
+}

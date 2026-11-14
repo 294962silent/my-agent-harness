@@ -41,7 +41,7 @@ class SyncRaw(Raw):
         )
 
 
-def setup_adapter(tmp_path, content, *, finish_reason="stop"):
+def setup_adapter(tmp_path, content, *, finish_reason="stop", max_output_tokens=2048):
     @contextmanager
     def propagate(**kw):
         yield
@@ -52,7 +52,14 @@ def setup_adapter(tmp_path, content, *, finish_reason="stop"):
         raw, runtime=ObservationRuntime(BoundedExporter(scoped)), scope_sink=scoped, required=True
     )
     ledger = TokenLedger(tmp_path / "ledger.json", campaign_id="campaign", max_requests=4)
-    adapter = GuardedMem0LLM(owner, ledger, run_id="extract-1", task_id="chunk-1", audit_path=tmp_path / "audit.jsonl")
+    adapter = GuardedMem0LLM(
+        owner,
+        ledger,
+        run_id="extract-1",
+        task_id="chunk-1",
+        audit_path=tmp_path / "audit.jsonl",
+        max_output_tokens=max_output_tokens,
+    )
     return adapter, owner, raw, ledger
 
 
@@ -73,6 +80,16 @@ def test_native_extraction_is_single_budgeted_observed_call(tmp_path):
         audit = (tmp_path / "audit.jsonl").read_text()
         assert "private source text" not in audit and "private fact" not in audit
         assert json.loads(audit.splitlines()[-1])["status"] == "valid"
+    finally:
+        asyncio.run(owner.aclose())
+
+
+def test_v2_extraction_cap_is_forwarded_without_agent_retry(tmp_path):
+    adapter, owner, raw, _ledger = setup_adapter(tmp_path, '{"memory":[]}', max_output_tokens=8192)
+    try:
+        generate(adapter)
+        assert raw.calls == 1
+        assert raw.kwargs["max_tokens"] == 8192
     finally:
         asyncio.run(owner.aclose())
 

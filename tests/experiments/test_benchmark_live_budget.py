@@ -51,6 +51,25 @@ def test_exact_usage_full_price_cache_and_limits(tmp_path):
         BudgetLedger(tmp_path / "ledger.json", limit_usd="31")
 
 
+def test_guarded_call_accepts_bounded_8192_output(tmp_path):
+    class Provider:
+        def chat(self, _messages, **kwargs):
+            assert kwargs["max_tokens"] == 8192
+            return Response(
+                content="ok",
+                model="fake",
+                usage={"prompt_tokens": 2, "completion_tokens": 1, "total_tokens": 3},
+            )
+
+    llm = LLM(Config(provider="openai", api_key="offline", model="deepseek-v4.1-flash", max_retries=0))
+    llm._provider = Provider()
+    ledger = BudgetLedger(tmp_path / "ledger.json")
+    response = GuardedLLM(llm, ledger, "v2-extract").chat([], max_tokens=8192)
+
+    assert response.content == "ok"
+    assert ledger.snapshot()["requests"][0]["max_output_tokens"] == 8192
+
+
 @pytest.mark.anyio
 async def test_guard_covers_auxiliary_calls_and_stops_after_missing_usage(tmp_path):
     from my_agent_llm.observation import observation_context

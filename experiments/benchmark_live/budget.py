@@ -37,7 +37,7 @@ LIVE_BASE_URL = "https://opencode.ai/inference/go/openai/v1"
 
 def create_live_llm(*, max_output_tokens: int = 4096, timeout: float = 120):
     """Explicit host-only client factory; never load auth files or .env fallbacks."""
-    if (type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 4096
+    if (type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 8192
             or type(timeout) not in (int, float) or not math.isfinite(timeout) or not 0 < timeout <= 1800):
         raise ValueError("invalid live output/time limits")
     key = os.environ.get("LIVE_BENCH_API_KEY")
@@ -218,7 +218,7 @@ class BudgetLedger:
         model: str = "deepseek-v4.1-flash",
         provider: str = "openai",
     ) -> str:
-        if not isinstance(input_bound, int) or input_bound < 0 or not 0 < max_output <= 4096:
+        if not isinstance(input_bound, int) or input_bound < 0 or not 0 < max_output <= 8192:
             raise ValueError("invalid reservation size")
         held = _cost(input_bound, max_output)
         with self.transaction() as data:
@@ -343,7 +343,7 @@ class GuardedLLM:
             + 4096
             + 256 * (len(messages) + len(tools or []))
         )
-        output = min(int(kwargs.pop("max_tokens", 4096)), 4096)
+        output = min(int(kwargs.pop("max_tokens", 4096)), 8192)
         if output <= 0:
             raise ValueError("max_tokens must be positive")
         kwargs["max_tokens"] = output
