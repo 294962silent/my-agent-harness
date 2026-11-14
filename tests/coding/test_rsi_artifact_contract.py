@@ -1,5 +1,6 @@
 """Artifact delivery uses real agents with scripted responses, not model-quality evidence."""
 import asyncio
+import importlib.util
 import json
 
 import pytest
@@ -184,6 +185,8 @@ def test_corrupt_or_unknown_trace_rejected(mutation):
     with pytest.raises(ValueError):
         validate_trace(trace)
 
+@pytest.mark.skipif(importlib.util.find_spec("dream_rsi") is None,
+                    reason="optional pinned Dream SDK required")
 def test_real_sdk_failed_artifact_keeps_baseline_and_known_cost(tmp_path):
     from my_coding_agent.dream_rsi_replay import replay_trace
     trace = failure_trace()
