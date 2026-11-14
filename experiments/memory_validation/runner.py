@@ -463,8 +463,12 @@ async def paid(stage, plan_root, retrieval, output, *, answers=None, resume=Fals
                     trial = root / "trials" / f"{identity}-{arm}.json"
                     if trial.exists():
                         old = read(trial)
-                        if (old.get("question_id") != e["question_id"] or old.get("arm") != arm
-                            or old.get("stage") != stage or old["retrieval_sha256"] != file_hash(rpath)):
+                        if (
+                            old.get("question_id") != e["question_id"]
+                            or old.get("arm") != arm
+                            or old.get("stage") != stage
+                            or old["retrieval_sha256"] != file_hash(rpath)
+                        ):
                             raise ValueError("used retrieval changed")
                         if stage == "judge" and "answer_sha256" in old:
                             apath = answers / "trials" / f"{identity}-{arm}.json"
@@ -491,8 +495,12 @@ async def paid(stage, plan_root, retrieval, output, *, answers=None, resume=Fals
                         if not apath.exists():
                             continue
                         a = read(apath)
-                        if (a.get("question_id") != e["question_id"] or a.get("arm") != arm
-                            or a.get("stage") != "answer" or a.get("retrieval_sha256") != file_hash(rpath)):
+                        if (
+                            a.get("question_id") != e["question_id"]
+                            or a.get("arm") != arm
+                            or a.get("stage") != "answer"
+                            or a.get("retrieval_sha256") != file_hash(rpath)
+                        ):
                             raise ValueError("answer identity or retrieval differs before judge")
                         state["answer_sha256"] = file_hash(apath)
                         if a["status"] != "completed":

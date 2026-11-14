@@ -229,3 +229,212 @@ def test_cli_disabled_observation_has_no_paid_request(tmp_path, monkeypatch):
     result = asyncio.run(observation_probe.run_probe(args))
     assert result["status"] == "stopped" and result["error_type"] == "ValueError"
     assert not (tmp_path / "ledger.json").exists()
+
+
+def test_observe_scope_supports_multicall_same_root_without_double_budget(monkeypatch):
+    import experiments.benchmark_live.observation as module
+    rows, contexts = [], []
+
+    @contextmanager
+    def propagate(**kw):
+        contexts.append(kw)
+        yield
+
+    scoped = SessionScopeSink(rows.append, campaign_id="campaign", propagate=propagate)
+    runtime = ObservationRuntime(module.ScopeAwareExporter(scoped))
+    raw = Raw({"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2})
+    owner = ExperimentLLMOwner(raw, runtime=runtime, scope_sink=scoped)
+    monkeypatch.setattr(module, "GuardedLLM", lambda *a, **kw: pytest.fail("double budget wrapper"))
+
+    async def run():
+        for stage in ("train", "optimize", "holdout"):
+            with owner.observe("branch", arm="rsi", stage=stage, task_id="task") as attached:
+                assert attached is raw
+                await raw.achat([])
+                await raw.achat([])
+        return await owner.aclose()
+
+    result = asyncio.run(run())
+    assert raw.calls == 6 and result["export_errors"] == 0
+    assert [c["metadata"]["stage"] for c in contexts] == [s for s in ("train", "optimize", "holdout") for _ in range(4)]
+    assert all(c["session_id"] == "campaign" for c in contexts)
+    assert not scoped._calls
+
+
+def test_call_id_metadata_survives_context_exit_and_out_of_order_ends():
+    import experiments.benchmark_live.observation as module
+    rows, contexts = [], []
+
+    @contextmanager
+    def propagate(**kw):
+        contexts.append(kw)
+        yield
+
+    scoped = SessionScopeSink(rows.append, campaign_id="campaign", propagate=propagate)
+    exporter = module.ScopeAwareExporter(scoped)
+    first = CallStart("first", "same-root", None, "train", "offline", "model", "achat", 0)
+    second = CallStart("second", "same-root", None, "test", "offline", "model", "achat", 0)
+    with scoped.scope("same-root", arm="a", stage="train", task_id="t1"):
+        exporter(first)
+    with scoped.scope("same-root", arm="b", stage="test", task_id="t2"):
+        exporter(second)
+    exporter(CallEnd(**asdict(second), status="ok", duration_seconds=.1))
+    exporter(CallEnd(**asdict(first), status="ok", duration_seconds=.2))
+    assert exporter.close(timeout=5)
+    assert exporter.export_errors == 0 and not scoped._calls
+    assert [c["metadata"]["task_id"] for c in contexts] == ["t1", "t2", "t2", "t1"]
+    assert all(c["session_id"] == "campaign" for c in contexts)
+
+
+def test_registered_root_persists_across_call_end_and_can_unregister():
+    @contextmanager
+    def propagate(**kw):
+        yield
+
+    rows = []
+    scoped = SessionScopeSink(rows.append, campaign_id="campaign", propagate=propagate)
+    scoped.register("root", arm="a", stage="final", task_id="task")
+    for call_id in ("one", "two"):
+        start = CallStart(call_id, "root", None, "final", "offline", "model", "chat", 0)
+        scoped(start)
+        scoped(CallEnd(**asdict(start), status="ok", duration_seconds=.1))
+    assert len(rows) == 4 and not scoped._calls
+    scoped.unregister("root")
+    with pytest.raises(ValueError, match="scope"):
+        scoped(CallStart("missing", "root", None, "final", "offline", "model", "chat", 0))
+
+
+def test_scope_capture_rejects_mismatched_end_without_losing_active_call():
+    @contextmanager
+    def propagate(**kw):
+        yield
+
+    scoped = SessionScopeSink(lambda record: None, campaign_id="campaign", propagate=propagate)
+    scoped.register("root", arm="a", stage="answer", task_id="task")
+    start = CallStart("one", "root", None, "answer", "offline", "model", "chat", 0)
+    scoped.capture(start)
+    with pytest.raises(ValueError, match="match"):
+        scoped.capture(CallEnd(**{**asdict(start), "root_id": "other"}, status="ok", duration_seconds=.1))
+    assert "one" in scoped._calls
+    scoped.capture(CallEnd(**asdict(start), status="ok", duration_seconds=.1))
+    assert not scoped._calls
+
+
+def test_real_sdk_two_traces_share_campaign_session_no_network(monkeypatch):
+    sdk = pytest.importorskip("langfuse")
+    import socket
+    import experiments.benchmark_live.observation as module
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+    from my_agent_llm.langfuse_export import LangfuseSink
+    monkeypatch.setattr(socket.socket, "connect", lambda *a, **kw: pytest.fail("network used"))
+    transport = InMemorySpanExporter()
+    provider = TracerProvider()
+    client = sdk.Langfuse(public_key="pk-lf-multicall-offline", secret_key="sk-lf-multicall-offline",
+        base_url="http://127.0.0.1:9", span_exporter=transport, tracer_provider=provider,
+        flush_at=1, media_upload_thread_count=1)
+    base = LangfuseSink(client, own_client=True)
+    scoped = SessionScopeSink(base, campaign_id="campaign", propagate=sdk.propagate_attributes,
+                              flush=base.flush, close=base.close)
+    exporter = module.ScopeAwareExporter(scoped)
+    try:
+        for i, stage in enumerate(("extract", "train")):
+            start = CallStart(f"call{i}", f"root{i}", None, stage, "offline", "model", "chat", 0)
+            with scoped.scope(f"root{i}", arm="rsi", stage=stage, task_id=f"task{i}"):
+                exporter(start)
+            exporter(CallEnd(**asdict(start), status="ok", duration_seconds=.1,
+                             usage={"prompt_tokens": 2, "completion_tokens": 1, "total_tokens": 3}))
+        assert exporter.close(timeout=5) and exporter.export_errors == 0
+        spans = transport.get_finished_spans()
+        assert len(spans) == 2
+        assert len({span.context.trace_id for span in spans}) == 2
+        assert {span.attributes["session.id"] for span in spans} == {"campaign"}
+        assert {json.loads(span.attributes["langfuse.trace.metadata.stage"]) for span in spans} == {"extract", "train"}
+    finally:
+        exporter.close(timeout=5)
+        provider.shutdown()
+
+
+def test_dropped_records_do_not_leak_completed_call_scopes():
+    import threading
+    import experiments.benchmark_live.observation as module
+    entered, release = threading.Event(), threading.Event()
+
+    @contextmanager
+    def propagate(**kw):
+        yield
+
+    def blocking(record):
+        entered.set()
+        assert release.wait(5)
+
+    scoped = SessionScopeSink(blocking, campaign_id="campaign", propagate=propagate)
+    exporter = module.ScopeAwareExporter(scoped, capacity=1)
+    try:
+        with scoped.scope("root", arm="a", stage="test", task_id="task"):
+            for i in range(10):
+                start = CallStart(str(i), "root", None, "test", "offline", "model", "chat", 0)
+                exporter(start)
+                if i == 0:
+                    assert entered.wait(2)
+                exporter(CallEnd(**asdict(start), status="ok", duration_seconds=.1))
+        assert exporter.dropped > 0 and not scoped._calls
+    finally:
+        release.set()
+        assert exporter.close(timeout=5)
+
+
+def test_required_owner_stops_after_settled_call_when_export_fails(tmp_path):
+    import experiments.benchmark_live.observation as module
+    from my_agent_llm.models import Message
+
+    @contextmanager
+    def propagate(**kw):
+        yield
+
+    def fail(record):
+        raise OSError("transport failure")
+
+    scoped = SessionScopeSink(fail, campaign_id="campaign", propagate=propagate)
+    runtime = ObservationRuntime(module.ScopeAwareExporter(scoped))
+    raw = Raw({"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2})
+    owner = ExperimentLLMOwner(raw, runtime=runtime, scope_sink=scoped, required=True)
+    ledger = ledger_at(tmp_path)
+
+    async def run():
+        try:
+            with pytest.raises(module.ObservationRequiredError):
+                await owner.achat(ledger, "trial", [Message(role="user", content="x")],
+                                  arm="a", stage="answer", task_id="t", max_tokens=8)
+        finally:
+            await owner.aclose()
+
+    asyncio.run(run())
+    assert raw.calls == 1 and ledger.snapshot()["requests"][0]["status"] == "ok"
+
+
+def test_required_observation_and_safe_rsi_correlation_metadata():
+    import experiments.benchmark_live.observation as module
+    raw = Raw()
+    with pytest.raises(module.ObservationRequiredError):
+        ExperimentLLMOwner(raw, required=True)
+    seen = []
+
+    @contextmanager
+    def propagate(**kw):
+        seen.append(kw)
+        yield
+
+    scoped = SessionScopeSink(lambda record: None, campaign_id="campaign", propagate=propagate)
+    runtime = ObservationRuntime(module.ScopeAwareExporter(scoped))
+    owner = ExperimentLLMOwner(raw, runtime=runtime, scope_sink=scoped, required=True)
+    with owner.observe("root", arm="rsi", stage="train", task_id="task",
+                       metadata={"round_id": "r2", "branch_id": "b1", "attempt_id": "a1", "runtime_stage": "candidate"}):
+        asyncio.run(raw.achat([]))
+    owner.flush_and_check()
+    assert seen[0]["metadata"]["round_id"] == "r2"
+    assert seen[0]["metadata"]["runtime_stage"] == "candidate"
+    with pytest.raises(ValueError):
+        with owner.observe("root", arm="rsi", stage="train", task_id="task", metadata={"gold": "hidden"}):
+            pytest.fail("invalid metadata entered")
+    asyncio.run(owner.aclose())

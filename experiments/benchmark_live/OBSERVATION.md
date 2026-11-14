@@ -54,3 +54,21 @@ uv run --no-sync ruff check experiments/benchmark_live/observation.py experiment
 ~~~
 
 本批结果为 17 passed（10 个新 owner/CLI 测试加 7 个既有 SDK/runtime 测试），Ruff All checks passed。包含真实 SDK 5.2.0 + in-memory transport 的 session 传播验证，禁止 socket 网络；unknown usage 保留账本、已结算请求遇导出失败不重试、重复 output 拒绝、显式付费开关及 owned close 均有定向覆盖。
+
+
+## Multicall scope amendment (2026-11-14)
+
+Future campaigns use ScopeAwareExporter: CallStart captures immutable task-local metadata on the caller thread and CallEnd removes only that call_id. Queued records retain metadata after the caller scope exits. Registered root metadata persists until unregister/owner close. A campaign remains the Langfuse session across roots and traces.
+
+RSI already owns ResearchBudget. Use `with owner.observe(branch_root, arm="rsi", stage="train", task_id=safe_task):` around its existing guarded raw calls; do not use owner.achat or add GuardedLLM again. Allowed RSI stages are train/holdout/test/final/optimize. Native synchronous Mem0 calls can use owner.chat with a sole persistent TokenLedger. Existing owner.achat remains supported.
+
+Offline tests exercise six calls on one branch root, interleaved call IDs, task-local metadata after scope exit, dropped-record cleanup, and two real SDK in-memory traces sharing a session. These are offline checks. The old 57/56-token live receipts refer to their original source hashes; the revised owner still requires remote readback of the first two legitimate calls of a new study. No additional paid demonstration was run.
+
+
+## Required tracing and RSI correlation amendment (2026-11-14)
+
+New studies set `enabled=True, required=True` when creating the owner. Required construction fails without a runtime. `owner.chat`/`owner.achat` settle their sole ledger call, then flush the exporter/SDK and raise `ObservationRequiredError` on export errors, dropped records, close errors, or timeout. A settled paid call is retained and is never retried because tracing failed. This local gate does not prove remote ingestion; the first two legitimate requests still require remote readback of distinct traces with the same campaign session.
+
+RSI keeps its own ResearchBudget. Its raw integration uses `owner.observe(..., stage="train", purpose="rsi_train", metadata={"round_id": safe_round, "branch_id": safe_branch, "attempt_id": safe_attempt, "runtime_stage": safe_runtime_stage})`, then awaits `owner.aflush_and_check()` after the existing guarded call has settled. Canonical `stage` values are `train`, `holdout`, `test`, `final`, `optimize`; `rsi_train` is only a possible purpose, not a stage alias. Correlation metadata accepts exactly the four opaque ASCII ID keys shown above. Unknown keys and raw content fail before the provider call. The campaign caller must abort on a required tracing failure before scheduling another call.
+
+Current combined verification is **25 passed**: 18 owner/CLI tests, 6 runtime tests, and 1 real-SDK in-memory test; Ruff passes. The earlier 17-test receipt remains the historical validation of the committed single-call owner. No additional paid call was used for this amendment.

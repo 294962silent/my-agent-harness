@@ -1060,3 +1060,28 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 公开证据：[verification.json](results/langfuse-live-20261114/verification.json)。新入口 trace：https://cloud.langfuse.com/project/cmwg5sagt00ksad0j6au0463n/traces/a6249bf9c98cadede781b034e58ea58d；北京时间 2026-11-14 21:32:55.538，environment=default。单 generation 携带 sessionId 已读回；实际多轮/跨 trace 分组、完整 agent/retriever 树仍未实测。应用 metadata-only 不上传 prompt/response/gold/history，云端内容回放和基于内容的评测不在本批能力内；远端读取按字段白名单排除 SDK resource/scope 附加属性。历史结果若另行导入，必须标为 backfill。
 
 离线命令：uv run --no-sync pytest -q tests/experiments/test_experiment_observation.py tests/integrations/test_langfuse_sdk.py tests/llm/test_observation_runtime.py，exit 0，**17 项通过**（新 owner/CLI 10 项 + 既有 7 项）；相同三个新增 Python 文件 Ruff All checks passed。覆盖真实 SDK in-memory session 传播、owned 生命周期、未知用量保留、导出失败不重复付费、显式单次付费开关和旧 output 拒绝。独立公开说明含可复用命令；已有冻结 Memory 科学结果与 RSI 14 个 source hashes 均未更改。
+
+
+### 2026-11-14：多会话 Memory 下一轮预检（尚无正式效果结果）
+
+已按固定 Qwen revision `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3` 对本机 1,191,586,416B 权重计算真实 SHA256，结果 `0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd` 与官方 HF 固定 revision API 的 LFS 元数据一致。私有隔离 WSL Python 3.12 环境中 Torch 2.8.0/CUDA12.8 在 RTX5060 Laptop 8GB 上完成合成文本前向，输出1024维有限向量；此为环境验证，不是检索或学习效果。随后相同环境的原生 Mem0 2.2.1 ADD/search + Linux seccomp GPU worker 合成 smoke 通过，使用假抽取器，0模型API调用。环境收据在私有交付 ROOT，正式公开证据待协议验收后集中导出。
+
+多轮 owner 定向命令 `uv run --no-sync python -m pytest tests/experiments/test_experiment_observation.py tests/llm/test_observation_runtime.py tests/integrations/test_langfuse_sdk.py -q` 得到25项通过（18 owner/6 runtime/1 SDK）；Ruff通过。Root另行组合 observer/RSI observation/continuation 42项通过；此前凭据fixture问题已在测试隔离中修复，未松动生产检查。owner修订源已冻结供RSI使用。RSI v4的协议/历史anchors/sourcepins经root核验后获真实启动放行；首2调用2702tokens已结算且云端元数据存在，但读回解析器把已解码的parent_id字典再次json.loads，导致已知STOP。修复由RSI owner处理；不得因此重复已结算调用。Memory读回已添加str/dict两型兼容回归。
+
+LoCoMo预选dev conv-47六道、test conv-41/42各十二道原题；来源固定在snap-research/locomo commit `3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376`，数据SHA `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`，官方LICENSE.txt为CC BY-NC4.0。完整92sessions含359条官方提供的图像文字caption；不读取图片像素，不宣称视觉理解。四臂预计92次共享原生抽取+48次dev回答/判分+192次test回答/判分=332模型调用，受384requests/3M记账units/4h/0retry约束。抽取上限固定2048output；合法空memory单独审计，JSON/length/未知用量停止。预选和准备不能当正式实验结果；旧12题none4/lexical11/Mem09负结果保留。
+
+### 2026-11-14：LoCoMo 四臂真实启动在抽取契约处失败性停止
+
+本批完成 prepare/freeze CLI、源/数据/gold manifest、四臂执行接线和 41 项离线定向回归。冻结计划 SHA256 为 `a88552fdd51734c7f5acc883cdf5870fa264705987a1bca5cd7c504b0dd5cd9d`，plan manifest SHA256 为 `d06c783114af1b72507d9e680c5a8f31980ca74e3f2cefe9df5933c6a6967da4`，gold SHA256 为 `3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf`。30 道原题固定为 dev 6、test 24，覆盖92 sessions；调用分母固定为92 extraction + 120 answer +120 judge =332。
+
+原预检上限168 requests /1,500,000 accounting units小于332起步调用，属于协议冲突。按用户已声明的20亿token总预算授权，在**任何新付费调用前**将冻结门禁扩至384 requests /3,000,000 units，保留原门禁、差值、332起步成本和变更理由；没有删题、扩题或按成绩选择。extraction/answer/judge output caps分别固定2,048/1,024/512，retry=0，任何未知/inflight用量停止全部后续派发。
+
+真实 host仅枚举GPU0（RTX5060 Laptop），没有L20或物理GPU2；manifest如实记录项目曾要求`CUDA_VISIBLE_DEVICES=2`、实际枚举仅0并选择0。Qwen3-Embedding 0.6B固定revision、1,191,586,416B权重、1024维、4096 token无截断；两台索引冷启动、raw写入和首会话准备均完成，首付费请求前模型/数据/source pins一致。
+
+dev首笔正常抽取请求已结算：input 9,303 + output 2,048 = **11,351 tokens**，completion恰好占满冻结输出cap；应用返回`native extraction did not finish normally`，外层停止原因为`LLMError`。适配器没有保存无法确认的精确finish字符串，也没有把截断当合法事实。该请求对应Langfuse trace已按run_id、campaign session、project、model和usage云端读回，状态为`verified_single_failed_extract_trace`；没有第二笔请求，因此“首两次正常抽取回读”门禁未达到。
+
+错误使用是一次已付款、已知usage的抽取格式/终止契约失败，不是provider billing未知。ledger立即把campaign标为blocked；并发起第二请求0次、自动重试0次、答案0次、判分0次，也没有在观察到失败后改上限或另起campaign重跑。结果因此是**无有效四臂成绩**：正确率、paired comparisons、session recall/MRR、类别和跨session子组均 unavailable，不把0/0当0%；旧LongMemEval none4/12、lexical11/12、mem0 9/12保持原样。
+
+最终离线验证为`41 passed in9.07s`；四臂/CLI协议源Ruff通过。独立WSL worker因先设置`sys.path`再导入而触发E402，已作为冻结源保留，没有为格式重写已付费实验源；此前native+seccomp CUDA联合smoke继续作为运行时证据。新增CLI提供prepare/freeze/verify/run/report，冻结source/data/gold/READY和重复启动阻断；真实失败摘要见[failure-summary.json](results/locomo-memory-20261114/failure-summary.json)，不含原题、history、gold、模型正文或凭据。
+
+代价与限制：首会话事实抽取没有形成可消费JSON，四臂比较无法开始；提高extraction output cap会构成观察失败后的协议修订，需显式新决定，本批未自行重试。当前主机硬件与项目预期的L20冲突已经披露。RSI部分未因本批失败而改状态；当前Canonical Canvas仅展示已验收的LongMemEval结果、LoCoMo失败边界以及RSI兼容运行的`STOP_BEFORE_PAID`阶段。
