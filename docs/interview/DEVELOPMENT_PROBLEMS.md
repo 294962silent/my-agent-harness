@@ -282,3 +282,36 @@ Terminal首配对raw reward为off0/on1，但off未执行测试（uv下载TLS失�
 首次源码24aeca1的四矩阵CI失败，原Windows1424通过记录不覆盖。三项SDK测试局部importorskip，七项协议默认保留；Linux已终止worker的stdin.close重flush抛BrokenPipe覆盖TimeoutError，窄修只在实际worker确认退出后忽略该stdin错误，严格超时断言保留。主代理干净默认Py3.13修前3失败/6通过，修后7通过/3skip；作者Windows/WSL SDK各10通过，最终主代理all-extras1425通过/11skip/5subtests，最终GPU也另目录复验成功。
 
 原CI、红→绿、源码前后hash、最终GPU与wheel/checkout证据见[ci-repair](../experiments/results/context-rsi-20261113/ci-repair/REPORT.md)，九段追问见[深挖P51](11-RSI闭环与本地推理工程深挖.md#p51为什么windows-all-extras全绿ci仍抓到实际缺陷)。其他关闭异常传播为源码审查结论，不编造独立负例测试。远端修后状态另核最终head，0新增付费API。
+
+## 2026-11-14 追加：Memory 效果实验的工程难点与证据
+
+### 不可变 plan 内创建可变账本，会在首次请求后破坏精确清单
+
+- **触发条件**：prepare 将 ledger_path 设为 plan/ledger.json；严格 plan inventory 初始验证通过，TokenLedger 第一次创建 ledger／锁文件后，恢复或 paid harness 再验证时发现额外文件。该问题在真实回答调用前发现，当时本批0付费、0held、无unknown。
+- **根因**：把冻结输入的精确目录清单和运行中必须写入的预算状态放在同一目录；仅核验 plan.json 自身 hash 发现不了这个生命周期冲突。派生路径还包括 BudgetLedger .lock、TokenLedger .tokens.lock 与付费外层 .study.lock。
+- **取舍**：保持严格 inventory 与 source pins，不放宽成忽略未知文件；用新的 plan 版本只改记账位置，保留原失败。代价是显式 amendment、重复元数据及迁移验证。
+- **修复**：根批准 v2→v3，只移动 ledger_path 到 plan 外；24个既有result/state原字节复制，phase仅引用新plan，问题／模型／encoder／提示／预算不变，无重建索引。研究完成后 prepare 提前拒绝账本及真实派生锁与 plan 的相同／包含关系。初版漏 .tokens.lock 经根复核发现后补齐；BudgetLedger 随机 .budget- 临时文件实际写在 ledger.parent，合法 sibling 测试验证该路径。
+- **验证**：初版7红例→22专项通过；补 .tokens.lock 的2红例→最终24专项通过，Ruff通过，根独立重跑一致。真实三请求probe结清后同一ledger续到72settled／41852tokens，累计预算不重置。旧source pins／结果不改，旧runner的公开精确快照与当前修复版本分别保存。
+
+### Windows↔WSL 路径映射错误，使模型与冻结文件在另一侧不可定位
+
+- **触发条件**：Windows盘符路径转成/mnt/<drive>/…，再从WSL回传路径时，驱动器和路径尾部的下标偏移导致错误；另有以脚本路径直接启动时的模块导入问题。仅在Windows核对文件存在，不能证明WSL子进程读到同一文件。
+- **根因**：两种路径前缀长度不同，硬编码切片 off-by-one；脚本入口的sys.path也不同于包入口。
+- **取舍**：保留本机Windows编排和WSL seccomp执行，不降级成无隔离运行；将映射收敛为独立、可往返核验的边界，接受跨环境启动与路径校验成本。
+- **修复**：校正/mnt/前缀后的盘符及尾部位置，修复WSL脚本导入入口；核对模型revision／manifest及数据SHA，避免把“成功加载另一份文件”当正确。
+- **验证**：路径往返、计划篡改等最初14项专项通过；后续最终24项包含这些回归。真实首题seccomp链路在512维BGE CPU／2线程下读856chunks，约97.30秒冷建库与查询；最终12题36臂均valid且close_complete，无词法回退。该结果验证链路，未单独证明效果提升。
+
+### 强杀后保留五题已完成字节，避免把 started 当作可安全重放
+
+- **触发条件**：旧40分钟监督器终止运行，接管现场5completed、1started、6无状态。Windows父进程退出不保证WSL后代退出；started也不能说明付费请求一定未发出。
+- **根因**：进程树跨Windows／WSL，任务状态、输出manifest与预算请求状态是不同证据。盲目重跑可能重复建库、覆盖完成记录或在unknown时重复付费。
+- **取舍**：先精确匹配本study的进程及journal／ledger，只允许未提交的免费检索恢复；付费unknown/inflight保守阻断，不宣称任意崩溃下exactly-once。代价是需要人工查证与追加归档。
+- **修复**：确认旧任务进程已退出且研究付费为零，将未提交started原记录追加归档到phase外；保持输入pins，恢复其余七题；已完成五题及manifest逐一验hash，不覆盖。之后账本迁移仍保持24文件原字节。
+- **验证**：12/12检索完成、36/36valid和closed，旧五题SHA不变；真实answer/judge全72槽结清且0retry／0unknown／0held。恢复规则区分免费检索和付费请求，没有对unknown做自动重试。
+
+### session 命中更高却回答更差，需要检查实际进入上下文的块
+
+- **触发条件**：八题有session标签的宏平均recall，Mem0为0.84375、lexical为0.8125；总回答却分别9/12与11/12。
+- **根因**：session recall只问是否命中相关会话，不保证800字符切块中包含回答所需事实。两题lexical-only正确案例中，两臂均命中session，但Mem0返回top8漏了人工核对的支持块；上下文都未被6000字符上限截断。
+- **取舍与修复**：保留负结果，只追加三例匿名人工诊断；没有全量chunk标签时，answer evidence recall保持unavailable。下轮另行冻结更适合多会话共享语料的协议，分离embedding与事实提取贡献，不按成绩挑题。
+- **验证**：四题拒答均4/4；八题非拒答none0/8、lexical7/8、mem05/8。三例诊断无新API／重判；完整匿名位置与SHA清单见[报告第7节](../experiments/reports/effect-v1-sol2.md)和[case-diagnostics.json](../experiments/results/memory-effect-20261114/case-diagnostics.json)。

@@ -69,3 +69,38 @@ Session 树、工具并发门控、权限、canonical 摘要、产物回读和�
 GitHub选型后，推荐以AIDE式多轮代码实验为主场景，借鉴autoresearch固定实验预算、Ralph/Anthropic外部状态协议与Hermes经验复用，保持既有Harness内核。提案、固定版本及核验边界见[场景研究](../research/2026-11-14-scenario-selection.md)。
 
 拟补数值评分、受限任务adapter和场景checkpoint；Mem0场景收益、真实Langfuse服务回读、RSI在该任务的质量/成本收益均待验证，不进入已证实简历数字。可先使用既有分支执行、预算/记账、上下文/产物、记忆/观测适配的真实工程事实；个人职责仍按实际参与及源码掌握程度确认。
+
+## 2026-11-14 追加｜新十二题 Memory 事实账本
+
+| Claim | 当前可核验状态与证据 | 不能推出的结论 |
+| --- | --- | --- |
+| 受控 Mem0 索引与 gold 隔离 | 固定匿名 800 字符 chunk、top8 / 6000 字符；infer=False；WSL seccomp；36/36 valid / close_complete，见 [汇总](../experiments/results/memory-effect-20261114/effect-summary.json) | 完整自动抽取、更新、巩固质量已经验证 |
+| 新样本真实三臂回答效果 | 与旧 30 题无重合的新 12 题；none 4/12、lexical 11/12、Mem0 9/12；各 12 个合法 yes/no judge；length/invalid/unavailable=0，见 [配对](../experiments/results/memory-effect-20261114/effect-pairs.json) | Mem0 优于词法或整个产品普遍提升；官方判分模型成绩 |
+| 持久累计预算可审计 | 72/72 请求 settled，36,211 prompt + 5,641 completion = 41,852 actual tokens，held/unknown=0；先三请求核账后续跑，没有重置或重试 | USD30 是实际花费；未知 usage 可忽略或自动补跑 |
+| 不可变 plan / 可变 ledger 分离与字节复用 | v2→v3 仅改 ledger_path，24 个 result/state 原字节；旧五题保持 hash，无重建索引，见 [修订证据](../experiments/results/memory-effect-20261114/bookkeeping-amendment.json) | 老 v2 布局原本安全；任意中断都自动恢复或实现 exactly-once |
+| prepare-time 路径守卫已补 | 实验结束后拒绝 ledger、.lock、.study.lock 对 plan 的内含/相同/祖先冲突；七个失败回归转绿，专项 22 passed / Ruff；13 项旧源码私有封存 | 此守卫已经用于本次 72 请求；可改写旧 source pins 来让历史校验通过 |
+| SessionRecall 与冷启动成本口径 | session recall 分母 8 题，四个 abstention unavailable；Mem0 0.84375、lexical 0.8125；平均冷检索 99.9319s / 4.3291s | session 命中就是 answer evidence；冷建库/索引时间就是 warm 查询性能 |
+| 观测与 RSI 边界 | Langfuse 本地 SDK 21 项验证；云上传/读回 pending。RSI v2 STOP 保留，v3 artifact_budget_v1 开发/验证中 | 云端已验证；RSI 已完成训练、晋升或独立效果收益 |
+
+根代理已独立读回/重算本批 36 行、12 题、准确计数、41852 tokens、answer→judge hash 和公开清单，属于完整性验收，不是新增人工重判。来源 [DS-2 报告](../experiments/reports/effect-v1-sol2.md)；个人职责与掌握程度须本人确认。原历史实验及失败记录不覆盖。
+
+### Memory 最终验收补充（2026-11-14）
+
+| 实现技术／主张 | 可核验证据 | 限制 |
+| --- | --- | --- |
+| 拒答与事实回答分开核对 | 冻结 references.is_abstention：三臂拒答4/4；非拒答 none0/8、lexical7/8、mem05/8；与本批官方suffix逐项一致 | none总计4/12不能作无历史事实问答能力 |
+| 命中 session 后仍核对实际支持块 | 两题 lexical-only correct 内部抽查：Mem0命中session但漏支持chunk，均未达到6000字符上限；另有共同错例 | 三例定向人工检查，非全量证据召回率；没有保存全部pre-top8排序 |
+| prepare 拒绝账本及真实锁侵入 plan | 首次22项后根发现漏 .tokens.lock，新增2红例修复；作者及根最终24专项通过，Ruff通过；真实随机临时文件写在ledger.parent并验证 | 工程修复发生在研究结束后，旧study source pins及科学结果未改 |
+| 实验时未提交源码仍可审查 | 13旧pins逐项比对base0b63386，8由Git取得，5有公开source-only快照及SHA/bytes清单 | 核对本机remote-tracking历史，未联网fetch；不发布raw/gold/auth或声称一键免费复跑 |
+
+最终结果仍为4/11/9（各12题）、72 settled／41852 actual tokens，length/invalid/unavailable均0；新增诊断、回归和归档不新增API或embedding。原22项是中间过程，当前最终数量24。source快照见 [manifest](../experiments/results/memory-effect-20261114/source-snapshot/manifest.json)，匿名诊断与分项见 [diagnostics-manifest](../experiments/results/memory-effect-20261114/diagnostics-manifest.json)。
+
+### Langfuse 云端接通 Claim 修订（2026-11-14）
+
+| 可说的技术点 | 可核验证据 | 必须保留的限制 |
+| --- | --- | --- |
+| 显式 owner 将 raw LLM observer、GuardedLLM 持久账本、single worker flush/owned shutdown 接通 | 新 observation.py/observation_probe.py；新入口真实 56 tokens，官方 CLI HTTP 200 按 trace ID 读回，source SHA 一致；17 项离线回归/Ruff 通过 | 不把开启全局配置等同于所有独立实验自动接线 |
+| 稳定 campaign session 与匿名 arm/stage/task metadata | 新 generation 的 sessionId 与四项 metadata 远端匹配；公开 verification.json | 仅单 generation，不宣称已实测实际多轮/跨 trace 分组 |
+| 云端实际 usage 已核验 | 原 runtime probe 57 + 新 owner probe 56 = 2 次/113 tokens，全部 settled，无 unknown/held/retry | 独立于旧 Memory 72 次/41852 tokens；旧 Memory/已运行 RSI 无历史追踪；totalCost=null 不编造费用 |
+
+应用 metadata-only 不上传 prompt、response、history、gold 或凭据值，因此不声称云端内容回放或内容评测完整。

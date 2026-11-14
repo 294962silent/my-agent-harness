@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-11-14T13:02:52.595Z",
+  "scope": "Completed Memory 12-question study: safe metadata, targeted anonymous diagnostics and source-only historical snapshot.",
+  "scientific_result_manifest": "effect-metadata-manifest.json",
+  "scientific_result_files_unchanged": [
+    {
+      "file": "effect-summary.json",
+      "unchanged": true
+    },
+    {
+      "file": "effect-pairs.json",
+      "unchanged": true
+    },
+    {
+      "file": "effect-rows.jsonl",
+      "unchanged": true
+    },
+    {
+      "file": "bookkeeping-amendment.json",
+      "unchanged": true
+    }
+  ],
+  "source_pin_resolution": {
+    "git_base": "0b63386a4800a16611ed03fa3a831ff7952b23bb",
+    "exact_from_base": 8,
+    "exact_snapshotted": 5,
+    "manifest": "source-snapshot/manifest.json"
+  },
+  "diagnostics_manifest": "diagnostics-manifest.json",
+  "privacy": {
+    "raw_questions": false,
+    "raw_histories": false,
+    "model_answers": false,
+    "gold": false,
+    "raw_sessions": false,
+    "auth_files": false,
+    "credentials": false,
+    "source_snapshot_only": true
+  },
+  "files": [
+    {
+      "file": "bookkeeping-amendment.json",
+      "bytes": 1309,
+      "sha256": "12c9ccea00aa79337f8a575b47d812960c73e2d5e45d8c5d10edd1d16b7e5b20"
+    },
+    {
+      "file": "case-diagnostics.json",
+      "bytes": 5830,
+      "sha256": "f592c79b969d820947f504682617d2e9d7dc49d6fc6c6386cad841d04dfb0003"
+    },
+    {
+      "file": "diagnostics-manifest.json",
+      "bytes": 437,
+      "sha256": "30d4b32cce2c02c186db07f9c2cc9d33971872e5547dee96f4516bb42f7f21a3"
+    },
+    {
+      "file": "effect-metadata-manifest.json",
+      "bytes": 930,
+      "sha256": "ec518595c4c477d8269330895e66c39337aed35e4a88a78109cdbab3e8824367"
+    },
+    {
+      "file": "effect-pairs.json",
+      "bytes": 17116,
+      "sha256": "a60a62c751762dac90eaf80e1ad582f004b8bc6f73360417d49ac34015ee90e9"
+    },
+    {
+      "file": "effect-rows.jsonl",
+      "bytes": 61362,
+      "sha256": "c1fc61a346f83e279d8386da1697b0d95363203bf6a1eeb2d15fcd4778e874c5"
+    },
+    {
+      "file": "effect-summary.json",
+      "bytes": 8313,
+      "sha256": "887e0ad869a1f55c017d2bd3f13ebf9bb111f624f33b653d6f8ed3ebe46906e3"
+    },
+    {
+      "file": "metadata-manifest.json",
+      "bytes": 954,
+      "sha256": "5558295d00c0d3c0a9769e46a64070d83a566bccbe4b00fd783c17a48d0d7e60"
+    },
+    {
+      "file": "retrieval-pairs.json",
+      "bytes": 14315,
+      "sha256": "0d72f0645ad559a4436c795e2021c37521cf5a1f02155dd2edb80c59b1ef36fb"
+    },
+    {
+      "file": "retrieval-rows.jsonl",
+      "bytes": 34159,
+      "sha256": "badf4d83d8a9b7d5d1da0f53e7bb4b2db29220fd1a759841d1ca10d6c5eeee14"
+    },
+    {
+      "file": "retrieval-summary.json",
+      "bytes": 2692,
+      "sha256": "d1df7ea743b1622420d96a5a61c20eb5e6e0a0a8a8710ea666a3577363086494"
+    },
+    {
+      "file": "source-snapshot/README.md",
+      "bytes": 1757,
+      "sha256": "1ce2998130d8c40e6f3e6e2004de384b0572a46e45efec348381775736db9881"
+    },
+    {
+      "file": "source-snapshot/files/experiments/longmemeval/judge.py",
+      "bytes": 7609,
+      "sha256": "9b72fd2dcffbf68d48402c8d8e0ff50910fc44d0482e0265aba40847cd6b125e"
+    },
+    {
+      "file": "source-snapshot/files/experiments/memory_validation/runner.py",
+      "bytes": 30614,
+      "sha256": "8792a9ae16985c20318521ee3382a7be67238f609c8a3628bc8bde0de8e57d05"
+    },
+    {
+      "file": "source-snapshot/files/src/my_agent_core/memory.py",
+      "bytes": 23199,
+      "sha256": "b02ffe326e3d955c208f19ddaae76917271c547277a25cf49b08109ce4ab1d31"
+    },
+    {
+      "file": "source-snapshot/files/src/my_agent_core/memory_index.py",
+      "bytes": 18641,
+      "sha256": "4cb338c5e008f0ab0f771b54b34a85004fee271c7a08db921cf19ebe69815d41"
+    },
+    {
+      "file": "source-snapshot/files/src/my_agent_core/memory_safety.py",
+      "bytes": 2001,
+      "sha256": "00abbe66b85bcc83b487067ac6bf1939cd4052d796d60775c11a3ddee8485c31"
+    },
+    {
+      "file": "source-snapshot/manifest.json",
+      "bytes": 7529,
+      "sha256": "0ff2aca93a021544f97ce84fed699d9545defa7d4445a93756c0c29182bf7f09"
+    },
+    {
+      "file": "subgroup-summary.json",
+      "bytes": 886,
+      "sha256": "9c12d38f8624e4c4381533727c42e7f663989bfc6339c08656528cb7e75f264d"
+    }
+  ]
+}

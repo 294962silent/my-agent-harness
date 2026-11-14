@@ -1014,3 +1014,49 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 修后代码head47eee1bc48c9e6b242d3b5bc0e849cfec7f4da63的[CI43563738685](https://github.com/294962silent/my-agent-harness/actions/runs/43563738685)四矩阵pytest/Ruff/TUI/wheel及ZIP模块检查全success，Ubuntu3.13可选SDK专项成功；仅跳过真实权重smoke和Linux不适用Windowsjunction。功能版160118f失败不覆盖；后续文档提交状态另核，不借旧绿灯冒称新head。
 - 新[简历交付稿](../interview/RESUME_READY.md)含3条客观工程表述、60秒口述、HR短文和5个追问；[8项事实账本](../interview/research-career-claims.json)结构校验通过。个人参与时间、负责模块和源码掌握程度仍由本人确认。新增面试P66深挖正常交付/可评分/完整策略训练树的区别，下一批需校准轮次再冻结对照，不仅给RSI额外机会。
 - 相对改前：原退出码评分→固定私有标签数值评分；原单运行快照→完成round事务式提交与预算续接；原网格前缀→训练执行签名去重；原候选专属选优→baseline也参与；原三SDK接线→场景级经验/观测/策略角色。优势是可复查、失败可定位、预算不随恢复清零；代价是容器依赖、更多落盘、保守阻断和SDK本地资源成本。借鉴AIDE实验树、autoresearch固定边界，沿用既有Session/Artifact与Dream固定SDK，没有声称新的AutoML算法或长程胜率提升。
+
+## 2026-11-14｜Memory 新十二题真实效果、恢复与账本布局修订
+
+本批执行者为 DeepSeek V4.1 Flash / 原生 max / full write；根代理设计并独立验收。固定 LongMemEval 新 12 题（六类型各 2、seed24、与旧 30 题无重合），none / lexical / mem0 三臂共用 800 字符匿名 chunk、top8、6000 字符上下文。BGE small zh v1.5 固定 revision、512 维 CPU / 2 线程；Mem0 使用 infer=False 写入已切分历史块，验证的是受控索引检索，没有验证自动事实抽取、更新或巩固质量。检索保持 WSL Linux seccomp 边界，gold 只在宿主 reference/判分阶段，36/36 检索 valid 且 close_complete，无静默词法回退。
+
+| arm | correct / expected | 有效 judge | session recall@8（8 题宏平均） | 平均每题冷建库/检索/关闭秒 |
+| --- | ---: | ---: | ---: | ---: |
+| none | 4/12（33.33%） | 12/12 | 0 | 0.000004 |
+| lexical | 11/12（91.67%） | 12/12 | 0.8125 | 4.3291 |
+| mem0 | 9/12（75.00%） | 12/12 | 0.84375 | 99.9319 |
+
+36 回答 + 36 盲 judge = 72 次真实请求全部 settled，prompt 36,211 + completion 5,641 = 41,852 actual tokens；held=0、unknown=false、retry=0。全部 finish_reason=stop，length/invalid/unavailable 均 0。lexical 对 Mem0 配对为 2 胜、0 负、10 平（9 题共同正确、1 题共同错误）。实际供应商金额未核验，USD 保持 null；旧 USD30 ceiling 仅是兼容代理值。官方 LongMemEval 判分模板由 DeepSeek 执行，不能称官方模型成绩。
+
+接管时 5 completed / 1 started / 6 untouched，先确认旧 Windows/WSL 任务已退出及零付费，再追加归档未提交 started，只恢复七个免费检索，原五题字节不变。付费前发现 ledger 位于 immutable plan 会使严格清单失效；批准 v2→v3 bookkeeping amendment 仅移动 ledger_path，复制 24 个既有 result/state 原字节、只更新 phase 对 plan 的引用，无重建索引。v3 plan SHA e45e2ca7d9453787136243a9779b438760400a5461161199683d5c96b1a39727；先三臂 3 请求 / 2748 tokens 结算，再同账本续至 72，不重置累计预算。
+
+研究结束后另批加 prepare-time 路径守卫：拒绝 ledger、.lock、.study.lock 与 plan 目录相同、位于其内或成为其祖先；先观察七个冲突回归失败，再完整专项 22 passed、Ruff 通过，允许同前缀 sibling run 目录。13 项实验时源码已私有封存，旧 plan/source pins 与结果未改；新守卫不是本次实验时的代码。根代理独立读回 36 行 / 12 题、重算 4/11/9、逐行 token 合计 41852、judged_answer_sha 对齐及四个公开文件 hash/bytes，属于读回与重算，不是独立人工重判。
+
+公开证据：[效果汇总](results/memory-effect-20261114/effect-summary.json)、[逐题元数据](results/memory-effect-20261114/effect-rows.jsonl)、[配对与类型分项](results/memory-effect-20261114/effect-pairs.json)、[修订](results/memory-effect-20261114/bookkeeping-amendment.json)、[清单](results/memory-effect-20261114/effect-metadata-manifest.json)，完整过程追加于 [DS-2 报告](reports/effect-v1-sol2.md)。公开文件不含原始问答、历史、gold 或凭据。
+
+限制：仅 12 题小样本，中文 encoder 处理英文历史；没有证明 Mem0 优于词法。四个 abstention 无 session label 召回分母，session recall 只有 8 题且不等于答案证据块 recall；无 answer-bearing chunk 标注，后者 unavailable。冷时间包含建库/索引，不能当 warm 查询延迟或线上 SLA。Langfuse 21 项本地 SDK 验证保留，云上传/读回仍 pending。RSI v2 STOP 保留，v3 artifact_budget_v1 开发/验证中，尚无策略学习提升结论。
+
+### Memory 本批收束修订：拒答分项、三例抽查与真实锁路径（2026-11-14）
+
+追加更正最终守卫验收：上段 22 passed 是首次实现阶段。根复核发现 TokenLedger 实际使用 .tokens.lock，已再加入两个冲突负例，先失败后修复，最终 **24 passed，Ruff All checks passed**；根独立重跑也为 24 项通过。守卫覆盖 ledger、.lock、.tokens.lock、.study.lock 的相同／后代／祖先重叠。已核真实 BudgetLedger._write 使用 ledger.parent 下随机 .budget- 临时文件再 os.replace；合法 sibling 测试真实 reserve/settle，并核对锁属性、临时文件位置和 plan 清单。旧实验与 source pins 未改。
+
+按冻结 references.json.is_abstention 核实：四题拒答三臂均 4/4；八题非拒答 none 0/8、lexical 7/8、mem0 5/8。本样本标记与官方 _abs suffix 全部一致，统计依据是冻结标记，不只看命名。none 4/12 来自正确拒答。两题 lexical-only correct 的匿名人工抽查均显示两臂 session 命中，但支持块只进入 lexical；Mem0 上下文分别 4828、2494 字符，均无 6000 字符截断，遗漏发生在返回 top8 之前。共同错题两臂均漏相关 session/支持块并拒答；单题不能分别确定 encoder、排序或生成器责任。无完整块标签，人工抽查不变成量化 evidence recall。
+
+新增 [三例匿名诊断](results/memory-effect-20261114/case-diagnostics.json)、[拒答分项](results/memory-effect-20261114/subgroup-summary.json) 和 [诊断清单](results/memory-effect-20261114/diagnostics-manifest.json)。全部 13 个实验时 source pins 已与 base0b63386 比对：8 项 Git 原字节可得，另 5 项源码保存为 [公开最小快照](results/memory-effect-20261114/source-snapshot/README.md)，其 manifest 列出旧 SHA、bytes、基线差异及恢复方法。快照不含数据／问答／gold／session／auth；已接受的 effect-summary/rows/pairs 与 bookkeeping-amendment 四文件未改。
+
+实际结果保持 none4/12、lexical11/12、mem09/12；72 requests／41852 tokens 全部 settled，0 新 API、0 新 embedding。infer=False 的冷索引对照没有证明 Mem0 长程／多轮收益，也没有测完整事实提取巩固。详细触发条件、根因、取舍与验证见 [报告第7–9节](reports/effect-v1-sol2.md) 和 [技术难点追加](../interview/DEVELOPMENT_PROBLEMS.md)。RSI v3 的独立审查与真实运行另由 DS-1 记录，不从机制实现推断学习提升。
+
+### Langfuse 真正云端接通与独立实验 owner（2026-11-14）
+
+用户看到云端 0 traces 后，本批重新核验发现：之前只有 SDK 适配和离线契约验证；全局 observation 块缺失且关闭，旧 Memory 独立入口只有 observation_context，没有创建/attach 云 runtime。已运行的 RSI 请求也未启用云端追踪。此前“适配完成”不能表述为“实验已云端跟踪”。
+
+用户授权后，凭据仅从 Windows 授权环境载入子进程内存；全局 C:/Users/MLL/.my-pi-agent/settings.json 仅开启 observation 并设 EU base https://cloud.langfuse.com，其余块逐项比较保持一致。不使用聊天中的旧凭据，不写入仓库、日志或收据。官方 Langfuse skill 按 docs-first 重新获取 get-started、best-practices、sessions 文档，保留已安装 SDK 5.2.0。
+
+首先通过既有 ObservationRuntime→attach raw LLM→GuardedLLM 独立账本执行一个新真实请求：DeepSeek V4.1 Flash，input 38/output 19/total 57；flush、owned shutdown 与 provider clients close 均完成。官方 CLI observations list 按 trace ID 远端 HTTP 200 读回 1 个 GENERATION，模型/usage/project 一致；root 又独立读回核验。该 probe 未设置 sessionId，不能据此宣称会话分组已通。
+
+随后新增 experiments/benchmark_live/observation.py、observation_probe.py 与 OBSERVATION.md，提供将来实验的显式 owner 与 --single-paid-probe CLI，不修改既有 BudgetLedger/GuardedLLM 或 DS1 冻结源。SessionScopeSink 在单 exporter 工作线程调用官方 propagate_attributes，把稳定 campaign 映射 session_id，并仅传 campaign/arm/stage/匿名 task_id。将来 Memory 使用新 source pins 后可将直接 GuardedLLM 调用换为 owner.achat，并在所有请求结算后 owner.aclose；仅改全局开关不会补追踪旧独立入口。
+
+为验收这个新版本，额外获准的唯一新请求实际走公开 CLI，input 38/output 18/total 56，0 retry；远端 HTTP 200 返回 sessionId=langfuse-owner-live-20261114，campaign/arm/stage/task_id、模型及 usage 全部匹配。该版本 source SHA 写入收据，未把原 probe 伪装为新入口运行。两次验证合计 **2 请求/113 实际 tokens**，held=0、unknown=false、导出错误/丢弃均 0；与旧 Memory **72 请求/41852 tokens** 独立记账。云端 totalCost=null，实际金额 unavailable。
+
+公开证据：[verification.json](results/langfuse-live-20261114/verification.json)。新入口 trace：https://cloud.langfuse.com/project/cmwg5sagt00ksad0j6au0463n/traces/a6249bf9c98cadede781b034e58ea58d；北京时间 2026-11-14 21:32:55.538，environment=default。单 generation 携带 sessionId 已读回；实际多轮/跨 trace 分组、完整 agent/retriever 树仍未实测。应用 metadata-only 不上传 prompt/response/gold/history，云端内容回放和基于内容的评测不在本批能力内；远端读取按字段白名单排除 SDK resource/scope 附加属性。历史结果若另行导入，必须标为 backfill。
+
+离线命令：uv run --no-sync pytest -q tests/experiments/test_experiment_observation.py tests/integrations/test_langfuse_sdk.py tests/llm/test_observation_runtime.py，exit 0，**17 项通过**（新 owner/CLI 10 项 + 既有 7 项）；相同三个新增 Python 文件 Ruff All checks passed。覆盖真实 SDK in-memory session 传播、owned 生命周期、未知用量保留、导出失败不重复付费、显式单次付费开关和旧 output 拒绝。独立公开说明含可复用命令；已有冻结 Memory 科学结果与 RSI 14 个 source hashes 均未更改。

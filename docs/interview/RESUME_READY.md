@@ -48,3 +48,38 @@
 - PR 状态随时间变化；当前为 open、未合并，不能写“被上游采用”。没有 Mem0/RSI 质量提升证据，没有 Langfuse 云上传证据；历史 HumanEval 47/48 不作为本场景、长程能力或个人独立实现成绩。
 
 快速验收：先看 [SOL-2 恢复报告](../experiments/reports/research-sol2-20261114.md)、[Docker 边界结果](../experiments/results/research-agent-20261114/docker-boundary-smoke.json)、[主计划](../plans/2026-11-14-research-agent-runtime.md)，再用一条调用链做个人讲解。更多材料无需进入简历正文。
+
+## 2026-11-14 追加｜可核验的 Memory 工程与实验表述
+
+本节保留上方历史，使用本次独立新 12 题证据；个人职责与源码掌握仍须按真实参与确认。
+
+| 实现技术 | 本批证据 | 表述限制 |
+| --- | --- | --- |
+| Mem0 本地 CPU 受控索引检索，匿名 chunk / top-k / 字符预算，worker 与宿主 gold 分离 | 12 题 × 三臂；36/36 检索有效且完成关闭；WSL seccomp、固定 BGE 512 维 / 2 线程，无静默回退 | infer=False 索引历史块；不是完整事实抽取、更新与巩固实验 |
+| 不可变 plan 与可变账本分离，SHA 清单和累计请求/token 预算恢复 | 原 5 题字节复用；24 个 result/state 原字节迁移；先 3 请求结算后续到 72 请求 / 41,852 tokens；held/unknown 为 0 | 中断免费检索采用核验后恢复；付费未知状态阻断，不宣称任意故障 exactly-once |
+| prepare 提前拒绝 ledger / 派生锁文件与 plan 的路径冲突 | 研究后修复；七个冲突用例修前失败，专项 22 passed、Ruff 通过，原实验源码固定版本私有保留 | 修后代码与实验时源码分开记录；22 项为本地契约验证 |
+
+可用于简历的工程要点：
+
+- 实现 Mem0、词法与无记忆三臂的可审计评测链，统一匿名历史块与上下文预算、隔离宿主 gold，以新 12 题完成 36 个有效盲判分和 72 次请求的持久化用量对账。
+- 处理 Windows↔WSL 路径映射与中断恢复，将不可变实验 plan 和可变 ledger / lock 分离，通过 SHA 保留既有结果和累计预算，并用 prepare-time 冲突守卫阻止不可恢复的布局。
+
+面试结果必须同时说清：none 4/12、lexical 11/12、Mem0 9/12，三臂各 12 个有效 judge；lexical 对 Mem0 2 胜 / 0 负 / 10 平。没有获得 Mem0 优于词法的证据，不能挑 session recall 的 0.84375 对 0.8125 当质量提升；这项召回分母是 8 个带标签普通问题，不是 12 题，也不是答案证据块召回。Mem0 平均 99.9319 秒包含冷建库/索引/查询/关闭，不能写成在线 warm 延迟。
+
+证据入口：[效果汇总](../experiments/results/memory-effect-20261114/effect-summary.json)、[配对元数据](../experiments/results/memory-effect-20261114/effect-pairs.json)、[过程报告](../experiments/reports/effect-v1-sol2.md)。实际费用未核验，不能将 USD30 兼容 ceiling 写为花费。Langfuse 云验证 pending；RSI 可讲真实分支、宿主评分、冻结预算与独立晋升门槛的实现，v3 开发/验证中，不能写已学习或已提升。
+
+### Memory 补充口径：可解释负结果与最终回归（2026-11-14）
+
+可用于工程追问的事实是：实现并验证了不可变实验计划与可变累计账本分离，精确复用中断前五题原字节；研究后补上真实 .tokens.lock 冲突守卫，最终 24 项专项及 Ruff 均由作者、根代理通过。首次 22 项记录保留为修订过程。13 项旧 source pins 中 8 项可从基线 Git 取回，5 项有公开 source-only 精确快照，能解释实验时与修复后源码版本的差异。
+
+成绩需连同拒答分项表述：总计 none4/12、lexical11/12、mem09/12；其中四题拒答三臂均4/4，八题非拒答分别0/8、7/8、5/8。两题 lexical-only correct 虽均命中相关 session，Mem0 top8 没有返回人工核对的支持块，且不是6000字符截断；这支持“把 session 命中与实际证据进入上下文分开验收”的技术判断。三例定向人工抽查不是全量答案证据召回标注。
+
+表述边界：本轮是 Mem0 infer=False 历史块索引，中文 BGE／英文语料，冷建库开销不能写成 warm 查询延迟；没有证明 Mem0 优于词法或完整提取巩固有效。个人负责动作仍需本人确认，不把代理执行量直接改写为个人独立实现。证据见 [完整报告](../experiments/reports/effect-v1-sol2.md)、[三例诊断](../experiments/results/memory-effect-20261114/case-diagnostics.json)、[源码快照](../experiments/results/memory-effect-20261114/source-snapshot/manifest.json)。
+
+### Langfuse 真实云端验证补充（2026-11-14）
+
+**实现技术**：在 raw LLM 外显式拥有 ObservationRuntime 单 worker，把 GuardedLLM 的持久预算结算与 observer 生命周期接通；工作线程传播稳定 campaign session 与匿名 arm/stage/task metadata，CLI 必须显式授权一次付费，已有 output 拒绝重放。
+
+**证据**：新公开 owner/CLI 已真实调用 DeepSeek V4.1 Flash，38 input/18 output/56 total；flush/shutdown 后官方 CLI HTTP 200 读回同一 generation、模型、sessionId、四项 metadata 与 usage。此前 runtime probe 57 tokens，两次独立账本合计 113 tokens；17 项离线测试与 Ruff 通过。公开证据见 docs/experiments/results/langfuse-live-20261114/verification.json。
+
+**限制**：旧 Memory 与已运行 RSI 请求未云追踪，也没有伪装成 backfill/live。只有单 generation 的 session 字段远端验证，未实测多轮跨 trace 归组；metadata-only 省略 prompt/response，不能声称内容回放完整。云端 totalCost=null，实际金额 unavailable。
