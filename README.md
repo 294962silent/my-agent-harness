@@ -6,6 +6,8 @@
 
 项目用于 Agent / 大模型应用开发实习的工程实践：保留可阅读的模块接口，用实际故障、取舍、回归和成对实验解释技术价值。框架仍有明确限制，不把它描述为已经成熟的生产平台。
 
+当前应用场景收敛为**多轮 CPU 代码实验 Agent**：编辑 `train.py`、在固定容器内输出预测、宿主重算 RMSE、多轮保留最佳脚本、在完成边界暂停/恢复、最后独立 final。复用原 CodingAgent 和 RSI 分支，设计借鉴 AIDE 的实验树与 autoresearch 的固定测量协议。实现与验收状态见[场景实施账本](docs/plans/2026-11-14-research-agent-runtime.md)；不是官方长程 benchmark 或已证实的自优化收益。
+
 ## 从哪里开始
 
 - [框架重设计](docs/architecture/HARNESS_VNEXT.md)：模块职责、不变量、依赖方向和本批边界。

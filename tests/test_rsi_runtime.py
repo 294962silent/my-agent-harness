@@ -18,6 +18,74 @@ class ScriptedLLM:
         return Response(model=self.model, content="done", usage={"prompt_tokens": 3, "completion_tokens": 2, "total_tokens": 5})
 
 
+def test_research_branch_tools_and_export_enforce_file_allowlist(tmp_path):
+    from my_coding_agent.rsi_branch import LocalBranchFactory
+    source = tmp_path / 'source'
+    source.mkdir()
+    (source / 'train.py').write_text('pass')
+    factory = LocalBranchFactory(source, tmp_path / 'branches', allowed_files=('train.py',),
+                                 allowed_tool_names=('ls', 'find', 'read', 'write', 'edit'))
+    budget = ParentBudget(max_requests=1, max_tokens=10000, max_seconds=20, max_evaluations=1)
+    async def exercise():
+        handle = await factory.create(0, SharedLLM(ScriptedLLM(), budget))
+        assert handle.agent._observation_runtime is None
+        assert {t.name for t in handle.agent.registry.list()} == {'ls','find','read','write','edit'}
+        result = await handle.agent.registry.execute_tool(name='write', args={'path':'extra.py','content':'bad'})
+        assert not result.ok and not (handle.workspace/'extra.py').exists()
+        result = await handle.agent.registry.execute_tool(name='write', args={'filePath':'train.py','content':'print(1)'})
+        assert result.ok
+        (handle.workspace/'extra.py').write_text('injected')
+        with pytest.raises(ValueError, match='allowlist'):
+            factory.export(handle.workspace)
+        await factory.close()
+    asyncio.run(exercise())
+
+
+def test_trusted_numeric_result_rejects_nan_and_does_not_invent_failure_score():
+    from my_coding_agent.rsi_runtime import _checked_evaluation
+    for result in ({'valid': True, 'score': float('nan'), 'feedback_type': 'host_rmse'},
+                   {'valid': False, 'score': 0., 'feedback_type': 'host_rmse'}):
+        with pytest.raises(ValueError):
+            _checked_evaluation(result)
+    assert _checked_evaluation({'valid': False, 'score': None, 'feedback_type': 'host_rmse'})['score'] is None
+
+
+@pytest.mark.parametrize('invalid_first', [False, True])
+def test_numeric_runtime_selects_continuous_utility_without_success_counts(tmp_path, invalid_first):
+    import json
+    from my_coding_agent.rsi_branch import LocalBranchFactory
+    from my_coding_agent.rsi_runtime import TrustedEvaluator, FrozenPolicy, RsiRuntime
+    class Numeric(TrustedEvaluator):
+        feedback_type = 'host_rmse'
+        count = 0
+        async def evaluate(self, workspace, budget, llm):
+            budget.begin_evaluation().update(status='completed')
+            self.count += 1
+            valid = not (invalid_first and self.count == 2)
+            return {'valid': valid, 'score': (.2 * self.count if valid else None),
+                    'feedback_type': self.feedback_type, 'feedback': 'host feedback'}
+    source = tmp_path/'source'
+    source.mkdir()
+    (source/'train.py').write_text('pass')
+    factory = LocalBranchFactory(source,tmp_path/'run',allowed_files=('train.py',),
+                                 allowed_tool_names=('read','write','edit','ls','find'))
+    budget = ParentBudget(max_requests=3,max_tokens=100000,max_seconds=20,max_evaluations=3)
+    runtime = RsiRuntime(factory=factory,evaluator=Numeric(),budget=budget,
+        policy=FrozenPolicy({'max_width':1,'max_refine':1}),max_attempts=2,task_id='numeric',split='train')
+    result = asyncio.run(runtime.run('edit train.py',llm=ScriptedLLM()))
+    assert result.selected_visible_score == pytest.approx(.6)
+    assert result.final_success is None and result.report['final_success'] is None
+    if invalid_first:
+        assert result.trace_path is None
+        assert result.report['status'] == 'completed_with_invalid_attempts'
+        assert result.report['attempts'][0]['visible']['score'] is None
+    else:
+        trace = json.loads(result.trace_path.read_text())
+        assert trace['baseline']['n_valid'] is None
+        assert trace['nodes'][0]['raw']['n_valid'] is None
+        assert trace['feedback_type'] == 'host_rmse'
+
+
 def test_shared_parent_counts_stream_summary_and_evaluator_together():
     async def exercise():
         raw = ScriptedLLM()
@@ -37,6 +105,25 @@ def test_shared_parent_counts_stream_summary_and_evaluator_together():
         with pytest.raises(NotImplementedError):
             llm.chat([])
     asyncio.run(exercise())
+
+
+def test_shared_llm_observer_context_preserves_research_scope():
+    import json
+    from my_agent_llm.observation import _CONTEXT
+    from my_coding_agent.rsi_runtime import execution_scope
+    class Observed(ScriptedLLM):
+        seen = None
+        async def achat(self, messages, **kwargs):
+            self.seen = _CONTEXT.get()
+            return await super().achat(messages, **kwargs)
+    raw = Observed()
+    budget = ParentBudget(max_requests=1,max_tokens=10000,max_seconds=10,max_evaluations=1)
+    async def exercise():
+        with execution_scope(task_id='task-hash',round=2,stage='attempt',branch=1,attempt=0):
+            await SharedLLM(raw,budget).achat([])
+    asyncio.run(exercise())
+    assert raw.seen.root_id == budget.root_id
+    assert json.loads(raw.seen.parent_id) == {'task_id':'task-hash','round':2,'stage':'attempt','branch':1,'attempt':0}
 
 
 @pytest.mark.parametrize("failure", ["usage", "cancel"])

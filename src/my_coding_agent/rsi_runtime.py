@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from contextvars import ContextVar
 import hashlib
@@ -17,9 +18,37 @@ from uuid import uuid4
 from my_agent_core.run_lifecycle import RunBudget, RunLimits
 from my_agent_llm.events import StreamDoneEvent, StreamStartEvent
 from my_agent_llm.models import Message, StreamChunk
-from my_agent_llm.observation import _CONTEXT
+from my_agent_llm.observation import _CONTEXT, observation_context
 
 _SCOPE = ContextVar("rsi_scope", default={})
+
+
+class TrustedEvaluator(ABC):
+    """Host-installed evaluator, never selected or implemented by candidate code.
+
+    Valid scores must be finite, larger-is-better utilities. Validity measures
+    an executable/scorable candidate, not task success. No model judging implied.
+    """
+    visibility = "visible"
+    feedback_type = "host_numeric"
+    binary_score = False
+
+    @abstractmethod
+    async def evaluate(self, workspace, budget, llm):
+        raise NotImplementedError
+
+
+def _checked_evaluation(value):
+    if (not isinstance(value, dict) or type(value.get('valid')) is not bool
+            or not isinstance(value.get('feedback_type'), str)):
+        raise ValueError('invalid trusted evaluation result')
+    score = value.get('score')
+    if value['valid']:
+        if type(score) not in (int, float) or not math.isfinite(score):
+            raise ValueError('trusted evaluator must return finite utility')
+    elif score is not None:
+        raise ValueError('invalid evaluation must not invent a score')
+    return value
 
 
 class RsiBudgetExceeded(RuntimeError):
@@ -182,7 +211,11 @@ class SharedLLM:
         kwargs["max_tokens"] = max_output
         record = self.budget.reserve(messages, tools, max_output, purpose)
         try:
-            response = await self.budget.awaited(self._raw.achat(messages, tools=tools, **kwargs))
+            safe_scope = {k: v for k, v in _SCOPE.get().items()
+                          if k in ('task_id','round','stage','branch','attempt') and type(v) in (str,int)}
+            with observation_context(root_id=self.budget.root_id,
+                    parent_id=json.dumps(safe_scope, sort_keys=True), purpose=purpose):
+                response = await self.budget.awaited(self._raw.achat(messages, tools=tools, **kwargs))
         except BaseException as exc:
             try:
                 self.budget.settle(record, None, error=type(exc).__name__)
@@ -309,9 +342,9 @@ class RsiRuntime:
     def __init__(self, *, factory, evaluator, budget, policy, max_attempts=4, schedule="rsi", seed=23,
                  task_id, split, arm="C", task_evidence=None):
         from .dream_rsi_contract import MAX_NODES, canonical, checksum, validate_task_evidence
-        from .rsi_branch import LocalBranchFactory, VisibleCommandEvaluator
-        if not isinstance(factory, LocalBranchFactory) or not isinstance(evaluator, VisibleCommandEvaluator):
-            raise TypeError("initial RSI runtime requires real local branches and fixed visible command evaluation")
+        from .rsi_branch import LocalBranchFactory
+        if not isinstance(factory, LocalBranchFactory) or not isinstance(evaluator, TrustedEvaluator) or evaluator.visibility != 'visible':
+            raise TypeError("RSI runtime requires real local branches and a trusted visible evaluator")
         if not isinstance(policy, FrozenPolicy) or not isinstance(budget, ParentBudget):
             raise TypeError("frozen policy and shared enforced parent budget required")
         if schedule not in ("fixed", "rsi", "random") or type(seed) is not int:
@@ -394,7 +427,7 @@ class RsiRuntime:
         self._task = asyncio.current_task()
         try:
             with execution_scope(stage="baseline"):
-                baseline = await self.evaluator.evaluate(self.factory.baseline, self.budget, shared)
+                baseline = _checked_evaluation(await self.evaluator.evaluate(self.factory.baseline, self.budget, shared))
             self.factory.verify_baseline()
             for branch, attempt in plan:
                 if self.budget.run.turns >= self.budget.run.limits.max_turns:
@@ -418,7 +451,8 @@ class RsiRuntime:
                     terminal = result["agent_terminal"].get("stop_reason")
                     if self.budget.blocked:
                         raise RsiBudgetExceeded("provider usage unavailable")
-                    measured = await self.evaluator.evaluate(handle.workspace, self.budget, shared)
+                    self.factory.verify_candidate(handle.workspace)
+                    measured = _checked_evaluation(await self.evaluator.evaluate(handle.workspace, self.budget, shared))
                     valid = terminal == "end_turn" and measured["valid"]
                     evidence = {"id": f"b{branch}_a{attempt}", "branch": branch, "attempt": attempt, "stage": "completed",
                         "agent_terminal": result["agent_terminal"], "visible": measured, "valid": valid,
@@ -431,7 +465,7 @@ class RsiRuntime:
                     active.update(evidence)
                     if valid:
                         cell = {"evaluated": True, "combined_score": measured["score"],
-                                "n_valid": int(measured["score"] == 1), "n_total": 1}
+                                "n_valid": int(measured["score"] == 1) if self.evaluator.binary_score else None, "n_total": 1}
                         nodes.append({"id": evidence["id"], "branch": branch, "attempt": attempt,
                             "parent_id": None if attempt == 0 else f"b{branch}_a{attempt - 1}",
                             "path": str(checkpoint), "intent": "real branch attempt", "tags": ["visible_proxy"],
@@ -442,8 +476,13 @@ class RsiRuntime:
                         feedbacks[branch] = measured
                         handle.mark_completed(attempt, prompt, measured)
                     else:
-                        status = "invalid_attempt"
-                        break
+                        if self.evaluator.binary_score:
+                            status = 'invalid_attempt'
+                            break
+                        status = "completed_with_invalid_attempts"
+                        feedbacks[branch] = measured
+                        if terminal == 'end_turn':
+                            handle.mark_completed(attempt, prompt, measured)
         except BaseException as exc:
             if isinstance(exc, (asyncio.CancelledError, KeyboardInterrupt, SystemExit)):
                 interruption = exc
@@ -461,10 +500,10 @@ class RsiRuntime:
         if cleanup and interruption is None:
             status, failure = "cleanup_failed", failure or "BranchCleanupError"
         trace_path = None
-        if baseline is not None and nodes and all(a["valid"] for a in attempts) and not self.budget.blocked and not cleanup:
+        if baseline is not None and baseline['valid'] and nodes and all(a["valid"] for a in attempts) and not self.budget.blocked and not cleanup:
             trace = {"version": 1, "n_problems": 1, "baseline": {
-                "evaluated": True, "combined_score": baseline["score"], "n_valid": int(baseline["score"] == 1), "n_total": 1},
-                "nodes": nodes, "provenance": provenance, "feedback_type": "visible_command_exit_status"}
+                "evaluated": True, "combined_score": baseline["score"], "n_valid": int(baseline["score"] == 1) if self.evaluator.binary_score else None, "n_total": 1},
+                "nodes": nodes, "provenance": provenance, "feedback_type": self.evaluator.feedback_type}
             if self._task_evidence_bytes is not None:
                 trace.update(task_evidence=self.task_evidence, task_evidence_sha256=self.task_evidence_sha256)
             validate_trace(trace)
@@ -474,6 +513,7 @@ class RsiRuntime:
         if selected is not None:
             selected_path, patch_path, changes_path = self.factory.export(selected["checkpoint"])
         report = {"task_id": self.task_id, "split": self.split, "arm": self.arm, "status": status,
+            "feedback_type": self.evaluator.feedback_type, "baseline": baseline,
             "error_type": failure, "selected_candidate": selected["id"] if selected else None,
             "selected_visible_score": selected["score"] if selected else None,
             "selected_agent_terminal": selected["agent_terminal"] if selected else None,

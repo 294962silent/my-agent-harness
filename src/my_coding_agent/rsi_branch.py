@@ -20,6 +20,7 @@ from my_agent_core.retry import AutoRetryPolicy
 from my_agent_core.run_lifecycle import RunLimits
 from my_agent_core.session import Session
 from my_coding_agent.tools.bash import _kill_process_tree
+from .rsi_runtime import TrustedEvaluator
 
 IGNORED = {".git", ".my_agent_core", "__pycache__", ".pytest_cache"}
 
@@ -93,13 +94,15 @@ def copy_tree(source, target):
         shutil.copy2(Path(source) / relative, destination)
 
 
-class VisibleCommandEvaluator:
+class VisibleCommandEvaluator(TrustedEvaluator):
     """Fixed host-selected public test command; score is measured exit status.
 
     This is a visible proxy, not a hidden benchmark reward or success claim.
     Commands are argv lists; stdout/stderr enter refinement as bounded data.
     """
     visibility = "visible"
+    feedback_type = "visible_command_exit_status"
+    binary_score = True
 
     def __init__(self, command, *, timeout=30):
         if not isinstance(command, (tuple, list)) or not command or any(not isinstance(v, str) or not v for v in command):
@@ -140,7 +143,7 @@ class VisibleCommandEvaluator:
 class LocalBranchFactory:
     """Real production CodingAgent instances over independently copied files."""
     def __init__(self, source, output, *, attempt_max_turns=4, artifact_projection=True,
-                 compaction_policy=None, context_budget=32000):
+                 compaction_policy=None, context_budget=32000, allowed_tool_names=None, allowed_files=None):
         self.source, self.output = plain_path(source).resolve(), plain_path(output).resolve()
         if (not self.source.is_dir() or self.source == self.source.parent or self.output.exists()
                 or self.output.is_relative_to(self.source) or self.source.is_relative_to(self.output)):
@@ -148,17 +151,52 @@ class LocalBranchFactory:
         if type(attempt_max_turns) is not int or attempt_max_turns <= 0 or type(artifact_projection) is not bool:
             raise ValueError("invalid branch attempt configuration")
         self.attempt_max_turns = attempt_max_turns
+        self.allowed_files = frozenset(safe_relative(v) for v in allowed_files) if allowed_files is not None else None
+        self.allowed_tool_names = frozenset(allowed_tool_names) if allowed_tool_names is not None else None
+        if self.allowed_files is not None and not self.allowed_files:
+            raise ValueError('candidate file allowlist must be nonempty')
+        if self.allowed_tool_names is not None and (not self.allowed_tool_names or not self.allowed_tool_names <= {'ls','find','read','write','edit'}):
+            raise ValueError('restricted branch tools must be workspace-only file tools')
         self.artifact_projection, self.compaction_policy, self.context_budget = artifact_projection, compaction_policy, context_budget
         self.output.mkdir(parents=True)
         self.baseline = self.output / "baseline"
         copy_tree(self.source, self.baseline)
         self.manifest = inventory(self.baseline)
+        self.verify_candidate(self.baseline)
         write_json(self.output / "baseline-manifest.json", {"files": self.manifest})
         self.handles = {}
 
     def verify_baseline(self):
         if inventory(self.baseline) != self.manifest:
             raise ValueError("frozen branch baseline changed")
+
+    def verify_candidate(self, workspace):
+        if self.allowed_files is not None and set(inventory(workspace)) != self.allowed_files:
+            raise ValueError('candidate file allowlist violated')
+
+    def _restrict_tools(self, agent):
+        from my_agent_core.tools import ToolResult
+        if self.allowed_tool_names is None and self.allowed_files is None:
+            return
+        allowed = self.allowed_tool_names or frozenset({'ls','find','read','write','edit'})
+        for tool in agent.registry.list():
+            if tool.name not in allowed:
+                agent.registry.unregister(tool.name)
+                continue
+            original, name = tool.execute, tool.name
+            async def execute(args, signal=None, on_update=None, tool_call_id=None, *, _original=original, _name=name):
+                raw = next((args[k] for k in ('path','filePath','file_path','file','filename') if k in args), '.')
+                try:
+                    target = plain_path(Path(raw) if Path(raw).is_absolute() else agent.workspace / raw).resolve()
+                    relative = target.relative_to(agent.workspace).as_posix()
+                    if self.allowed_files is not None and relative not in self.allowed_files:
+                        if not (_name in ('ls','find') and relative == '.'):
+                            return ToolResult(ok=False, error='candidate file allowlist: access denied')
+                    self.verify_candidate(agent.workspace)
+                except (ValueError, TypeError, OSError):
+                    return ToolResult(ok=False, error='candidate workspace/path invalid')
+                return await _original(args, signal=signal, on_update=on_update, tool_call_id=tool_call_id)
+            tool.execute = execute
 
     async def create(self, branch, llm):
         from my_coding_agent.agent import CodingAgent
@@ -175,10 +213,12 @@ class LocalBranchFactory:
             extension_dirs=[], plugin_dirs=[], retry_policy=AutoRetryPolicy(max_retries=0),
             run_limits=RunLimits(max_turns=self.attempt_max_turns, max_seconds=max(.001, llm.budget.remaining())),
             context_budget=self.context_budget, compaction_policy=self.compaction_policy,
+            observation_config={'enabled': False} if self.allowed_tool_names is not None or self.allowed_files is not None else None,
             artifact_projection=self.artifact_projection)
         if agent.llm is not llm or agent.context_manager.llm is not llm:
             await agent.aclose()
             raise ValueError("branch agent or context escaped the parent LLM")
+        self._restrict_tools(agent)
         handle = LocalBranchHandle(branch, root, workspace, agent, self)
         self.handles[branch] = handle
         return handle
@@ -194,6 +234,7 @@ class LocalBranchFactory:
 
     def export(self, checkpoint):
         self.verify_baseline()
+        self.verify_candidate(checkpoint)
         selected = self.output / "selected"
         copy_tree(checkpoint, selected / "tree")
         after = inventory(selected / "tree")
@@ -249,6 +290,7 @@ class LocalBranchHandle:
                                      "micro_groups": sum(r.get("micro_groups", 0) for r in snapshots)}}
 
     def checkpoint(self, attempt, evidence):
+        self.factory.verify_candidate(self.workspace)
         directory = self.root / "attempts" / f"a{attempt}"
         copy_tree(self.workspace, directory / "tree")
         if self.agent.session.path.is_file():

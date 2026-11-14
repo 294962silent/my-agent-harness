@@ -6,6 +6,70 @@ import json
 import pytest
 
 
+def test_balanced_candidate_prefix_and_effective_train_only_dedup():
+    from my_coding_agent.dream_rsi_optimizer import candidate_grid, effective_candidates
+    grid = candidate_grid(2)
+    assert {p['parameters']['max_width'] for p in grid} == {1,2}
+    candidates = effective_candidates([tree()], [2], 16)
+    assert len(candidates) == 2  # full-reference equivalent widths and clamped depths removed
+    from my_coding_agent.dream_rsi_contract import expected_waves
+    signatures = [tuple(n['id'] for w in expected_waves(tree(),p['parameters'],2) for n in w) for p in candidates]
+    assert len(set(signatures)) == len(signatures)
+    assert all(s != ('b0_a0','b1_a0') for s in signatures)
+    assert effective_candidates([tree()], [2], 1) == candidates[:1]
+    first = effective_candidates([tree()], [2], 2, search_order='random',seed=7)
+    assert first == effective_candidates([tree()], [2], 2, search_order='random',seed=7)
+    assert {p['policy_hash'] for p in first} == {p['policy_hash'] for p in candidates}
+    assert effective_candidates([tree()],[1],16) == []
+    deeper=tree()
+    deeper['nodes'].append({'id':'b0_a2','branch':0,'attempt':2,'parent_id':'b0_a1','path':'unused',
+                           'raw':{'evaluated':True,'combined_score':4.}})
+    combined=effective_candidates([tree(),deeper],[1,3],16)
+    assert any(p['parameters']=={'max_width':1,'max_refine':4} for p in combined)
+
+
+def test_ratio_cost_can_prefer_baseline_and_reports_same_budget_controls(tmp_path):
+    from my_coding_agent.dream_rsi_optimizer import optimize
+    path=dataset(tmp_path/'data')
+    result=optimize(path,tmp_path/'run',budgets=[2],max_candidates=16,dry_run=True,
+                    objective='ratio_cost',cost_weight=1.,_evaluator=fake_evaluator)
+    assert result['objective'] == 'mean-recorded-best-ratio-minus-call-fraction-v1'
+    assert result['cost_proxy'] == 'verified_evaluator_calls/budget'
+    plan=json.loads((tmp_path/'run/plan.json').read_text())
+    assert len(plan['candidates']) == 2 and plan['max_candidates'] == 16
+    assert plan['max_candidates_excludes_baseline'] is True
+    assert result['train_scores']['baseline'] <= 1
+    assert result['selected']['parameters'] == {'max_width':1,'max_refine':0}
+    assert result['comparison']['search_order'] == 'fixed'
+
+
+def test_fixed_random_compare_same_full_unique_pool_and_budget(tmp_path):
+    from my_coding_agent.dream_rsi_optimizer import optimize
+    path=dataset(tmp_path/'data')
+    results=[]
+    for order in ('fixed','random'):
+        result=optimize(path,tmp_path/order,budgets=[2],max_candidates=16,dry_run=True,
+                        search_order=order,seed=7,_evaluator=fake_evaluator)
+        results.append(result)
+        assert result['comparison']['budgets']==[2]
+        assert result['comparison']['effective_candidates']==2
+        assert 'baseline' in result['train_scores']
+        assert result['selected']['parameters']=={'max_width':1,'max_refine':1}
+    assert results[0]['train_scores'][results[0]['selected']['role']]==results[1]['train_scores'][results[1]['selected']['role']]
+
+
+def test_reference_only_pool_and_cost_objective_promotion_are_verified(tmp_path):
+    from my_coding_agent.dream_rsi_optimizer import optimize,verify_promotion
+    path=dataset(tmp_path/'data','observed')
+    reference=optimize(path,tmp_path/'reference',budgets=[1],max_candidates=16,_evaluator=fake_evaluator)
+    assert reference['selected']['role']=='baseline' and reference['comparison']['effective_candidates']==0
+    assert not reference['promoted']
+    cost=optimize(path,tmp_path/'cost',registry_path=tmp_path/'registry',budgets=[2],max_candidates=16,
+                  objective='ratio_cost',cost_weight=1.,_evaluator=fake_evaluator)
+    assert cost['promotion_eligible'] and cost['promoted']
+    assert verify_promotion(tmp_path/'cost')['parameters']=={'max_width':1,'max_refine':0}
+
+
 def tree(peak=3.0):
     def cell(value):
         return {"evaluated": True, "combined_score": value}
@@ -375,7 +439,7 @@ def test_second_fixture_promotion_atomic_rollback_and_corrupt_active_recovery(tm
         tmp_path / "run2",
         registry_path=registry.root,
         budgets=[3],
-        max_candidates=3,
+        max_candidates=16,  # Balanced search must include the deeper continuation.
         _evaluator=fake_evaluator,
     )
     second = registry.status()["version"]
@@ -497,7 +561,7 @@ def test_failed_pointer_commit_keeps_active_and_seals_failure_artifacts(tmp_path
     second = deeper_dataset(tmp_path / "data2")
     run = tmp_path / "failed"
     with pytest.raises(OSError):
-        optimize(second, run, registry_path=registry.root, budgets=[3], max_candidates=3, _evaluator=fake_evaluator)
+        optimize(second, run, registry_path=registry.root, budgets=[3], max_candidates=16, _evaluator=fake_evaluator)
     assert registry.status()["version"] == active
     assert json.loads((run / "promotion.json").read_bytes())["status"] == "prepared"
     assert json.loads((run / "error.json").read_bytes())["error_type"] == "OSError"
@@ -569,7 +633,7 @@ def test_candidate_above_baseline_but_below_active_cannot_promote(tmp_path):
     assert result["incumbent_gain"] < 0
     assert not result["promotion_eligible"] and registry.status()["version"] == active
     rows = json.loads((tmp_path / "run/evaluations.json").read_bytes())
-    assert {r["role"] for r in rows if r["split"] == "holdout"} == {"baseline", "c01", "incumbent"}
+    assert {r["role"] for r in rows if r["split"] == "holdout"} == {"baseline", result['selected']['role'], "incumbent"}
     assert not any(r["role"] == "incumbent" for r in rows if r["split"] == "train")
 
 
@@ -595,7 +659,7 @@ def test_registry_change_after_prepare_refuses_stale_commit(tmp_path, monkeypatc
             tmp_path / "run",
             registry_path=registry.root,
             budgets=[3],
-            max_candidates=3,
+            max_candidates=16,
             _evaluator=fake_evaluator,
         )
     assert registry.status()["version"] == changed[0]
@@ -643,7 +707,7 @@ def test_registry_aba_change_is_stale_even_if_active_version_returns(tmp_path, m
             tmp_path / "run",
             registry_path=registry.root,
             budgets=[3],
-            max_candidates=3,
+            max_candidates=16,
             _evaluator=fake_evaluator,
         )
     assert registry.status()["version"] == old and registry.status()["token"] != token

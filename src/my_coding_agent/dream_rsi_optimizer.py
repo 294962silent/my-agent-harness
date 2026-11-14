@@ -8,6 +8,7 @@ import math
 import os
 from pathlib import Path
 import re
+import random
 import time
 from uuid import uuid4
 
@@ -24,9 +25,11 @@ from .dream_rsi_contract import (
     validate_trace,
     verify_leaf,
     _unique_object,
+    expected_waves,
 )
 
 OBJECTIVE = "mean-recorded-best-ratio-v1"
+COST_OBJECTIVE = 'mean-recorded-best-ratio-minus-call-fraction-v1'
 
 
 def _load(path):
@@ -149,10 +152,62 @@ def load_dataset(path):
 def candidate_grid(limit):
     if type(limit) is not int or not 1 <= limit <= 16:
         raise ValueError("max_candidates must be a strict integer in 1..16")
+    widths, depths = (1,2,8,64), (0,1,4,64)
+    # Include one refinement and a breadth alternative immediately. Remaining
+    # shells interleave width/depth instead of exhausting one width's depths.
+    pairs = [(0,1),(1,0)] + sorted(((i,j) for i in range(4) for j in range(4)
+                if (i,j) not in ((0,1),(1,0))), key=lambda p:(max(p),sum(p),-p[0]))
+    return [{'role':f'c{i:02d}','parameters':{'max_width':widths[w],'max_refine':depths[d]},
+             'policy_hash':policy_identity({'max_width':widths[w],'max_refine':depths[d]})}
+            for i,(w,d) in enumerate(pairs[:limit])]
+
+
+def _legacy_candidate_grid(limit):
     return [
         {"role": f"c{i:02d}", "parameters": p, "policy_hash": policy_identity(p)}
         for i, p in enumerate({"max_width": w, "max_refine": d} for w in (1, 2, 8, 64) for d in (0, 1, 4, 64))
     ][:limit]
+
+
+def effective_candidates(train_traces, budgets, limit, *, search_order='fixed', seed=23):
+    """At most limit non-reference policies; signatures use training data only.
+
+    Deduplicate executable schedules across *all* train tasks and budgets before
+    limiting. This does not inspect scores or holdout shapes. Random shuffles
+    candidate search order, not the Agent's exploration policy.
+    """
+    candidate_grid(limit)
+    if search_order not in ('fixed','random') or type(seed) is not int or not train_traces:
+        raise ValueError('invalid candidate search order/seed/training traces')
+    def signature(parameters):
+        return tuple(tuple((n['branch'],n['attempt']) for wave in expected_waves(trace,parameters,budget)
+                           for n in wave) for trace in train_traces for budget in budgets)
+    seen = {signature(None)}
+    unique = []
+    for candidate in candidate_grid(16):
+        meaning = signature(candidate['parameters'])
+        if meaning not in seen:
+            seen.add(meaning)
+            unique.append(candidate)
+    if search_order == 'random':
+        random.Random(seed).shuffle(unique)
+    return [{**p,'role':f'c{i:02d}'} for i,p in enumerate(unique[:limit])]
+
+
+def _planned_candidates(root, plan):
+    if plan.get('candidate_selection') is None:
+        return _legacy_candidate_grid(plan['max_candidates'])
+    if plan['candidate_selection'] != 'effective-balanced-v2' or plan.get('max_candidates_excludes_baseline') is not True:
+        raise ValueError('invalid candidate selection version')
+    traces = []
+    for entry in plan['entries']:
+        if entry['split'] == 'train':
+            raw = _relative(root,entry['frozen_file']).read_bytes()
+            if checksum(raw) != entry['sha256']:
+                raise ValueError('frozen training trace changed')
+            traces.append(json.loads(raw,object_pairs_hook=_unique_object))
+    return effective_candidates(traces,plan['budgets'],plan['max_candidates'],
+             search_order=plan.get('search_order','fixed'),seed=plan.get('seed',23))
 
 
 def _bounds(budgets, max_candidates, min_gain, max_workers, timeout_seconds, max_seconds=300):
@@ -250,7 +305,12 @@ def _leaf(root, plan, row):
         or row["policy_hash"] != policy["policy_hash"]
     ):
         raise ValueError("leaf source/slot differs")
-    return verify_leaf(json.loads(raw), summary, episode, policy["parameters"], row["budget"], plan["max_workers"])
+    trace = json.loads(raw)
+    ratio = verify_leaf(trace, summary, episode, policy["parameters"], row["budget"], plan["max_workers"])
+    if plan['objective'] == COST_OBJECTIVE:
+        calls = sum(len(wave) for wave in expected_waves(trace,policy['parameters'],row['budget']))
+        return ratio - plan['cost_weight'] * calls / row['budget']
+    return ratio
 
 
 def _select(plan, rows, metrics):
@@ -278,8 +338,8 @@ def _select(plan, rows, metrics):
 def _derive(root, plan, rows):
     if (
         plan["source_commit"] != SOURCE_COMMIT
-        or plan["objective"] != OBJECTIVE
-        or plan["candidates"] != candidate_grid(plan["max_candidates"])
+        or plan["objective"] not in (OBJECTIVE,COST_OBJECTIVE)
+        or plan["candidates"] != _planned_candidates(root,plan)
     ):
         raise ValueError("plan algorithm/source differs")
     _bounds(
@@ -295,8 +355,11 @@ def _derive(root, plan, rows):
     if type(plan["dry_run"]) is not bool or not isinstance(rows, list) or len(rows) > 2400:
         raise ValueError("invalid frozen search mode/evaluation inventory")
     _verify_incumbent(root, plan)
+    weight = plan.get('cost_weight',0.)
+    if type(weight) not in (int,float) or not math.isfinite(weight) or not 0 <= weight <= 1:
+        raise ValueError('invalid frozen cost weight')
     metrics = [_leaf(root, plan, row) for row in rows]
-    if any(not math.isfinite(m) or not 0 <= m <= 1 for m in metrics):
+    if any(not math.isfinite(m) or not -weight <= m <= 1 for m in metrics):
         raise ValueError("invalid trusted objective values")
     selected, train_scores = _select(plan, rows, metrics)
     expected = {
@@ -330,7 +393,11 @@ def _derive(root, plan, rows):
         "schema_version": 1,
         "status": "completed",
         "kind": plan["kind"],
-        "objective": OBJECTIVE,
+        "objective": plan['objective'],
+        'cost_proxy': 'verified_evaluator_calls/budget' if plan['objective'] == COST_OBJECTIVE else None,
+        'comparison': {'search_order':plan.get('search_order','legacy_fixed'), 'seed':plan.get('seed'),
+                       'budgets':plan['budgets'], 'candidate_limit_excludes_baseline':plan['max_candidates'],
+                       'effective_candidates':len(plan['candidates']), 'baseline_included':True},
         "source_commit": SOURCE_COMMIT,
         "selected": selected,
         "train_scores": train_scores,
@@ -347,6 +414,8 @@ def _derive(root, plan, rows):
             "Observed is a caller declaration, not cryptographic proof of score provenance.",
             "Synthetic datasets are function checks only and never production-active.",
             "Holdout accepts the train-selected policy only if it strictly beats both frozen reference and incumbent.",
+            "Cost objective uses verified replay evaluator-call fractions only; real tokens, wall time and dollars are not inferred.",
+            "Random search order shuffles unique parameter candidates, not Agent exploration decisions.",
         ],
     }
 
@@ -426,12 +495,20 @@ def optimize(
     max_workers=1,
     timeout_seconds=30,
     max_seconds=300,
+    objective=OBJECTIVE,
+    cost_weight=.05,
+    search_order='fixed',
+    seed=23,
     _evaluator=None,
 ):
     started = time.monotonic()
     if dataset_manifest is None:
         return {"status": "needs_dataset", "promoted": False, "reason": "no scored train/holdout dataset"}
     _bounds(budgets, max_candidates, min_gain, max_workers, timeout_seconds, max_seconds)
+    objective = {'ratio':OBJECTIVE,'ratio_cost':COST_OBJECTIVE}.get(objective,objective)
+    if (objective not in (OBJECTIVE,COST_OBJECTIVE) or search_order not in ('fixed','random') or type(seed) is not int
+            or type(cost_weight) not in (int,float) or not math.isfinite(cost_weight) or not 0 <= cost_weight <= 1):
+        raise ValueError('invalid objective/cost/search settings')
     deadline = started + max_seconds
 
     def remaining():
@@ -479,7 +556,11 @@ def optimize(
         plan = {
             "schema_version": 1,
             "source_commit": SOURCE_COMMIT,
-            "objective": OBJECTIVE,
+            "objective": objective,
+            'cost_weight':cost_weight,
+            'candidate_selection':'effective-balanced-v2',
+            'search_order':search_order, 'seed':seed,
+            'max_candidates_excludes_baseline':True,
             "dataset_manifest": data["manifest"],
             "dataset_manifest_sha256": data["manifest_sha256"],
             "dataset_source": data["source"],
@@ -487,7 +568,8 @@ def optimize(
             "entries": entries,
             "registry_root": str(registry.root),
             "incumbent": incumbent,
-            "candidates": candidate_grid(max_candidates),
+            "candidates": effective_candidates([e['trace'] for e in data['entries'] if e['split']=='train'],
+                           budgets,max_candidates,search_order=search_order,seed=seed),
             "max_candidates": max_candidates,
             "budgets": list(budgets),
             "max_workers": max_workers,
@@ -598,6 +680,10 @@ def main(argv=None):
     parser.add_argument("--timeout-seconds", type=float, default=30)
     parser.add_argument("--min-gain", type=float, default=0)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument('--objective',choices=('ratio','ratio_cost'),default='ratio')
+    parser.add_argument('--cost-weight',type=float,default=.05)
+    parser.add_argument('--search-order',choices=('fixed','random'),default='fixed')
+    parser.add_argument('--seed',type=int,default=23)
     args = parser.parse_args(argv)
     try:
         from .settings import load_settings
@@ -619,6 +705,8 @@ def main(argv=None):
             min_gain=args.min_gain,
             max_workers=args.max_workers,
             timeout_seconds=args.timeout_seconds,
+            objective=args.objective, cost_weight=args.cost_weight,
+            search_order=args.search_order, seed=args.seed,
         )
         result["optimization_enabled"] = getattr(config, "enabled", False)
     except (OSError, ValueError, RuntimeError) as error:

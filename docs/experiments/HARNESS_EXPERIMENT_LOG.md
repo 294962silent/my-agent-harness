@@ -979,3 +979,21 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 方案补充任务内部train/dev/final与任务集合策略train/holdout/test两层划分，正式对照经验库只从策略train写入、其余仅读冻结快照。首版少量CPU任务先预检差异与资源，再真实运行、恢复与公平消融，不承诺8GB已跑通或固定天数完成。既有CLAIMS追加计划/已证实边界，简历不编造新场景指标。
 
 审查/验证追加：SOL-2复核主方案无新指标冒领，按建议明确test provider输入scope、Mem0“经验证经验”的计划性质和两层split；SOL-1核本地接缝，数值评分/候选写入范围/checkpoint缺口已写入方案。主代理验证8个固定commit为完整40位、来源清单无重复、10个新增本地链接有效；6个暂存文件均docs、生产变化0，实际API/Git凭据精确匹配0，diff check通过。本批没有安装或复跑外部项目，源码事实与性能实测保持区分。
+
+### E-RESEARCH-RUNTIME：2026-11-14 / 从方案落到可信代码实验链路
+
+- 用户批准快速实现。沿用两位GPT-6.1 Sol/medium，SOL-1负责任务/评分/分支与优化器，SOL-2负责campaign/持久预算/CLI/集成；主代理设计、预检、集成与验收，不恢复DSH、不迁L20、不重跑旧HumanEval。详见[实施账本](../plans/2026-11-14-research-agent-runtime.md)和两位助手的[执行报告](reports/research-sol1-20261114.md)。
+- 新增research_task/evaluator/runtime/cli/integrations，复用CodingAgent、SharedLLM和LocalBranchFactory。原exit-code评分保留默认兼容；新评分只接受预测CSV，由宿主标签重算RMSE/utility，非法候选不补造分数。Agent仅可改train.py和使用五个受限文件工具；固定镜像、无网络/只读根/非root/资源限制、三输入只读和单预测文件可写。借鉴AIDE实验树与autoresearch固定测量协议，不移植整个框架。
+- 新场景journal在请求/评分前预留，结算后追加；完整round提交checkpoint，恢复重建累计请求/token/评分/活跃时长。未知或在途工作停止，不自动重放。冻结数据/实现/策略/记忆/脚本/报告/预测hash；final单次且封闭后续搜索。成本是更多磁盘证据和保守阻断，不声称任意时刻恢复或exactly-once。
+- 审查发现旧runtime只在Agent候选中选优，可能丢弃更好的baseline；新场景提交时将输入baseline也比较，平分保留旧脚本，独立记录原Agent候选与实际选择。修复内存manifest原地变更、预测产物hash漏验及final resolved imageID漏比；预算不因保底而退款。见[面试P61–P65](../interview/13-代码实验Agent的可信评分与恢复.md)。
+- 优化器候选从单width前缀改为宽/深交错，按全部train任务和预算的实际wave签名去重后截，baseline另计且可以胜出。新增显式ratio_cost和fixed/random候选搜索顺序；成本为verified evaluator_calls/budget代理，不能冒充真实token/金额。默认ratio和旧plan解释保持兼容；random候选顺序不等同随机Agent行动。
+- Mem0场景明确none/lexical/mem0入口，复用已验证本地CPU中文profile；经验正文保留schema与有界候选方法及证据，train写、val/test读冻结快照，状态/预算不由向量库决定。观测复用现有有界导出，关联task/round/branch；Langfuse环境与global settings均无凭据，远端上传仍unverified。配置接线不能当作效果消融。
+- 本机WSL Docker26.1.3可用但daemon直接pull超时；Windows从官方Registry下载并验证manifest/config/layer及diff_ids，再Docker load得到固定imageID。有限重试复用已验缓存，未改全局代理/daemon。UCI Wine Quality与Airfoil三份CSV、CC-BY-4.0来源和SHA留档于[本轮证据目录](results/research-agent-20261114/data-sources.json)。不将完整标签原文提交Git。
+- 零模型API的真实Docker八场景通过：均值/线性不同分、stdout伪分无效、NaN/错ID无分、私有标签不可见及额外输出拒绝、超时/取消后CID均确认不存在。合成线性RMSE0只是边界夹具。另在真实红酒1599行seed23上预检train961/dev319/final319，均值dev RMSE0.8467093297、手写标准库ridge0.6841778884，final未评分；证明评分非饱和且可区分，不是Agent/RSI增益。[预检](results/research-agent-20261114/uci-preflight.json)保存数据与实际代码pins。
+- 首次主代理误用Shell默认老Conda Python，类型注解在收集期失败；改用项目3.13 venv后定向通过。整库直启venv又导致子工具PATH仍选Conda而stdlib不匹配，已终止核实归属的该次测试完整进程树；改用uv run --no-sync。默认cmd缺cat的旧pipefail项，通过显式PI_BASH_PATH指向本机Git Bash后18项全部通过。没有为环境问题改生产代码或skip断言。
+
+本节初稿时真实模型实验尚未开始；[事前smoke协议](results/research-agent-20261114/LIVE_SMOKE_PLAN.md)先登记red train两轮暂停/恢复、airfoil独立val、真实trace导出优化及合法冻结参数供white test消费。整库回归、真实模型用量、最终成绩与GitHub交付状态在本节后续追加，未测数据不按计划填值。
+
+真实首轮与环境故障追加：v1 red在Mem0初始化、baseline评分和首个模型响应/ls/find工具消息后MemoryError，0round提交；实际1请求1252tokens全部settled、1评分、21.2123297活跃秒、cleanup_errors空。主代理曾误判为初始化前0API，核journal后当场更正，原失败不覆盖。相同response工具调用离线重放成功，具体异常行已丢，不能宣称确定根因或已修复。随后本机进程启动出现Windows STATUS_COMMITMENT_LIMIT且执行服务重启，数次整库日志无终态，全部记为incomplete而非通过。当前无本轮pytest/research残留，资源恢复后按独立v2新ID串行运行，事前追加运维修订并从原ceiling扣除v1消耗，旧round保持永久阻断。
+
+交付前软件验收追加：27项campaign/integration定向通过、相关源/测试Ruff与diff check通过；uv build成功，实际wheel198项包含五个research模块及python -m CLI入口，CI补同样ZIP清单检查。既有81/86定向与27有重叠不相加，真实Docker八场景单列。28个明确暂存路径实际模型/Git凭据精确扫描0命中；将先推功能版本由GitHub执行完整四矩阵回归，远端结果与后续真实smoke另记，不把配置矩阵视作已过。
