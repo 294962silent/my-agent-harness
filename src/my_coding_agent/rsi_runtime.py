@@ -337,10 +337,31 @@ class RsiResult:
         return {"status": "applied", "files": len(changes), "target": str(target)}
 
 
+def _artifact_terminal_allowed(terminal, max_turns):
+    from .dream_rsi_contract import artifact_terminal_allowed
+    return artifact_terminal_allowed(terminal, max_turns)
+
+
+def _closed_attempt_tools(actions):
+    opened, seen = set(), set()
+    for action in actions:
+        identity = action.get("tool_call_id")
+        if action["event"] == "ToolExecutionStart":
+            if not identity or identity in seen:
+                return False
+            opened.add(identity)
+            seen.add(identity)
+        elif action["event"] == "ToolExecutionEnd":
+            if identity not in opened:
+                return False
+            opened.remove(identity)
+    return not opened
+
+
 class RsiRuntime:
     """Opt-in batch portfolio of real agents, initially serial and non-promoting."""
     def __init__(self, *, factory, evaluator, budget, policy, max_attempts=4, schedule="rsi", seed=23,
-                 task_id, split, arm="C", task_evidence=None):
+                 task_id, split, arm="C", task_evidence=None, delivery_contract="end_turn_v1"):
         from .dream_rsi_contract import MAX_NODES, canonical, checksum, validate_task_evidence
         from .rsi_branch import LocalBranchFactory
         if not isinstance(factory, LocalBranchFactory) or not isinstance(evaluator, TrustedEvaluator) or evaluator.visibility != 'visible':
@@ -351,6 +372,11 @@ class RsiRuntime:
             raise ValueError("invalid scheduling mode/seed")
         if type(max_attempts) is not int or not 1 <= max_attempts <= MAX_NODES:
             raise ValueError("invalid attempt ceiling")
+        if delivery_contract not in ("end_turn_v1", "artifact_budget_v1"):
+            raise ValueError("unknown delivery contract")
+        if delivery_contract == "artifact_budget_v1" and factory.allowed_files != frozenset({"train.py"}):
+            raise ValueError("artifact delivery requires a restricted train.py workspace")
+        self.delivery_contract = delivery_contract
         if not isinstance(task_id, str) or not task_id or split not in ("train", "val", "test"):
             raise ValueError("explicit task identity and train/val/test split required")
         self.factory, self.evaluator, self.budget, self.policy = factory, evaluator, budget, policy
@@ -404,7 +430,7 @@ class RsiRuntime:
     async def run(self, prompt, *, llm):
         from dataclasses import asdict, is_dataclass
         from .dream_rsi_contract import validate_trace
-        from .rsi_branch import file_sha, write_json
+        from .rsi_branch import file_sha, inventory, write_json
         if self._used:
             raise RuntimeError("RSI runtime is single-use; no implicit retry/resume")
         if not isinstance(prompt, str):
@@ -452,29 +478,60 @@ class RsiRuntime:
                     if self.budget.blocked:
                         raise RsiBudgetExceeded("provider usage unavailable")
                     self.factory.verify_candidate(handle.workspace)
-                    measured = _checked_evaluation(await self.evaluator.evaluate(handle.workspace, self.budget, shared))
-                    valid = terminal == "end_turn" and measured["valid"]
+                    artifact_mode = self.delivery_contract == "artifact_budget_v1"
+                    artifact, submission = None, None
+                    if artifact_mode:
+                        state = self.budget.snapshot()
+                        if (not _artifact_terminal_allowed(result["agent_terminal"], self.factory.attempt_max_turns)
+                                or not _closed_attempt_tools(result["actions"])
+                                or not state["usage_complete"] or state["held_tokens"]):
+                            raise ValueError("artifact attempt lacks a known closed quota boundary")
+                        submission, frozen_files = handle.freeze_submission(attempt)
+                        artifact = {"closed_tools": True, "files": frozen_files,
+                                    "code_sha256": file_sha(submission / "train.py")}
+                    measured = _checked_evaluation(await self.evaluator.evaluate(
+                        submission if artifact_mode else handle.workspace, self.budget, shared))
+                    if artifact_mode and (inventory(submission) != frozen_files
+                            or inventory(handle.workspace) != frozen_files
+                            or measured.get("pins", {}).get("code_sha256") != artifact["code_sha256"]):
+                        raise ValueError("graded artifact differs from frozen submission")
+                    valid = (artifact_mode or terminal == "end_turn") and measured["valid"]
                     evidence = {"id": f"b{branch}_a{attempt}", "branch": branch, "attempt": attempt, "stage": "completed",
                         "agent_terminal": result["agent_terminal"], "visible": measured, "valid": valid,
                         "actions": result["actions"], "budget_before": before, "budget_after": self.budget.snapshot(),
                         "context_snapshots": result["context_snapshots"], "context_activity": result["context_activity"],
                         "context": dict(handle.agent.context_manager.compaction_report),
                         "tool_schema_sha256": hashlib.sha256(json.dumps(handle.agent.registry.get_schemas(), sort_keys=True).encode()).hexdigest()}
-                    checkpoint = handle.checkpoint(attempt, evidence)
+                    if artifact_mode:
+                        evidence["artifact"] = artifact
+                    checkpoint = handle.checkpoint(attempt, evidence, source=submission)
+                    if artifact_mode and inventory(checkpoint) != frozen_files:
+                        raise ValueError("checkpoint differs from graded artifact")
                     evidence["checkpoint"] = str(checkpoint)
                     active.update(evidence)
-                    if valid:
+                    if artifact_mode or valid:
                         cell = {"evaluated": True, "combined_score": measured["score"],
                                 "n_valid": int(measured["score"] == 1) if self.evaluator.binary_score else None, "n_total": 1}
+                        after = self.budget.snapshot()
+                        if artifact_mode and not valid:
+                            cell = {"evaluated": False, "combined_score": None}
                         nodes.append({"id": evidence["id"], "branch": branch, "attempt": attempt,
                             "parent_id": None if attempt == 0 else f"b{branch}_a{attempt - 1}",
                             "path": str(checkpoint), "intent": "real branch attempt", "tags": ["visible_proxy"],
-                            "status": "done", "raw": cell})
+                            "status": "done" if valid else "failed", "raw": cell})
+                        if artifact_mode:
+                            nodes[-1].update(eligible=valid, terminal=result["agent_terminal"], artifact=artifact,
+                                diagnostic=measured, cost={"requests": after["requests"] - before["requests"],
+                                "tokens": after["used_tokens"] - before["used_tokens"],
+                                "evaluations": after["evaluations"] - before["evaluations"],
+                                "usage_complete": after["usage_complete"] and not after["held_tokens"]})
+                    if valid:
                         if selected is None or measured["score"] > selected["score"]:
                             selected = {"score": measured["score"], "checkpoint": checkpoint,
                                         "text": result["text"], "id": evidence["id"], "agent_terminal": terminal}
                         feedbacks[branch] = measured
-                        handle.mark_completed(attempt, prompt, measured)
+                        if terminal == "end_turn":
+                            handle.mark_completed(attempt, prompt, measured)
                     else:
                         if self.evaluator.binary_score:
                             status = 'invalid_attempt'
@@ -500,10 +557,15 @@ class RsiRuntime:
         if cleanup and interruption is None:
             status, failure = "cleanup_failed", failure or "BranchCleanupError"
         trace_path = None
-        if baseline is not None and baseline['valid'] and nodes and all(a["valid"] for a in attempts) and not self.budget.blocked and not cleanup:
+        complete = (all(a["valid"] for a in attempts) if self.delivery_contract == "end_turn_v1" else
+                    len(nodes) == len(plan) and all(a["stage"] == "completed" for a in attempts) and failure is None)
+        if baseline is not None and baseline['valid'] and nodes and complete and not self.budget.blocked and not cleanup:
             trace = {"version": 1, "n_problems": 1, "baseline": {
                 "evaluated": True, "combined_score": baseline["score"], "n_valid": int(baseline["score"] == 1) if self.evaluator.binary_score else None, "n_total": 1},
                 "nodes": nodes, "provenance": provenance, "feedback_type": self.evaluator.feedback_type}
+            if self.delivery_contract == "artifact_budget_v1":
+                trace.update(version=2, delivery_contract=self.delivery_contract,
+                             attempt_max_turns=self.factory.attempt_max_turns)
             if self._task_evidence_bytes is not None:
                 trace.update(task_evidence=self.task_evidence, task_evidence_sha256=self.task_evidence_sha256)
             validate_trace(trace)

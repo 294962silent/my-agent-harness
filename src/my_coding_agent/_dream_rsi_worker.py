@@ -46,7 +46,8 @@ def main() -> int:
     )
     contract = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(contract)
-    shape = contract.validate_trace(json.loads(raw, object_pairs_hook=contract._unique_object))
+    trace = json.loads(raw, object_pairs_hook=contract._unique_object)
+    shape = contract.validate_trace(trace)
     if set(request) != {
         "budget",
         "max_workers",
@@ -77,9 +78,33 @@ def main() -> int:
         not in ("explicit_parameters", "explicit_baseline", "no_active_policy", "registry_active", "invalid_registry")
     ):
         return 1
-    env = TraceEnv.replay(root / "input-trace.json", max_workers=request["max_workers"])
+    replay_path = root / "input-trace.json"
+    environment = TraceEnv
+    if trace["version"] == 2:
+        # The local adapter preserves the pinned scheduling algorithm. Zero is
+        # an internal no-reward sentinel, never a claimed measured failed score.
+        projected = json.loads(raw)
+        projected["version"] = 1
+        for node in projected["nodes"]:
+            node["raw"] = {"evaluated": True, "combined_score": contract.replay_score(trace, node)}
+        replay_path = root / "replay-view.json"
+        replay_path.write_bytes(contract.canonical(projected))
+
+        class ArtifactTraceEnv(TraceEnv):
+            def reset(self):
+                super().reset()
+                self.best_so_far = self.baseline_score
+
+        environment = ArtifactTraceEnv
+    env = environment.replay(replay_path, max_workers=request["max_workers"])
     result = ParallelRefineMethod(config).solve(env, budget=request["budget"])
     episode = env.execution_trace()
+    if trace["version"] == 2:
+        nodes = {(n["branch"], n["attempt"]): n for n in trace["nodes"]}
+        for event in episode["events"]:
+            for outcome in event["outcomes"]:
+                node = nodes[outcome["branch"], outcome["attempt"]]
+                outcome.update(eligible=node["eligible"], observed_cost=node["cost"])
     upstream_files = []
     for filename in ("dream_rsi/env/trace_env.py", "dream_rsi/policy/baseline.py", "dream_rsi/env/trace/raw.py"):
         body = Path(dist.locate_file(filename)).read_bytes()
@@ -122,6 +147,8 @@ def main() -> int:
             "Credential environment removed; network blocked; process isolation is not a security sandbox.",
         ],
     }
+    if trace["version"] == 2:
+        summary["artifact_adapter"] = "artifact_budget_v1; baseline-initialized; ineligible-reward-masked"
     for filename, value in (("summary.json", summary), ("decisions.json", episode)):
         with (root / filename).open("x", encoding="utf-8") as stream:
             json.dump(value, stream, indent=2, allow_nan=False)

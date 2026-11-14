@@ -26,6 +26,7 @@ from .dream_rsi_contract import (
     verify_leaf,
     _unique_object,
     expected_waves,
+    selectable_ceiling,
 )
 
 OBJECTIVE = "mean-recorded-best-ratio-v1"
@@ -99,7 +100,7 @@ def load_dataset(path):
             raise ValueError("frozen trace checksum/size mismatch")
         trace = json.loads(body, object_pairs_hook=_unique_object)
         shape = validate_trace(trace)
-        ceiling = max(trace["baseline"]["combined_score"], *(n["raw"]["combined_score"] for n in trace["nodes"]))
+        ceiling = selectable_ceiling(trace)
         if ceiling <= 0:
             raise ValueError("trace requires a positive recorded score ceiling")
         meaning = semantic_identity(trace)

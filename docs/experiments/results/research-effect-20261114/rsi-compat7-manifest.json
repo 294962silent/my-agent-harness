@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "generated_utc": "2026-11-14T19:23:46Z",
+  "status": "seven_final_arms_complete_qsar_frozen_unknown",
+  "protocols": {
+    "compat3": "aeb6fd636029cf7459ed76a7b0aff797acb06f9a7fc77faa60dd232a7fe2adef",
+    "compat4": "e0a5c0c4d31bf21c4e9e1a245ac49965ac0fc29798df05bf7f52cd57e93e0f17",
+    "compat5": "f1ff2264be620682949275f88d53c9d28e6f8e613613c21cf54a762d39564762",
+    "compat6": "52b5fab0ce456e099e90711b9ab897b2513ef4784ecc02d1304f50e680679dab",
+    "compat7": "361e9cd267dabe6810a40e0863c270c91f58e685c8e4402cce3cae5c010f016a"
+  },
+  "source_manifests": {
+    "compat3": "e23cfb2758009e27c4913c06f9a121beb03c73c9d60b1569c73ab918494d88fc",
+    "compat4": "274d8d148df7347d9c4c68720ff1a6dba7373eec8fb51209645bcc92d4d36be8",
+    "compat5": "ecdf8246774324d6695d38fdfb435912894fbdf74b19e27dbaabd3e2f29f6242",
+    "compat6": "ab0af6298fe72259252e467948ac457d85d12d5165dfc158787bfa1f89eca75c",
+    "compat7": "90ffa6ada3354ff6bf590e2cb955dedcebb9fc2656a0383776a271f6d916bc5b"
+  },
+  "public_files": [
+    {
+      "path": "rsi-interview-results.md",
+      "sha256": "c9bc13d6651055bfb4a68099d550ba6cf8c5cec5ad2c99cec8a88ccd618d39ec"
+    },
+    {
+      "path": "rsi-compat7-summary.json",
+      "sha256": "f5d808789af0050086abc416104e0f3fcb4c6f14ae3be999c3f246fe4a39e61e"
+    },
+    {
+      "path": "../HARNESS_EXPERIMENT_LOG.md",
+      "sha256": "6b32984650cab968794fab364ed7d8593bf62e92dd28e6346e3a104738c87120"
+    }
+  ],
+  "verification": {
+    "ruff": "All checks passed",
+    "continuation_and_compat_suite": "91 passed, 6 skipped",
+    "runtime_and_compat_focus": "112 passed, 1 skipped",
+    "langfuse_sdk_runtime_observation": "34 passed",
+    "json_parse_and_git_diff_check": "passed"
+  },
+  "excluded_from_public": [
+    "credentials",
+    "model input/output bodies",
+    "gold labels",
+    "private raw journals and artifact paths"
+  ]
+}

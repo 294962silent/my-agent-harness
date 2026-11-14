@@ -353,3 +353,74 @@ def test_optimizer_uses_frozen_ratio_cost_and_policy_snapshot(tmp_path, monkeypa
     assert test.manifest['policy_origin']['execution_identity'] == 'fixed_reference_no_promotion'
     assert test.manifest['policy']['parameters'] == c.manifest['policy']['parameters']
     assert test.manifest['schedule'] == 'fixed'
+
+
+def test_replay_budgets_default_is_legacy_1_2(tmp_path):
+    from my_coding_agent.research_task import ResearchTask
+    from my_coding_agent.research_runtime import ResearchCampaign
+    c = campaign(tmp_path)
+    assert c.manifest['optimization']['budgets'] == [1, 2]
+    data = tmp_path / 'input2.csv'
+    data.write_text('x,y\n' + ''.join(f'{i},{i*2}\n' for i in range(20)))
+    task = ResearchTask.prepare(data, tmp_path / 'task2', target='y')
+    frozen = ResearchCampaign.prepare(task, tmp_path / 'campaign123', image='sha256:' + 'a'*64,
+        rounds=1, replay_budgets=[3, 1, 2])
+    assert frozen.manifest['optimization']['budgets'] == [1, 2, 3]
+
+
+def test_replay_budgets_contract_rejects_invalid():
+    from my_coding_agent.research_runtime import validate_replay_budgets
+    assert validate_replay_budgets((2, 1, 3)) == [1, 2, 3]
+    for bad in ([], [0], [-1], [True], ['1'], [1, 1], [1, 2, 3, 4, 5], '1 2', None, 3, [True, 2]):
+        with pytest.raises(ValueError):
+            validate_replay_budgets(bad)
+
+
+def test_replay_budgets_cannot_change_on_reload(tmp_path):
+    from my_coding_agent.research_runtime import ResearchCampaign, ResearchIntegrityError
+    original = campaign(tmp_path)
+    manifest_path = original.root / 'campaign.json'
+    changed = json.loads(manifest_path.read_text())
+    changed['optimization']['budgets'] = [1, 2, 3]
+    manifest_path.write_text(json.dumps(changed))
+    with pytest.raises(ResearchIntegrityError):
+        ResearchCampaign.load(original.root)
+
+
+def test_cli_freezes_replay_budgets(tmp_path, capsys):
+    from my_coding_agent.research_cli import main
+    data = tmp_path / 'input.csv'
+    data.write_text('x,y\n' + ''.join(f'{i},{i*2}\n' for i in range(20)))
+    root = tmp_path / 'cli-campaign'
+    assert main(['prepare', str(root), '--csv', str(data), '--target', 'y',
+                 '--image', 'sha256:' + 'a'*64, '--model', 'scripted-contract',
+                 '--split', 'train', '--replay-budgets', '1', '2', '3']) == 0
+    capsys.readouterr()
+    manifest = json.loads((root / 'campaign.json').read_text())
+    assert manifest['optimization']['budgets'] == [1, 2, 3]
+    assert manifest['optimization']['max_candidates'] == 4
+
+
+def test_optimize_consumes_frozen_replay_budgets(tmp_path, monkeypatch):
+    import asyncio
+    from my_coding_agent import dream_rsi_optimizer
+    from my_coding_agent.research_runtime import ResearchCampaign
+    from my_coding_agent.research_task import ResearchTask
+    data = tmp_path / 'input.csv'
+    data.write_text('x,y\n' + ''.join(f'{i},{i*2}\n' for i in range(20)))
+    task = ResearchTask.prepare(data, tmp_path / 'task', target='y')
+    c = ResearchCampaign.prepare(task, tmp_path / 'campaign', image='sha256:' + 'a'*64,
+        rounds=1, replay_budgets=[1, 2, 3],
+        limits=dict(max_requests=8, max_tokens=100000, max_seconds=120,
+                    max_evaluations=10, max_output_tokens=100))
+    asyncio.run(c.run(scripted_raw(), evaluator=fake_evaluator()))
+    received = {}
+    monkeypatch.setattr(dream_rsi_optimizer, 'load_dataset',
+                        lambda path: {'manifest_sha256': 'a'*64, 'kind': 'observed'})
+    def optimize(dataset, output, **kwargs):
+        received.update(kwargs)
+        return {'selected': {'parameters': None, 'policy_hash': 'b'*64}, 'promoted': False}
+    monkeypatch.setattr(dream_rsi_optimizer, 'optimize', optimize)
+    c.optimize(tmp_path / 'dataset.json')
+    assert received['budgets'] == [1, 2, 3]
+    assert c.manifest['optimization']['budgets'] == [1, 2, 3]

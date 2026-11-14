@@ -69,6 +69,9 @@ async def _execute(args, campaign):
     if args.command == 'final':
         scrub_process_credentials()
         return await campaign.final()
+    if campaign.manifest.get('observation_contract'):
+        from experiments.research_validation.rsi_observation import run_observed_campaign
+        return await run_observed_campaign(args, campaign)
     from .research_integrations import ResearchObservation
     from .settings import load_settings
     raw = construct_llm(campaign, credential_env=args.credential_env,
@@ -120,6 +123,12 @@ def parser():
     prepare.add_argument('--width', type=int, default=2)
     prepare.add_argument('--refine', type=int, default=0)
     prepare.add_argument('--policy-from', type=Path, help='freeze promoted optimizer policy, else explicitly retain fixed reference')
+    prepare.add_argument('--replay-budgets', type=int, nargs='+', help='frozen optimizer replay probe budgets; default legacy 1 2')
+    prepare.add_argument('--delivery-contract', choices=('end_turn_v1', 'artifact_budget_v1'), default='end_turn_v1')
+    prepare.add_argument('--observation-contract', choices=('langfuse_campaign_v1',))
+    prepare.add_argument('--observation-protocol', type=Path, help='frozen mandatory-observation study protocol')
+    prepare.add_argument('--baseline-import', type=Path, help='explicit frozen host baseline measurement import')
+    prepare.add_argument('--planner-seed', type=int, help='independent frozen planner RNG seed; default dataset seed plus round')
     prepare.add_argument('--max-attempts', type=int, default=2)
     prepare.add_argument('--attempt-max-turns', type=int, default=4)
     prepare.add_argument('--context-budget', type=int, default=32000)
@@ -173,6 +182,13 @@ def main(argv=None):
                 context_budget=args.context_budget, schedule=args.schedule,
                 evaluator_options=options, memory_source=args.memory_source, memory_mode=args.memory_mode,
                 policy_from=args.policy_from,
+                replay_budgets=args.replay_budgets,
+                delivery_contract=args.delivery_contract, planner_seed=args.planner_seed,
+                baseline_import=json.loads(args.baseline_import.read_text(encoding='utf-8')) if args.baseline_import else None,
+                observation_contract=args.observation_contract,
+                observation_protocol=({'file': str(args.observation_protocol.resolve()),
+                    'sha256': __import__('hashlib').sha256(args.observation_protocol.read_bytes()).hexdigest()}
+                    if args.observation_protocol is not None else None),
                 mem0_config=({'profile': 'local_cpu_zh', 'model_dir': str(args.mem0_model_dir.resolve()), 'threads': 2}
                              if args.mem0_model_dir is not None else None))
             value = campaign.status()

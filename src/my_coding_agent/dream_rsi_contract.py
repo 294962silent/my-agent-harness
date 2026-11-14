@@ -41,17 +41,50 @@ def _cell(value):
         raise ValueError("invalid score validity details")
 
 
+def replay_score(trace, node):
+    """Failure reward is an adapter sentinel, never an observed valid score."""
+    if trace.get("version") == 2 and not node["eligible"]:
+        return 0.0
+    return node["raw"]["combined_score"]
+
+
+def selectable_ceiling(trace):
+    return max(trace["baseline"]["combined_score"], *(replay_score(trace, n) for n in trace["nodes"]))
+
+
+def artifact_terminal_allowed(terminal, max_turns):
+    """Only a settled end-turn or the exact fixed iteration allowance can deliver."""
+    if (not isinstance(terminal, dict) or not _integer(max_turns, minimum=1)
+            or not _integer(terminal.get("iterations"), minimum=1)
+            or terminal["iterations"] > max_turns):
+        return False
+    if terminal.get("stop_reason") == "end_turn":
+        return terminal.get("limit_details") is None
+    details = terminal.get("limit_details")
+    return (terminal.get("stop_reason") == "budget_exhausted"
+            and isinstance(details, dict) and details.get("kind") == "max_turns"
+            and _integer(details.get("limit"), minimum=1)
+            and _integer(details.get("observed"), minimum=1)
+            and details["limit"] == details["observed"] == terminal["iterations"] == max_turns)
+
+
 def validate_trace(value: dict) -> dict:
     """Validate the scored subset of upstream raw trace v1 without touching node paths.
 
     This verifies structure and scored status, not the truth of the supplied task
     evaluator. Callers remain responsible for authentic score provenance.
     """
-    if not isinstance(value, dict) or type(value.get("version")) is not int or value["version"] != 1:
-        raise ValueError("expected DREAM-RSI raw trace version 1")
+    if not isinstance(value, dict) or type(value.get("version")) is not int or value["version"] not in (1, 2):
+        raise ValueError("expected DREAM-RSI trace version 1 or 2")
+    artifact = value["version"] == 2
+    if artifact and (value.get("delivery_contract") != "artifact_budget_v1"
+                     or not _integer(value.get("attempt_max_turns"), minimum=1)):
+        raise ValueError("unknown artifact delivery contract")
     if not _integer(value.get("n_problems"), minimum=1):
         raise ValueError("trace n_problems must be positive")
     _cell(value.get("baseline"))
+    if artifact and not 0 <= value["baseline"]["combined_score"] <= 1:
+        raise ValueError("artifact baseline utility must be within zero and one")
     nodes = value.get("nodes")
     if not isinstance(nodes, list) or not 1 <= len(nodes) <= MAX_NODES:
         raise ValueError("trace needs a bounded nonempty node list")
@@ -74,7 +107,37 @@ def validate_trace(value: dict) -> dict:
         expected_parent = None if attempt == 0 else f"b{branch}_a{attempt - 1}"
         if node.get("parent_id") != expected_parent:
             raise ValueError("discovery parent must be the previous attempt of its branch")
-        _cell(node.get("raw"))
+        if artifact:
+            if type(node.get("eligible")) is not bool or not isinstance(node.get("terminal"), dict):
+                raise ValueError("artifact node requires explicit eligibility and terminal")
+            if not artifact_terminal_allowed(node["terminal"], value["attempt_max_turns"]):
+                raise ValueError("artifact node lacks an allowed current-attempt terminal")
+            frozen = node.get("artifact", {})
+            diagnostic = node.get("diagnostic", {})
+            if (not isinstance(frozen, dict) or not isinstance(diagnostic, dict)
+                    or not isinstance(diagnostic.get("pins"), dict)):
+                raise ValueError("invalid frozen artifact metadata")
+            digest = frozen.get("code_sha256")
+            if (not isinstance(digest, str) or len(digest) != 64
+                    or any(c not in "0123456789abcdef" for c in digest)
+                    or frozen.get("closed_tools") is not True
+                    or frozen.get("files") != {"train.py": digest}
+                    or diagnostic["pins"].get("code_sha256") != digest):
+                raise ValueError("artifact node lacks frozen host code binding")
+            cost = node.get("cost", {})
+            if (not isinstance(cost, dict) or cost.get("usage_complete") is not True
+                    or any(not _integer(cost.get(k)) for k in ("requests", "tokens", "evaluations"))):
+                raise ValueError("artifact node requires known observed cost")
+            if node["eligible"]:
+                if node.get("status") != "done":
+                    raise ValueError("eligible artifact must be done")
+                _cell(node.get("raw"))
+                if not 0 <= node["raw"]["combined_score"] <= 1:
+                    raise ValueError("artifact utility must be within zero and one")
+            elif node.get("status") != "failed" or node.get("raw") != {"evaluated": False, "combined_score": None}:
+                raise ValueError("failed artifact must have no selectable measured score")
+        else:
+            _cell(node.get("raw"))
         by_id[identity] = node
         branches.setdefault(branch, set()).add(attempt)
     if set(branches) != set(range(len(branches))):
@@ -130,9 +193,19 @@ def effective_parameters(parameters, shape):
 def semantic_identity(trace):
     """Conservative overlap identity, also invariant to renumbered root branches."""
     validate_trace(trace)
+    if trace["version"] == 2:
+        chains = {}
+        for node in trace["nodes"]:
+            chains.setdefault(node["branch"], []).append({"attempt": node["attempt"],
+                "eligible": node["eligible"], "terminal": node["terminal"], "cost": node["cost"],
+                "score": node["raw"]["combined_score"]})
+        ordered = [sorted(chain, key=lambda n: n["attempt"]) for chain in chains.values()]
+        return checksum(canonical({"version": 2, "baseline": trace["baseline"]["combined_score"],
+            "delivery_contract": trace["delivery_contract"], "attempt_max_turns": trace["attempt_max_turns"],
+            "branches": sorted(ordered, key=canonical)}))
     branches = {}
     for node in trace["nodes"]:
-        branches.setdefault(node["branch"], []).append((node["attempt"], float(node["raw"]["combined_score"])))
+        branches.setdefault(node["branch"], []).append((node["attempt"], float(replay_score(trace, node))))
     return checksum(
         canonical(
             {
@@ -211,6 +284,8 @@ def verify_leaf(trace, summary, episode, parameters, budget, max_workers):
         raise ValueError("invalid leaf budget/parallelism")
     shape = validate_trace(trace)
     effective = effective_parameters(parameters, shape)
+    if trace["version"] == 2 and summary.get("artifact_adapter") != "artifact_budget_v1; baseline-initialized; ineligible-reward-masked":
+        raise ValueError("artifact replay adapter identity differs")
     if (
         summary.get("status") != "completed"
         or summary.get("upstream", {}).get("commit") != SOURCE_COMMIT
@@ -248,7 +323,7 @@ def verify_leaf(trace, summary, episode, parameters, budget, max_workers):
         raise ValueError("leaf decision count/mode mismatch")
     # The pinned TraceEnv.reset starts at 0, not the task's initial program score.
     # The initial program remains part of the normalization ceiling only.
-    spent, best, sequential = 0, 0.0, 0
+    spent, best, sequential = 0, (trace["baseline"]["combined_score"] if trace["version"] == 2 else 0.0), 0
     sizes, curve = [], []
     for index, (event, cells) in enumerate(zip(events, waves), 1):
         pairs = [(n["branch"], n["attempt"]) for n in cells]
@@ -277,8 +352,10 @@ def verify_leaf(trace, summary, episode, parameters, budget, max_workers):
             raise ValueError("leaf outcome count differs")
         for outcome, node in zip(outcomes, cells):
             spent += 1
-            score = node["raw"]["combined_score"]
+            score = replay_score(trace, node)
             best = max(best, score)
+            if trace["version"] == 2 and (outcome.get("eligible") is not node["eligible"] or outcome.get("observed_cost") != node["cost"]):
+                raise ValueError("artifact eligibility/cost accounting differs")
             if (
                 any(type(outcome.get(k)) is not int for k in ("branch", "attempt", "budget"))
                 or (outcome.get("branch"), outcome.get("attempt")) != (node["branch"], node["attempt"])
@@ -334,7 +411,7 @@ def verify_leaf(trace, summary, episode, parameters, budget, max_workers):
         or any(type(p.get("budget")) is not int or not _number(p.get("best")) for p in final.get("curve", []))
     ):
         raise ValueError("leaf final decision metrics mismatch")
-    ceiling = max(trace["baseline"]["combined_score"], *(n["raw"]["combined_score"] for n in trace["nodes"]))
+    ceiling = selectable_ceiling(trace)
     if not _number(ceiling) or ceiling <= 0 or not _number(best) or not 0 <= best / ceiling <= 1:
         raise ValueError("trace has no positive finite normalization ceiling")
     return best / ceiling

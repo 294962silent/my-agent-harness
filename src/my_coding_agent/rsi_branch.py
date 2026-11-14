@@ -268,11 +268,13 @@ class LocalBranchHandle:
                 if not self.context_snapshots or self.context_snapshots[-1] != report:
                     self.context_snapshots.append(report)
             if isinstance(event, AgentEnd):
-                self.terminal = {"stop_reason": event.stop_reason, "iterations": event.iterations}
+                self.terminal = {"stop_reason": event.stop_reason, "iterations": event.iterations,
+                                 "limit_details": event.limit_details}
             if type(event).__name__.startswith("Tool"):
                 self.actions.append({"event": type(event).__name__,
                                      "tool_name": getattr(event, "tool_name", None),
-                                     "tool_call_id": getattr(event, "tool_call_id", None)})
+                                     "tool_call_id": getattr(event, "tool_call_id", None),
+                                     "is_error": getattr(event, "is_error", None)})
         agent.subscribe(observe)
 
     async def attempt(self, prompt, attempt, feedback, budget):
@@ -289,10 +291,20 @@ class LocalBranchHandle:
                 "context_activity": {"phase_fold_views": sum(bool(r.get("phase_fold")) for r in snapshots),
                                      "micro_groups": sum(r.get("micro_groups", 0) for r in snapshots)}}
 
-    def checkpoint(self, attempt, evidence):
+    def freeze_submission(self, attempt):
+        """Copy a quiescent attempt before grading, with exact inventory binding."""
+        before = inventory(self.workspace)
+        self.factory.verify_candidate(self.workspace)
+        directory = self.root / "submissions" / f"a{attempt}"
+        copy_tree(self.workspace, directory)
+        if inventory(self.workspace) != before or inventory(directory) != before:
+            raise ValueError("candidate changed while freezing submission")
+        return directory, before
+
+    def checkpoint(self, attempt, evidence, *, source=None):
         self.factory.verify_candidate(self.workspace)
         directory = self.root / "attempts" / f"a{attempt}"
-        copy_tree(self.workspace, directory / "tree")
+        copy_tree(self.workspace if source is None else source, directory / "tree")
         if self.agent.session.path.is_file():
             shutil.copyfile(self.agent.session.path, directory / "session-snapshot.jsonl")
             evidence["session_sha256"] = file_sha(directory / "session-snapshot.jsonl")

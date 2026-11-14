@@ -1086,6 +1086,24 @@ dev首笔正常抽取请求已结算：input 9,303 + output 2,048 = **11,351 tok
 
 代价与限制：首会话事实抽取没有形成可消费JSON，四臂比较无法开始；提高extraction output cap会构成观察失败后的协议修订，需显式新决定，本批未自行重试。当前主机硬件与项目预期的L20冲突已经披露。RSI部分未因本批失败而改状态；当前Canonical Canvas仅展示已验收的LongMemEval结果、LoCoMo失败边界以及RSI兼容运行的`STOP_BEFORE_PAID`阶段。
 
+
+### E-RSI-COMPAT2：2026-11-14 → 2026-11-15 / 入口修正、重新冻结与真实门禁停止
+
+compat1 的预付费 `TRAIN_NAMES` 缺失 STOP、其协议/source pins、Python urllib Langfuse 200 回读和旧 v3/v4 STOP 均保持原样。新增 `experiments/research_validation/rsi_compat2.py`、`rsi_compat2_execute.py` 及其测试，显式导出三个训练入口、八个 final 入口，并让观测加载器识别 `rsi-study-v4-compat2`。科学条件、历史支出和 277 requests / 4,799,840 accounting units / 51 evaluations / 13,309.893 active-seconds 余额上限均未扩张；用户声明的约 20 亿 token 总授权没有替代本次冻结的剩余门禁。
+
+两次纯离线冻结因驱动观测预检完善而分别归档为 `rsi-study-v4-compat2-prepaid-archive` 与 `...-archive-r2`，均记录 0 模型请求、0 评分。最终协议 SHA 为 `ab86e9b435f40f3a69d2b3a89fdc4eb15bab7119bdd7ad88fa64a3f85ee33b89`，source manifest SHA 为 `6511db5ee43bb569301654664ac6851b76178dba9278ef2eeb2d93bd4d3f65c1`。最终 module dry-run 实际走 `prepare → run/train → optimizer dataset → run/final` 的入口形状检查，覆盖 3 个训练 campaign 和 8 个 final campaign，新增模型请求与评分均为 0；Langfuse required、凭据存在、SDK/CLI pins 与 base URL 在付款前通过。
+
+定向验收实际为 **77 passed，Ruff 通过**，覆盖 durable budget/reservation、unknown usage 不重放、Langfuse 首个及后续双调用回读、required owner 不可降级、final 独立执行和镜像/产物漂移阻断。compat2 的 Airfoil 两轮只以历史 import 出现，不冒充本轮新成绩；本轮新结果仅取 Yacht 与后续 final，但由于 STOP 没有继续进行 Wine、optimizer 或 test/final。
+
+Yacht 第 0 轮真实提交：选择 baseline，visible RMSE `16.662447071027422`、utility `0.05661729634509983`；本轮 12 requests / 130,458 accounting units / 3 evaluations / 1,139.6866075 active seconds。首两个普通请求在远端回读确认 1,328 与 1,390 tokens（合计 2,718）后才派发第三个请求。
+
+第 1 轮随后发起 2 个已知用量请求并完成 1 次 baseline 评分；第 15 个请求前的冻结 30 秒远端门禁未看到这两条 observation，依据协议立即 STOP。两条调用均已在本地 settled（1,334 + 1,404 = 2,738 tokens），`usage_complete=true`、held=0、unknown=0，没有自动重试或另起 campaign。之后只读 HTTP 200 回读在 `2026-11-14T16:09:13Z` 找到了两条同一 session/trace 的元数据；这是迟到的传播证据，不撤销 STOP，也不补发第 15 个请求。第 1 轮未 commit，RMSE/utility 为 unavailable。
+
+本轮新增总账为 **14 requests / 133,196 accounting units / 4 evaluations / 1,163.9698652 active seconds**；剩余门禁 263 / 4,666,644 / 47 / 12,145.9230907。与历史账本合并时共 49 requests / 400,160 + 133,196 accounting units / 16 evaluations，历史 1 个 unknown 仍保留，新增 unknown 为 0。详细机器收据为交付根目录 `ds1-compat2-ready.json`、`ds1-compat2-stop-receipt.json`、`ds1-compat2-late-readback.json` 和 `rsi-study-v4-compat2/STOP.json`。
+
+
+只读最终回读追加：STOP 后在同一 trace `1f922e2e3905b0dc6ba2a456d63800be` 重查 14 条本地 end 调用，HTTP 200 返回 14 个不同 observation、全部 session/scope/status 匹配；本地与远端 usage 合计均为 133,196，其中迟到的第 13/14 条也均匹配。该证据说明 settlement 与最终云端附件存在，但 30 秒在线门禁确实超时，STOP 仍不回滚或自动续跑。
+
 ### 2026-11-15：LoCoMo v2 提高抽取上限后在首两笔云端回读门禁停止
 
 在全新 `memory-locomo-v2` 目录建立 `locomo-multisession-four-arm-v2`，没有改写或重放 v1 的失败请求。v2 保持 dev 6 + test 24、92 sessions、原题/数据/gold、四臂、top-8、6000 字符上下文与评分 prompt 不变；仅把共享 extraction 输出上限从 2048 提高到 8192，并把门禁明确设为 384 requests / 5,000,000 accounting units / 每 split 8 小时、0 retry。前两笔正常抽取改为每 trace 只做一次 Langfuse metadata/usage 回读，任一遗漏立即停止。
@@ -1127,3 +1145,21 @@ RSI compat5 在只读轮询期间达到安全 STOP，未完成原定八臂。QSA
 可确认用量为：两个完成 QSAR final 合计 24 requests / 303197 tokens / 10 evaluations / 2309.024 秒；含 stopped frozen 后为 36 dispatched、35 settled + 1 unknown、已知 452214 tokens、13 evaluations / 3509.071 秒。由于 1 个在途 usage 未知，本轮 token 与 USD 均不能完整汇总；历史账本仍保留 71 requests / 2 unknown / 746600 settled tokens / 802180 accounting units，货币金额 unavailable。
 
 验收使用定向只读检查：核对 LoCoMo REPORT、summary、usage、finalization 与 LongMemEval旧结果；解析 compat5 `last-summary.json`、`STOP.json`、`c-qsar-frozen/journal.jsonl` 和 `calls.jsonl`；检查 Markdown 标题、表格与相对链接，并对 Canvas 做 TypeScript 语法/模块导入与本地静态一致性检查。本批没有运行 RSI、Python 全量测试或新增付费请求。
+
+### E-RSI-COMPAT7：2026-11-15 / 180 秒回读恢复、七臂 final 与显式 frozen fallback
+
+compat3 在 Yacht round1 继续支付时，只导入 compat2 已提交的 round0；round1 的旧两次请求作为 sunk cost 继承，但新候选使用新 campaign/root/call 身份。为不扩大总评估预算，复用 compat2 已完成的 round1 baseline evaluation #4，其余三次候选评估为本轮新执行。Yacht round1 最终为 12 requests / 128344 tokens / 3 evals / 966 active seconds；两个候选 known-invalid，round 选择 baseline，RMSE `16.662447`。
+
+compat3 Wine 在请求 #10 达到 1200 秒边界，provider usage 未知并按 fail-closed 停止。该轮 10 requests 中 9 个 settled、1 个 unknown；known tokens 112662、reservation 27818、3 evals、1200.051 active seconds，未 commit、未重试。由于没有完整 Wine holdout trace，optimizer 不运行，学习贡献不可识别。
+
+compat4 仅准备八臂时在首个 run 因观测协议版本白名单缺失而零付费 STOP；compat5 修复后完成 QSAR fixed/random。QSAR fixed 与 random 均为 final RMSE `1.432272`、utility `0.411138`、final/均值基线 `1.000`；分别 12 requests / 136655 与 166542 tokens / 5 evals。QSAR frozen 第三候选再次触达 1200 秒，保留 149017 known tokens、87839 reservation 和 3 evals，未形成 final。compat5 的 fixed/random 合计 24 requests / 303197 tokens / 10 evals / 2309.024 秒；含 frozen 后为 36 requests / 452214 known tokens / 87839 reservation / 13 evals / 3509.071 秒。
+
+compat6 同样在首个 run 前因版本识别边界零付费 STOP；compat7 将 compat 版本识别改为数字后缀通用规则，并完成剩余五臂。QSAR greedy 4 requests / 26650 tokens / 3 evals / 241.6 秒，final 仍为 `1.432272`。AutomPG 四臂结果为：fixed final RMSE `2.515738`、random `2.437353`、frozen fallback `2.495291`、greedy `7.154405`；对应 final/均值基线比 0.3516、0.3407、0.3488、1.000。fixed/random/frozen 的 dev 选中 RMSE 分别为 2.574058、2.778874、2.724798，显示 dev 与 final 排序并不稳定。
+
+`trained-frozen` 没有完成 Wine 晋升，故在执行前写 `policy_fallback_applied`，实际使用 fixed-reference 的 width 2 / refine 1。它与 fixed 的 final 差异 0.0204 RMSE 只能视为采样波动，不能算训练收益。AutomPG random 的 final 比 fixed 低 0.078，但只有单 seed、单次臂运行，不能外推为稳健优势。
+
+Langfuse 新入口全程 required，远端 metadata 回读窗口为 180 秒，只读观测 API 允许有界指数退避；模型请求 retry 固定为 0，provider unknown 立即停止。compat3、compat4、compat5、compat6、compat7 的 source/protocol 均分别冻结；旧 STOP 和旧 call identity 没有修改或重放。
+
+兼容运行最终持有 **151 requests / 1798894 accounting units / 56 evaluations / 12776.241 active seconds**；其中 3 requests 为 unknown，known settled tokens 为 1655475，reservation occupancy 143419。实际 unknown token 与 USD 保持 unavailable。七臂测试最终完成，QSAR frozen 仍为已知缺口；因此本轮支持 fixed/random/greedy 与显式 fallback 的工程对照，不支持“Dream-RSI 学到更优策略”的声明。
+
+面试摘要与机器可读结果：[RSI 面试结果](results/research-effect-20261114/rsi-interview-results.md)、[compat7 summary](results/research-effect-20261114/rsi-compat7-summary.json)。最终 compat7 protocol SHA 为 `361e9cd267dabe6810a40e0863c270c91f58e685c8e4402cce3cae5c010f016a`，source manifest SHA 为 `90ffa6ada3354ff6bf590e2cb955dedcebb9fc2656a0383776a271f6d916bc5b`。

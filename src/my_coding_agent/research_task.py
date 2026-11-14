@@ -123,11 +123,24 @@ class ResearchTask:
         with (self.root / f'private/{split}_labels.csv').open(encoding='utf-8', newline='') as stream:
             return [(row['id'], float(row['target'])) for row in csv.DictReader(stream)]
 
-    def goal(self):
+    def goal(self, *, delivery_contract='end_turn_v1'):
+        if delivery_contract not in ('end_turn_v1', 'artifact_budget_v1'):
+            raise ValueError('unknown research delivery contract')
+        submission = ("Each attempt submits one complete candidate: you may first read train.py, "
+                "then save the complete proposal with one write (or one edit if necessary). After a successful "
+                "save, immediately finish with a concise end_turn; do not keep revising or try to execute tests. "
+                if delivery_contract == 'end_turn_v1' else
+                "Within the fixed iteration allowance, read and modify train.py through file tools. "
+                "You may finish when ready. At end_turn or the attempt iteration limit, the host freezes "
+                "the last complete static train.py and independently scores that artifact. "
+                "No model or tool execution continues during host grading. Do not try to execute tests. ")
         return (f"Improve train.py for CSV regression, minimizing development RMSE. "
                 f"Feature columns: {self.manifest['features']!r}; target: {self.manifest['target']!r}. "
                 "Use Python standard library only. Execution runs in a CPU-only container, without network. "
                 "Read /data/train.csv (id, features, target) and /data/predict_features.csv (id, features). "
                 "Write /output/predictions.csv with exactly header id,prediction, one finite numeric prediction "
-                "per input id. These data paths only exist during host evaluation. Edit only train.py; "
-                "host independently computes RMSE. Final labels and scores are unavailable during search.")
+                "per input id. These data paths only exist during container execution and must not be read "
+                "through file tools. " + submission +
+                "Edit only train.py. The host executes and independently scores the submitted candidate after "
+                "your attempt ends, and supplies development feedback to the next attempt. "
+                "Final labels and scores are unavailable during search.")
