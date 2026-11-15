@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "budget": "passed: 3 requests, 2267 tokens",
+    "langfuse_readback": "passed: first two requests produced two distinct traces with one observation each and zero extra model requests",
+    "ledger": "passed: 3/3 requests ok; unknown_or_inflight=false",
+    "owner_close": "passed: dropped=0, export_errors=0, close_errors=0, runtime_alive_after_close=false",
+    "pytest": "35 passed",
+    "rescoring": "passed: exactly 3 length cases rescored once; 3 valid, 0 still length, 0 malformed",
+    "ruff": "passed",
+    "selection": "passed: all and only confirmation-v1 judge_status=length rows"
+  },
+  "date": "2026-11-15",
+  "protocol": "locomo-confirmation-judge-sensitivity-v1",
+  "status": "passed"
+}

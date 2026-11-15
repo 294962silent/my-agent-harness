@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "budget": "passed: 144 requests, 158257 tokens",
+    "deterministic_retrieval": "passed: qwen scoring rounded to 12 decimals; MMR and session-cap tie-break rules frozen before paid calls",
+    "langfuse_readback": "passed: first two calls produced two distinct traces with one observation each and zero extra model requests",
+    "ledger": "passed: 144/144 requests ok; unknown_or_inflight=false",
+    "owner_close": "passed: dropped=0, export_errors=0, close_errors=0, runtime_alive_after_close=false",
+    "preflight": "passed: 24 questions x 3 arms; 8 candidates per arm; max context 5902 chars; paid calls 0",
+    "pytest": "35 passed",
+    "qwen_worker": "passed: Qwen3-Embedding revision 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3 in credential-free WSL seccomp GPU worker",
+    "ruff": "passed",
+    "selection": "passed: seed=20261116; conv-49 and conv-44 selected from metadata/evidence before model outcomes"
+  },
+  "date": "2026-11-15",
+  "protocol": "locomo-context-diversity-v1",
+  "status": "passed"
+}

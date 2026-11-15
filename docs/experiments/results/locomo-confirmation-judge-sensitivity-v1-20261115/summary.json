@@ -1,0 +1,261 @@
+{
+  "first_two_readback": {
+    "attempts_per_trace": {
+      "confirmation-sensitivity.v1.judge.q_237878f81d3e18d629972459.raw_hybrid_rrf": 4,
+      "confirmation-sensitivity.v1.judge.q_4776cc50be81a1c897c3091b.raw_hybrid_rrf": 1
+    },
+    "backoff": {
+      "initial_seconds": 1.0,
+      "kind": "exponential",
+      "max_seconds": 30.0,
+      "waits_seconds": [
+        1.0,
+        2.0,
+        4.0
+      ]
+    },
+    "campaign": "memory-locomo-confirmation-judge-sensitivity-20261115-v1",
+    "distinct_traces": true,
+    "elapsed_seconds": 14.785038800037,
+    "extra_model_requests": 0,
+    "model": "deepseek-v4.1-flash",
+    "one_observation_per_trace": true,
+    "project": "cmwg5sagt00ksad0j6au0463n",
+    "protocol": "locomo-confirmation-judge-sensitivity-v1",
+    "query_errors_per_trace": {},
+    "rows": [
+      {
+        "arm": "raw_hybrid_rrf",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "4cd5983c2675e859",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "confirmation-sensitivity.v1.judge.q_4776cc50be81a1c897c3091b.raw_hybrid_rrf",
+        "session_id": "memory-locomo-confirmation-judge-sensitivity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_4776cc50be81a1c897c3091b",
+        "trace_id": "71639278da66aed52ca0a27c0189062b",
+        "usage_details": {
+          "input": 179,
+          "output": 227,
+          "total": 406
+        }
+      },
+      {
+        "arm": "raw_hybrid_rrf",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "03d74dc578090207",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "confirmation-sensitivity.v1.judge.q_237878f81d3e18d629972459.raw_hybrid_rrf",
+        "session_id": "memory-locomo-confirmation-judge-sensitivity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_237878f81d3e18d629972459",
+        "trace_id": "6ca95e94064ba8f6046b625578669e4e",
+        "usage_details": {
+          "input": 201,
+          "output": 800,
+          "total": 1001
+        }
+      }
+    ],
+    "same_campaign_session": true,
+    "sample_count": 2,
+    "schema_version": 1,
+    "status": "verified",
+    "window_seconds": 180.0
+  },
+  "main": {
+    "raw_hybrid_rrf": {
+      "accuracy": 0.4166666666666667,
+      "correct": 10,
+      "denominator": 24,
+      "length_judges": 2,
+      "mean_session_mrr": 0.7951388888888888,
+      "mean_session_recall_at_8": 0.8819444444444445,
+      "valid_judges": 22
+    },
+    "raw_lexical": {
+      "accuracy": 0.4166666666666667,
+      "correct": 10,
+      "denominator": 24,
+      "length_judges": 1,
+      "mean_session_mrr": 0.8194444444444445,
+      "mean_session_recall_at_8": 0.8263888888888888,
+      "valid_judges": 23
+    },
+    "raw_semantic_qwen": {
+      "accuracy": 0.5,
+      "correct": 12,
+      "denominator": 24,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7430555555555555,
+      "mean_session_recall_at_8": 0.8541666666666666,
+      "valid_judges": 24
+    }
+  },
+  "main_conclusion_rewritten": false,
+  "main_paired": {
+    "raw_lexical__vs__raw_hybrid_rrf": {
+      "both_correct": 9,
+      "both_incorrect": 13,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 1,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": 0,
+      "right_only_correct": 1
+    },
+    "raw_lexical__vs__raw_semantic_qwen": {
+      "both_correct": 10,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 0,
+      "mcnemar_exact_p_two_sided": 0.5,
+      "paired_delta_left_minus_right": -2,
+      "right_only_correct": 2
+    },
+    "raw_semantic_qwen__vs__raw_hybrid_rrf": {
+      "both_correct": 10,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 0.5,
+      "paired_delta_left_minus_right": 2,
+      "right_only_correct": 0
+    }
+  },
+  "main_result_definition": "original 72 rows; three length judges remain incorrect",
+  "original_report_rewritten": false,
+  "owner_close": {
+    "close_errors": 0,
+    "dropped": 0,
+    "export_errors": 0,
+    "llm_clients_closed": true,
+    "runtime_alive_after_close": false,
+    "runtime_close_complete": true
+  },
+  "protocol": "locomo-confirmation-judge-sensitivity-v1",
+  "rechecked": {
+    "by_arm": {
+      "raw_hybrid_rrf": 2,
+      "raw_lexical": 1
+    },
+    "count": 3,
+    "invalid": 0,
+    "still_length": 0,
+    "valid": 3
+  },
+  "requests": {
+    "completion_tokens": 1683,
+    "latency": 28.785443782806396,
+    "prompt_tokens": 584,
+    "requests": 3,
+    "total_tokens": 2267
+  },
+  "schema_version": 1,
+  "sensitivity": {
+    "raw_hybrid_rrf": {
+      "accuracy": 0.5,
+      "correct": 12,
+      "denominator": 24,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7951388888888888,
+      "mean_session_recall_at_8": 0.8819444444444445,
+      "rescore_usage": {
+        "completion_tokens": 1027,
+        "covered_requests": 2,
+        "expected_requests": 2,
+        "prompt_tokens": 380,
+        "total_tokens": 1407
+      },
+      "rescored": 2,
+      "rescored_incorrect_or_failed": 0,
+      "rescored_still_length": 0,
+      "rescored_valid": 2,
+      "valid_judges": 24
+    },
+    "raw_lexical": {
+      "accuracy": 0.4166666666666667,
+      "correct": 10,
+      "denominator": 24,
+      "length_judges": 0,
+      "mean_session_mrr": 0.8194444444444445,
+      "mean_session_recall_at_8": 0.8263888888888888,
+      "rescore_usage": {
+        "completion_tokens": 656,
+        "covered_requests": 1,
+        "expected_requests": 1,
+        "prompt_tokens": 204,
+        "total_tokens": 860
+      },
+      "rescored": 1,
+      "rescored_incorrect_or_failed": 1,
+      "rescored_still_length": 0,
+      "rescored_valid": 1,
+      "valid_judges": 24
+    },
+    "raw_semantic_qwen": {
+      "accuracy": 0.5,
+      "correct": 12,
+      "denominator": 24,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7430555555555555,
+      "mean_session_recall_at_8": 0.8541666666666666,
+      "rescore_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "rescored": 0,
+      "rescored_incorrect_or_failed": 0,
+      "rescored_still_length": 0,
+      "rescored_valid": 0,
+      "valid_judges": 24
+    }
+  },
+  "sensitivity_paired": {
+    "raw_lexical__vs__raw_hybrid_rrf": {
+      "both_correct": 10,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 0,
+      "mcnemar_exact_p_two_sided": 0.5,
+      "paired_delta_left_minus_right": -2,
+      "right_only_correct": 2
+    },
+    "raw_lexical__vs__raw_semantic_qwen": {
+      "both_correct": 10,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 0,
+      "mcnemar_exact_p_two_sided": 0.5,
+      "paired_delta_left_minus_right": -2,
+      "right_only_correct": 2
+    },
+    "raw_semantic_qwen__vs__raw_hybrid_rrf": {
+      "both_correct": 11,
+      "both_incorrect": 11,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 1,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": 0,
+      "right_only_correct": 1
+    }
+  },
+  "sensitivity_result_definition": "all three length judges replaced once at cap 4096; failures remain incorrect",
+  "status": "complete",
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 3,
+    "unknown_or_inflight": false,
+    "used_tokens": 2267
+  }
+}
