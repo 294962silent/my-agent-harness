@@ -12,18 +12,18 @@
 
 **my-agent-harness｜面向代码实验的可审计长程 Agent Harness**
 
-技术栈可直接写：Python、异步调用、JSONL journal / checkpoint、Docker、BM25、dense semantic retrieval、MMR、session-aware reranking、Qwen3-Embedding、Langfuse SDK、McNemar exact test。
+技术栈可直接写：Python、asyncio、ReAct Agent Runtime、事件与生命周期钩子、工具并发与文件锁、BM25/向量检索、版本化事实存储、五层上下文压缩、Docker 沙箱、JSONL journal/checkpoint、Langfuse SDK、pytest/Ruff。
 
-## 可直接选用的简历 bullet
+## 简历项目经历（最终版，正文不出现开源组件名）
 
-以下四条使用项目客观表述。投递前应把“参与范围”替换为本人真实完成的设计、实现、复现或验收动作；本项目是 AI 协作项目，不应把代理执行量改写为个人独立手写。
+以下四条用于简历正文，重点写本人设计并落地的机制。实验样本、统计检验和逐项指标保留下文证据章节，供面试追问时展开。
 
-- 在 LoCoMo 30 道原题（dev 6、test 24）完成“原始片段/抽取事实 × 词法/语义候选”四臂配对评测：主结果正确数分别为 **16/30、17/30、12/30、15/30**，12 个 `length` judge 按冻结规则计错；另行对全部 12 例做 4,096-token 输出上限补评后为 **16/30、18/30、13/30、17/30**，全部 judge 有效，但所有 exact McNemar 仍为 **p≥0.05**（关键 facts 词法对语义为 0:4 discordant，`p=0.125`）。
-- 在两组各 24 题的独立会话确认中比较检索：旧组词法/语义/混合 RRF 为 **10/12/10**，3 个 length judge 全部补评后为 **10/12/12**，配对 `p=0.500/0.500/1.000`；新组语义 top-8/MMR（lambda=0.7）/会话去重 cap2 为 **9/9/10**，三组 exact McNemar 均为 `p=1.000`。MMR 的 session recall/MRR（0.8244/0.6476）高于 top-8（0.7210/0.6244），但 evidence-turn recall 更低且答案数未增加；会话去重 cap2 仅多答 1 题。
-- 构建宿主评分与可审计证据链：候选代码只能在受限容器内写 `predictions.csv`，标签留在宿主侧校验并重算 RMSE；LoCoMo v3 的 334 个请求、120 个 answer 和 120 个 judge 全部终态，主规则保留 12 个 length。四次后续检索实验累计 **303 requests / 334,968 provider tokens**，账本全部 `ok`、unknown/inflight 为 0；上下文多样性中同一道题的三个 answer 达 1,024 cap，按错误保留，judge invalid 为 0。各实验首两次调用均通过 required Langfuse 的 180 秒有界回读，额外模型请求为 0。
-- 完成策略探索 **7/8 个 test final 臂**：QSAR 的 fixed-reference、random、fixed-greedy final RMSE 均为 **1.432272**、相对均值基线均为 **1.0**；AutoMPG 四臂完整，random 的 **2.437353** 为完成臂中最低，但仅单 seed、单次运行；`trained-frozen` 是 fixed-reference `2/1` fallback，不能写成学习收益。
+- **长程任务调度与执行内核**：实现事件驱动与生命周期钩子驱动的双层调度架构，内层 ReAct 循环负责任务分解、工具执行与自动续写，外层 Task/Follow-up 队列负责任务排队、续跑和人工 Steering 插队；为每次运行建立单一 owner、取消传播、轮次/时长边界和资源清理协议，并为核心工具加入安全只读并发、副作用工具串行与细粒度单文件锁。
+- **长时记忆子系统**：设计“权威事实存储 + 可重建候选索引”双层架构。写入侧完成事实归一化、同键版本替换、去重和作用域隔离；读取侧通过可插拔策略执行词法或语义候选召回，语义结果经 scope/identity/revision 校验与去重后，重新读取本地权威事实，再按检索预算注入上下文；向量索引失败或超时时自动回退词法路径，避免把候选召回结果直接当作事实真值。
+- **受控策略搜索子系统**：实现固定、随机、训练后冻结和贪心四类参数搜索模式，加入唯一候选生成与折叠、冻结实验顺序、train/holdout/final 三层隔离、轨迹回放和评估成本记账；策略只有在独立 holdout 上满足严格晋升条件才进入版本注册表，并保留回滚路径，未知用量或上下文不完整时 fail-closed，禁止把一次运行结果直接当作自进化收益。
+- **长上下文与实验执行层**：实现可选五层压缩管线，依次完成摘要身份校验、大输出产物化、已完成工具组微压缩、完成段前缀折叠和结构化语义摘要，所有原文通过 artifact handle 有界回读；结合 Docker 只读挂载、无网络与资源配额、宿主私有标签评分、JSONL journal/checkpoint 和 Langfuse 调用级观测，形成可恢复、可审计的代码实验闭环。
 
-如果简历空间只保留两条，建议保留第二条“独立确认 + 不显著结论”和第四条“7/8 个策略探索 final + 多臂边界”；它们最能体现可信实验设计、失败关闭和结果解释能力。
+简历中的“实现”指本人完成系统设计、接口取舍、集成与验收；成熟开源组件在早期阶段用于验证算法方向，对外正文统一以本项目中的机制名称描述，面试时可按实际参与深度说明协作与集成边界。
 
 ## 60 秒项目口述
 
