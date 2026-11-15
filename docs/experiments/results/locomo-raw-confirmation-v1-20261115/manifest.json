@@ -1,0 +1,26 @@
+{
+  "REPORT.md": {
+    "bytes": 5779,
+    "sha256": "bf7dd120343d640f672baa09b1ec085ec854ee5d52f296ddd2af0d458543ea29"
+  },
+  "provenance.json": {
+    "bytes": 9659,
+    "sha256": "0f7363dcb82f9ba44dc4c3cd0d05a2864b1514c9e80e01dd1cbc252c07929677"
+  },
+  "retrieval-preflight.json": {
+    "bytes": 30201,
+    "sha256": "5eed0e3aef8c1e7def362e5454719ac5955a42eb5dc0e9c98aa56dae8d5525d1"
+  },
+  "rows.jsonl": {
+    "bytes": 80822,
+    "sha256": "ba60d582fb10ba83883605e849416b1e385a63a50572c27f16f11f0fbd3dcd00"
+  },
+  "summary.json": {
+    "bytes": 8595,
+    "sha256": "4705e048e26cdab83a89bf0922648bad62b5edd773ed2855b01032965a2785c0"
+  },
+  "verification.json": {
+    "bytes": 806,
+    "sha256": "be08eec8d407d37624b3d347c6b7783edcc74d822d4140427b979d3fa3b30471"
+  }
+}
