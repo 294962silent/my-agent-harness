@@ -1163,3 +1163,41 @@ Langfuse 新入口全程 required，远端 metadata 回读窗口为 180 秒，�
 兼容运行最终持有 **151 requests / 1798894 accounting units / 56 evaluations / 12776.241 active seconds**；其中 3 requests 为 unknown，known settled tokens 为 1655475，reservation occupancy 143419。实际 unknown token 与 USD 保持 unavailable。七臂测试最终完成，QSAR frozen 仍为已知缺口；因此本轮支持 fixed/random/greedy 与显式 fallback 的工程对照，不支持“Dream-RSI 学到更优策略”的声明。
 
 面试摘要与机器可读结果：[RSI 面试结果](results/research-effect-20261114/rsi-interview-results.md)、[compat7 summary](results/research-effect-20261114/rsi-compat7-summary.json)。最终 compat7 protocol SHA 为 `361e9cd267dabe6810a40e0863c270c91f58e685c8e4402cce3cae5c010f016a`，source manifest SHA 为 `90ffa6ada3354ff6bf590e2cb955dedcebb9fc2656a0383776a271f6d916bc5b`。
+
+### E-LOCOMO-FINAL-EVIDENCE：2026-11-15 / 主结果、全量补评与新确认集分层交付
+
+本轮只做文档与 Canvas 整合，没有发起模型请求，没有修改实验源码、冻结 plan、答案、gold、journal 或账本。修改前实验日志只记录 LoCoMo v3 主结果；修改后追加两条后续证据：12 个 `length` judge 的全量补评，以及 `conv-30/43` 上 24 题的独立 raw-retrieval 确认。旧结果不回写，三类结果分别标注为主结果、敏感性分析和新确认集。
+
+#### 原 30 题主结果保持不变
+
+冻结输入为原 LoCoMo v3，30 题（dev 6、test 24）、92 个唯一 session、94 个 extract documents。四臂主结果继续把 12 个 `length` judge 按错误计：`raw_lexical` 16/30、`raw_mem0` 17/30、`facts_lexical` 12/30、`facts_mem0` 15/30；valid judge 为 30/28/25/25。主结果 exact McNemar 中 raw lexical/Mem0 为 2:3、`p=1.000`，facts lexical/Mem0 为 1:4、`p=0.375`，没有显著总体优势。
+
+#### 全量 judge-cap 补评只作敏感性
+
+补评独立选取原 120 个 judge 中全部 12 个 `finish_reason=length` 案例，分布为 `facts_lexical` 5、`facts_mem0` 5、`raw_mem0` 2、`raw_lexical` 0。原答案、gold、prompt、模型和 temperature 不变，只把输出上限从 512 提高到 4,096；12/12 返回 `stop` 和严格 JSON boolean，无 malformed。补评后正确数为 **raw_lexical 16、raw_mem0 18、facts_lexical 13、facts_mem0 17**，四臂 judge 均有效。
+
+补评改变正确数但没有把任何配对推过 `p<0.05`：raw lexical/Mem0 为 2:4、`p=0.687500`；facts lexical/Mem0 为 0:4、`p=0.125000`；其余四个两两比较也均不显著。该批次为 **12 requests / 11,166 provider tokens**，12/12 ledger `ok`、unknown/inflight 为 0；前两次调用通过 required Langfuse 的 180 秒有界 metadata/usage 回读，2 个 distinct trace 各 1 个 observation，额外模型请求为 0。主结果仍采用冻结的 512-token/length 计错规则，补评不改写原 estimand。
+
+#### `conv-30/43` 新确认集
+
+新实验在付费 answer/judge 前冻结 `snap-research/locomo` revision `3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376` 上的 `conv-30`、`conv-43`，排除本轮已用的 `conv-41/42/47`；每 conversation 从 category 1/2/4 各取 4 题，共 24 题，multi-hop/temporal/single-hop 各 8 题。两次 conversation 合计 48 个唯一 session、274 个 raw chunk，每题每臂 top-8、6,000 字符上下文。
+
+| arm | correct / 24 | valid judge | session recall@8 | session MRR | evidence-turn recall@8 |
+|---|---:|---:|---:|---:|---:|
+| `raw_lexical` | 10 | 23/24 | 0.8264 | **0.8194** | 0.6500 |
+| `raw_semantic_qwen` | **12** | 24/24 | 0.8542 | 0.7431 | **0.7403** |
+| `raw_hybrid_rrf` | 10 | 22/24 | **0.8819** | 0.7951 | 0.7611 |
+
+类别正确数为 multi-hop 1/2/0、temporal 6/6/6、single-hop 3/4/4。lexical 对 semantic 为 left-only 0、right-only 2、exact McNemar `p=0.500`；semantic 对 hybrid 为 2:0、`p=0.500`；lexical 对 hybrid 为 1:1、`p=1.000`。session recall、MRR 和 evidence-turn recall 指向不同臂，不能宣称向量或 RRF 有稳定优势。
+
+本批共 **144 requests / 163,278 provider tokens**，72 answer + 72 judge；144/144 ledger `ok`，unknown/inflight 为 0。72 个 answer 全 valid；judge 为 69 valid、3 length、0 malformed，3 个 length 仍按冻结规则计错，没有结果驱动重跑。前两次调用通过 required Langfuse 的 180 秒有界回读，2 个 distinct trace 各 1 个 observation，额外模型请求为 0。
+
+两条后续研究合计 **156 requests / 174,444 provider tokens**；这是 12 请求 judge-cap 敏感性加 144 请求新确认集的求和，不并入原 v3 的既有成本口径，也不推导新的实际账单。
+
+#### 结论与交付边界
+
+原 30 题仍支持“Mem0 的数值方向值得继续调查”；全量补评后 key fact 比较为 `p=0.125`，仍不支持显著优势。新 24 题确认集既未复现同一 Mem0 对比，也没有证明 Qwen 向量或 RRF 优于 BM25；“语义臂本次 12/24”只能写成描述性结果。RSI 数字与结论不变，`trained-frozen` 仍是 fixed-reference fallback，`learning_effect=unidentifiable`，不得写成学习收益。
+
+原始报告与机器证据：[全量 judge-cap 敏感性](results/locomo-scoring-sensitivity-v1-20261115/REPORT.md)、[敏感性逐题 cases](results/locomo-scoring-sensitivity-v1-20261115/cases.jsonl)、[新 conversation 三臂确认](results/locomo-raw-confirmation-v1-20261115/REPORT.md)、[确认集 summary](results/locomo-raw-confirmation-v1-20261115/summary.json)。简历最终证据已同步到 [interview-resume-v1.md](reports/interview-resume-v1.md)，交互看板同步到 `mem0-rsi-effects.canvas.tsx`。
+
+本轮本地验收：Markdown 检查确认简历章节仍恰好包含 4 条项目 bullet，简历全部相对/绝对链接与新增日志证据链接可解析，代码围栏成对；脚本交叉核对两份报告与简历、日志、Canvas 中的主结果、补评、确认集、`156 requests / 174,444 provider tokens` 及关键 p 值。Canvas 通过 `cursor/canvas` SDK 声明的严格 TypeScript `noEmit` 检查；静态扫描未发现网络 `fetch`、渐变、阴影、`background-clip`、TODO 或空数据占位。`git diff --check` 通过。该段是本地文件验收，不代表 CI 已通过。

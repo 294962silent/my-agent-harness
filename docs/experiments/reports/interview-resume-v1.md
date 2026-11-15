@@ -19,16 +19,16 @@
 
 以下四条使用项目客观表述。投递前应把“参与范围”替换为本人真实完成的设计、实现、复现或验收动作；本项目是 AI 协作项目，不应把代理执行量改写为个人独立手写。
 
-- 在 LoCoMo 30 道原题（dev 6、test 24）完成 `raw/facts × lexical/Mem0` 四臂配对评测：正确数分别为 **16/30（53.33%）、17/30（56.67%）、12/30（40.00%）、15/30（50.00%）**；`raw_mem0` 比 `raw_lexical` 多 1 题（3:2 discordant，exact McNemar `p=1.000`），`facts_mem0` 比 `facts_lexical` 多 3 题（4:1 discordant，`p=0.375`），因此未观察到统计显著的 Mem0 总体优势。
-- 保留 12 题 LongMemEval 负结果并区分拒答与检索：none 4/12、lexical 11/12、Mem0 9/12；lexical 对 Mem0 为 2 胜、0 负、10 平，exact McNemar `p=0.500`，说明“接入语义检索 SDK”不等于取得记忆质量提升。
-- 构建宿主评分与证据链：候选代码只能在受限容器内写 `predictions.csv`，标签留在宿主侧校验并重算 RMSE；LoCoMo v3 的 334 个请求全部 `ok`，120 个 answer 全有效，120 个 judge 中 108 个有效、12 个因输出长度按冻结规则计错；v3 provider total 为 **1,320,139 tokens**，连同保留的历史批次累计 **345 requests / 1,459,949 tokens**，保守账本成本 **$0.668615**，供应商实际账单 unavailable。
+- 在 LoCoMo 30 道原题（dev 6、test 24）完成 `raw/facts × lexical/Mem0` 四臂配对评测：主结果正确数分别为 **16/30、17/30、12/30、15/30**，12 个 `length` judge 按冻结规则计错；另行对全部 12 例做 4,096-token 输出上限补评后为 **16/30、18/30、13/30、17/30**，全部 judge 有效，但所有 exact McNemar 仍为 **p≥0.05**（关键 `facts_lexical` 对 `facts_mem0` 为 0:4 discordant，`p=0.125`）。
+- 在预注册的新 LoCoMo 集合 `conv-30/43` 上完成 24 题、类别 8/8/8 的三臂确认：`raw_lexical`、`raw_semantic_qwen`、`raw_hybrid_rrf` 分别为 **10/24、12/24、10/24**，session recall **0.8264/0.8542/0.8819**、MRR **0.8194/0.7431/0.7951**；lexical 对 semantic 仅 0:2 discordant、exact McNemar `p=0.500`，未观察到可宣称的向量或混合检索优势。
+- 构建宿主评分与可审计证据链：候选代码只能在受限容器内写 `predictions.csv`，标签留在宿主侧校验并重算 RMSE；LoCoMo v3 的 334 个请求、120 个 answer 和 120 个 judge 全部终态，主规则保留 12 个 length；补评与新确认集另计 **156 requests / 174,444 provider tokens**，全部 `ok`，两组实验的首两次调用均通过 required Langfuse 的 180 秒有界回读。
 - 完成 Dream-RSI **7/8 个 test final 臂**：QSAR 的 fixed-reference、random、fixed-greedy final RMSE 均为 **1.432272**、相对均值基线均为 **1.0**；AutoMPG 四臂完整，random 的 **2.437353** 为完成臂中最低，但仅单 seed、单次运行；`trained-frozen` 是 fixed-reference `2/1` fallback，不能写成学习收益。
 
 如果简历空间只保留两条，建议保留第一条“记忆四臂 + 不显著结论”和第四条“7/8 个 RSI final + 多臂边界”；它们最能体现可信实验设计、失败关闭和结果解释能力。
 
 ## 60 秒项目口述
 
-“这个项目针对代码实验型 Agent：模型修改训练脚本，容器生成预测，宿主用私有标签重算指标。我把普通 Agent 的工具循环拆成可验证的运行边界：每个请求先预留预算、收到 provider usage 后结算；未知用量阻断重放；候选只能写一个预测文件；dev 反馈用于选择，final 不回流。上下文层把原始历史和发送视图分开，大输出保存在产物层并通过有界工具回读；记忆层保留本地事实权威，再评测 BM25 与 Mem0 候选检索。真实 LoCoMo 30 题中 Mem0 多答对 1 到 3 题，但 McNemar 不显著，而且 judge 有 12 次长度截断。RSI 完成了 7/8 个 final 臂：QSAR 三条完成臂都停在均值基线，AutoMPG 的 random 数值最低，但只有单 seed，frozen 又使用同参数 fallback。这个项目重点交付的是能力、成本、失败和不能下结论的地方。”
+“这个项目针对代码实验型 Agent：模型修改训练脚本，容器生成预测，宿主用私有标签重算指标。我把普通 Agent 的工具循环拆成可验证的运行边界：每个请求先预留预算、收到 provider usage 后结算；未知用量阻断重放；候选只能写一个预测文件；dev 反馈用于选择，final 不回流。上下文层把原始历史和发送视图分开，大输出保存在产物层并通过有界工具回读；记忆层保留本地事实权威，再评测词法、Mem0、向量和混合检索。原 30 题四臂主结果中 Mem0 多答对 1 到 3 题，独立补完全部 12 个 length judge 后仍没有配对比较达到 p<0.05；新 24 题确认集里语义臂 12/24、词法和混合各 10/24，差异也只有 2 个 discordant pair，p=0.500。RSI 完成了 7/8 个 final 臂：QSAR 三条完成臂都停在均值基线，AutoMPG 的 random 数值最低，但只有单 seed，frozen 又使用同参数 fallback。这个项目重点交付的是能力、成本、失败和不能下结论的地方。”
 
 ## 证据等级与主张边界
 
@@ -41,7 +41,7 @@
 
 本版最诚实的三句结论是：
 
-1. Mem0 在两个小样本记忆中都没有形成可被当前证据支持的总体优势；LoCoMo 的 12 个 `length` judge 进一步限制了四臂排序的纯检索解释。
+1. Mem0 在 LongMemEval、LoCoMo 原 30 题及其全量补评中都没有形成可被当前证据支持的总体优势；新确认集也未显示向量或混合检索的统计显著优势。
 2. RSI 的测试子集完成 7/8 个 final 臂。QSAR 已完成三臂结果相同；AutoMPG 四臂完整且 random 数值最低，但单 seed、单次运行、没有推断统计，训练收益仍不可识别。
 3. 工程链路的可审计性高于“刷分”：真实 usage、失败、未知请求和不可比口径均被保留，reservation 不被冒充实际账单。
 
@@ -91,7 +91,7 @@ flowchart LR
 | 产物 | 把长工具输出留在 prompt | 产物存储 + 有界回读，验证证据可恢复 | 两路回读、越界和临时文件契约 |
 | 预算与恢复 | 请求失败后盲目重试 | 请求前 reservation，终态 settlement；未知 usage fail-closed | JSONL journal、hash chain、checkpoint；不宣称外部副作用 exactly-once |
 | 工具安全 | 所有工具直接执行 | schema、并发声明、依赖门控、副作用前授权 | 独立工具并发、依赖违规和拒绝路径 |
-| 记忆 | 无记忆或直接向量 top-k | Markdown 事实权威；词法/Mem0 候选；scope/identity/revision 复验 | LongMemEval 12 题与 LoCoMo 30 题真实评测 |
+| 记忆 | 无记忆或直接向量 top-k | Markdown 事实权威；词法/Mem0 候选；scope/identity/revision 复验；词法/向量/RRF 对照 | LongMemEval 12 题、LoCoMo 30 题、全量 judge 补评与新 24 题确认集 |
 | 观测 | 普通文本日志 | call/root/parent、purpose、usage、状态；Langfuse required raw owner | 本地 observer、真实 Langfuse 元数据回读、180 秒有界轮询 |
 | 评分 | 信任候选 stdout / 自报分数 | 宿主私有标签、容器边界、限制文件输出 | Docker 八场景与真实代码实验 |
 | 策略优化 | 看到反馈就继续试 | 冻结 plan、train/val/test 隔离、严格晋升、失败关闭 | RSI compat3–compat7 的 7/8 final、fallback 与 unknown STOP |
@@ -100,13 +100,13 @@ flowchart LR
 
 ### 1. “记忆接上了”与“记忆更好了”是两个问题
 
-初始风险是把 Mem0 SDK 成功返回候选，当成长期记忆质量提升。评测改成固定 history、chunk、top-8、6,000 字符上下文、answer model 和 judge 的四臂设计，并把本地来源事实作为权威数据；Mem0 候选命中后仍需按 scope、identity、revision 验证，正文从本地读取。LongMemEval 12 题和 LoCoMo 30 题都没有给出可宣称的总体增益。
+初始风险是把 Mem0 SDK 成功返回候选，当成长期记忆质量提升。评测改成固定 history、chunk、top-8、6,000 字符上下文、answer model 和 judge 的四臂设计，并把本地来源事实作为权威数据；Mem0 候选命中后仍需按 scope、identity、revision 验证，正文从本地读取。LongMemEval 12 题、LoCoMo 30 题及其全量 judge 补评都没有给出可宣称的 Mem0 总体增益。
 
-这一步把可替换的检索候选与事实真值分开，也暴露了下一个瓶颈：session recall 高不代表答案证据进入上下文。LoCoMo 的 `facts_mem0` session recall@8 达到 **0.9140**、MRR 达到 **0.8689**，但 multi-hop 只答对 **1/10**。
+这一步把可替换的检索候选与事实真值分开，也暴露了下一个瓶颈：session recall 高不代表答案证据进入上下文。LoCoMo 的 `facts_mem0` session recall@8 达到 **0.9140**、MRR 达到 **0.8689**，但 multi-hop 只答对 **1/10**。新确认集进一步把比较收窄到同一 raw chunk 语料上的 BM25、Qwen 向量和 RRF；三者 session recall 为 0.8264/0.8542/0.8819，但样本只有 24 题，lexical 对 semantic 仅 0:2 discordant、`p=0.500`，仍不能把排序差异写成稳定优势。
 
-### 2. 答案正确率被 judge 终止契约混入
+### 2. 答案正确率被 judge 终止契约混入，补评必须独立报告
 
-LoCoMo v3 的 120 个 answer 全部有效，但 120 个 judge 中 12 个达到 512-token 上限。预注册规则规定 `length` 计错，且失败后不自动重试或补判，以免看到结果后再改协议。因此用于主表的正确数包含 judge 契约失败；valid-only 正确率只能作为敏感性分析，不能替代冻结主结果。
+LoCoMo v3 的 120 个 answer 全部有效，但 120 个 judge 中 12 个达到 512-token 上限。预注册规则规定 `length` 计错，因此主表继续保留 16/17/12/15。后续另建 scoring-only 敏感性分析，对全部 12 个失败单元统一使用原 prompt、gold、answer 和模型，只把输出上限提高到 4,096；12/12 返回合法 JSON boolean。补评后为 16/18/13/17，所有配对仍不显著，说明主结论不是由只查看更方便的有效 judge 得来的。
 
 ### 3. 规划口径与实际文档拆分不一致
 
@@ -153,6 +153,21 @@ lexical 对 Mem0 的配对结果为 2 胜、0 负、10 平；exact McNemar `p=0.
 
 主表的 30 题分母包含 12 个 judge `length`，并按冻结规则计错。valid-only 正确率分别为 **53.33%、60.71%、48.00%、60.00%**，只用于解释 judge 敏感性。
 
+### 原 30 题全量 judge-cap 补评
+
+补评实验没有重跑检索或回答，只重新判分原 120 个 judge 中的全部 12 个 `length` 案例，分别来自 `facts_lexical` 5、`facts_mem0` 5、`raw_mem0` 2、`raw_lexical` 0。规则是统一把输出上限从 512 提高到 4,096，不按结果挑题；仍截断或格式失败也继续计错。
+
+| 臂 | 主结果正确 / 30 | 主有效 judge | 补评后正确 / 30 | 补评后有效 judge |
+|---|---:|---:|---:|---:|
+| `raw_lexical` | 16 | 30/30 | 16 | 30/30 |
+| `raw_mem0` | 17 | 28/30 | **18** | 30/30 |
+| `facts_lexical` | 12 | 25/30 | **13** | 30/30 |
+| `facts_mem0` | 15 | 25/30 | **17** | 30/30 |
+
+补评只新增 4 个正确结果，没有改变任一配对达到 `p<0.05` 的结论。关键比较中，`raw_lexical` 对 `raw_mem0` 为 2:4 discordant、`p=0.688`；`facts_lexical` 对 `facts_mem0` 为 0:4 discordant、`p=0.125`。其余四个配对也都为 `p≥0.05`。因此正确写法是“方向值得继续检查”，不能写“补全 judge 后证明 Mem0 更好”。
+
+该敏感性批次为 **12 requests / 11,166 provider tokens**，12/12 ledger 行 `ok`、unknown/inflight 为 0；前两个请求通过 required Langfuse 的 180 秒有界 metadata/usage 回读，额外模型请求为 0。原 v3 主结果和预注册计分规则保持不变。
+
 表中的 95% Wilson 区间由当前 safe rows 的二项正确数重新计算，仅描述每个臂的边际不确定性；它不替代配对 McNemar 检验，也不处理题目聚类或多次比较。
 
 ### raw / facts × lexical / Mem0 消融
@@ -164,13 +179,35 @@ lexical 对 Mem0 的配对结果为 2 胜、0 负、10 平；exact McNemar `p=0.
 | `raw_lexical` vs `facts_lexical` | 5 | 1 | 11 | 13 | +4 | 0.219 |
 | `raw_mem0` vs `facts_mem0` | 4 | 2 | 13 | 11 | +2 | 0.688 |
 
-从 Mem0 视角看，raw 的 discordant 为 **3:2**，facts 为 **4:1**，但两组 exact McNemar 分别为 1.000 和 0.375。p 值为探索性，没有多重比较校正。这批结果支持“继续调查哪些 case、哪种记忆粒度会丢信息”，不支持“Mem0 全面优于词法”或“facts 全面优于 raw”。
+从 Mem0 视角看，主结果的 raw 为 **3:2**、facts 为 **4:1**；全量补评后分别为 **4:2**、**4:0**，对应 exact McNemar `p=0.688` 和 `p=0.125`。p 值为探索性，没有多重比较校正。主结果和补评共同支持“继续调查哪些 case、哪种记忆粒度会丢信息”，不支持“Mem0 全面优于词法”或“facts 全面优于 raw”。
 
 ### dev / test 边界
 
 dev 的 raw Mem0 为 5/6，但没有据此换题或重跑；test 按冻结的 24 题全部执行。test 中 `facts_mem0` 为 13/24，是四臂最高；`raw_lexical` 与 `raw_mem0` 各 12/24，`facts_lexical` 为 11/24。dev 只用于桥接和协议检查，不参与 winner 或 final 选择。
 
-## 实验 3：Dream-RSI 两数据集、四臂测试
+## 实验 3：LoCoMo 新 conversation 三臂确认
+
+为了减少“只在一个 30 题 pilot 上调协议”的解释空间，另在付费前冻结同一数据 revision 上未使用的两个 conversation：`conv-30`、`conv-43`。选择器只读取 sample ID、官方 category 和 evidence，不使用模型分数，排除本轮已用的 `conv-41/42/47`；每个 conversation 从 category 1/2/4 各取 4 题，共 **24 题、multi-hop/temporal/single-hop 各 8 题**。两次 conversation 合计 48 个 session、274 个 raw chunk。
+
+三个臂只改变检索，共用 raw chunk、top-8、6,000 字符上下文、answer/judge prompt、`deepseek-v4.1-flash`、temperature 0 和 `retry=0`：
+
+| 臂 | 检索定义 |
+|---|---|
+| `raw_lexical` | BM25，`k1=1.5,b=0.75` |
+| `raw_semantic_qwen` | 固定 Qwen3-Embedding 0.6B revision 的 dense top-8 |
+| `raw_hybrid_rrf` | lexical 与 semantic top-8 以 `k=60` 做 RRF，再取 top-8 |
+
+| 臂 | 正确 / 24 | 准确率 | valid answer | valid judge | session recall@8 | session MRR | evidence-turn recall@8 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `raw_lexical` | 10 | 41.67% | 24/24 | 23/24 | 0.8264 | **0.8194** | 0.6500 |
+| `raw_semantic_qwen` | **12** | **50.00%** | 24/24 | 24/24 | 0.8542 | 0.7431 | **0.7403** |
+| `raw_hybrid_rrf` | 10 | 41.67% | 24/24 | 22/24 | **0.8819** | 0.7951 | 0.7611 |
+
+官方类别分解为 multi-hop 1/2/0、temporal 6/6/6、single-hop 3/4/4（依次 lexical/semantic/hybrid）。语义臂多答对 2 题，但配对上只有 lexical-left-only 0、semantic-right-only 2，exact McNemar `p=0.500`；semantic 对 hybrid 同样为 2:0、`p=0.500`，lexical 对 hybrid 为 1:1、`p=1.000`。三个臂的信号不一致：lexical 的 session MRR 最高，semantic 的 evidence-turn recall 较高，hybrid 的 session recall 最高，因此本样本不能支持任一检索方案的稳定优势。
+
+本批共 **144 requests / 163,278 provider tokens**：72 answer + 72 judge，全部 ledger 行 `ok`，unknown/inflight 为 0。72 个 answer 全有效；judge 为 69 valid、3 length、0 malformed，length 仍按冻结规则计错，没有看到结果后重跑。前两个请求通过 required Langfuse 的 180 秒有界回读，2 个 trace 各恰 1 条 observation，额外模型请求为 0。这是两个新 conversation 上的小样本确认，不外推到全部 LoCoMo 或其他 embedding 参数。
+
+## 实验 4：Dream-RSI 两数据集、四臂测试
 
 RSI 预注册 QSAR（546 行）和 AutoMPG（392 行）各四条 test/final 臂，任务内按 60/20/20 切分，固定 DeepSeek V4.1 Flash、无网络 Docker、`retry=0` 和每臂 24 requests / 400,000 tokens / 1,200 秒 / 5 evaluations 上限。fixed-reference 使用 width 2、refine 1；random 保持相同参数，只改变 seed 20261114 的探索顺序；fixed-greedy 使用 width 1、refine 0；trained-frozen 依赖独立的 Airfoil train → Wine holdout 晋升。
 
@@ -217,12 +254,14 @@ fixed-greedy 的 single candidate 无效，final 保留均值 baseline，RMSE **
 | LoCoMo v2 | 2 requests / 26,006 tokens，一次性云端回读未命中 | 旧结果不恢复；后续只读复核只解释可见性时序 |
 | LoCoMo v3 initial | 8 requests / 102,453 tokens，8,192-token reasoning-only length stop | 以新 recovery identity 继续；旧调用不重放 |
 | LoCoMo v3 recovery | 334 requests 全 ok；12 个 judge length；全部终态后 owner-close 重名异常 | 成绩有效但 judge 解释力受损；停止后 0 请求 |
+| LoCoMo judge sensitivity | 全量 12 个 length 补评后均合法；无配对达到 `p<0.05` | 主结果保留 length 计错；补评只作独立敏感性 |
+| LoCoMo raw confirmation | 24 题中 3 个 judge length；semantic 仅多 2 题、`p=0.500` | 保留截断与错误；不能宣称向量/RRF 稳定优势 |
 | RSI compat3/4 | 训练/验证完整性不足，optimizer 未晋升；后续配置 STOP | 保留历史用量与 STOP；禁止强制提升 |
 | RSI Wine | request 10 provider timeout；usage unknown；无完整 round | optimizer 不运行；不能用不完整 holdout 训练 |
 | RSI QSAR frozen | 1,200 秒边界；最后一个请求 unknown；无 final | 7/8 final；训练贡献仍不可识别 |
 | RSI 总账 | 3 个 unknown requests；actual token 与 USD unavailable | reservation 和 known token 不能冒充实际账单 |
 
-这些失败不是被删除的“坏数据”。它们定义了下一轮实验应改变的最小变量：提高 judge 输出上限、先做 valid-judge gate、冻结实际 extract document 数、增加题目数量、预注册时间上限和取消后的 usage 处理，并在完整 holdout 可用后重新检验 frozen 策略。
+这些失败和边界案例不是被删除的“坏数据”。LoCoMo 后续已经补做全量 judge-cap 敏感性并增加两个新 conversation；新确认集仍保留 3 个 length，semantic 也只有 2 个 discordant pairs。下一轮应扩大预注册样本和题型覆盖，同时区分来源 session 命中、answer-bearing evidence 与答案正确性，并在完整 holdout 可用后重新检验 frozen 策略。
 
 ## 成本、用量与可靠性
 
@@ -241,6 +280,15 @@ v3 的 334 个请求全部终态为 `ok`，unknown / in-flight 均为 0，answer
 
 36 answer + 36 judge，共 **72 requests / 41,852 actual tokens**；每个请求都有终态，`held=0`、`unknown=false`、`retry=0`。供应商金额未核验，不能使用兼容代理的 USD 上限当作实际费用。
 
+### LoCoMo 补充实验
+
+| 实验 | requests | provider tokens | 终态与判分 | required Langfuse |
+|---|---:|---:|---|---|
+| 全量 judge-cap 敏感性 | 12 | 11,166 | 12/12 `ok`；12/12 `stop` 且合法 JSON boolean | 首两请求 180 秒有界回读通过 |
+| 新 conversation 三臂确认 | 144 | 163,278 | 144/144 `ok`；72 answer valid；69 judge valid、3 length | 首两请求 180 秒有界回读通过 |
+
+补评与新确认集合计 **156 requests / 174,444 provider tokens**，两组都没有 unknown/inflight、额外的回读模型请求或结果驱动的重跑。provider token 不能由 prompt + completion 直接替代；这两个报告的供应商实际账单没有用于简历主张。
+
 ### Dream-RSI
 
 最终总账为 **151 requests / 1,798,894 accounting units / 1,655,475 known settled tokens / 56 evaluations / 12,776.24 active seconds**。其中有 **3 个 unknown requests**，reservation occupancy 为 **143,419**；unknown 的实际 token 和 USD 均为 unavailable，accounting units 不能当作实际账单总额。
@@ -255,19 +303,19 @@ v3 的 334 个请求全部终态为 `ok`，unknown / in-flight 均为 0，answer
 
 ### 2. 为什么 Mem0 “有数值提升”却不写“提升”？
 
-LoCoMo 中 `raw_mem0` 比 `raw_lexical` 多 1 题，discordant 为 **3:2**，exact McNemar `p=1.000`；`facts_mem0` 比 `facts_lexical` 多 3 题，discordant 为 **4:1**，`p=0.375`。30 题小样本、边际 Wilson 区间重叠、没有多重比较校正，另有 12 个 judge 受 512-token 上限影响。因此只能说“方向值得复查”，不能写总体改善。
+LoCoMo 主结果中 `raw_mem0` 比 `raw_lexical` 多 1 题，discordant 为 **3:2**、exact McNemar `p=1.000`；`facts_mem0` 比 `facts_lexical` 多 3 题，discordant 为 **4:1**、`p=0.375`。独立补完全部 12 个 length judge 后，正确数为 16/18/13/17，两组关键比较变为 2:4 `p=0.688` 和 0:4 `p=0.125`；全部配对仍没有达到 `p<0.05`。30 题小样本、边际 Wilson 区间重叠和没有多重比较校正都限制了总体主张，因此只能说“方向值得继续检查”。
 
 ### 3. 为什么 `facts_mem0` 的 session recall 和 MRR 最高，正确率却不高？
 
 session recall 衡量相关来源 session 是否进入 top-8，不等于答案所需支持事实一定被保留或正确组合。facts 路径先抽取、再检索，可能丢失跨 session 的组合条件；`facts_mem0` 的 recall/MRR 虽为 0.9140 / 0.8689，但 10 道 multi-hop 只答对 1 题。下一轮需要分别标注 answer-bearing chunk、事实充分性和 multi-hop 关系覆盖。
 
-### 4. 12 个 judge 达到长度上限，为什么不全部重判？
+### 4. 12 个 judge 已经全部补评，为什么主结果还不用新数字？
 
-因为 512-token 上限和“length 计错”在运行前冻结。看到结果后只重判失败单元会改变 estimand，并可能引入选择偏差。当前结果按冻结规则交付，valid-only 作为敏感性分析。下一批应先验证 judge 输出格式和停止原因，再执行正式评测。
+因为 512-token 上限和“length 计错”在 v3 运行前冻结，主结果必须保持原协议。补评另建 scoring-only 报告，对全部 12 个 length 案例统一提高输出上限，没有按结果挑样本；它回答“如果是 judge 长度导致计错，数字会怎样”，不替代原主 estimand。新确认集随后使用 1,024-token judge cap，仍保留 3 个 length，说明输出预算和预运行 gate 仍是下一轮必须继续处理的问题。
 
 ### 5. 为什么要区分 dev 和 test？
 
-dev 用于桥接、协议检查和当前学习/选择；test final 是一次性独立评估。LoCoMo dev 的 raw Mem0 为 5/6，但没有据此换题或重跑 test。RSI 的 final 反馈也不能回到 selection、memory 或 optimizer。
+dev 用于桥接、协议检查和当前学习/选择；test final 是一次性独立评估。LoCoMo dev 的 raw Mem0 为 5/6，但没有据此换题或重跑 test。新确认集又使用未参与原 pilot 的 `conv-30/43`，在付费前冻结 category-balanced 样本；它仍只有 24 题，所以只做确认，不冒充完整 test set。RSI 的 final 反馈也不能回到 selection、memory 或 optimizer。
 
 ### 6. 为什么候选程序不能自己返回 RMSE？
 
@@ -299,7 +347,7 @@ QSAR frozen 在 1,200 秒边界没有返回可靠 usage，运行器保留 journa
 
 ### 13. 下一次最值得做的实验是什么？
 
-先固定更高 judge 输出预算，并用预运行 gate 验证全部 judge 合法；用同一批 LoCoMo 题做配对复核，扩大样本并按题型分层。RSI 需要先补齐 Wine holdout 和在途取消后的 usage 契约，再做多 seed、重复 final 和推断统计，确认 AutoMPG 的 numeric ranking 是否能复现。当前 7/8 结果足够支持工程复盘，不支持普遍性能主张。
+LoCoMo 已补做全量 judge-cap 敏感性并在两个新 conversation 上做类别平衡确认；下一步应扩大独立 conversation 数量、预运行验证 judge 合法性，并分别标注 session、answer-bearing evidence 与 multi-hop relation 覆盖。RSI 需要先补齐 Wine holdout 和在途取消后的 usage 契约，再做多 seed、重复 final 和推断统计，确认 AutoMPG 的 numeric ranking 是否能复现。当前结果足够支持工程复盘，不支持普遍性能主张。
 
 ### 14. 你个人负责哪部分？
 
@@ -311,6 +359,10 @@ QSAR frozen 在 1,200 秒边界没有返回可靠 usage，运行器保留 journa
 - LoCoMo 机器汇总：[summary.json](../results/locomo-memory-v3-20261115/summary.json)
 - LoCoMo 用量：[usage.json](../results/locomo-memory-v3-20261115/usage.json)
 - LoCoMo finalization：[finalization.json](../results/locomo-memory-v3-20261115/finalization.json)
+- LoCoMo 全量 judge-cap 敏感性：[REPORT.md](../results/locomo-scoring-sensitivity-v1-20261115/REPORT.md)
+- LoCoMo 全量 judge-cap 逐题结果：[cases.jsonl](../results/locomo-scoring-sensitivity-v1-20261115/cases.jsonl)
+- LoCoMo 新 conversation 三臂确认：[REPORT.md](../results/locomo-raw-confirmation-v1-20261115/REPORT.md)
+- LoCoMo 新确认集机器汇总：[summary.json](../results/locomo-raw-confirmation-v1-20261115/summary.json)
 - LongMemEval 报告：[effect-v1-sol2.md](effect-v1-sol2.md)
 - RSI 面试结果：[rsi-interview-results.md](../results/research-effect-20261114/rsi-interview-results.md)
 - RSI 机器汇总：[rsi-compat7-summary.json](../results/research-effect-20261114/rsi-compat7-summary.json)
@@ -319,7 +371,9 @@ QSAR frozen 在 1,200 秒边界没有返回可靠 usage，运行器保留 journa
 ## 不能写的更强结论
 
 - 不写“Mem0 提升长期记忆正确率 X%”：主要对照均不显著，judge 也有长度截断。
+- 不写“补全 12 个 length judge 后证明 Mem0 更好”：补评后关键比较仍只有 `p=0.125`，所有配对均未达到 `p<0.05`。
 - 不写“facts 全面优于 raw”：部分数值方向存在，但没有显著性或跨数据一致性。
+- 不写“向量或 RRF 在确认集上显著优于词法”：24 题里只有 2 个 discordant pairs，`p=0.500`，且三个检索指标给出的方向不一致。
 - 不写“RSI 提升代码实验能力”：QSAR 已完成三臂都等于均值基线，AutoMPG 只有一个 seed，训练策略未晋升。
 - 不写“AutoMPG random 显著优于 fixed”：这个说法没有重复运行或推断统计支持。
 - 不写“trained-frozen 已学习”：实际是 fixed-reference fallback，Wine holdout 不完整，optimizer 未运行。
