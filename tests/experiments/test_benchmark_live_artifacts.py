@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from experiments.benchmark_live import swe_agent as swe
-from my_agent_llm import LLM, Response
+from my_agent_llm import Config, LLM, Response
 
 BODY = "HEAD\n" + "a" * 7000 + "\nHIDDEN_MIDDLE_ERROR\n" + "b" * 7000 + "\nFINAL_ERROR_MARKER"
 
@@ -62,6 +62,19 @@ async def test_v2_projection_and_real_artifact_roundtrip_same_schema(tmp_path, m
             llm = LLM(config)
             llm._provider = Provider()
             return llm
+
+        def harbor_factory(*, max_output_tokens, timeout):
+            return factory(
+                Config(
+                    provider="openai",
+                    model="offline",
+                    api_key="offline-key",
+                    base_url="https://example.invalid/v1",
+                    max_retries=0,
+                    timeout=timeout,
+                    max_tokens=max_output_tokens,
+                )
+            )
 
         class Environment:
             async def start(self):
@@ -146,7 +159,7 @@ async def test_v2_projection_and_real_artifact_roundtrip_same_schema(tmp_path, m
                     }
                 )
             )
-            monkeypatch.setattr(harbor, "LLM", factory)
+            monkeypatch.setattr(harbor, "create_live_llm", harbor_factory)
             agent = harbor.BudgetedHarborAgent(
                 task_dir=root,
                 logs_dir=logs,

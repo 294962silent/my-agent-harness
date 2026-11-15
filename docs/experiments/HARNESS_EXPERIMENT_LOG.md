@@ -1264,3 +1264,15 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **修改前**：产品默认走 legacy baseline，layered 只能由显式配置开启。**修改后**：产品默认启用 layered，baseline 作为显式兼容和消融模式保留。
 - **优势与代价**：默认路径具备摘要身份校验、原文 artifact 回读、工具组微压缩和有界语义摘要；代价是 layered 会执行 reserve 和 overflow 校验，调用方提供过小的 context budget 时应增加预算或显式选择 baseline。
 - **验证**：`uv run pytest tests/core tests/coding/test_agent.py tests/test_rsi_runtime.py -q` 通过；定向 Ruff 通过；`git diff --check` 通过。未新增模型调用，不据此声明质量或 KV-cache 收益。
++
+### E-LONGHORIZON-CODE-6H：2026-11-15 / 七类故障矩阵、fix-git 三臂与长输出超时
+
+- **确定性 Phase A**：新增 7 类故障注入，各重复 20 次。最小 baseline 为 **0/140**，生产 Harness 接缝为 **140/140**，全部 deterministic、无 blocked。覆盖大输出 artifact 回读、stale/cross-scope memory、ResearchCampaign journal 恢复、同文件并发写、受控策略晋升/回滚、真实 Docker 宿主评分，以及把这些机制串在同一临时仓库中的连续修复。宿主评分共运行 40 个固定镜像容器；连续仓库共运行 80 个宿主子进程。
+- **v2 真实故障**：首笔 fix-git/baseline 在真正进入容器前中断，1 request、input 662、output 64、cost **$0.000276**。根因是 Agent 以 Task-per-event 推进 stream，而 Langfuse facade 将 ContextVar token 跨多个 yield 持有，退出时跨 Context reset。失败与费用保留，run 不重试。
+- **修复**：streaming facade 在单个执行器调用内收集底层事件，退出 observation scope 后按原顺序 yield；真实 Agent + fake provider + 实际 shell tool 回归确保两次模型回合各结算一次。异常类型、脱敏 message 和限长 traceback 写入 live_run。
+- **v3 真实配对**：冻结 plan SHA `f15d6ade822a7dcc582e15d4df9d63d382387395f0f4578c334fccf5e254008b`，Langfuse required。fix-git 三臂全部官方 reward=1：baseline 17 requests / 85,025 input / 6,924 output / $0.033823；enhanced 10 / 32,826 / 2,417 / $0.012753；layered-without-artifact 12 / 55,642 / 3,593 / $0.021009。单题单 trial 差异只作描述。
+- **长输出负结果**：large-scale-text-editing/enhanced 在 1,080 秒 Agent cap 取消，22 requests 完整结算（88,968 input、41,638 output、$0.076664）。官方 verifier 实际运行且 5/5 失败；最终 apply_macros.vim 未形成，不能计为 reward，也不能归因为环境故障。
+- **Langfuse 远端回读**：session `lhpp-20261115-v3` 返回 4 个 trace、61 个 GENERATION observation，和 v3 账本 61 个真实请求完全一致；每 trace input/output/total 与账本一致，未记录 prompt、回答正文或凭据。
+- **custom-memory sidecar**：首次补跑因 host run 未安装 LIVE_BENCH_API_KEY，0 model request、0 verifier、0 cost；run ID 保留 consumed，不重试。驱动已改为 run 内重新执行 credential/Langfuse/proxy/oracle/transport gate。
+- **总账**：v2+v3 共 62 requests，客户端保守计费 **$0.144525**；Phase A 0 API 请求。未得到显著性或完整 Terminal-Bench 能力结论。
+- **报告**：[六小时证据包](reports/long-horizon-code-6h-results.md)、[Phase A 详细报告](reports/long-horizon-code-phase-a-v1.md)、[公开 pilot](reports/long-horizon-public-pilot-v1.md)。
