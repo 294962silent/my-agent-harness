@@ -117,4 +117,22 @@ v3 sidecar 首次执行 `custom-memory-heap-crash/loo_artifact` 时，`run` 只�
 - `ruff check`：两文件 All checks passed。
 - 实时零模型 preflight：production credential、oracle、transport、Langfuse four-env、proxy 与 v3 base preflight 均通过；因旧 custom loo 已非 scored，最终状态正确写为 `blocked`。
 
-当前 v3 ledger 保留 61 条已完整结算的模型 request，客户端已知成本合计 `$0.144249`；custom loo run `lhpp-f49f3a45da67234cff98a2c0948c3d39` 为 `trial_started=true`、0 request、`execution_or_verifier_error`，其 baseline/enhanced 仍为 not started。v3 plan SHA `f15d6ade822a7dcc582e15d4df9d63d382387395f0f4578c334fccf5e254008b` 未改，旧结果未回写或重试。后续若补跑 custom-memory 三臂，应新建 v4 campaign、ledger 与九个冻结 run ID，再 freeze、oracle、transport、preflight；v3 custom sidecar 保持 blocked。
+当前 v3 ledger 保留 61 条已完整结算的模型 request，客户端已知成本合计 `$0.144249`；custom loo run `lhpp-f49f3a45da67234cff98a2c0948c3d39` 为 `trial_started=true`、0 request、`execution_or_verifier_error`，其 baseline/enhanced 仍为 not started。v3 plan SHA `f15d6ade822a7dcc582e15d4df9d63d382387395f0f4578c334fccf5e254008b` 未改，旧结果未回写或重试。后续补跑使用独立 v4 campaign、ledger 与九个冻结 run ID；v3 custom sidecar 保持 blocked。
+
+## v4 custom-memory-heap-crash 补跑
+
+v4 campaign 为 `lhpp-20261115-v4`，plan SHA-256 为 `90971e8b39c8b9660de2249bae8fd03d6ad285a8c1d0ef126e4b2ed030ebc288`。冻结模型仍为 `deepseek-v4.1-flash`，Terminal-Bench 来源仍为 revision `12b7565679ce5006230b820666353673a133db93`，观测仍要求 Langfuse。
+
+| Arm | compaction | artifact | 终态 | verifier | requests | input | output | cost USD |
+|---|---|---:|---|---:|---:|---:|---:|---:|
+| loo_artifact | layered | off | `ContextBudgetExceeded` | 未执行 | 24 | 26,429 | 49,037 | 0.171078 |
+| baseline | baseline | off | reward 0 | 5/6 | 15 | 13,397 | 35,522 | 0.079754 |
+| enhanced | layered | on | reward 0 | 5/6 | 21 | 28,610 | 58,180 | 0.118269 |
+
+baseline 与 enhanced 的唯一失败项都是 `test_outputs.py::test_release_build_runs_without_crash`。两者都能编译 release 程序并运行部分主流程，但进程最终返回 `-11`（SIGSEGV），因此 verifier 正常执行且不是基础设施错误。
+
+loo_artifact 在冻结上下文预算内没有完成交付，也没有 verifier 报告；enhanced 的 artifact projection 使其进入 verifier，但没有修复 release 崩溃。因此该实验只支持“artifact 避免了一种上下文预算失败”，不支持正确率提升。
+
+Langfuse v4 云端回读为 3 个 trace、60 个 generation observation，与三臂请求数 24/15/21 和账本 usage 完全一致。v4 客户端保守费用为 `$0.369101`；v2+v3+v4 合计 122 requests、`$0.513626`。
+
+报告没有把 `ContextBudgetExceeded`、官方 reward 0 或 SIGSEGV 重试成新样本，也没有把这些负结果从简历证据中删除。

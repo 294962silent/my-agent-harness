@@ -1283,3 +1283,14 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - 脚本化消融 repeat 20：baseline 持续 7 次局部验证后 timeout，0/20；guarded 在约 76% 时间比例注入一次，先写 final artifact，再通过宿主 py_compile 和 unittest，20/20，签名唯一。
 - 该结果只证明机制和宿主验证链，不证明真实模型一定遵循提醒；下一步需在 Harbor 公开任务上做同模型、同预算的 guard on/off 实验。
 - 报告：[long-horizon-progress-guard-v1.md](reports/long-horizon-progress-guard-v1.md)。
+
+### E-LONGHORIZON-CUSTOM-MEMORY-V4：2026-11-15 / 上下文预算失败与 verifier 负结果
+
+- **独立 campaign**：新建 `lhpp-20261115-v4`、独立 `$30` 账本和九个新 run ID，plan SHA-256 为 `90971e8b39c8b9660de2249bae8fd03d6ad285a8c1d0ef126e4b2ed030ebc288`。只补跑 v3 中被 sidecar 配置错误阻塞的 custom-memory 三臂；v3 的 61 个请求、奖励、费用和失败记录未修改、未重试。
+- **真实结果**：layered+artifact-off 在 24 requests 后以 `ContextBudgetExceeded` 停止，verifier 未执行，input/output 为 26,429/49,037，客户端计费 `$0.171078`；baseline 15 requests、13,397/35,522、`$0.079754`，官方 reward 0；layered+artifact-on 21 requests、28,610/58,180、`$0.118269`，官方 reward 0。
+- **共同失败项**：baseline 与 enhanced 都通过 6 个官方检查中的 5 个，唯一失败为 `test_outputs.py::test_release_build_runs_without_crash`。release 程序打印了主流程输出，但返回 `-11`（SIGSEGV）；因此不是测试安装、网络或 verifier 基础设施故障。
+- **机制解释**：artifact projection 把 layered 路径从“上下文预算失败”推进到“verifier 可执行”，但没有修复候选代码的正确性问题。它修复的是证据/投影通路中的一个具体阻塞，不是任务奖励。
+- **Langfuse 对账**：v4 云端只有 3 个 trace、60 个 GENERATION，分别对应 24/15/21 个请求；input/output 与账本一致，没有记录 prompt 正文、答案正文或密钥。
+- **v4 成本**：60 requests，input 68,436，output 142,739，客户端保守计费 `$0.369101`。v2+v3+v4 合计 122 requests、`$0.513626`；provider 实际账单仍未核验。
+- **收尾前代码修正**：custom-memory sidecar 将合法的 `ContextBudgetExceeded` 视为终态但不阻断后续 arm；每个新 trial 前重新执行 oracle/transport/Langfuse/credential gate，未知终态仍 fail-closed。WSL 定向组合实际 **21 passed**，Ruff 通过；尚未提交到远端，不能提前写 CI 已通过。
+- **报告**：[六小时证据包](reports/long-horizon-code-6h-results.md)、[公开 pilot](reports/long-horizon-public-pilot-v1.md)、[机器汇总](results/long-horizon-code-6h-20261115/summary.json)。

@@ -18,6 +18,7 @@ from experiments.long_horizon_code import public_pilot as pilot
 TASK = "custom-memory-heap-crash"
 ARMS = ("loo_artifact", "baseline", "enhanced")
 SLOT_INDICES = (6, 7, 8)
+LEGITIMATE_UNSCORED_STOPS = frozenset({"ContextBudgetExceeded"})
 DEFAULT_OUTPUT = pilot.DEFAULT_OUTPUT
 
 
@@ -63,16 +64,28 @@ def preflight(
     output: str | Path = DEFAULT_OUTPUT,
     *,
     expected_sha: str,
+    acquire_lock: bool = True,
 ) -> dict:
     output, plan, book = pilot.validate_plan(output, expected_sha)
-    with FileLock(str(output / "custom-driver.lock"), timeout=0):
-        with FileLock(str(Path(plan["ledger"])) + ".driver.lock", timeout=0):
-            pass
+    if acquire_lock:
+        with FileLock(str(output / "custom-driver.lock"), timeout=0):
+            with FileLock(str(Path(plan["ledger"])) + ".driver.lock", timeout=0):
+                pass
     slots = _custom_slots(plan)
     ledger_data = book.snapshot()
     used = _used_run_ids(ledger_data)
     journal_path = output / "journal-custom.json"
     custom_journal = pilot.read_json(journal_path) if journal_path.is_file() else {}
+    for slot in slots:
+        state = custom_journal.get(slot["run_id"])
+        if state and state.get("status") == "finished":
+            refreshed = _adjudicate(
+                output / f"custom-{plan['slots'].index(slot):02d}-{TASK}-{slot['arm']}",
+                slot,
+                book,
+            )
+            if refreshed is not None:
+                custom_journal[slot["run_id"]] = refreshed
     preused = [
         slot["run_id"] for slot in slots
         if slot["run_id"] in used and slot["run_id"] not in custom_journal
@@ -81,7 +94,7 @@ def preflight(
     blocked_custom_states = {
         run_id: state
         for run_id, state in custom_journal.items()
-        if state.get("status") != "finished" or state.get("category") != "scored"
+        if _state_should_block(state)
     }
     receipt = pilot._validate_oracle_receipt(output, plan, expected_sha)
     transport = pilot._validate_transport_receipt(output, plan, expected_sha)
@@ -154,7 +167,7 @@ def _adjudicate(directory: Path, slot: dict, book: pilot.BudgetLedger) -> dict |
     if state is None:
         return None
     state.update(_usage(book, slot["run_id"]))
-    if state.get("status") != "finished" or state.get("category") != "scored":
+    if state.get("status") != "finished":
         return state
     try:
         metadata = pilot._live_contract(directory, slot)
@@ -172,6 +185,30 @@ def _adjudicate(directory: Path, slot: dict, book: pilot.BudgetLedger) -> dict |
     return state
 
 
+def _state_contract_ok(state: dict) -> bool:
+    return (
+        state.get("status") == "finished"
+        and state.get("usage_complete") is True
+        and state.get("suspected_verifier_infra") is not True
+        and not state.get("contract_error")
+        and state.get("observation_mode") == "langfuse"
+        and state.get("observation_required") is True
+        and state.get("observation_ready") is True
+    )
+
+
+def _state_should_block(state: dict) -> bool:
+    if not _state_contract_ok(state):
+        return True
+    if state.get("category") == "scored":
+        return False
+    return state.get("run_status") not in LEGITIMATE_UNSCORED_STOPS
+
+
+def _must_stop(state: dict) -> bool:
+    return _state_should_block(state)
+
+
 def run(
     output: str | Path = DEFAULT_OUTPUT,
     *,
@@ -183,7 +220,7 @@ def run(
     if type(max_new_trials) is not int or not 1 <= max_new_trials <= 3:
         raise pilot.PilotStop("max_new_trials must be 1..3")
     output = Path(output).resolve()
-    receipt = preflight(output, expected_sha=expected_sha)
+    preflight(output, expected_sha=expected_sha)
     _, plan, book = pilot.validate_plan(output, expected_sha)
     slots = _custom_slots(plan)
     if not execute:
@@ -204,14 +241,14 @@ def run(
                         }
                         pilot.write_json(journal_path, journal, replace=True)
                     state = journal[slot["run_id"]]
-                    if state.get("status") != "finished" or state.get("category") != "scored":
+                    if state.get("status") != "finished":
                         break
                     refreshed = _adjudicate(directory, slot, book)
                     if refreshed is not None:
                         journal[slot["run_id"]] = refreshed
                         pilot.write_json(journal_path, journal, replace=True)
                         state = refreshed
-                    if state.get("contract_error") or state.get("usage_complete") is not True:
+                    if _must_stop(state):
                         break
                     continue
                 used = _used_run_ids(book.snapshot())
@@ -225,8 +262,13 @@ def run(
                     journal[slot["run_id"]] = {"status": "blocked_existing_directory"}
                     pilot.write_json(journal_path, journal, replace=True)
                     break
+                fresh_receipt = preflight(
+                    output,
+                    expected_sha=expected_sha,
+                    acquire_lock=False,
+                )
                 pilot.validate_plan(output, expected_sha)
-                fresh_oracle = receipt["oracle_results"][TASK]
+                fresh_oracle = fresh_receipt["oracle_results"][TASK]
                 config = pilot.trial_config(plan, slot, directory, fresh_oracle)
                 pilot._trial_config_validate(config)
                 directory.mkdir(parents=True)
@@ -252,9 +294,7 @@ def run(
                     }
                 pilot.write_json(journal_path, journal, replace=True)
                 state = journal[slot["run_id"]]
-                if (state.get("status") != "finished" or state.get("category") != "scored"
-                        or state.get("suspected_verifier_infra") or state.get("usage_complete") is not True
-                        or state.get("contract_error")):
+                if _must_stop(state):
                     break
                 completed = [
                     journal[item["run_id"]] for item in slots

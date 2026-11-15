@@ -2,7 +2,7 @@
 
 日期：2026-11-15
 
-状态：完成一轮确定性故障矩阵与公开代码 pilot。该证据包足以回答“机制修复了什么故障”，但不足以宣称模块存在普遍性能收益。
+状态：完成一轮确定性故障矩阵、公开代码 pilot 与 v4 自定义长程任务三臂。该证据包足以回答“机制修复了什么故障、负结果出现在哪里”，但不足以宣称模块存在普遍性能收益。
 
 ## 结论
 
@@ -11,7 +11,8 @@
 3. enhanced 在 fix-git 上使用 10 requests，baseline 为 17，layered-without-artifact 为 12；这是单题描述性结果，不作显著性结论。
 4. large-scale-text-editing/enhanced 在 1,080 秒 Agent 上限被取消。官方 verifier 实际执行，5 项检查全部失败，因此该题没有有效 reward。
 5. Langfuse 云侧读回到 4 个 trace、61 个 generation observation，与 v3 账本中 61 个真实模型请求逐一对应。
-6. 证据支持“故障关闭、上下文证据恢复、状态校验与控制机制有效”；不支持“五层压缩或 artifact 普遍提高 Terminal-Bench 通过率”。
+6. v4 custom-memory-heap-crash 三臂完成：无 artifact 的五层压缩臂先在上下文预算处停止；baseline 与 layered+artifact 都执行 verifier，但均只通过 5/6，失败项同为 release 程序段错误。artifact 避免了预算失败，没有带来正确性提升。
+7. 证据支持“故障关闭、上下文证据恢复、状态校验与控制机制有效”；不支持“五层压缩或 artifact 普遍提高 Terminal-Bench 通过率”。
 
 ## Phase A：确定性故障注入
 
@@ -70,9 +71,23 @@
 
 该负结果说明：长输出任务仍然超出当前预算内 Agent 的交付能力。五层压缩和 artifact 尚未在该任务上形成通过证据。
 
+### v4 custom-memory-heap-crash 完整三臂
+
+v4 使用独立 campaign `lhpp-20261115-v4`、独立账本和九个新 run ID；plan SHA-256 为 `90971e8b39c8b9660de2249bae8fd03d6ad285a8c1d0ef126e4b2ed030ebc288`。只重跑 v3 中被 sidecar 配置错误阻塞的 custom-memory 三臂，未改写 v3 的 61 个请求、奖励或费用。
+
+| Arm | compaction | artifact | 官方结果 | verifier | requests | input tokens | output tokens | cost USD |
+|---|---|---:|---|---:|---:|---:|---:|---:|
+| loo_artifact | layered | off | `ContextBudgetExceeded` | 未执行 | 24 | 26,429 | 49,037 | 0.171078 |
+| baseline | baseline | off | reward 0 | 5/6，1 failed | 15 | 13,397 | 35,522 | 0.079754 |
+| enhanced | layered | on | reward 0 | 5/6，1 failed | 21 | 28,610 | 58,180 | 0.118269 |
+
+两臂的唯一共同失败项都是 `test_outputs.py::test_release_build_runs_without_crash`。release 二进制输出了正常的计算日志，但进程返回 `-11`（SIGSEGV），因此问题不是测试安装、网络或 verifier 基础设施，而是候选没有完成真正的 release 构建修复。
+
+这组结果支持的结论是：artifact projection 把 layered 路径从上下文预算失败推进到了可执行 verifier 的终态；它没有使候选通过任务，也没有证明该机制带来正确性收益。loo_artifact 的上下文不足和增强臂的 5/6 都是有效负结果，不重试、不换题。
+
 ## Langfuse 远端核验
 
-使用 v2 observations 查询接口读取 session lhpp-20261115-v3：
+使用 v2 observations 查询接口分别读取 v3 和 v4：
 
 - trace 数：4
 - generation observation 数：61
@@ -80,6 +95,8 @@
 - 每个 trace 的 observation 数：17、10、12、22
 - 每 trace input/output/total 与 ledger 完全一致
 - 查询只返回 metadata/usage，不含 prompt、回答正文或密钥
+
+v4 session `lhpp-20261115-v4` 返回 3 个 trace、60 个 generation observation，与三臂 24/15/21 个请求逐一对应；input/output 也与账本一致。v3+v4 合计 7 个 trace、121 个 generation observation。
 
 证据文件：.git/codex-delivery/long-horizon-code-20261115-v3/campaign/langfuse-readback.json
 
@@ -91,6 +108,9 @@
 | v3 fix-git 三臂 | 全部官方通过 | 完整有效 triplet |
 | v3 large-scale/enhanced | 1,080 秒超时；22 requests 完整；verifier 5/5 失败 | 合法 Agent timeout 与真实未交付，不重试、不换题 |
 | v3 custom-memory 补跑 | 0 requests；sidecar host 未安装 LIVE_BENCH_API_KEY | 独立 sidecar 配线错误；run ID 标为 consumed，不重试 |
+| v4 custom-memory/loo_artifact | 24 requests 完整；`ContextBudgetExceeded`，verifier 未执行 | 五层压缩在无 artifact 投影时触及冻结上下文预算；保留为负结果 |
+| v4 custom-memory/baseline | 15 requests；官方 reward 0；verifier 5/6 | release 程序 `SIGSEGV`，不是 verifier 基础设施失败 |
+| v4 custom-memory/enhanced | 21 requests；官方 reward 0；verifier 5/6 | artifact 让任务进入 verifier，但未修复 release 崩溃 |
 
 v2 和 v3 的失败记录、usage 与费用均保留。没有将 timeout、criterion failure 或 launcher error 伪装成模型质量结论。
 
@@ -100,8 +120,12 @@ v2 和 v3 的失败记录、usage 与费用均保留。没有将 timeout、crite
 - v3 input tokens：262,461
 - v3 output tokens：54,572
 - v3 客户端保守计费：0.144249 美元
+- v4 真实模型请求：60
+- v4 input tokens：68,436
+- v4 output tokens：142,739
+- v4 客户端保守计费：0.369101 美元
 - v2 失败请求：1；计费 0.000276 美元
-- v2 + v3 合计：62 requests；客户端保守计费 0.144525 美元
+- v2 + v3 + v4 合计：122 requests；客户端保守计费 0.513626 美元
 - Phase A：0 API 请求；40 次评分容器、80 次连续仓库宿主子进程
 
 客户端价格是固定全冷价估算，不是供应商发票。
@@ -125,7 +149,7 @@ v2 和 v3 的失败记录、usage 与费用均保留。没有将 timeout、crite
 - 同文件并发写可以串行化，避免经典 lost update。
 - 策略晋升需要独立 holdout 同时严格优于 reference 和 incumbent；失败时保留旧版本并可回滚。
 - 宿主评分不信任候选自报分数；固定镜像、受限输出和额外文件检查均生效。
-- Langfuse required 观测在真实 v3 请求中完成 flush/close，云侧 observations 与账本对齐。
+- Langfuse required 观测在真实 v3/v4 请求中完成 flush/close，云侧 observations 与账本对齐。
 
 ## 当前不能写
 
@@ -133,13 +157,14 @@ v2 和 v3 的失败记录、usage 与费用均保留。没有将 timeout、crite
 - 不能写“artifact projection 使 Terminal-Bench 2.1 从失败变为通过”。
 - 不能写“所有长程任务都在 1,080 秒内完成”。
 - 不能写“Terminal-Bench 71/89 由某个单一模块带来”。
-- 不能写“custom-memory 三臂已完成”。
+- 不能写“custom-memory 三臂全部通过”。
+- 不能写“artifact projection 修复了 release 崩溃或提高该题正确率”。
 - 不能写“Langfuse 回读证明上下文质量提升”；它只证明观测与 usage 对齐。
 - 不能写“记忆或 RSI 在真实长程代码任务上产生学习收益”。
 
 ## 推荐面试表述
 
-“我没有用 Terminal-Bench 总分反推每个模块有效。确定性故障矩阵证明：在证据被截断、旧记忆误召回、进程重建、同文件竞争、train-only 过拟合和不可信自报分数这七类故障下，最小 baseline 为 0/140，生产接缝为 140/140。真实 fix-git 三臂都通过，enhanced 使用 10 次请求而 baseline 使用 17 次，但这是单题描述性结果。large-scale-text-editing 在 1,080 秒超时且 verifier 5 项失败，所以我没有把它写成收益。这个项目重点证明的是长程执行中的可恢复性、证据保真和失败关闭，而不是每个模块都提高了榜单分数。”
+“我没有用 Terminal-Bench 总分反推每个模块有效。确定性故障矩阵证明：在证据被截断、旧记忆误召回、进程重建、同文件竞争、train-only 过拟合和不可信自报分数这七类故障下，最小 baseline 为 0/140，生产接缝为 140/140。真实 fix-git 三臂都通过，enhanced 使用 10 次请求而 baseline 使用 17 次，但这是单题描述性结果。v4 里 artifact 让 layered 路径从上下文预算失败进入 verifier，但最终仍与 baseline 一样只过 5/6；large-scale-text-editing 也在 1,080 秒超时且 verifier 5 项失败，所以我把这些保留为负结果。这个项目重点证明的是长程执行中的可恢复性、证据保真和失败关闭，而不是每个模块都提高了榜单分数。”
 
 ## 复现入口
 

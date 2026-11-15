@@ -73,12 +73,80 @@
     "reason": "Langfuse ContextVar token crossed asyncio Tasks",
     "retried": false
   },
-  "combined_cost_usd": "0.144525",
+  "phase_b_v4": {
+    "campaign_id": "lhpp-20261115-v4",
+    "plan_sha256": "90971e8b39c8b9660de2249bae8fd03d6ad285a8c1d0ef126e4b2ed030ebc288",
+    "task": "custom-memory-heap-crash",
+    "complete_scored_triplet": false,
+    "arms": {
+      "loo_artifact": {
+        "compaction_mode": "layered",
+        "artifact_projection": "off",
+        "official_reward": null,
+        "run_status": "ContextBudgetExceeded",
+        "requests": 24,
+        "input_tokens": 26429,
+        "output_tokens": 49037,
+        "cost_usd": "0.171078",
+        "verifier_executed": false
+      },
+      "baseline": {
+        "compaction_mode": "baseline",
+        "artifact_projection": "off",
+        "official_reward": 0,
+        "run_status": "end_turn",
+        "requests": 15,
+        "input_tokens": 13397,
+        "output_tokens": 35522,
+        "cost_usd": "0.079754",
+        "verifier_executed": true,
+        "verifier_tests_passed": 5,
+        "verifier_tests_failed": 1,
+        "failed_test": "test_outputs.py::test_release_build_runs_without_crash",
+        "release_returncode": -11
+      },
+      "enhanced": {
+        "compaction_mode": "layered",
+        "artifact_projection": "on",
+        "official_reward": 0,
+        "run_status": "end_turn",
+        "requests": 21,
+        "input_tokens": 28610,
+        "output_tokens": 58180,
+        "cost_usd": "0.118269",
+        "verifier_executed": true,
+        "verifier_tests_passed": 5,
+        "verifier_tests_failed": 1,
+        "failed_test": "test_outputs.py::test_release_build_runs_without_crash",
+        "release_returncode": -11
+      }
+    },
+    "requests": 60,
+    "input_tokens": 68436,
+    "output_tokens": 142739,
+    "cost_usd": "0.369101"
+  },
+  "v2_v3_v4": {
+    "requests": 122,
+    "cost_usd": "0.513626"
+  },
   "langfuse": {
-    "session_id": "lhpp-20261115-v3",
-    "traces": 4,
-    "generation_observations": 61,
-    "matches_ledger_requests": true,
+    "sessions": [
+      {
+        "session_id": "lhpp-20261115-v3",
+        "traces": 4,
+        "generation_observations": 61,
+        "matches_ledger_requests": true
+      },
+      {
+        "session_id": "lhpp-20261115-v4",
+        "traces": 3,
+        "generation_observations": 60,
+        "matches_ledger_requests": true
+      }
+    ],
+    "traces": 7,
+    "generation_observations": 121,
     "metadata_only": true
   },
   "claims": {
@@ -87,12 +155,15 @@
       "Fix-git completed all three real-model arms with official reward 1.",
       "Enhanced used fewer requests and tokens than baseline in the single fix-git trial.",
       "Langfuse observations match all settled v3 requests.",
-      "Large-scale-text-editing did not pass within the frozen 1080-second agent cap."
+      "Large-scale-text-editing did not pass within the frozen 1080-second agent cap.",
+      "The v4 custom-memory triplet ran, but no scored arm earned reward.",
+      "Artifact projection moved the layered v4 arm past a context-budget failure into a verifier run without improving correctness."
     ],
     "forbidden": [
       "Five-layer compaction or artifact projection caused a statistically significant performance gain.",
       "Large-scale-text-editing passed.",
-      "The custom-memory triplet completed.",
+      "All custom-memory arms passed.",
+      "Artifact projection fixed the release-build crash or caused the custom-memory task to pass.",
       "The experiment proves Terminal-Bench 2.1 overall superiority.",
       "Memory or controlled strategy search produced learning benefits on these code tasks."
     ]

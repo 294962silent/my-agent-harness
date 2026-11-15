@@ -122,6 +122,8 @@ def test_run_never_reexecutes_finished_or_consumed_run(tmp_path, monkeypatch):
     monkeypatch.setattr(sidecar, "_adjudicate", lambda *_args, **_kwargs: {
         "status": "finished", "category": "scored", "official_reward": 0,
         "usage_complete": True, "schema_sha256": "same",
+        "observation_mode": "langfuse", "observation_required": True,
+        "observation_ready": True,
     })
     monkeypatch.setattr(sidecar, "summary", lambda _output: {"ok": True})
     result = sidecar.run(
@@ -138,3 +140,148 @@ def test_run_never_reexecutes_finished_or_consumed_run(tmp_path, monkeypatch):
     journal = json.loads((output / "journal-custom.json").read_text())
     assert journal[first["run_id"]]["status"] == "finished"
     assert len(journal) == 2
+
+
+def test_run_rechecks_full_gate_before_each_new_trial(tmp_path, monkeypatch):
+    output = tmp_path / "campaign"
+    output.mkdir()
+    plan = _plan()
+    ledger_path = tmp_path / "ledger.json"
+    plan["ledger"] = str(ledger_path)
+    book = pilot.BudgetLedger(ledger_path, campaign_id="lhpp-test", spend_ceiling_usd=1)
+    for slot in sidecar._custom_slots(plan):
+        book.register_run(slot["run_id"], max_requests=64, time_cap=1680)
+    events = []
+
+    def gate(*_args, **kwargs):
+        events.append("preflight-locked" if kwargs.get("acquire_lock", True) else "preflight-unlocked")
+        return {"oracle_results": {sidecar.TASK: "/tmp/oracle.json"}}
+
+    monkeypatch.setattr(sidecar, "preflight", gate)
+    monkeypatch.setattr(pilot, "validate_plan", lambda *_args, **_kwargs: (output, plan, book))
+    monkeypatch.setattr(pilot, "trial_config", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(pilot, "_trial_config_validate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(sidecar, "_adjudicate", lambda *_args, **_kwargs: {
+        "status": "finished", "category": "scored", "official_reward": 1,
+        "usage_complete": True, "schema_sha256": "same",
+        "observation_mode": "langfuse", "observation_required": True,
+        "observation_ready": True,
+    })
+    monkeypatch.setattr(sidecar, "summary", lambda _output: {"ok": True})
+
+    def execute(*args):
+        events.append("execute")
+
+    sidecar.run(
+        output,
+        expected_sha="fixture",
+        execute=True,
+        max_new_trials=2,
+        executor=execute,
+    )
+    assert events == [
+        "preflight-locked",
+        "preflight-unlocked",
+        "execute",
+        "preflight-unlocked",
+        "execute",
+    ]
+
+
+def test_observation_failure_stops_before_next_trial(tmp_path, monkeypatch):
+    output = tmp_path / "campaign"
+    output.mkdir()
+    plan = _plan()
+    ledger_path = tmp_path / "ledger.json"
+    plan["ledger"] = str(ledger_path)
+    book = pilot.BudgetLedger(ledger_path, campaign_id="lhpp-test", spend_ceiling_usd=1)
+    for slot in sidecar._custom_slots(plan):
+        book.register_run(slot["run_id"], max_requests=64, time_cap=1680)
+    events = []
+    monkeypatch.setattr(sidecar, "preflight", lambda *_args, **_kwargs: {
+        "oracle_results": {sidecar.TASK: "/tmp/oracle.json"}
+    })
+    monkeypatch.setattr(pilot, "validate_plan", lambda *_args, **_kwargs: (output, plan, book))
+    monkeypatch.setattr(pilot, "trial_config", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(pilot, "_trial_config_validate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(sidecar, "_adjudicate", lambda *_args, **_kwargs: {
+        "status": "finished", "category": "scored", "official_reward": 1,
+        "usage_complete": True, "schema_sha256": "same",
+        "observation_mode": "langfuse", "observation_required": True,
+        "observation_ready": False,
+    })
+    monkeypatch.setattr(sidecar, "summary", lambda _output: {"ok": True})
+
+    def execute(*args):
+        events.append("execute")
+
+    sidecar.run(
+        output,
+        expected_sha="fixture",
+        execute=True,
+        max_new_trials=3,
+        executor=execute,
+    )
+    assert events == ["execute"]
+    journal = json.loads((output / "journal-custom.json").read_text())
+    assert list(journal.values())[0]["observation_ready"] is False
+
+
+def test_context_budget_stop_is_terminal_but_does_not_block_next_arm(tmp_path, monkeypatch):
+    output = tmp_path / "campaign"
+    output.mkdir()
+    plan = _plan()
+    ledger_path = tmp_path / "ledger.json"
+    plan["ledger"] = str(ledger_path)
+    book = pilot.BudgetLedger(ledger_path, campaign_id="lhpp-test", spend_ceiling_usd=1)
+    for slot in sidecar._custom_slots(plan):
+        book.register_run(slot["run_id"], max_requests=64, time_cap=1680)
+    first = sidecar._custom_slots(plan)[0]
+    terminal = {
+        "status": "finished",
+        "category": "execution_or_verifier_error",
+        "run_status": "ContextBudgetExceeded",
+        "usage_complete": True,
+        "suspected_verifier_infra": False,
+        "observation_mode": "langfuse",
+        "observation_required": True,
+        "observation_ready": True,
+        "schema_sha256": "same",
+    }
+    (output / "journal-custom.json").write_text(json.dumps({first["run_id"]: terminal}))
+    calls = []
+    monkeypatch.setattr(sidecar, "preflight", lambda *_args, **_kwargs: {
+        "oracle_results": {sidecar.TASK: "/tmp/oracle.json"}
+    })
+    monkeypatch.setattr(pilot, "validate_plan", lambda *_args, **_kwargs: (output, plan, book))
+    monkeypatch.setattr(pilot, "trial_config", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(pilot, "_trial_config_validate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(sidecar, "_adjudicate", lambda *_args, **_kwargs: dict(terminal))
+    monkeypatch.setattr(sidecar, "summary", lambda _output: {"ok": True})
+
+    sidecar.run(
+        output,
+        expected_sha="fixture",
+        execute=True,
+        max_new_trials=1,
+        executor=lambda config, directory, timeout: calls.append(directory),
+    )
+    assert [path.name for path in calls] == [
+        f"custom-07-{sidecar.TASK}-baseline"
+    ]
+
+
+def test_unknown_unscored_stop_blocks_custom_state():
+    state = {
+        "status": "finished",
+        "category": "execution_or_verifier_error",
+        "run_status": "UnknownFailure",
+        "usage_complete": True,
+        "suspected_verifier_infra": False,
+        "observation_mode": "langfuse",
+        "observation_required": True,
+        "observation_ready": True,
+    }
+    assert sidecar._state_should_block(state)
+    state["run_status"] = "ContextBudgetExceeded"
+    assert not sidecar._state_should_block(state)

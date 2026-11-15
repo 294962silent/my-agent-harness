@@ -25,7 +25,7 @@
 
 **代表性实验结果**：在 LongMemEval 96 题评测中，将查询时注入上下文从 105,316 tokens 降至 11,983 tokens（−88.6%），答案准确率从 71.9% 变为 69.8%；计入记忆抽取调用后，总 token 仍减少 83.2%。
 
-**长程代码机制证据**：针对上下文证据丢失、stale/cross-scope 记忆、进程恢复重做、同文件并发 lost update、train-only 错误晋升、伪造自报分数和连续仓库修复七类故障，各重复 20 次；最小 baseline 为 **0/140**，生产 Harness 接缝为 **140/140**。另实现 deadline/progress guard，在“持续局验但未交付最终产物”的 20 次脚本化消融中，baseline **0/20**、guarded **20/20**。Terminal-Bench 2.1 的固定 fix-git 任务完成三臂真实模型对照，三臂均通过，enhanced 使用 **10 requests**，baseline 使用 **17 requests**。前两项是确定性故障修复证据，最后一项是单题描述性结果；均不宣称 Terminal-Bench 总体通过率提升。
+**长程代码机制证据**：针对上下文证据丢失、stale/cross-scope 记忆、进程恢复重做、同文件并发 lost update、train-only 错误晋升、伪造自报分数和连续仓库修复七类故障，各重复 20 次；最小 baseline 为 **0/140**，生产 Harness 接缝为 **140/140**。另实现 deadline/progress guard，在“持续局验但未交付最终产物”的 20 次脚本化消融中，baseline **0/20**、guarded **20/20**。Terminal-Bench 2.1 的固定 fix-git 任务完成三臂真实模型对照，三臂均通过，enhanced 使用 **10 requests**，baseline 使用 **17 requests**。v4 的 custom-memory-heap-crash 三臂也完整保留：无 artifact 的五层压缩臂因 `ContextBudgetExceeded` 未进入 verifier；baseline 与 layered+artifact 都执行 verifier，但均只通过 **5/6**，唯一失败项都是 release 程序返回 `-11`（SIGSEGV）。修正后的 artifact 通路排除了一个上下文预算阻塞，但没有带来正确性提升。前两项是确定性故障修复证据，fix-git 是单题描述性结果，custom-memory 是负结果；均不宣称 Terminal-Bench 总体通过率提升。
 
 简历中的“实现”指本人完成系统设计、接口取舍、集成与验收；成熟开源组件在早期阶段用于验证算法方向，对外正文统一以本项目中的机制名称描述，面试时可按实际参与深度说明协作与集成边界。
 
