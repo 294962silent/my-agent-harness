@@ -4,12 +4,29 @@ from __future__ import annotations
 
 import asyncio
 import json
+import subprocess
+
+import pytest
 
 from experiments.long_horizon_code import fault_injection
 
 
 def _run(name: str, repeat: int = 2):
     return asyncio.run(fault_injection.run_experiment(repeat=repeat, scenario_names=[name]))["scenarios"][0]
+
+
+def _pinned_image_available() -> bool:
+    try:
+        command = [
+            *fault_injection.resolve_docker(),
+            "image", "inspect", fault_injection.HOST_SCORING_IMAGE,
+            "--format", "{{.Id}}",
+        ]
+        result = subprocess.run(command, capture_output=True, check=False, timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return (result.returncode == 0
+            and result.stdout.decode("ascii", errors="ignore").strip() == fault_injection.HOST_SCORING_IMAGE)
 
 
 def test_artifact_readback_beats_unpersisted_clipping():
@@ -62,6 +79,8 @@ def test_policy_registry_rejects_train_only_promotion_and_rolls_back():
 
 
 def test_host_scoring_uses_pinned_docker_and_rejects_untrusted_outputs():
+    if not _pinned_image_available():
+        pytest.skip("pinned host-scoring image is not installed in this runner")
     scenario = _run("host_scoring_sandbox", repeat=2)
     assert scenario["status"] == "completed"
     assert scenario["baseline_pass"] == 0
