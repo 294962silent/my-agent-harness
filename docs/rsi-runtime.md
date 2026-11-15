@@ -116,8 +116,8 @@ by production code.
 
 ## Ordinary RPC/TUI context configuration
 
-`Settings.context_compaction` defaults to baseline. Global trusted settings may
-select `mode="layered"` and explicit context window/reserves, recent tool groups,
+`Settings.context_compaction` defaults to the five-layer `mode="layered"` policy. Global trusted settings may
+select `mode="baseline"` for an ablation and configure explicit context window/reserves, recent tool groups,
 micro threshold and summary ceiling. The shared RPC integration-options path
 passes this policy through initial creation, rebuild and fork. Project settings
 cannot override this privileged global configuration. This option changes

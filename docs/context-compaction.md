@@ -1,8 +1,12 @@
 # Layered local context projection
 
-`ContextManager` keeps the existing `baseline` mode by default. `layered` is an
-explicit experiment option, not a claim that five provider-native cache features
-were reproduced. It does not send `cache_edits` or another cache mutation API.
+The my-agent-harness product configuration enables the five-layer `layered`
+policy by default. `CompactionPolicy()` retains `baseline` as the low-level
+library compatibility default, while `Settings().context_compaction.to_policy()`
+resolves to `layered`. This is a local, deterministic context pipeline; it does
+not claim that five provider-native cache features were reproduced and does not
+send `cache_edits` or another cache mutation API. `baseline` remains available
+as an explicit compatibility and ablation mode.
 
 ```python
 from my_agent_core.context import ContextManager
@@ -36,9 +40,9 @@ space and uses the same injected LLM with `purpose="summary"`. No bare client or
 unbudgeted retry is created. A summary request that cannot fit is refused, not
 silently sliced or split into additional hidden calls.
 
-The sequence is canonical identity validation, existing branch-summary
-reconstruction, artifact projection, deterministic tool micro projection, an
-optional completed-prefix fold, and finally bounded LLM summarization. Large
+The five layers are canonical/branch-summary identity validation, artifact
+projection, deterministic tool micro projection, explicitly triggered
+completed-prefix folding, and bounded LLM summarization. Large
 tool bodies use the existing immutable content-addressed ArtifactStore and bounded
 read/search tools. Old groups are eligible for micro projection only when all
 parallel tool results are present and their success is explicit in a known status
@@ -84,7 +88,7 @@ For A/B experiments, hold model, output limit, effective caller context budget,
 artifacts/read tools, task and parent request/cost/time guards fixed. Switch only
 `mode` between baseline and layered and archive both capability profiles. Baseline
 retains the original compatibility path, including its original failure behavior;
-layered adds explicit overflow rejection. No real API or SWE result is established
+the default layered mode adds explicit overflow rejection. No real API or SWE result is established
 by the offline tests.
 
 Offline verification uses real ContextManager, Session save/load and ArtifactStore

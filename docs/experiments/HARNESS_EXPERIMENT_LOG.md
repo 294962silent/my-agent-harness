@@ -1256,3 +1256,11 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 未完成项是更大且独立的新 conversation 集合、多数据集/多 embedding 复现，以及预先固定更强的效应量并做多重比较设计；本轮没有 evidence-turn 人工重标，也没有验证 MMR 在其他 lambda、session cap 或其他宿主上的收益。
 
 原始报告与机器证据：[三例 judge 敏感性](results/locomo-confirmation-judge-sensitivity-v1-20261115/REPORT.md)、[敏感性 summary](results/locomo-confirmation-judge-sensitivity-v1-20261115/summary.json)、[上下文多样性三臂](results/locomo-context-diversity-v1-20261115/REPORT.md)、[多样性 summary](results/locomo-context-diversity-v1-20261115/summary.json)、[逐题安全 rows](results/locomo-context-diversity-v1-20261115/rows.jsonl)。执行完成收据为仓库外 `.git/codex-delivery/effect-validation-20261114/ds1-context-diversity-complete.json`；对应代码 head `30515f9` 的 PR CI #71 已完成四平台矩阵成功。
++
+### 2026-11-15：产品默认启用五层上下文压缩
+
+- **改动**：`Settings.context_compaction.mode` 的默认值从 `baseline` 调整为 `layered`；普通产品 Settings、RPC 新建、恢复和分叉路径从默认配置解析到五层管线。低层 `CompactionPolicy()` 仍保留 `baseline` 默认值，供直接构造库的兼容路径和显式消融使用，避免改变未经过 Settings 的内部调用。
+- **五层定义**：canonical/分支摘要身份校验 → 大工具输出产物化 → 已完成工具组微压缩 → 完成段前缀折叠 → 预算内结构化语义摘要。折叠只在宿主明确登记完成边界时触发，不能说成自动推断任务完成。
+- **修改前**：产品默认走 legacy baseline，layered 只能由显式配置开启。**修改后**：产品默认启用 layered，baseline 作为显式兼容和消融模式保留。
+- **优势与代价**：默认路径具备摘要身份校验、原文 artifact 回读、工具组微压缩和有界语义摘要；代价是 layered 会执行 reserve 和 overflow 校验，调用方提供过小的 context budget 时应增加预算或显式选择 baseline。
+- **验证**：`uv run pytest tests/core tests/coding/test_agent.py tests/test_rsi_runtime.py -q` 通过；定向 Ruff 通过；`git diff --check` 通过。未新增模型调用，不据此声明质量或 KV-cache 收益。

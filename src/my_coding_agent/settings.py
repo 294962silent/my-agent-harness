@@ -46,8 +46,8 @@ class MemoryIndexSettings(BaseModel):
 
 
 class ContextCompactionSettings(BaseModel):
-    """Host-controlled deterministic context policy; baseline remains the default."""
-    mode: Literal["baseline", "layered"] = "baseline"
+    """Host-controlled deterministic context policy; layered is the default."""
+    mode: Literal["baseline", "layered"] = "layered"
     recent_tool_groups: int = Field(default=2, strict=True, ge=0)
     micro_min_chars: int = Field(default=1000, strict=True, ge=1)
     model_context_window: int | None = Field(default=None, strict=True, gt=0)

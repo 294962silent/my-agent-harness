@@ -279,7 +279,8 @@ def test_rpc_settings_reach_normal_coding_agent_compaction(tmp_path):
     from my_coding_agent.agent import CodingAgent
     from my_coding_agent.rpc.session_handlers import SessionRpcMixin
     from my_coding_agent.settings import ContextCompactionSettings, Settings
-    assert Settings().context_compaction.mode == "baseline"
+    assert Settings().context_compaction.mode == "layered"
+    assert Settings().context_compaction.to_policy().mode == "layered"
     owner = SessionRpcMixin()
     owner.settings = Settings(context_compaction=ContextCompactionSettings(mode="layered", model_context_window=32000))
     options = owner._integration_options()
