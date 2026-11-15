@@ -23,6 +23,11 @@ from my_coding_agent.tools.bash import _kill_process_tree
 from .rsi_runtime import TrustedEvaluator
 
 IGNORED = {".git", ".my_agent_core", "__pycache__", ".pytest_cache"}
+CANONICAL_SOURCE_HASH_VERSION = "utf8-lf-v1"
+
+
+class CanonicalSourceError(ValueError):
+    """A source cannot be represented by the canonical text hash contract."""
 
 
 def _reject_reparse(path):
@@ -52,11 +57,48 @@ def safe_relative(value):
 
 
 def file_sha(path):
+    """Legacy research pin: hash exact bytes, including line endings."""
     digest = hashlib.sha256()
     with Path(path).open("rb") as stream:
         for data in iter(lambda: stream.read(65536), b""):
             digest.update(data)
     return digest.hexdigest()
+
+
+def canonical_source_bytes(data):
+    """Return strict UTF-8 source bytes with CRLF and lone CR normalized to LF.
+
+    NUL-containing input is rejected as binary. Decode errors are surfaced as
+    CanonicalSourceError instead of being hashed with replacement characters.
+    Other bytes, including a final newline or trailing blank lines, remain
+    content-significant so source changes cannot hide behind normalization.
+    """
+    if not isinstance(data, bytes):
+        raise TypeError("canonical source input must be bytes")
+    try:
+        text = data.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise CanonicalSourceError("canonical source is not valid UTF-8") from error
+    if "\x00" in text:
+        raise CanonicalSourceError("canonical source contains NUL bytes")
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
+def canonical_source_sha256(path, *, version=CANONICAL_SOURCE_HASH_VERSION):
+    """Hash UTF-8 source after line-ending normalization."""
+    if version != CANONICAL_SOURCE_HASH_VERSION:
+        raise CanonicalSourceError("unsupported canonical source hash version")
+    return hashlib.sha256(canonical_source_bytes(Path(path).read_bytes())).hexdigest()
+
+
+def verify_canonical_source_pin(path, expected_sha256, *, version=CANONICAL_SOURCE_HASH_VERSION):
+    """Recompute a canonical source pin and reject mismatches fail closed."""
+    if not isinstance(expected_sha256, str) or re.fullmatch(r"[0-9a-f]{64}", expected_sha256) is None:
+        raise CanonicalSourceError("canonical source pin must be 64 lowercase hexadecimal characters")
+    actual = canonical_source_sha256(path, version=version)
+    if actual != expected_sha256:
+        raise CanonicalSourceError("canonical source hash mismatch")
+    return actual
 
 
 def write_json(path, value):

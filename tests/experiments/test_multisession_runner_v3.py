@@ -1,6 +1,10 @@
 """V3 changes only bounded observation and inherited budget state."""
 
+import asyncio
 import json
+import os
+import subprocess
+import sys
 
 import pytest
 
@@ -245,3 +249,176 @@ def test_v3_lineage_deduplicates_rows_and_rejects_conflicting_request_ids(tmp_pa
     _prior_ledger(conflicting, "conflict", [_request("shared", "extract.other", 5, 3, 8, 30)])
     with pytest.raises(ValueError, match="duplicated with different content"):
         target.seed_inherited_ledger(tmp_path / "bad.json", (first, conflicting))
+
+
+def _owner_close_payload():
+    return {
+        "runtime_close_complete": True,
+        "export_errors": 0,
+        "close_errors": 0,
+        "dropped": 0,
+        "runtime_alive_after_close": False,
+        "llm_clients_closed": True,
+    }
+
+
+def test_owner_close_receipt_is_idempotent_for_same_owner_and_content(tmp_path):
+    path = tmp_path / "owner-close.json"
+    payload = _owner_close_payload()
+    first = target.write_owner_close_receipt(path, owner="campaign-a", payload=payload)
+    original = path.read_bytes()
+    second = target.write_owner_close_receipt(path, owner="campaign-a", payload=payload)
+
+    assert first == second == payload
+    assert path.read_bytes() == original
+    receipt = target.read_json(path)
+    assert receipt["schema_version"] == target.OWNER_CLOSE_RECEIPT_SCHEMA
+    assert receipt["owner"] == "campaign-a"
+
+
+def test_owner_close_receipt_is_idempotent_after_process_restart(tmp_path):
+    path = tmp_path / "owner-close.json"
+    payload = _owner_close_payload()
+    target.write_owner_close_receipt(path, owner="campaign-a", payload=payload)
+    original = path.read_bytes()
+    script = (
+        "import json, sys\n"
+        "from experiments.memory_validation.multisession_runner_v3 import write_owner_close_receipt\n"
+        "write_owner_close_receipt(sys.argv[1], owner=sys.argv[2], payload=json.loads(sys.argv[3]))\n"
+    )
+    environment = dict(os.environ)
+    pythonpath = [str(target.REPO_ROOT), str(target.REPO_ROOT / "src")]
+    if environment.get("PYTHONPATH"):
+        pythonpath.append(environment["PYTHONPATH"])
+    environment["PYTHONPATH"] = os.pathsep.join(pythonpath)
+    completed = subprocess.run(
+        [sys.executable, "-c", script, str(path), "campaign-a", json.dumps(payload)],
+        cwd=target.REPO_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert path.read_bytes() == original
+
+
+def test_owner_close_receipt_rejects_content_and_owner_conflicts(tmp_path):
+    path = tmp_path / "owner-close.json"
+    payload = _owner_close_payload()
+    target.write_owner_close_receipt(path, owner="campaign-a", payload=payload)
+
+    with pytest.raises(target.OwnerCloseConflict, match="conflicting content"):
+        target.write_owner_close_receipt(
+            path,
+            owner="campaign-a",
+            payload={**payload, "dropped": 1},
+        )
+    with pytest.raises(target.OwnerCloseOwnershipError, match="different owner"):
+        target.write_owner_close_receipt(path, owner="campaign-b", payload=payload)
+
+
+def test_owner_close_receipt_accepts_exact_legacy_payload_and_rejects_other_files(tmp_path):
+    legacy = tmp_path / "legacy.json"
+    payload = _owner_close_payload()
+    target.write_json(legacy, payload)
+    assert target.write_owner_close_receipt(legacy, owner="campaign-a", payload=payload) == payload
+
+    malformed = tmp_path / "malformed.json"
+    malformed.write_text("{", encoding="utf-8")
+    with pytest.raises(target.OwnerCloseConflict, match="unreadable"):
+        target.write_owner_close_receipt(malformed, owner="campaign-a", payload=payload)
+
+
+def test_owner_close_error_is_not_swallowed_and_writes_no_receipt(tmp_path):
+    path = tmp_path / "owner-close.json"
+
+    async def failed_close():
+        raise OSError("synthetic close failure")
+
+    with pytest.raises(OSError, match="synthetic close failure"):
+        asyncio.run(target.finalize_owner_close(path, owner="campaign-a", close=failed_close))
+    assert not path.exists()
+
+
+def test_unsettled_reservation_is_preserved_and_never_replayed(tmp_path):
+    ledger_path = tmp_path / "ledger.json"
+    output = tmp_path / "output"
+    ledger = target.TokenLedgerV3(ledger_path, campaign_id="campaign")
+    ledger.register_run("extract.v3r1.crash", max_requests=1, time_cap=600)
+    ledger.reserve(
+        "extract.v3r1.crash",
+        input_bound=100,
+        max_output=50,
+        model="deepseek-v4.1-flash",
+        provider="openai",
+        purpose="experiment_extract",
+    )
+
+    first = target.record_unsettled_stop(output, ledger)
+    original = (output / "STOPPED.json").read_bytes()
+    second = target.record_unsettled_stop(output, target.TokenLedgerV3(
+        ledger_path,
+        campaign_id="campaign",
+    ))
+    assert first["status"] == second["status"] == "stopped"
+    assert first["reason"] == second["reason"] == "pre_dispatch_inflight"
+    assert (output / "STOPPED.json").read_bytes() == original
+
+    with pytest.raises(target.BudgetStop, match="unknown usage"):
+        second_ledger = target.TokenLedgerV3(ledger_path, campaign_id="campaign")
+        second_ledger.reserve(
+            "extract.v3r1.replay",
+            input_bound=10,
+            max_output=10,
+            model="deepseek-v4.1-flash",
+            provider="openai",
+            purpose="experiment_extract",
+        )
+
+
+def test_conflicting_stopped_receipt_fails_closed(tmp_path):
+    ledger_path = tmp_path / "ledger.json"
+    output = tmp_path / "output"
+    ledger = target.TokenLedgerV3(ledger_path, campaign_id="campaign")
+    ledger.register_run("extract.v3r1.crash", max_requests=1, time_cap=600)
+    ledger.reserve(
+        "extract.v3r1.crash",
+        input_bound=100,
+        max_output=50,
+        model="deepseek-v4.1-flash",
+        provider="openai",
+        purpose="experiment_extract",
+    )
+    target.record_unsettled_stop(output, ledger)
+    target.write_json(
+        output / "STOPPED.json",
+        {"status": "stopped", "reason": "different_incident"},
+        replace=True,
+    )
+
+    with pytest.raises(target.OwnerCloseConflict, match="conflicts"):
+        target.record_unsettled_stop(output, ledger)
+
+
+def test_unknown_settlement_is_preserved_and_not_reported_as_zero_usage(tmp_path):
+    ledger_path = tmp_path / "ledger.json"
+    output = tmp_path / "output"
+    ledger = target.TokenLedgerV3(ledger_path, campaign_id="campaign")
+    ledger.register_run("extract.v3r1.unknown", max_requests=1, time_cap=600)
+    request_id = ledger.reserve(
+        "extract.v3r1.unknown",
+        input_bound=100,
+        max_output=50,
+        model="deepseek-v4.1-flash",
+        provider="openai",
+        purpose="experiment_extract",
+    )
+    assert not ledger.settle(request_id, usage=None, status="error")
+
+    stopped = target.record_unsettled_stop(output, ledger)
+    state = target.token_state(ledger.snapshot())
+    assert stopped["reason"] == "pre_dispatch_inflight"
+    assert state["unknown_or_inflight"] is True
+    assert state["held_tokens"] > 0

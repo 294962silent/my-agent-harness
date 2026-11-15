@@ -60,6 +60,7 @@ SOURCE_LICENSE = "CC BY-NC 4.0"
 PROTOCOL = "locomo-multisession-four-arm-v3"
 RECOVERY_REVISION = 1
 CALL_NAMESPACE = "v3r1."
+OWNER_CLOSE_RECEIPT_SCHEMA = "locomo-owner-close-v1"
 MODEL_REPO = "Qwen/Qwen3-Embedding-0.6B"
 MODEL_REVISION = "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3"
 LANGFUSE_PROJECT_ID = "cmwg5sagt00ksad0j6au0463n"
@@ -95,6 +96,18 @@ SOURCE_FILES = (
 )
 
 
+class OwnerCloseError(RuntimeError):
+    """Owner close receipt cannot be accepted safely."""
+
+
+class OwnerCloseConflict(OwnerCloseError):
+    """An existing owner close receipt has conflicting content."""
+
+
+class OwnerCloseOwnershipError(OwnerCloseError):
+    """An existing owner close receipt belongs to another owner."""
+
+
 def file_sha(path):
     digest = hashlib.sha256()
     with Path(path).open("rb") as stream:
@@ -127,6 +140,98 @@ def write_json(path, value, *, replace=False):
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def _write_json_exclusive(path, value):
+    """Publish complete JSON without replacing an existing receipt."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    descriptor, temporary = tempfile.mkstemp(dir=path.parent, prefix=".owner-close-")
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def _owner_close_receipt(owner, payload):
+    return {
+        "schema_version": OWNER_CLOSE_RECEIPT_SCHEMA,
+        "owner": owner,
+        "payload": payload,
+    }
+
+
+def write_owner_close_receipt(path, *, owner, payload):
+    """Persist one close result, accepting only an identical retry.
+
+    The historical v3 crash left a bare owner-close payload. Exact legacy
+    payloads remain readable; new receipts carry an explicit campaign owner.
+    Other filesystem errors are not converted into an idempotent success.
+    """
+    if not isinstance(owner, str) or not owner or len(owner) > 96:
+        raise ValueError("owner close requires a bounded nonempty owner ID")
+    if not isinstance(payload, dict):
+        raise OwnerCloseError("owner close payload must be an object")
+    receipt = _owner_close_receipt(owner, payload)
+    path = Path(path)
+    try:
+        _write_json_exclusive(path, receipt)
+    except FileExistsError:
+        try:
+            existing = read_json(path)
+        except (OSError, ValueError, TypeError) as error:
+            raise OwnerCloseConflict("existing owner close receipt is unreadable") from error
+        if existing == receipt:
+            return dict(existing["payload"])
+        if existing == payload:
+            return dict(existing)
+        if isinstance(existing, dict) and existing.get("schema_version") == OWNER_CLOSE_RECEIPT_SCHEMA:
+            if existing.get("owner") != owner:
+                raise OwnerCloseOwnershipError("existing owner close receipt has a different owner")
+            if existing.get("payload") != payload:
+                raise OwnerCloseConflict("existing owner close receipt has conflicting content")
+            return dict(existing["payload"])
+        raise OwnerCloseConflict("existing owner close receipt has conflicting content")
+    return dict(payload)
+
+
+async def finalize_owner_close(path, *, owner, close):
+    """Close once and persist its exact payload; close failures propagate."""
+    payload = await close()
+    return write_owner_close_receipt(path, owner=owner, payload=payload)
+
+
+def record_unsettled_stop(output, ledger):
+    """Preserve one stable STOPPED receipt for unknown or in-flight usage."""
+    state = token_state(ledger.snapshot())
+    if not state["unknown_or_inflight"]:
+        return None
+    path = Path(output) / "STOPPED.json"
+    record = {
+        "status": "stopped",
+        "reason": "pre_dispatch_inflight",
+        "automatic_retry": False,
+        "at": now_utc(),
+    }
+    try:
+        _write_json_exclusive(path, record)
+    except FileExistsError:
+        try:
+            existing = read_json(path)
+        except (OSError, ValueError, TypeError) as error:
+            raise OwnerCloseConflict("existing STOPPED receipt is unreadable") from error
+        if not isinstance(existing, dict):
+            raise OwnerCloseConflict("existing STOPPED receipt is unreadable")
+        if existing.get("status") != "stopped" or existing.get("reason") != record["reason"]:
+            raise OwnerCloseConflict("existing STOPPED receipt conflicts with unsettled state")
+        return existing
+    return record
 
 
 def now_utc():
@@ -1217,9 +1322,9 @@ async def run_study(plan_root, output, *, split, use_configured_credential=False
         max_tokens=value["budget"]["accounting_units"],
         max_requests=value["budget"]["max_requests"],
     )
-    if any(row.get("status") == "pending" for row in ledger.snapshot()["requests"]):
-        write_json(output / "STOPPED.json", {"status": "stopped", "reason": "pre_dispatch_inflight", "at": now_utc()})
-        return {"status": "stopped", "reason": "pre_dispatch_inflight"}
+    stopped = record_unsettled_stop(output, ledger)
+    if stopped is not None:
+        return stopped
     raw = None
     owner = None
     owner_close = None
@@ -1272,8 +1377,11 @@ async def run_study(plan_root, output, *, split, use_configured_credential=False
         if not gate.verified:
             raise RuntimeError("first two extraction traces were not remotely verified")
         owner.flush_and_check()
-        owner_close = await owner.aclose()
-        write_json(output / "owner-close.json", owner_close)
+        owner_close = await finalize_owner_close(
+            output / "owner-close.json",
+            owner=value["campaign_id"],
+            close=owner.aclose,
+        )
         status = {
             "schema_version": 1,
             "status": "completed",

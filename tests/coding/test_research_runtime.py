@@ -1,6 +1,7 @@
 """Durable campaign contracts, without network or Docker."""
 import importlib.util
 import json
+import shutil
 
 import pytest
 
@@ -186,6 +187,27 @@ def test_checkpoint_report_tamper_blocks_resume(tmp_path):
     c = campaign(tmp_path)
     asyncio.run(c.run(scripted_raw(), pause_after_round=1, evaluator=fake_evaluator()))
     (c.root / c.selected()['report']).write_text('{}')
+    with pytest.raises(ResearchIntegrityError):
+        ResearchCampaign.load(c.root)
+
+
+def test_missing_checkpoint_blocks_resume(tmp_path):
+    import asyncio
+    from my_coding_agent.research_runtime import ResearchCampaign, ResearchIntegrityError
+    c = campaign(tmp_path)
+    asyncio.run(c.run(scripted_raw(), pause_after_round=1, evaluator=fake_evaluator()))
+    checkpoint = c.root / c.selected()["checkpoint"]
+    shutil.rmtree(checkpoint)
+
+    with pytest.raises(ResearchIntegrityError):
+        ResearchCampaign.load(c.root)
+
+
+def test_task_data_pin_drift_blocks_resume(tmp_path):
+    from my_coding_agent.research_runtime import ResearchCampaign, ResearchIntegrityError
+    c = campaign(tmp_path)
+    c.task.train_csv.write_text("tampered\n", encoding="utf-8")
+
     with pytest.raises(ResearchIntegrityError):
         ResearchCampaign.load(c.root)
 
