@@ -198,7 +198,7 @@ PY
 ### E11：2026-11-11 / 建立 DSH-1 并实测持久会话缓存
 
 - 目标与授权：用户授权设置一名 DSH 子代理并测试缓存。逻辑名称为 `DSH-1`；旧的 DS-1、DS-2 继续暂停，没有通过原 DS 子代理工具恢复它们。
-- 修改范围：在本机根 `AGENTS.md` 记录当前助手状态、DSH 调用方式及限制；本文件追加本条；新增 [逐轮原始用量与计算结果](results/2026-11-11-dsh-cache-smoke.json)。没有修改项目业务代码或服务器依赖。
+- 修改范围：在本机根 `AGENTS.md` 记录当前助手状态、DSH 调用方式及限制；本文件追加本条；逐轮原始用量与计算结果当时保存在仓库外的实验交付目录，未纳入当前仓库。没有修改项目业务代码或服务器依赖。
 - 配置与实际调用：桥使用本机已有的 `headless` profile；已核对默认配置 `opencode-go` / `deepseek-v4.1-flash` / `reasoningEffort: max`，上下文配置为 1,000,000 token。配置值不等于已完成满上下文验证。DSH MCP 本次确实完成三次调用，状态返回 `bound=true`、`turns=3`、`ttl_seconds=3600`。
 - 会话身份：工作目录 `C:\Users\MLL\Desktop\my-agent-harness`；绑定 `session-55444d0d-9c18-403b-96df-b34df532ef3e`。首轮 `reused_session=false`，后两轮均为 `true`；后两轮正确复述首轮标记，并分别回答 `17×24=408`、`17×25=425`。
 - 实验方法：顺序调用三次 `mcp__dsh_bridge.dsh_delegate`。首轮注册 `DSH-1` 并记住 `HARNESS_DSH_CACHE_20261111_A`；后两轮显式传入同一 `session_id`，要求复述标记并计算。三轮均禁止调用工具、读写文件和访问网络，没有用大段填充文本人为增加公共前缀。
@@ -405,7 +405,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 ### E-CACHE-01：2026-11-11 / 冻结上下文增强前基线并搭建三臂实验
 
 - 用户选择：先建立对照实验并保存改前基线，再按上下文任务书分阶段改造、复测；新增 L20 约束为第三张卡 GPU 2，GPU 进程必须 `CUDA_VISIBLE_DEVICES=2`。
-- 设计入口：[缓存对照执行方案](../handoffs/2026-11-11-context-cache-comparison-plan.md)。三臂为当前工作区冻结源码、增强后源码、实际 DSH headless；统一模型、任务和预算，披露原生工具与接口差异。
+- 设计入口：历史《缓存对照执行方案》保存在当时的仓库外交付目录，当前仓库没有保留该文件。三臂为当前工作区冻结源码、增强后源码、实际 DSH headless；统一模型、任务和预算，披露原生工具与接口差异。
 - 基线：HEAD `a04e94050855ac460ec400a911d5405186d2adba`，含原有未提交调度改动；`experiments/context_cache/baseline/source-before.tar.gz` 保存 95 个源码与依赖文件。SHA-256 `698687fcb8564b2dae6db3086d3182d5392e7fa76cde6404f38be438523c50dd`；归档及清单只读保留。
 - 初步文件：DSH-1 在独占的 `experiments/context_cache/` 中实现数据获取、用量归一化、源码解包、my-agent / DSH 运行入口、原始记录与汇总；新增专用测试。主代理维护本记录、方案和根协作约定。业务源码增强尚未开始。
 - 开源任务：已核验 HumanEval 为 MIT，下载原始数据 SHA-256 `b796127e635a67f93fb35c04f4cb03cf06f38c8072ee7cee8833d7bee06979ef`，首批选择 0/1/2。HumanEval 上游已停止维护，本轮只作为无 Docker 的代码 smoke；SWE-bench Lite 与 Terminal-Bench 的正式任务/判分作为后续工程级入口。L20 当前未发现 Docker，不将缺环境的任务计作模型失败。
@@ -1201,3 +1201,58 @@ Langfuse 新入口全程 required，远端 metadata 回读窗口为 180 秒，�
 原始报告与机器证据：[全量 judge-cap 敏感性](results/locomo-scoring-sensitivity-v1-20261115/REPORT.md)、[敏感性逐题 cases](results/locomo-scoring-sensitivity-v1-20261115/cases.jsonl)、[新 conversation 三臂确认](results/locomo-raw-confirmation-v1-20261115/REPORT.md)、[确认集 summary](results/locomo-raw-confirmation-v1-20261115/summary.json)。简历最终证据已同步到 [interview-resume-v1.md](reports/interview-resume-v1.md)，交互看板同步到 `mem0-rsi-effects.canvas.tsx`。
 
 本轮本地验收：Markdown 检查确认简历章节仍恰好包含 4 条项目 bullet，简历全部相对/绝对链接与新增日志证据链接可解析，代码围栏成对；脚本交叉核对两份报告与简历、日志、Canvas 中的主结果、补评、确认集、`156 requests / 174,444 provider tokens` 及关键 p 值。Canvas 通过 `cursor/canvas` SDK 声明的严格 TypeScript `noEmit` 检查；静态扫描未发现网络 `fetch`、渐变、阴影、`background-clip`、TODO 或空数据占位。`git diff --check` 通过。该段是本地文件验收，不代表 CI 已通过。
+
+### E-LOCOMO-DIVERSITY-V1：2026-11-15 / 三例 judge 敏感性复核与语义上下文多样性三臂
+
+本轮由执行助手完成两项后续真实实验，代码、结果和公开报告先提交到 `30515f92d2371aa8bcb7d32ba778e1ce51f2d3c5`，并推送到自有 `origin`；没有改写原 LoCoMo v3 主结果、原 raw-confirmation 报告或任何旧账本。此处只追加统一实验日志和面试材料，模型调用由前序实验完成，本节点本身没有新增请求。
+
+#### 代码改动与预注册协议
+
+- 新增 `experiments/memory_validation/confirmation_judge_sensitivity_v1.py`：从原 confirmation plan 绑定 72 条 safe rows，只选择且必须选全三个 `judge_status=length` 案例；复用原 answer、gold、question、answer/judge prompt、模型与 temperature，仅把 judge output cap 从 1,024 提到 4,096。仍截断、非法 JSON 或结算异常都继续计错并与 unknown 分离。
+- 新增 `experiments/memory_validation/context_diversity_protocol_v1.py` 和 `context_diversity_v1.py`：在付费答案前冻结未用 conversation、类别平衡题、Qwen revision、三臂排序、MMR/session-cap tie-break、6,000 字符渲染和预算；执行器先完成 24×3 的 retrieval-only preflight，再派发 answer/judge。
+- 三臂为 `semantic_top8`、`semantic_mmr_top8`（`lambda=0.7`）和 `semantic_session_cap2`。MMR 以语义相关度与已选集合最大相似度做确定性多样性重排；session-cap 按语义顺序扫描、每 session 至多 2 个 chunk，只有候选不足 8 个时按原语义顺序补位。
+- `scripts/export_locomo_followup_results.py` 负责安全导出 summary、rows、preflight、provenance 和 verification；新增两个定向测试文件。关联验证为 **35 passed**、Ruff 通过、`py_compile` 通过，安全 manifest 完整性通过。这里记录的是测试与导出契约，不用单元测试替代真实模型结果。
+
+#### 原 24 题确认集的三个 length judge 补评
+
+原 confirmation-v1 的 72 个 answer/judge 单元中恰好有三个 judge 在 1,024 cap 截断：`raw_lexical` 1 个、`raw_hybrid_rrf` 2 个，均属 multi-hop；`raw_semantic_qwen` 没有截断。三个案例各补评一次，3/3 返回 `stop` 和严格 JSON boolean，0 个仍 length、0 个 malformed、0 个 invalid。
+
+| arm | 主结果正确 / 24 | 主有效 judge | 补评后正确 / 24 | 补评后有效 judge | session recall@8 | session MRR |
+|---|---:|---:|---:|---:|---:|---:|
+| `raw_lexical` | 10 | 23/24 | 10 | 24/24 | 0.8264 | 0.8194 |
+| `raw_semantic_qwen` | 12 | 24/24 | 12 | 24/24 | 0.8542 | 0.7431 |
+| `raw_hybrid_rrf` | 10 | 22/24 | **12** | 24/24 | 0.8819 | 0.7951 |
+
+补评后配对为 lexical 对 semantic `0:2`、`p=0.500`，lexical 对 hybrid `0:2`、`p=0.500`，semantic 对 hybrid `1:1`、`p=1.000`。hybrid 的点估计从 10/24 升到 12/24，但没有配对比较达到 `p<0.05`；因此这里能写“本样本中补评改变点估计”，不能写任一检索策略获得稳定优势。主表仍保留 length 计错，补评只作独立敏感性。
+
+该批为 **3 requests / 2,267 provider tokens**（prompt 584、completion 1,683），3 次请求延迟合计 28.785 秒；3/3 ledger 为 `ok`，unknown/inflight 为 0。前两次调用通过 required Langfuse 的 180 秒有界 metadata/usage 回读：2 个 distinct trace 各恰 1 条 observation，额外模型请求为 0；owner close 无 dropped/export/close 错误。
+
+#### 新 conversation 上的上下文多样性三臂
+
+数据固定在 LoCoMo revision `3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376`，source SHA256 为 `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`。seed `20261116` 仅按 sample、category、evidence 元数据选题，排除已用的 `conv-30/41/42/43/47`，选中 `conv-49`、`conv-44`；每题每臂先冻结 8 个候选，共 **24 题、53 个唯一 session、296 个 raw chunk**，multi-hop/temporal/single-hop 各 8 题。Qwen3-Embedding 0.6B revision 固定为 `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`。
+
+| arm | 正确 / 24 | 准确率 | valid answer | valid judge | session recall@8 | session MRR | evidence-turn recall@8 | mean context chars |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `semantic_top8` | 9 | 37.50% | 23/24 | 24/24 | 0.7210 | 0.6244 | **0.6322** | 5,181.96 |
+| `semantic_mmr_top8`（lambda=0.7） | 9 | 37.50% | 23/24 | 24/24 | **0.8244** | **0.6476** | 0.6066 | 5,275.58 |
+| `semantic_session_cap2` | **10** | **41.67%** | 23/24 | 24/24 | 0.7210 | 0.6244 | 0.6114 | 5,190.58 |
+
+类别正确数依次为 multi-hop `3/1/4`、temporal `2/2/2`、single-hop `4/6/4`（top8/MMR/session-cap2）。配对 top8 对 MMR 为 `2:2`、`p=1.000`；top8 对 session-cap2 为 `1:2`、`p=1.000`；MMR 对 session-cap2 为 `2:3`、`p=1.000`。全部差异在本样本中都没有达到 `p<0.05`，不能宣称 MMR 或 session-cap 的稳定 answer 优势。
+
+MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-turn recall 降低；session-cap2 比 top8 多 1 题，类别上 multi-hop `4 vs 3`、single-hop `4 vs 4`。这些方向和指标 trade-off 只对本样本、该 revision、该 lambda/cap 和固定模型成立，不能据结果再调 lambda 或 cap 后回写为确认性优势。
+
+三个 arm 中同一道 `q_e6ae90a6b0834302c2f583a2` 的 answer 都在 1,024 cap 返回 `length`，故各臂 valid answer 为 23/24；三个 judge 均有效，因此 invalid judge 0、length judge 0、malformed judge 0。三个 invalid answer 均按冻结规则计错，没有因结果重跑。
+
+该批为 **144 requests / 158,257 provider tokens**（prompt 98,212、completion 29,965），144 次请求延迟合计 729.348 秒、首末跨度 814.934 秒。retrieval-only preflight 完成 320 次本地 embedding invocation、72 个 arm-question 边界检查，最大 context 5,902 字符，付费调用为 0。实际使用 158,257 accounting units 与 144 requests，均低于冻结的 2,000,000 units / 180 requests 上限。
+
+144/144 ledger 行均为 `ok`，unknown/inflight 为 0；owner close 无 dropped/export/close 错误，runtime 已退出。前两次调用通过 required Langfuse 的 180 秒有界回读：2 个 distinct trace 各恰 1 条 observation，等待 1/2 秒，回读总耗时 10.628 秒，额外模型请求为 0。
+
+#### 汇总、解释与未完成项
+
+本批两项实验合计 **147 requests / 160,524 provider tokens**；连同此前 12 例 judge 敏感性与旧 24 题三臂的 156 requests / 174,444 tokens，当前四次 LoCoMo 后续实验累计 **303 requests / 334,968 provider tokens**。这是 provider totals 之和，不是供应商实际账单；各报告均保留自己的预算、时延和回读边界。
+
+本样本中的数值、方向及边界如下：语义 top8 与 MMR 均为 9/24，session-cap2 为 10/24；MMR 提高 session recall/MRR 但未提高答案数且降低 evidence-turn recall；预注册 exact McNemar 对三组答案比较均为 `p=1.0`。旧确认集补评后 lexical/semantic/hybrid 为 10/12/12，配对仍无显著差异。原 30 题、旧 Mem0 四臂和策略探索 7/8 结果均作为历史证据保留，不重算、不改写，也不据此新增优势声明。
+
+未完成项是更大且独立的新 conversation 集合、多数据集/多 embedding 复现，以及预先固定更强的效应量并做多重比较设计；本轮没有 evidence-turn 人工重标，也没有验证 MMR 在其他 lambda、session cap 或其他宿主上的收益。
+
+原始报告与机器证据：[三例 judge 敏感性](results/locomo-confirmation-judge-sensitivity-v1-20261115/REPORT.md)、[敏感性 summary](results/locomo-confirmation-judge-sensitivity-v1-20261115/summary.json)、[上下文多样性三臂](results/locomo-context-diversity-v1-20261115/REPORT.md)、[多样性 summary](results/locomo-context-diversity-v1-20261115/summary.json)、[逐题安全 rows](results/locomo-context-diversity-v1-20261115/rows.jsonl)。执行完成收据为仓库外 `.git/codex-delivery/effect-validation-20261114/ds1-context-diversity-complete.json`；对应代码 head `30515f9` 的 PR CI #71 已完成四平台矩阵成功。
