@@ -1275,4 +1275,4 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **Langfuse 远端回读**：session `lhpp-20261115-v3` 返回 4 个 trace、61 个 GENERATION observation，和 v3 账本 61 个真实请求完全一致；每 trace input/output/total 与账本一致，未记录 prompt、回答正文或凭据。
 - **custom-memory sidecar**：首次补跑因 host run 未安装 LIVE_BENCH_API_KEY，0 model request、0 verifier、0 cost；run ID 保留 consumed，不重试。驱动已改为 run 内重新执行 credential/Langfuse/proxy/oracle/transport gate。
 - **总账**：v2+v3 共 62 requests，客户端保守计费 **$0.144525**；Phase A 0 API 请求。未得到显著性或完整 Terminal-Bench 能力结论。
-- **报告**：[六小时证据包](reports/long-horizon-code-6h-results.md)、[Phase A 详细报告](reports/long-horizon-code-phase-a-v1.md)、[公开 pilot](reports/long-horizon-public-pilot-v1.md)。
+- **报告**：[六小时证据包](reports/long-horizon-code-6h-results.md)、[Phase A 详细报告](reports/long-horizon-code-phase-a-v1.md)、[公开 pilot](reports/long-horizon-public-pilot-v1.md)、[机器汇总](results/long-horizon-code-6h-20261115/summary.json)。
