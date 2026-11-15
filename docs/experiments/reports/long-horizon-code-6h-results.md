@@ -106,6 +106,17 @@ v2 和 v3 的失败记录、usage 与费用均保留。没有将 timeout、crite
 
 客户端价格是固定全冷价估算，不是供应商发票。
 
+## 后续机制补充：deadline/progress guard
+
+针对 large-scale-text-editing 中“持续局部验证但未先形成最终交付”的失败模式，新增了不按题名硬编码的 deadline/progress guard 离线消融。
+
+- baseline 在 10 秒模拟预算内执行 7 次局部验证，没有写最终交付，最终 timeout。
+- guarded 在约 76% 时间比例注入一次 steering，要求先持久化最终产物，再对该精确产物做全量验证。
+- repeat 20：baseline **0/20**，guarded **20/20**，20 次结果签名唯一。
+- guarded 的 final artifact 通过宿主 py_compile 和 unittest；guard 本身不生成答案。
+
+这证明机制能处理脚本化“只验证、不交付”故障，尚不能证明真实模型会遵循该 steering。报告见 [progress guard v1](long-horizon-progress-guard-v1.md)。
+
 ## 可验证的工程结论
 
 - 大输出不再通过直接截断丢失关键证据；完整内容可持久化并按 handle 回读。

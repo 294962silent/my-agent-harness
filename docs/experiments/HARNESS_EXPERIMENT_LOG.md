@@ -1276,3 +1276,10 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **custom-memory sidecar**：首次补跑因 host run 未安装 LIVE_BENCH_API_KEY，0 model request、0 verifier、0 cost；run ID 保留 consumed，不重试。驱动已改为 run 内重新执行 credential/Langfuse/proxy/oracle/transport gate。
 - **总账**：v2+v3 共 62 requests，客户端保守计费 **$0.144525**；Phase A 0 API 请求。未得到显著性或完整 Terminal-Bench 能力结论。
 - **报告**：[六小时证据包](reports/long-horizon-code-6h-results.md)、[Phase A 详细报告](reports/long-horizon-code-phase-a-v1.md)、[公开 pilot](reports/long-horizon-public-pilot-v1.md)、[机器汇总](results/long-horizon-code-6h-20261115/summary.json)。
++
+### 2026-11-15：deadline/progress guard 离线消融
+
+- 新增与题名无关的长任务保护：按总时间比例和连续无进展调用数判断；接近截止且尚无最终交付时，只注入一次结构化 Steering，要求先持久化最终产物、再对精确产物做全量验证。守卫不生成答案、不替换模型。
+- 脚本化消融 repeat 20：baseline 持续 7 次局部验证后 timeout，0/20；guarded 在约 76% 时间比例注入一次，先写 final artifact，再通过宿主 py_compile 和 unittest，20/20，签名唯一。
+- 该结果只证明机制和宿主验证链，不证明真实模型一定遵循提醒；下一步需在 Harbor 公开任务上做同模型、同预算的 guard on/off 实验。
+- 报告：[long-horizon-progress-guard-v1.md](reports/long-horizon-progress-guard-v1.md)。
