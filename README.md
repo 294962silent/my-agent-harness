@@ -1,131 +1,254 @@
 # my-agent-harness
 
-**面向长程任务的 Coding Agent Harness：长期记忆、可观测执行、受控策略自优化。**
+**面向长程代码任务的可审计 Agent 执行框架**
 
-以长程代码任务为目标，补强多轮执行中的运行控制、上下文保真、跨会话事实记忆和可复核证据。CodingAgent、RPC 和终端界面是应用入口；自优化层自动选择并验证受限的探索策略参数，不训练模型权重、不任意重写执行器。
+`my-agent-harness` 在常规“模型调用 + 工具循环”之外，补齐长任务最容易失控的执行状态：上下文证据、跨会话记忆、进程恢复、请求预算、评分权限和策略晋升。
 
-项目用于 Agent / 大模型应用开发实习的工程实践：保留可阅读的模块接口，用实际故障、取舍、回归和成对实验解释技术价值。框架仍有明确限制，不把它描述为已经成熟的生产平台。
+项目提供 Python Agent Runtime、CodingAgent、RPC、终端 TUI、容器化代码实验入口，以及区分离线回归、真实模型和公开任务的实验体系。
 
-当前应用场景收敛为**多轮 CPU 代码实验 Agent**：编辑 `train.py`、在固定容器内输出预测、宿主重算 RMSE、多轮保留最佳脚本、在完成边界暂停/恢复、最后独立 final。复用原 CodingAgent 和 RSI 分支，设计借鉴 AIDE 的实验树与 autoresearch 的固定测量协议。实现与验收状态见[场景实施账本](docs/plans/2026-11-14-research-agent-runtime.md)；不是官方长程 benchmark 或已证实的自优化收益。
+## 核心能力
 
-## 从哪里开始
+| 模块 | 解决的问题 |
+|---|---|
+| 执行与调度 | 多轮任务续跑、取消传播、轮次与时长限制、工具并发和文件写冲突 |
+| 上下文治理 | 默认五层压缩、artifact 全文存储与有界回读、摘要来源校验 |
+| 长期记忆 | 权威事实与可重建语义候选索引分离，支持版本、作用域校验和词法降级 |
+| 沙箱评分 | 固定 Docker 镜像、受限候选工作区、宿主私有标签重算指标 |
+| 恢复与观测 | JSONL journal、checkpoint、预算预留/结算、Langfuse 元数据 tracing |
 
-- [框架重设计](docs/architecture/HARNESS_VNEXT.md)：模块职责、不变量、依赖方向和本批边界。
-- [面试证据入口](docs/interview/README.md)：八模块讲解、开发问题与主张边界。
-- [代码实验真实演示](docs/experiments/results/research-agent-20261114/LIVE_REPORT.md)：两轮、跨进程恢复、宿主评分与独立final；包含首次失败和完整成本，不宣称RSI质量提升。
-- [简历项目稿](docs/interview/RESUME_READY.md)：三条工程表述、60秒口述、追问与事实账本；个人职责按实际参与确认。
-- [统一离线实验](experiments/harness_eval/README.md)：脚本 provider / 临时文件验证真实工程路径。
-- [本轮原始结果](docs/experiments/results/redesign/20261112T095857-2381042b458f/report.md)：manifest、raw.jsonl 和 summary 同目录。
-- [持续实验记录](docs/experiments/HARNESS_EXPERIMENT_LOG.md)：历史、失败、更正及交付状态。
+## 架构
 
-## 框架组织
+```mermaid
+flowchart LR
+    UI[CodingAgent / RPC / TUI] --> R[Agent Runtime<br/>owner · limits · cancel]
+    UI --> S[Session<br/>JSONL · branch · resume]
+    R --> L[LLM facade<br/>sync · async · stream]
+    R --> T[Tool registry<br/>schema · concurrency · permission]
+    R --> C[ContextManager<br/>canonical history → sent view]
+    C --> A[ArtifactStore<br/>full output · bounded readback]
+    C --> K[Layered compaction<br/>micro · fold · summary]
+    R --> M[MemoryStore<br/>facts + candidate index]
+    M --> BM25[BM25 retrieval]
+    M --> V[Semantic retrieval<br/>scope/revision revalidation]
+    L --> O[Observer<br/>metadata · usage]
+    O --> LF[Langfuse]
 
-`my-tui → my_coding_agent → my_agent_core → my_agent_llm`
+    X[ResearchCampaign] --> J[Plan · journal · checkpoint · ledger]
+    X --> D[Docker evaluator<br/>network off · resource limits]
+    D --> H[Host scoring<br/>private labels · RMSE]
+    H --> P[Controlled policy experiments]
+    P --> G[Registry<br/>active · previous · rollback]
+```
 
-- Runtime：单 Agent 同时仅有一个直接运行 owner，可选轮次 / 总时长上限，明确取消、预算和正常完成。
-- Model：多 provider 门面，统一同步 / 异步 / 流式调用和流关闭；生命周期观测覆盖主请求、摘要与记忆抽取。
-- Tools：注册表、schema、安全并发声明、依赖批次门控、超时与中断结果。
-- Session：JSONL 会话与分支路径恢复；摘要绑定 canonical 覆盖来源。
-- Context / Artifact：原始历史与发送视图区分，大输出保留全文并通过有界工具回读。
-- Memory：精确事实、替换历史、删除、脱敏与检索；可用本地CPU中文语义候选，不需embedding API，自动抽取默认关闭。
-- Permission：副作用前授权，默认 fail-closed；不等同完整信息流安全。
-- Observation：默认关闭的元数据记录、有界导出与可选 Langfuse 适配，导出错误不改变模型结果。
+依赖方向保持为“产品入口 → Runtime / Agent → Model、Tools、Session、Context、Memory”。实验代码调用产品接口，生产模块不反向依赖实验脚本。
 
-本批实现Runtime生命周期、统一观测和三个适配。Mem0支持本地CPU中文及Qwen GPU profile；Langfuse提供配置与生命周期装配；Dream支持候选参数搜索、独立验证、active消费和回滚。研究campaign已产生真实评分树，SDK选择baseline，验证覆盖不足、未晋升；全局数据集配置与研究输出分开，状态以对应入口为准。
+## 一次代码实验如何执行
 
-## 安装与本地验证
+1. ResearchCampaign 冻结任务、数据切分、镜像、模型、评分器与预算。
+2. ledger 在锁内预留 request、token、active seconds 和 evaluation 额度。
+3. Agent 在只包含 `train.py` 的候选工作区执行。
+4. 固定 Docker 镜像以无网络、只读根和资源配额运行候选。
+5. 容器只写 `predictions.csv`；宿主检查 ID、schema 和有限数值。
+6. 宿主使用候选不可见的私有标签重算 RMSE。
+7. 只有请求结算、工具配对、资源清理和 checkpoint 可核验后，round 才提交。
+8. final 在冻结产物上独立执行，结果不会回到选择或训练阶段。
 
-需要 Python >= 3.11、Node.js；新源码应从当前分支构建，旧 npm 发布包不自动包含这些变更。
+## 核心模块
+
+### 执行与调度
+
+- `Agent.run()`、`prompt_stream()` 和 `abort()` 提供同步、流式与取消入口。
+- `RunLimits` 管理最大轮次与时长；一次直接运行只有一个 owner。
+- 取消会传播到生成器、工具任务和 owned 资源。
+- 安全只读工具可以并发；有副作用或存在依赖关系的工具按批次串行。
+- `FileMutationQueue` 串行化同一路径的 read-modify-write，避免 lost update。
+- 工作区之外的写入在副作用发生前由权限层阻断。
+
+### 默认五层上下文压缩与 artifact 回读
+
+产品设置默认启用 `layered` 上下文压缩，按实际预算逐级执行：
+
+1. **摘要来源校验**：canonical 历史、分支、摘要覆盖范围和 fingerprint 必须一致。
+2. **大输出 artifact 化**：工具结果完整落盘，发送视图只保留预览和 artifact handle。
+3. **闭合工具组微压缩**：只压缩已闭合、成功且不在最近窗口内的工具组。
+4. **完成段前缀折叠**：宿主登记明确完成边界后，折叠该段并保留结构化摘要。
+5. **有界语义摘要**：仍超预算时生成受预算约束的摘要；没有安全投影则失败关闭。
+
+完整 Session 正文保持 canonical；发送视图是临时投影。artifact 支持 Unicode-safe 分页、受限搜索、owner 隔离、路径逃逸检查和内容 hash 校验。
+
+### 长时记忆与检索
+
+MemoryStore 采用“本地权威事实 + 可重建候选索引”的结构：
+
+- 事实保存在本地存储中，支持同 identity 版本替换、去重、来源、删除、脱敏和 scope 隔离。
+- 读取可以走 BM25，也可以接入 CPU 或隔离 GPU worker 的语义候选索引。
+- 语义候选返回后重新校验 scope、identity 和 revision，再从权威源读取正文。
+- 语义索引异常时自动回退词法路径。
+- 候选索引负责召回，权威事实决定最终内容。
+
+### Docker 沙箱与宿主评分
+
+- 候选工作区只允许 `train.py`。
+- Docker 限制网络、CPU、内存、PID、根文件系统和输出路径。
+- 容器只能生成 `predictions.csv`。
+- 宿主验证 schema、行数、ID 和有限数值，并用容器外标签重算 RMSE。
+- 越界写入、额外文件、非法 schema 和不可评分输出会被拒绝。
+- 固定镜像、运行参数和评分器源码身份在执行前冻结。
+
+### 恢复、预算与观测
+
+- 每次模型请求先 reservation，收到可靠 usage 后 settlement。
+- append-only JSONL journal 使用 hash chain 保存状态。
+- checkpoint 绑定代码、结果与评分身份，新进程可以恢复 root id、预算累计和未完成步骤。
+- 未知 usage 或 in-flight 状态阻止后续派发。
+- LLM 门面统一记录 call/root/parent、purpose、model、耗时、状态与归一化 usage。
+- Langfuse 发送 metadata-only generation；required observation 在 flush/export/drop/close 异常时失败关闭。
+
+## 快速开始
+
+需要 Python 3.11+、uv、Node.js 和 npm。
 
 ```sh
+git clone https://github.com/294962silent/my-agent-harness.git
+cd my-agent-harness
+
 uv sync --frozen
 npm ci
 npm run build
+
+uv run my-pi-agent --help
+```
+
+启动终端界面：
+
+```sh
+npm start
+```
+
+真实模型调用需要单独配置供应商和凭据。密钥不会写入 manifest、journal、日志或 Git。
+
+## 测试
+
+默认回归：
+
+```sh
 uv run python -m pytest tests -q
 npm test
 ```
 
-Windows 缺少 Git Bash 时，既有 pipefail 测试会因 cmd 不支持 cat 而失败；本轮本地报告明确排除这一环境项，GitHub 跨平台检查结果单独记录。真实模型调用需要单独配置供应商与凭据；离线实验不读取凭据或产生模型费用。
-
-## 有预算的 Agent 调用
-
-Python 接口保持 run / prompt_stream / abort，新增可选 RunLimits：
-
-```python
-import asyncio
-import os
-from pathlib import Path
-
-from my_agent_core.agent import Agent
-from my_agent_core.run_lifecycle import RunLimits
-from my_agent_core.session import Session
-from my_agent_llm import Config, LLM
-from my_agent_llm.observation import InMemoryObserver
-
-async def main():
-    recorder = InMemoryObserver()
-    llm = LLM(Config(
-        provider="openai",
-        model="deepseek-v4.1-flash",
-        base_url=os.environ["LLM_BASE_URL"],
-        api_key=os.environ["LLM_API_KEY"],
-        max_tokens=2048,
-        max_retries=0,
-    ), observer=recorder)
-    agent = Agent(
-        llm=llm, tools=[],
-        session=Session(path=Path(".my-agent-harness/demo.jsonl")),
-        memory_dir=False,
-        run_limits=RunLimits(max_turns=6, max_seconds=120),
-    )
-    try:
-        print(await agent.run("用一句话说明工具调用的作用"))
-    finally:
-        await agent.aclose()
-    print("观测条数", len(recorder.records))
-
-# 确认供应商配置后才运行；本例会产生模型调用费用。
-# asyncio.run(main())
-```
-
-轮次 / 时长上限不等同费用上限。真实基准入口另用共享账本逐请求预留与结算；同步不协作代码及已经发生的外部副作用不能被强制回滚。
-
-只需要本地观测时使用 InMemoryObserver 或 JsonlSink + BoundedExporter。Langfuse 适配延迟导入，已通过真实5.2 SDK的内存导出契约，尚未确认真实服务上传。
-
-## Mem0、Langfuse、Dream-RSI
+常用聚焦检查：
 
 ```sh
-uv sync --frozen --extra mem0-local --extra langfuse --extra dream-rsi
-uv run --extra dream-rsi my-agent-dream --help
+uv run python -m pytest tests/core -q
+uv run python -m pytest tests/experiments/test_progress_guard_ablation.py -q
+uv run python -m ruff check src tests experiments
 ```
 
-[安装、全局配置与使用说明](docs/integrations/README.md)包含本地模型准备、JSON及合成参数搜索演练。Mem0保留本地事实权威、infer=False和NeverLLM防双抽取，失败回退词法；Langfuse保留已有observer；Dream只调白名单参数，晋升须胜过baseline和当前active，原子指针/CAS支持回滚。项目settings不能改三项集成的全局配置。
+## 离线实验
 
-初版适配通过真实BGE CPU语义链路、Langfuse内存SpanExporter和Dream合成数据dry-run验证功能。后续固定历史Memory30题未支持当前Mem0配置优于词法；Qwen GPU目前是功能smoke。[真实HumanEval校准](docs/experiments/results/rsi-live-20261114/REPORT.md)的48测试槽已全部终态：47交付并通过final、1权限失败未执行final。train树同分、SDK选择baseline，holdout覆盖不足、发布拒绝，C为固定reference fallback，学习贡献不可识别。真实云上传及长程RSI收益仍待验证。
-
-## 逐模块实验
+确定性故障矩阵和 progress guard 不调用付费模型：
 
 ```sh
-# 在仓库工作目录运行，确保 src 与仓库根可导入。
-PYTHONPATH=src:. uv run python -m experiments.harness_eval   --suite all --repeats 5 --seed 23 --output docs/experiments/results/redesign
+uv run python -m experiments.long_horizon_code.fault_injection \
+  --repeat 20 \
+  --output artifacts/phase-a-local.json
+
+uv run python -m experiments.long_horizon_code.progress_guard_ablation \
+  --repeat 20 \
+  --compact
 ```
 
-PowerShell 可先设置 `$env:PYTHONPATH='src;.'`。每次输出唯一目录，保留原始记录、环境、源码 hash、参数和失败，汇总从记录计算。真实 ablation、有限 comparison wrapper 和 contract 明确区分。
+通用 Harness 机制回归：
 
-已保存这一轮：8 模块、12 独立场景、100 条原始观测，断言失败 0。固定大输出夹具的发送视图从 120019B 变为 7041B，两组全文证据均可恢复；工具独立并发峰值 1→3，依赖违例 1→0。上述结果只代表夹具内工程行为，不能声称真实模型成功率或 KV cache 提升。两条记忆查询只是 smoke；重复次数不能充当新增问题数量。
+```sh
+uv run python -m experiments.harness_eval \
+  --suite all \
+  --repeats 5 \
+  --seed 23 \
+  --output artifacts/harness-eval-local
+```
 
-## 开源真实任务
+真实公开 benchmark、LoCoMo、LongMemEval 与 Terminal-Bench 入口依赖冻结数据、模型、容器和独立预算。运行前请先阅读对应 manifest 与预算文件，不要复用已消费的 run ID。
 
-[真实评测入口](experiments/benchmark_live/README.md)使用生产 Agent、ContextManager、Session 和容器 shell；先运行未修改官方任务的 oracle / gold，再开始模型 trial。测试 / solution 不进入 solver prompt，缺失环境单列，结果只代表预选小样本。
+## 实验结果
 
-[历史SWE预算方案](docs/experiments/LIVE_MODEL_BUDGET.md)采用当时授权的 DeepSeek V4.1 Flash 30美元上限。2026-11-14用户新授权继续测试，声明约20亿tokens，余额未向服务商核验；新campaign保留逐请求预留、固定episode额度及零隐式重试，旧账本不重置，币价未核时不计算金额。[历史v2真实结果](docs/experiments/results/swe-v2-pilot-20261112/REPORT.md)：固定6题、5题环境可用、10次模型trial，开启组通过2/5、关闭组1/5；7次空补丁。160请求保守账本$0.503462，非供应商核账。on产生11个外置产物但没有回读，on费用$0.252843、off$0.250619，不能宣称稳定质量、费用或KV收益。
+完整证据索引与主张边界见 [EXPERIMENT_EVIDENCE_SUMMARY_V2.md](docs/experiments/reports/EXPERIMENT_EVIDENCE_SUMMARY_V2.md)，逐批开发记录见 [HARNESS_EXPERIMENT_LOG.md](docs/experiments/HARNESS_EXPERIMENT_LOG.md)。
 
-通用入口使用批准的catalog和独立campaign，已归档结果可在离线核hash后重算。[历史v1单例](docs/experiments/results/live-swe-20261112/REPORT.md)的32请求/$0.068597另保留。[随后三题预算提示对照](docs/experiments/results/swe-budget-visibility-20261112/REPORT.md)双臂均1/3通过，未提供改善证据；加独立回读探针后累计保守账本$0.888355。Terminal首pair因验证器故障/超时未形成有效科学比较。上述不能当作三个适配器的消融；当前HumanEval只校准真实RSI链路，完整SWE与长程收益尚未证明。
+| 实验 | 结果 | 证据类型 |
+|---|---|---|
+| 7 类故障 × 20 | baseline `0/140`；生产接缝 `140/140` | 确定性故障注入 + 真实生产组件 |
+| progress guard | baseline `0/20`；guarded `20/20` | 脚本时钟与脚本仓库动作 |
+| Wine red runtime | 两轮运行、新进程恢复、独立 final 完成 | 真实 provider + Docker + journal |
+| LongMemEval 96 | 注入 `105,316 → 11,983` tokens（−88.6%）；准确率 `71.9% → 69.8%` | 真实模型与模型判分 |
+| LoCoMo 30 | lexical / semantic / facts-lexical / facts-semantic = `16/17/12/15` | 真实模型小样本 |
+| LoCoMo 独立确认 | lexical / semantic / RRF = `10/12/10` | 冻结 24 题、真实模型 |
+| MMR / session cap | top-8 / MMR / cap2 = `9/9/10` | 冻结 24 题、真实模型 |
+| 受控策略实验 | 完成 `7/8` final 臂 | 真实模型 + train / holdout / final |
+| SWE v2 | on `2/5`；off `1/5` | 5 题、单 trial / 臂 |
+| Terminal-Bench fix-git | 三臂 reward `1`；requests `17/10/12` | 公开任务、单题单 trial |
+| Terminal-Bench large-scale | `1,080` 秒取消；`22` requests；verifier `0/5` | 公开任务、真实模型 |
+| Terminal-Bench custom-memory v4 | artifact-off 预算失败；baseline / enhanced 均 `5/6` | 公开任务三臂 |
+| Langfuse | v3+v4 `7 traces / 121 generations` 与 ledger 对齐 | 真实云服务元数据回读 |
 
-## 限制与历史
+### 长程故障矩阵
 
-进程内协作取消不保证强制抢占；后台记忆不是持久 worker；本地索引无跨进程写锁；权限不识别所有组合信息泄漏；有界摘要与抽取不能保证语义无损。详见[记忆说明](docs/memory.md)与各模块证据。
+| 场景 | baseline | 生产 Harness |
+|---|---:|---:|
+| 大输出与 artifact 证据回读 | 0/20 | 20/20 |
+| 记忆 revision / scope | 0/20 | 20/20 |
+| checkpoint / resume | 0/20 | 20/20 |
+| 同文件并发修改 | 0/20 | 20/20 |
+| 受控策略晋升 | 0/20 | 20/20 |
+| Docker 宿主评分 | 0/20 | 20/20 |
+| 连续仓库修复 | 0/20 | 20/20 |
+| **总计** | **0/140** | **140/140** |
 
-[基线 README](https://github.com/294962silent/my-agent-harness/blob/1f150e1a433c2b31ee83c8a2d11300e4a1fc3548/README.md)中的旧性能 / 评测数字属于历史记录，本轮没有重新复测，不能直接算成本批重设计收益。
+### 公开代码任务
 
-代码按仓库 LICENSE 分发。外部基准数据、任务和第三方依赖遵循各自许可证，版本与可核验范围记入对应运行 manifest。
+Terminal-Bench 2.1 使用固定 revision `12b7565679ce5006230b820666353673a133db93`。`fix-git` 三臂均通过官方验证：
+
+| 实验臂 | compaction | artifact | requests | reward |
+|---|---|---:|---:|---:|
+| baseline | baseline | off | 17 | 1 |
+| enhanced | layered | on | 10 | 1 |
+| layered without artifact | layered | off | 12 | 1 |
+
+同一轮还完成两项长任务：
+
+- `large-scale-text-editing` 在 1,080 秒被取消，22 requests 完整结算，官方 verifier 执行但 5 项全部失败。
+- `custom-memory-heap-crash` 的 layered-without-artifact 在 24 requests 后触发 `ContextBudgetExceeded`；baseline 与 layered+artifact 均进入 verifier 并通过 5/6，共同失败项为 release 程序 `SIGSEGV`。
+
+v2+v3+v4 共 122 requests，客户端保守估算 `$0.513626`。Langfuse 的 7 个 trace、121 条 generation observation 与请求账本对齐。
+
+## 目录结构
+
+```text
+.
+├── src/
+│   ├── my_agent_llm/       # provider、流、请求投影、观测
+│   ├── my_agent_core/      # Agent、loop、tools、session、context、artifact、memory
+│   └── my_coding_agent/    # CodingAgent、权限、RPC、实验运行时、宿主评分
+├── my-tui/                 # TypeScript 终端界面
+├── experiments/
+│   ├── harness_eval/       # 统一机制回归
+│   ├── long_horizon_code/  # 故障矩阵、progress guard、公开 pilot
+│   ├── longmemeval/        # LongMemEval
+│   └── memory_validation/  # LoCoMo 与检索实验
+├── tests/
+└── docs/
+    ├── experiments/        # 实验计划、日志、报告与机器结果
+    ├── learning/           # 调用链与工程复盘
+    └── interview/          # 面试讲解材料
+```
+
+## 文档入口
+
+- [实验证据汇总](docs/experiments/reports/EXPERIMENT_EVIDENCE_SUMMARY_V2.md)
+- [统一实验日志](docs/experiments/HARNESS_EXPERIMENT_LOG.md)
+- [长程代码证据包](docs/experiments/reports/long-horizon-code-6h-results.md)
+- [五层上下文压缩说明](docs/context-compaction.md)
+- [实验协议与预算](docs/experiments/)
+
+## License
+
+[MIT](LICENSE)
