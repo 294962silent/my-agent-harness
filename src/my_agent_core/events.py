@@ -62,7 +62,9 @@ class AgentEnd(Event):
     messages: list[Message]
     final_text: str | None
     iterations: int
-    stop_reason: str  # "end_turn" | "cancelled" | "blocked" | "error"
+    stop_reason: str  # end_turn | cancelled | blocked | error | budget_exhausted
+    run_id: str | None = None
+    limit_details: dict[str, Any] | None = None
 
 
 # ── Turn 微观轮次生命周期事件

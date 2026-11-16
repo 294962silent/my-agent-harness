@@ -1,0 +1,91 @@
+{
+  "kind": "synthetic",
+  "quality": "unmeasured",
+  "actual_provider_calls": 0,
+  "command": "uv run --frozen --all-extras python experiments/context_rsi/run_contract.py --output experiments/context_rsi/results/contract-20261113-independent-final",
+  "raw_summary_sha256": "91eb176b0a46772198fe0d9f119f000342ef5207c94b0408c9c83c2d0e9fd8c8",
+  "source_sha256": {
+    "src/my_coding_agent/rsi_runtime.py": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+    "src/my_coding_agent/rsi_branch.py": "6faabf3beeac772cb81f7cb860b684629a8529540cdd95c28793a29f243d8c08",
+    "src/my_coding_agent/agent.py": "011152b286125e0baaef05968ffc3c207e52156f96d62c93a2e524a91811b7fc",
+    "src/my_coding_agent/settings.py": "f959645690f6184d4796f4e2d97723f62c53f4b00bd77e108be983f7ea802bed",
+    "src/my_coding_agent/rpc/session_handlers.py": "2fb6002c487e4632dbbc948f444e17570e276d5bfc0fcd1ebd29d71ec3079689",
+    "src/my_agent_core/agent.py": "7d693e2ce909fbc8a6b1f5edce0fa91acc7f38984a715ba2d00824fe4a0420bc",
+    "src/my_agent_core/context.py": "6786ffc7077a671ce297bd35147bb1721de62f59ef0609e45538badb5c898f85",
+    "src/my_agent_core/context_compaction.py": "8aca5dc9002e06b9a40630c0165978a87cd0a7a01372f4a68b08bf4849f87a64"
+  },
+  "optimizer_parameters": {
+    "max_width": 1,
+    "max_refine": 1
+  },
+  "optimizer_replay_evaluations": 21,
+  "promoted": false,
+  "arms": {
+    "A": {
+      "status": "completed",
+      "valid_attempts": 4,
+      "requests": 12,
+      "tokens": 60,
+      "evaluations": 6,
+      "limits": {
+        "max_requests": 12,
+        "max_tokens": 300000,
+        "max_seconds": 90,
+        "max_evaluations": 6
+      },
+      "separate_final_test_passed": true,
+      "final_success": null,
+      "quality": "unmeasured"
+    },
+    "B": {
+      "status": "completed",
+      "valid_attempts": 4,
+      "requests": 12,
+      "tokens": 60,
+      "evaluations": 6,
+      "limits": {
+        "max_requests": 12,
+        "max_tokens": 300000,
+        "max_seconds": 90,
+        "max_evaluations": 6
+      },
+      "separate_final_test_passed": true,
+      "final_success": null,
+      "quality": "unmeasured"
+    },
+    "C": {
+      "status": "completed",
+      "valid_attempts": 2,
+      "requests": 6,
+      "tokens": 30,
+      "evaluations": 4,
+      "limits": {
+        "max_requests": 12,
+        "max_tokens": 300000,
+        "max_seconds": 90,
+        "max_evaluations": 6
+      },
+      "separate_final_test_passed": true,
+      "final_success": null,
+      "quality": "unmeasured"
+    },
+    "random": {
+      "status": "completed",
+      "valid_attempts": 4,
+      "requests": 12,
+      "tokens": 60,
+      "evaluations": 6,
+      "limits": {
+        "max_requests": 12,
+        "max_tokens": 300000,
+        "max_seconds": 90,
+        "max_evaluations": 6
+      },
+      "separate_final_test_passed": true,
+      "final_success": null,
+      "quality": "unmeasured"
+    }
+  },
+  "source_unchanged": true,
+  "matches_published_counts_and_ceilings": true
+}

@@ -1,0 +1,3 @@
+# Synthetic local compaction mechanism
+
+Zero paid/provider calls. Identical canonical fixture, context budget, declared fixture tool schema and output reserves. Baseline uses one deterministic fake summary; layered first externalizes older complete successful tool groups, verifies bounded read-back and avoids that fake call. These are byte/token estimates and mechanism contracts, not real answer quality, provider KV-cache hits or performance benefits. Cache fields remain unavailable. The separate prefix-fold summary is explicitly host-supplied static text; canonical Session content survives save/load. Metrics contain only synthetic audit data.

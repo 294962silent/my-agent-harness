@@ -1,0 +1,22 @@
+{
+  "REPORT.md": {
+    "bytes": 5125,
+    "sha256": "7284993436b0e9d512c218b0c4ea4eb0b586bef70f19936cdb0c93c1e7e9e0d2"
+  },
+  "cases.jsonl": {
+    "bytes": 6962,
+    "sha256": "b339b2fdc3e7a01acac7ae461c07ff8b71731a6a3ae09642f78209a0d9d16afd"
+  },
+  "provenance.json": {
+    "bytes": 5358,
+    "sha256": "2bed04a1c96edb35375b33a1369fef3885cd3bef874e7357ed06eabf0816b20a"
+  },
+  "summary.json": {
+    "bytes": 10429,
+    "sha256": "44c9debba9431a1195c8edd9783115e6a375e41cc14988c9358332a1971f25da"
+  },
+  "verification.json": {
+    "bytes": 548,
+    "sha256": "31e9f4f52d9dc96769b0b5ea400acdbfda2b1bba2fa66dbb5e823494ea732bed"
+  }
+}

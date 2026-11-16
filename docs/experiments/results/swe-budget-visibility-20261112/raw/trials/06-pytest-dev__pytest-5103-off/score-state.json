@@ -1,0 +1,27 @@
+{
+  "plan_sha256": "89377797e869d1ef662a7fd298c5ca91e8acd60bc726e9eaac611ebf1d28f1f5",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/06-pytest-dev__pytest-5103-off/score/analysis-outcome.json",
+      "sha256": "4f87a5e708ef52d410335cc87c020702fb643a3691cbdfff0c4e442fab936ee2",
+      "bytes": 414
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/06-pytest-dev__pytest-5103-off/score/command.json",
+      "sha256": "c6edc4d8b808dc1871a0a5e2544584324729cb60e4999d9fcb47a2865bc78abc",
+      "bytes": 847
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/06-pytest-dev__pytest-5103-off/score/my-agent-harness-off.campaign-dce7744a9bde-06.json",
+      "sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a",
+      "bytes": 811
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/06-pytest-dev__pytest-5103-off/score/score.log",
+      "sha256": "27c8a8b913c0383cc3ea7e2d61cb51da86b750b353228fde6fee429a1a2eab54",
+      "bytes": 522
+    }
+  ],
+  "official_report": "/home/mll/.cache/my-agent-bench/budget-readback-20261112/campaign/trials/06-pytest-dev__pytest-5103-off/score/my-agent-harness-off.campaign-dce7744a9bde-06.json"
+}

@@ -1,0 +1,33 @@
+{
+  "kind": "ci_repair_cpu_only",
+  "ci_run": 43444322518,
+  "ci_job": 131949680330,
+  "root_cause": "Linux dead-worker stdin TextIO close reflushes buffered frame; teardown BrokenPipeError replaced the original request TimeoutError",
+  "before": {
+    "wsl_send_deadline": "failed: BrokenPipeError instead of TimeoutError",
+    "windows_injected_dead_stdin_flush": "failed: BrokenPipeError replaced TimeoutError",
+    "worker_exited_before_error": true,
+    "sender_reader_exited_before_error": true
+  },
+  "after": {
+    "windows_sdk_present": "10 passed",
+    "wsl_sdk_present": "10 passed",
+    "ruff": "passed",
+    "timeout_assertion": "strict TimeoutError unchanged",
+    "optional_sdk_scope": "only 3 real Mem0 SDK tests use importorskip; 7 protocol/validation tests still execute"
+  },
+  "production_change": "only suppress BrokenPipeError from stdin.close after process_exited confirms actual owned worker; continue output/reader cleanup; other close errors remain visible",
+  "paid_api_calls": 0,
+  "gpu_runs": 0,
+  "hash_basis": "LF-normalized UTF-8 bytes",
+  "source_hashes": {
+    "src/my_agent_core/memory_qwen.py": {
+      "head_before": "73b23f7c8a0a8c6bfee1d3d8a9761592e3c5f904b9c73159a46096ea565ef1d9",
+      "working_after": "ae27a0192a7b0fedc8a23d4f47e6584eb6bd103481168f7fc3a2b6e8a9f7b320"
+    },
+    "tests/core/test_memory_qwen.py": {
+      "head_before": "a6d9d931c135c946bfc48637552d62712982ee7b974b692d063675da101d7e96",
+      "working_after": "e22d21cb563631b1ffc9eb71dcc561387998a5812ec435e5c2a978cb58f92eef"
+    }
+  }
+}

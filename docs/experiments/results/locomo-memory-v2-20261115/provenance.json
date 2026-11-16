@@ -1,0 +1,39 @@
+{
+  "accounting_units": 5000000,
+  "arms": [
+    "raw_lexical",
+    "raw_mem0",
+    "facts_lexical",
+    "facts_mem0"
+  ],
+  "campaign_id": "memory-locomo-four-arm-20261115-v2",
+  "cuda_visible_devices": "0",
+  "embedding_max_length": 4096,
+  "environment_sha256": "2b0d5af414b598b5d4aa6e3539881b0132b7851873e6ca33784950e47e8fb01f",
+  "gold_sha256": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf",
+  "ledger_sha256": "12d04ce4fb22e3080e904cee7f0424cb3cd863ea092d7b03a1df899e1fd157dc",
+  "model_manifest_sha256": "05bec2826e2d492f4146087960647fea98a694204ab14662dc0a96a800af8b3d",
+  "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+  "output_caps": {
+    "answer": 1024,
+    "extract": 8192,
+    "judge": 512
+  },
+  "plan_manifest_sha256": "d80b9cd89841bd3bde6af85118f48a16c278a9b01728005b904f2f0f1883b3b0",
+  "plan_sha256": "b0e9edc48fffb75b0ca69c64bcf36813eed86a8a5e3ad9ab287e2119d3a7368e",
+  "protocol": "locomo-multisession-four-arm-v2",
+  "ready_sha256": "2f652330d566fff8ab1442fcdb0cf9ab5830a2b6b0b26131d6e5a50e49922691",
+  "requests_limit": 384,
+  "source_dataset_sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4",
+  "stopped_sha256": "0d17ef5bcaf9ab98ef06967a218519834ff5099f98beb6e344e61eb3511824d9",
+  "verified_counts": {
+    "answer_calls": 120,
+    "dev_qa": 6,
+    "expected_model_calls": 332,
+    "extract_calls": 92,
+    "judge_calls": 120,
+    "sessions": 92,
+    "test_qa": 24
+  },
+  "wall_clock_hours": 8
+}

@@ -1,0 +1,294 @@
+{
+  "anchors": {
+    "plan_sha256": "6d4a41d19308526ae91dfa6bbc42cc3a972ec7084ce6b2def6b6753d970f4cbe",
+    "preflight_sha256": "5eed0e3aef8c1e7def362e5454719ac5955a42eb5dc0e9c98aa56dae8d5525d1",
+    "rows_sha256": "0421c3e88b83e72f2a3fd33fceef11975e4bd61b22e61330ea9ddd5697c4a49f"
+  },
+  "arms": {
+    "raw_hybrid_rrf": {
+      "accuracy": 0.4166666666666667,
+      "answer_usage": {
+        "completion_tokens": 4584,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 38985,
+        "total_tokens": 43953
+      },
+      "correct": 10,
+      "denominator": 24,
+      "judge_usage": {
+        "completion_tokens": 7091,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 4262,
+        "total_tokens": 11353
+      },
+      "mean_evidence_turn_recall_at_8": 0.7611111111111111,
+      "mean_session_mrr": 0.7951388888888888,
+      "mean_session_recall_at_8": 0.8819444444444444,
+      "valid_answers": 24,
+      "valid_judges": 22
+    },
+    "raw_lexical": {
+      "accuracy": 0.4166666666666667,
+      "answer_usage": {
+        "completion_tokens": 3655,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 40220,
+        "total_tokens": 43875
+      },
+      "correct": 10,
+      "denominator": 24,
+      "judge_usage": {
+        "completion_tokens": 5968,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 4113,
+        "total_tokens": 10081
+      },
+      "mean_evidence_turn_recall_at_8": 0.65,
+      "mean_session_mrr": 0.8194444444444444,
+      "mean_session_recall_at_8": 0.8263888888888888,
+      "valid_answers": 24,
+      "valid_judges": 23
+    },
+    "raw_semantic_qwen": {
+      "accuracy": 0.5,
+      "answer_usage": {
+        "completion_tokens": 4138,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 39235,
+        "total_tokens": 43373
+      },
+      "correct": 12,
+      "denominator": 24,
+      "judge_usage": {
+        "completion_tokens": 6388,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 4255,
+        "total_tokens": 10643
+      },
+      "mean_evidence_turn_recall_at_8": 0.7402777777777778,
+      "mean_session_mrr": 0.7430555555555556,
+      "mean_session_recall_at_8": 0.8541666666666666,
+      "valid_answers": 24,
+      "valid_judges": 24
+    }
+  },
+  "categories": {
+    "multi_hop": {
+      "raw_hybrid_rrf": {
+        "correct": 0,
+        "denominator": 8
+      },
+      "raw_lexical": {
+        "correct": 1,
+        "denominator": 8
+      },
+      "raw_semantic_qwen": {
+        "correct": 2,
+        "denominator": 8
+      }
+    },
+    "single_hop": {
+      "raw_hybrid_rrf": {
+        "correct": 4,
+        "denominator": 8
+      },
+      "raw_lexical": {
+        "correct": 3,
+        "denominator": 8
+      },
+      "raw_semantic_qwen": {
+        "correct": 4,
+        "denominator": 8
+      }
+    },
+    "temporal": {
+      "raw_hybrid_rrf": {
+        "correct": 6,
+        "denominator": 8
+      },
+      "raw_lexical": {
+        "correct": 6,
+        "denominator": 8
+      },
+      "raw_semantic_qwen": {
+        "correct": 6,
+        "denominator": 8
+      }
+    }
+  },
+  "data": [
+    {
+      "bytes": 96654,
+      "path": "conversations/conv-30.json",
+      "sha256": "dbafb527c5b919f5f9565929824aa6f2e001eed8fc59fc1ec7df1df9fbcda8bb"
+    },
+    {
+      "bytes": 185068,
+      "path": "conversations/conv-43.json",
+      "sha256": "2c1cb7bf2bdc487d46c7d51844a1293724a4819aeadd22313c48a2974a3d334d"
+    }
+  ],
+  "first_two_readback": {
+    "attempts_per_trace": {
+      "confirmation.v1.answer.q_c2ac9bc074a3bbea8ee97f73.raw_lexical": 3,
+      "confirmation.v1.judge.q_c2ac9bc074a3bbea8ee97f73.raw_lexical": 3
+    },
+    "backoff": {
+      "initial_seconds": 1.0,
+      "kind": "exponential",
+      "max_seconds": 30.0,
+      "waits_seconds": [
+        1.0,
+        2.0
+      ]
+    },
+    "campaign": "memory-locomo-raw-confirmation-20261115-v1",
+    "distinct_traces": true,
+    "elapsed_seconds": 11.161244700022507,
+    "extra_model_requests": 0,
+    "model": "deepseek-v4.1-flash",
+    "one_observation_per_trace": true,
+    "project": "cmwg5sagt00ksad0j6au0463n",
+    "protocol": "locomo-raw-confirmation-v1",
+    "query_errors_per_trace": {},
+    "rows": [
+      {
+        "arm": "raw_lexical",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "131231f86b722fb4",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "confirmation.v1.answer.q_c2ac9bc074a3bbea8ee97f73.raw_lexical",
+        "session_id": "memory-locomo-raw-confirmation-20261115-v1",
+        "stage": "answer",
+        "task_id": "q_c2ac9bc074a3bbea8ee97f73",
+        "trace_id": "5b2c4cfebceed656cb96d5766b601b5c",
+        "usage_details": {
+          "input": 1783,
+          "output": 117,
+          "total": 1900
+        }
+      },
+      {
+        "arm": "raw_lexical",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "30b8af666a84a998",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "confirmation.v1.judge.q_c2ac9bc074a3bbea8ee97f73.raw_lexical",
+        "session_id": "memory-locomo-raw-confirmation-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_c2ac9bc074a3bbea8ee97f73",
+        "trace_id": "1ad9ae82d86e9f3553297f2663b4a010",
+        "usage_details": {
+          "input": 163,
+          "output": 95,
+          "total": 258
+        }
+      }
+    ],
+    "same_campaign_session": true,
+    "sample_count": 2,
+    "schema_version": 1,
+    "status": "verified",
+    "window_seconds": 180.0
+  },
+  "gold_sha256": "92a19d57814f0fabca6b884e7f2fb098afce8a2d013bbb1108a62b0005860372",
+  "owner_close": {
+    "close_errors": 0,
+    "dropped": 0,
+    "export_errors": 0,
+    "llm_clients_closed": true,
+    "runtime_alive_after_close": false,
+    "runtime_close_complete": true
+  },
+  "paired_comparisons": {
+    "raw_lexical__vs__raw_hybrid_rrf": {
+      "both_correct": 9,
+      "both_incorrect": 13,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 1,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": 0,
+      "right_only_correct": 1
+    },
+    "raw_lexical__vs__raw_semantic_qwen": {
+      "both_correct": 10,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 0,
+      "mcnemar_exact_p_two_sided": 0.5,
+      "paired_delta_left_minus_right": -2,
+      "right_only_correct": 2
+    },
+    "raw_semantic_qwen__vs__raw_hybrid_rrf": {
+      "both_correct": 10,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 2,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 0.5,
+      "paired_delta_left_minus_right": 2,
+      "right_only_correct": 0
+    }
+  },
+  "protocol": "locomo-raw-confirmation-v1",
+  "requests": {
+    "completion_tokens": 31824,
+    "latency": 704.2670433521271,
+    "prompt_tokens": 131070,
+    "requests": 144,
+    "total_tokens": 163278
+  },
+  "retrieval_preflight": {
+    "arm_questions": 72,
+    "max_context_chars": 5981,
+    "paid_model_calls": 0,
+    "questions": 24
+  },
+  "rows": 72,
+  "schema_version": 1,
+  "selection": {
+    "conversations": [
+      "conv-30",
+      "conv-43"
+    ],
+    "excluded_conversations": [
+      "conv-41",
+      "conv-42",
+      "conv-47"
+    ],
+    "model_scores_used": false,
+    "rule": "metadata-only eligible conversation shuffle; four evidence-labeled QA per category",
+    "seed": 20261115,
+    "source_fields": [
+      "sample_id",
+      "qa.category",
+      "qa.evidence"
+    ]
+  },
+  "source": {
+    "bytes": 2805274,
+    "file": "data/locomo10.json",
+    "license": "CC BY-NC 4.0",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\data\\locomo-pinned\\data\\locomo10.json",
+    "repository": "snap-research/locomo",
+    "revision": "3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376",
+    "sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4"
+  },
+  "status": "complete",
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 144,
+    "unknown_or_inflight": false,
+    "used_tokens": 163278
+  }
+}

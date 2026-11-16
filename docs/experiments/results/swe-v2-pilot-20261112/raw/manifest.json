@@ -1,0 +1,420 @@
+{
+  "schema_version": 1,
+  "adapter_protocol": "v2",
+  "collected_at": "2026-11-12T13:06:00.563799+00:00",
+  "source_commit": "765216830b1972ba3b3c0d20171315343c63d288",
+  "plan_sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+  "catalog_sha256": "fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c",
+  "collector_sha256": "df0b63066e88387af070b7b562b7f519a9bab414bc61887ef7e302afa0172fbb",
+  "frozen_inputs_verified": 184,
+  "original_result_files_verified": 92,
+  "whitelist": "plan/catalog/safe metadata/source hashes/raw run/prediction/ledger/original official feedback",
+  "excluded": "gold/test patches, hints, evaluator datasets, canonical directories, model sessions and auth/environment data",
+  "files": [
+    {
+      "file": "plan.json",
+      "sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+      "bytes": 51500
+    },
+    {
+      "file": "plan.sha256",
+      "sha256": "52b97e6406650dbe01a427ca0bd3f1b565d4480ffe053d9ddae702e6d3a7a8db",
+      "bytes": 65
+    },
+    {
+      "file": "catalog.json",
+      "sha256": "fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c",
+      "bytes": 2689
+    },
+    {
+      "file": "safe-metadata/pytest-dev__pytest-5103.json",
+      "sha256": "db8b862c14233abcdb1929245aeba7810942d7f047dc53c86b59498dc6525c20",
+      "bytes": 2661
+    },
+    {
+      "file": "safe-metadata/sympy__sympy-11400.json",
+      "sha256": "dc958547065bbfc685fd36bbc8ecb9c0071e888e05b407e7c651c4fbd9afb0b3",
+      "bytes": 657
+    },
+    {
+      "file": "safe-metadata/pytest-dev__pytest-5227.json",
+      "sha256": "cf7ac733a7492a656fe0f13520edb9ff9204549856c9c76c17c069efa8ee5a7f",
+      "bytes": 1458
+    },
+    {
+      "file": "safe-metadata/pytest-dev__pytest-5221.json",
+      "sha256": "851a30a537dfb2f58c6cb1696b3eecf000910be4b4503fcee9499af5fd3b8196",
+      "bytes": 576
+    },
+    {
+      "file": "safe-metadata/sympy__sympy-20590.json",
+      "sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7",
+      "bytes": 1107
+    },
+    {
+      "file": "safe-metadata/sympy__sympy-11870.json",
+      "sha256": "ce067fcf0915f2b00c2cdc78262bd97f4164647de33dac50778930c16b17ef2f",
+      "bytes": 693
+    },
+    {
+      "file": "trials/01-pytest-dev__pytest-5103-on/state.json",
+      "sha256": "2a22f75e8b6d6b2d4fffbd5841f02cc1748a7cb7eb8c5ef93801520346d47675",
+      "bytes": 1921
+    },
+    {
+      "file": "trials/01-pytest-dev__pytest-5103-on/run.json",
+      "sha256": "d5b3118bf3352793ade969f1910ce56c3e6a3ec52c0fcd6bf01dfe4a61ec2282",
+      "bytes": 3371
+    },
+    {
+      "file": "trials/01-pytest-dev__pytest-5103-on/model_patch.jsonl",
+      "sha256": "662ab7db6653eb31bdfd6a9a68a10803d81a785cc06b007999b7d6f61ed16f37",
+      "bytes": 107
+    },
+    {
+      "file": "trials/01-pytest-dev__pytest-5103-on/score-state.json",
+      "sha256": "a61038b9285e22105f3d4fa91449b66f08b68a37f080a50afecaabaedd4e0933",
+      "bytes": 1145
+    },
+    {
+      "file": "trials/01-pytest-dev__pytest-5103-on/official-command.json",
+      "sha256": "fe0d178e64d40980d8234f749f58e0dedd1e3c7764d82896db53172da53791cc",
+      "bytes": 861
+    },
+    {
+      "file": "trials/01-pytest-dev__pytest-5103-on/official-summary.json",
+      "sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a",
+      "bytes": 811
+    },
+    {
+      "file": "trials/02-pytest-dev__pytest-5103-off/state.json",
+      "sha256": "ca10b8f52ca0a60cbd6dd60bdf0421a782a747964c88735fcfd35aecdb437970",
+      "bytes": 1245
+    },
+    {
+      "file": "trials/02-pytest-dev__pytest-5103-off/run.json",
+      "sha256": "3dd3b5e803ed8c6e2ea0704f52301caf6f6b3c56e51d0607afe8a4fe3680fb00",
+      "bytes": 3423
+    },
+    {
+      "file": "trials/02-pytest-dev__pytest-5103-off/model_patch.jsonl",
+      "sha256": "f804c7d67ae1396833559f58b73068ab05f3c2f9b080ebc366195bb26e1e8a79",
+      "bytes": 108
+    },
+    {
+      "file": "trials/02-pytest-dev__pytest-5103-off/score-state.json",
+      "sha256": "ce92464e8ebc4b05098fbf196d806d7a3a1b94554a60077b6b4606caeec8953c",
+      "bytes": 1151
+    },
+    {
+      "file": "trials/02-pytest-dev__pytest-5103-off/official-command.json",
+      "sha256": "69c9f7911628f65908f2d4b0e22d230188d7170ed1a983d046b991e324e3bb65",
+      "bytes": 863
+    },
+    {
+      "file": "trials/02-pytest-dev__pytest-5103-off/official-summary.json",
+      "sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a",
+      "bytes": 811
+    },
+    {
+      "file": "trials/03-sympy__sympy-11400-on/state.json",
+      "sha256": "07aad345d8447e15e05af6f799a71079579a9bb5e426d828516010341537593d",
+      "bytes": 1891
+    },
+    {
+      "file": "trials/03-sympy__sympy-11400-on/run.json",
+      "sha256": "90759be871c82a1c57d92c40cfb325c85e733a1f5b7e2322d456033f88550cd9",
+      "bytes": 3339
+    },
+    {
+      "file": "trials/03-sympy__sympy-11400-on/model_patch.jsonl",
+      "sha256": "125e0cc8b943e798cfe7dd25e292401d17c26815b8062cafd4e82a72a014907c",
+      "bytes": 102
+    },
+    {
+      "file": "trials/03-sympy__sympy-11400-on/score-state.json",
+      "sha256": "3fdc8ca22772475cfee92252cc2f955dbf6a224e9a90f62d789d8583728e4e7f",
+      "bytes": 1125
+    },
+    {
+      "file": "trials/03-sympy__sympy-11400-on/official-command.json",
+      "sha256": "644bf7db0e0e261ef3052ed73d2eba6073550cbaa44a51c05cd521f0d23b400e",
+      "bytes": 836
+    },
+    {
+      "file": "trials/03-sympy__sympy-11400-on/official-summary.json",
+      "sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404",
+      "bytes": 796
+    },
+    {
+      "file": "trials/04-sympy__sympy-11400-off/state.json",
+      "sha256": "bdd9f2145379274f333f096a86d9425b607b6ea5970e01aaf8d6991d68d3e977",
+      "bytes": 1225
+    },
+    {
+      "file": "trials/04-sympy__sympy-11400-off/run.json",
+      "sha256": "59a698650c8f99692d9269f7239141f7caa918e1155c2f24ce37a1566e03416e",
+      "bytes": 3377
+    },
+    {
+      "file": "trials/04-sympy__sympy-11400-off/model_patch.jsonl",
+      "sha256": "e48c0b753c43d4c607ecda1916f4b95a3e6ad77aae2c9185c8a696dd19bf4423",
+      "bytes": 103
+    },
+    {
+      "file": "trials/04-sympy__sympy-11400-off/score-state.json",
+      "sha256": "9284f1b31678cee19dd02d80f41db0b27eb07b3db438f0f01486bb2130d7ea6a",
+      "bytes": 1131
+    },
+    {
+      "file": "trials/04-sympy__sympy-11400-off/official-command.json",
+      "sha256": "77a43174390e36380840f1119d771f5ee94f396a3d4fb63b7c35ceacbae61c66",
+      "bytes": 838
+    },
+    {
+      "file": "trials/04-sympy__sympy-11400-off/official-summary.json",
+      "sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404",
+      "bytes": 796
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/state.json",
+      "sha256": "9bbfc8c2420e029fe510e71faa5a058cfae4684ed2e8cabb8be8242498340469",
+      "bytes": 4643
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/run.json",
+      "sha256": "20a6d452121bc5afc162437df748bb8c2d1df625c2d9d6530d7a403206095f1b",
+      "bytes": 3418
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/model_patch.jsonl",
+      "sha256": "4e016a90c8ffa5069758dc521707bda905a1e878b3b057bb0a93ee4e37830028",
+      "bytes": 638
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/score-state.json",
+      "sha256": "02b683cf96717b44cc476568a51c8f6339b5428e90e6d780d04aaf0d3ed373a3",
+      "bytes": 1145
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/official-command.json",
+      "sha256": "55bf273de15770d64c1a1d42bc7fba3d9ef25d859685776f1c9373422c12fec3",
+      "bytes": 861
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/official-summary.json",
+      "sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+      "bytes": 850
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/official-instance.json",
+      "sha256": "32ab7b5b8899ac48b1ec0fa6c39a4760838efcc6596fdd4c742c53fd69667c74",
+      "bytes": 3820
+    },
+    {
+      "file": "trials/05-pytest-dev__pytest-5227-on/test-output.txt",
+      "sha256": "b814d5e16bd6c9032ba2e4893809fb49965a9a489f87ec6e3febcbb2dd0b78e5",
+      "bytes": 158498
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/state.json",
+      "sha256": "ed865f7a8045f646b2473cb1bd0a7de8119769634ccd8da125bbfffb4c86fd6a",
+      "bytes": 1246
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/run.json",
+      "sha256": "1cb13794cd5b7b4d8bd33fb589f541171499254303ff719f7defcf42324c85f4",
+      "bytes": 3404
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/model_patch.jsonl",
+      "sha256": "30c8bc90050a6fcb0240b85374e931457a63bf12b3593f38f592f41224b42767",
+      "bytes": 1689
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/score-state.json",
+      "sha256": "441c9ede62a986d847e413421e7f4af7f50e8a53d7efb9424526f97c44a3a973",
+      "bytes": 1151
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/official-command.json",
+      "sha256": "5aadea4749ddcbba1ab3749a37d0d9d4fa715819a0142df4b6aacc6cb260cddc",
+      "bytes": 863
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/official-summary.json",
+      "sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+      "bytes": 850
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/official-instance.json",
+      "sha256": "32ab7b5b8899ac48b1ec0fa6c39a4760838efcc6596fdd4c742c53fd69667c74",
+      "bytes": 3820
+    },
+    {
+      "file": "trials/06-pytest-dev__pytest-5227-off/test-output.txt",
+      "sha256": "03ab1d22d69043c820f7ceff52a912bd72e97510a9a9d5d313428e00f975f9ce",
+      "bytes": 159497
+    },
+    {
+      "file": "trials/07-pytest-dev__pytest-5221-off/state.json",
+      "sha256": "42d1651f31ecd0d76ccf248473293b449b894aed34fec18a361287cd6c01dca1",
+      "bytes": 1245
+    },
+    {
+      "file": "trials/07-pytest-dev__pytest-5221-off/run.json",
+      "sha256": "e871043bee637a8dbdaf7231393bed62e39d4d8a6dd6d86b13d7f2400740c942",
+      "bytes": 3399
+    },
+    {
+      "file": "trials/07-pytest-dev__pytest-5221-off/model_patch.jsonl",
+      "sha256": "f17aeeab1f83021517e91fd049eabbdfb7b67b0265d173b32c01b02692cb35c1",
+      "bytes": 108
+    },
+    {
+      "file": "trials/07-pytest-dev__pytest-5221-off/score-state.json",
+      "sha256": "7ba92c9d22ef506ed66b49cb264e43ad3c2302bb45b30b2cdf6df513b9e280cc",
+      "bytes": 1151
+    },
+    {
+      "file": "trials/07-pytest-dev__pytest-5221-off/official-command.json",
+      "sha256": "04a7324cff40bfd34e592568282e58d4c3b1631ae244ff098aec12392b6c028f",
+      "bytes": 863
+    },
+    {
+      "file": "trials/07-pytest-dev__pytest-5221-off/official-summary.json",
+      "sha256": "59731e31de8e25eb9b6e699ceb0b1419fff4293fada287ebff340f1c9f5495fa",
+      "bytes": 811
+    },
+    {
+      "file": "trials/08-pytest-dev__pytest-5221-on/state.json",
+      "sha256": "57d453da17396c72326cfc5452335bdec10e76199b72fdf348cdeac987025440",
+      "bytes": 3281
+    },
+    {
+      "file": "trials/08-pytest-dev__pytest-5221-on/run.json",
+      "sha256": "171eec8a9e15a993773c89fe047ec6326852ef9da495710572ed9cc2c7129fb7",
+      "bytes": 3420
+    },
+    {
+      "file": "trials/08-pytest-dev__pytest-5221-on/model_patch.jsonl",
+      "sha256": "a0720d401d0b1823badb397e768076830f0b778a55d63b72c6fc04c363a08994",
+      "bytes": 107
+    },
+    {
+      "file": "trials/08-pytest-dev__pytest-5221-on/score-state.json",
+      "sha256": "024b8df9d78ff93326dc8fcbfdfd1176c321cb7e8fb63b2fab70aa41d9f205d8",
+      "bytes": 1145
+    },
+    {
+      "file": "trials/08-pytest-dev__pytest-5221-on/official-command.json",
+      "sha256": "871aaf3caacf9d8f5fc0495d6a03bb08f5507a5aab8829fd8a225679041c5728",
+      "bytes": 861
+    },
+    {
+      "file": "trials/08-pytest-dev__pytest-5221-on/official-summary.json",
+      "sha256": "59731e31de8e25eb9b6e699ceb0b1419fff4293fada287ebff340f1c9f5495fa",
+      "bytes": 811
+    },
+    {
+      "file": "trials/09-sympy__sympy-20590-off/state.json",
+      "sha256": "2fc494ac12350dbf7d3e6eef68489716a08a1ab285abdce919c1bcf624fdb886",
+      "bytes": 1226
+    },
+    {
+      "file": "trials/09-sympy__sympy-20590-off/run.json",
+      "sha256": "9917805f497bc51e52b4c3475a7a0f05ff08601c9827e478db0c8c19b34a7522",
+      "bytes": 3388
+    },
+    {
+      "file": "trials/09-sympy__sympy-20590-off/model_patch.jsonl",
+      "sha256": "3b61b37af8299e73a9667bc9945f5025739225cada049fd76df3ea1108dd3521",
+      "bytes": 103
+    },
+    {
+      "file": "trials/09-sympy__sympy-20590-off/score-state.json",
+      "sha256": "f65ada24d85f05beb7867df397fb3826ca40d6f1584b2707f2aa6b10e0f8feb7",
+      "bytes": 1131
+    },
+    {
+      "file": "trials/09-sympy__sympy-20590-off/official-command.json",
+      "sha256": "a197d77d4047d922c5d4fdec1480b1d1894225558d638652186faba2201b2dc2",
+      "bytes": 838
+    },
+    {
+      "file": "trials/09-sympy__sympy-20590-off/official-summary.json",
+      "sha256": "15e330d17c186fbd1b7c874a542ced6ac4b8859f742bb8f85e72b012048ed080",
+      "bytes": 796
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/state.json",
+      "sha256": "07377df78d6315a4bc0f6d700fb35ea79878e2a8e337fb09cc88ca52fcb5a4bf",
+      "bytes": 1891
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/run.json",
+      "sha256": "0e1a0fffa6d4d29abe48cff535987d5e3b5410c3a6587f1b323f036cf09a3145",
+      "bytes": 3380
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/model_patch.jsonl",
+      "sha256": "d1cae9f87f3e380a37b77c97d9ac6d1e5714d8722de1d3efbb26645dae5e5679",
+      "bytes": 594
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/score-state.json",
+      "sha256": "1ac7c6eab34fd2ec2111cecd4e4563c59e58cb3a03b0524c14bd4cb56f5ca31b",
+      "bytes": 1125
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/official-command.json",
+      "sha256": "c1175947efc9ed319782bc47e8a8d39c86aff3a16208790229abd701d116fd8d",
+      "bytes": 836
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/official-summary.json",
+      "sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+      "bytes": 830
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/official-instance.json",
+      "sha256": "8b9789cc302b46bed7edeaed0ecc1e0f8af15c9263c46131c34440347f809717",
+      "bytes": 1571
+    },
+    {
+      "file": "trials/10-sympy__sympy-20590-on/test-output.txt",
+      "sha256": "5fcee2a496c4cf679be8ad1c09bd824eb6a83f6199374b0fad66f383c0bc44f6",
+      "bytes": 434549
+    },
+    {
+      "file": "trials/11-sympy__sympy-11870-on/state.json",
+      "sha256": "b78c72603f3b0aaf61193242728f58055c3e8ea16593368c0daac85455fdd401",
+      "bytes": 213
+    },
+    {
+      "file": "trials/12-sympy__sympy-11870-off/state.json",
+      "sha256": "07700234c8bb018df946ee0b3382f5c16893d70413ebdb54cdf97144204c88ce",
+      "bytes": 213
+    },
+    {
+      "file": "ledger.json",
+      "sha256": "c5df6a662145c01ac32f232eed24a75d2376508871d2da0ec47dfa11a092636a",
+      "bytes": 115946
+    },
+    {
+      "file": "summary.json",
+      "sha256": "bad8a52d14b9cf2cfc06d4fa4356b964c4a318c54a9d49a283c9096958448ae4",
+      "bytes": 18419
+    },
+    {
+      "file": "source-hashes.json",
+      "sha256": "da131c3adaacd500d94c58c32110bb987dadc7e0594e078305ffce2b0ce94ff6",
+      "bytes": 26123
+    },
+    {
+      "file": "derived-outcomes.json",
+      "sha256": "187077eea8bbc7968428391db87a3fc7422a688fd09cd0df7585d7cc5e279882",
+      "bytes": 5916
+    }
+  ]
+}

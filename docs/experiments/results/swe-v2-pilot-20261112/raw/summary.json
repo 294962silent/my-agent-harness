@@ -1,0 +1,483 @@
+{
+  "adapter_protocol": "v2",
+  "evidence_level": "small_fixed_paired_pilot",
+  "source_commit": "765216830b1972ba3b3c0d20171315343c63d288",
+  "plan_sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+  "catalog_sha256": "fe6f15e9887c5e07243c54e91b6f5e93cff56f8c3841d387cb312c2db43f126c",
+  "selected_tasks": 6,
+  "eligible_tasks": 5,
+  "blocked_tasks": 1,
+  "model_attempted_trials": 10,
+  "scored_trials": 3,
+  "known_official_outcomes": 10,
+  "test_executed_trials": 3,
+  "empty_patch_trials": 7,
+  "resolved_trials": 3,
+  "complete_scored_pairs": 1,
+  "complete_known_outcome_pairs": 5,
+  "budget": {
+    "campaign_usage_complete": true,
+    "campaign_requests": 160,
+    "campaign_cost_usd": 0.503462,
+    "prior_ledger_requests": 32,
+    "prior_ledger_cost_usd": 0.068597,
+    "unknown_usage_rows": 0,
+    "global_charged_or_held_usd": 0.572059,
+    "global_limit_usd": 30.0,
+    "campaign_absolute_ceiling_usd": "3.068597"
+  },
+  "token_field_coverage": {
+    "prompt_tokens": {
+      "present_rows": 160,
+      "total_rows": 160,
+      "complete": true,
+      "total_if_complete": 140552,
+      "observed_sum_only": 140552
+    },
+    "completion_tokens": {
+      "present_rows": 160,
+      "total_rows": 160,
+      "complete": true,
+      "total_if_complete": 119233,
+      "observed_sum_only": 119233
+    },
+    "total_tokens": {
+      "present_rows": 160,
+      "total_rows": 160,
+      "complete": true,
+      "total_if_complete": 1320265,
+      "observed_sum_only": 1320265
+    },
+    "cache_read_tokens": {
+      "present_rows": 158,
+      "total_rows": 160,
+      "complete": false,
+      "total_if_complete": null,
+      "observed_sum_only": 1060480
+    },
+    "cache_write_tokens": {
+      "present_rows": 0,
+      "total_rows": 160,
+      "complete": false,
+      "total_if_complete": null,
+      "observed_sum_only": 0
+    }
+  },
+  "trials": [
+    {
+      "trial_id": "01-pytest-dev__pytest-5103-on",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "on",
+      "run_id": "0dd198de18ef54eab0224ac808d978bc",
+      "score_run_id": "campaign-9684ed3b7278-01",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 1,
+        "artifact_bytes": 6380,
+        "artifact_file_hashes": [
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/dedcaefcfe5e7278/2f6ba88ed0afe935a289884fd0d96fb9.txt",
+            "sha256": "2f6ba88ed0afe935a289884fd0d96fb9e76819b4619e2810e7a446365cb4e5fa",
+            "bytes": 6380
+          }
+        ],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a"
+    },
+    {
+      "trial_id": "02-pytest-dev__pytest-5103-off",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "off",
+      "run_id": "ac09ac06cdb5516d81cfb935cf567ab8",
+      "score_run_id": "campaign-9684ed3b7278-02",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 0,
+        "artifact_bytes": 0,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a"
+    },
+    {
+      "trial_id": "03-sympy__sympy-11400-on",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "on",
+      "run_id": "8c99e89e19365f7895c3ad04d498a4a1",
+      "score_run_id": "campaign-9684ed3b7278-03",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 1,
+        "artifact_bytes": 7277,
+        "artifact_file_hashes": [
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/aa6eadb4ad03c157/66ec51e228ff67c934ef2efbf9afbbc9.txt",
+            "sha256": "66ec51e228ff67c934ef2efbf9afbbc9d488f16d47eb5e15a6b4d7a93c081980",
+            "bytes": 7277
+          }
+        ],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404"
+    },
+    {
+      "trial_id": "04-sympy__sympy-11400-off",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "off",
+      "run_id": "30f0f5452c315286a013e95a01393312",
+      "score_run_id": "campaign-9684ed3b7278-04",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 0,
+        "artifact_bytes": 0,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404"
+    },
+    {
+      "trial_id": "05-pytest-dev__pytest-5227-on",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "on",
+      "run_id": "a1e09012485151f1969dd04bf842511a",
+      "score_run_id": "campaign-9684ed3b7278-05",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": true,
+      "score_category": "scored",
+      "score_category_original_v765": "scored",
+      "known_official_outcome": true,
+      "empty_patch": false,
+      "test_executed": true,
+      "artifacts": {
+        "artifact_files": 5,
+        "artifact_bytes": 46685,
+        "artifact_file_hashes": [
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/7384093aa68f2b151bcbb92093d064ac.txt",
+            "sha256": "7384093aa68f2b151bcbb92093d064acd391ee60d269eccdec164c096d1e5a31",
+            "bytes": 7112
+          },
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/ab3763449ce735a460dd9b8c7e475e2c.txt",
+            "sha256": "ab3763449ce735a460dd9b8c7e475e2c1f0bd635005de0038852bd2327eac21c",
+            "bytes": 10705
+          },
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/dac3196aa78b770e3155e301d324cd38.txt",
+            "sha256": "dac3196aa78b770e3155e301d324cd38810e24f951457978ce16dd451b576b8d",
+            "bytes": 9934
+          },
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/f7de53c614da08489403d9c14835fa51.txt",
+            "sha256": "f7de53c614da08489403d9c14835fa5163f885abd33835ef429eb7bef874cd56",
+            "bytes": 10333
+          },
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/ff4ac1f1319c49810483eca845e351a5.txt",
+            "sha256": "ff4ac1f1319c49810483eca845e351a5bbcb57446814848363e4a23a2f35aea7",
+            "bytes": 8601
+          }
+        ],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d"
+    },
+    {
+      "trial_id": "06-pytest-dev__pytest-5227-off",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "off",
+      "run_id": "228ad4e1f722595aa25edbdcba9646d7",
+      "score_run_id": "campaign-9684ed3b7278-06",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": true,
+      "score_category": "scored",
+      "score_category_original_v765": "scored",
+      "known_official_outcome": true,
+      "empty_patch": false,
+      "test_executed": true,
+      "artifacts": {
+        "artifact_files": 0,
+        "artifact_bytes": 0,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d"
+    },
+    {
+      "trial_id": "07-pytest-dev__pytest-5221-off",
+      "instance_id": "pytest-dev__pytest-5221",
+      "arm": "off",
+      "run_id": "ee2aec65ad66542985cad103dfd16b4f",
+      "score_run_id": "campaign-9684ed3b7278-07",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 0,
+        "artifact_bytes": 0,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "59731e31de8e25eb9b6e699ceb0b1419fff4293fada287ebff340f1c9f5495fa"
+    },
+    {
+      "trial_id": "08-pytest-dev__pytest-5221-on",
+      "instance_id": "pytest-dev__pytest-5221",
+      "arm": "on",
+      "run_id": "69a95d59fa3456eebed4e43d96334f5d",
+      "score_run_id": "campaign-9684ed3b7278-08",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 3,
+        "artifact_bytes": 20804,
+        "artifact_file_hashes": [
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/508b1ad8bac26c68/1e3e940ae02e962367595ced858bcaa4.txt",
+            "sha256": "1e3e940ae02e962367595ced858bcaa4f6cfe9a85fe9ed75fbd116bc3ed5b882",
+            "bytes": 8221
+          },
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/508b1ad8bac26c68/a8c5ef1847e02da099a1356cae2c3070.txt",
+            "sha256": "a8c5ef1847e02da099a1356cae2c3070415eed870fb5220cb277ca0bab8a1276",
+            "bytes": 6270
+          },
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/508b1ad8bac26c68/e8f29359b8d79766c81f2162d98063da.txt",
+            "sha256": "e8f29359b8d79766c81f2162d98063da0187bff7d33f563d60d812241597de7a",
+            "bytes": 6313
+          }
+        ],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "59731e31de8e25eb9b6e699ceb0b1419fff4293fada287ebff340f1c9f5495fa"
+    },
+    {
+      "trial_id": "09-sympy__sympy-20590-off",
+      "instance_id": "sympy__sympy-20590",
+      "arm": "off",
+      "run_id": "d9f4828b3c375914a5c979a4dda484c9",
+      "score_run_id": "campaign-9684ed3b7278-09",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": false,
+      "score_category": "empty_patch",
+      "score_category_original_v765": "environment_or_execution_error",
+      "known_official_outcome": true,
+      "empty_patch": true,
+      "test_executed": false,
+      "artifacts": {
+        "artifact_files": 0,
+        "artifact_bytes": 0,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "15e330d17c186fbd1b7c874a542ced6ac4b8859f742bb8f85e72b012048ed080"
+    },
+    {
+      "trial_id": "10-sympy__sympy-20590-on",
+      "instance_id": "sympy__sympy-20590",
+      "arm": "on",
+      "run_id": "662bbf13fe70593eac78d4ecd30685a1",
+      "score_run_id": "campaign-9684ed3b7278-10",
+      "journal_status": "completed",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": "budget_exhausted",
+      "model_requests": 16,
+      "usage_available": true,
+      "official_resolved": true,
+      "score_category": "scored",
+      "score_category_original_v765": "scored",
+      "known_official_outcome": true,
+      "empty_patch": false,
+      "test_executed": true,
+      "artifacts": {
+        "artifact_files": 1,
+        "artifact_bytes": 6135,
+        "artifact_file_hashes": [
+          {
+            "relative_path": "artifacts/.my_agent_core/artifacts/57a1b96eac75d3c5/228ca5e9a21836fe27e42692e2c5748e.txt",
+            "sha256": "228ca5e9a21836fe27e42692e2c5748e18bcaa8352ebd313ef24e5ce7914bbea",
+            "bytes": 6135
+          }
+        ],
+        "artifact_read_responses": 0,
+        "artifact_read_ok_responses": 0,
+        "artifact_read_end_markers": 0,
+        "artifact_search_responses": 0
+      },
+      "official_aggregate_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5"
+    },
+    {
+      "trial_id": "11-sympy__sympy-11870-on",
+      "instance_id": "sympy__sympy-11870",
+      "arm": "on",
+      "run_id": "3cc3280484b35eacb6f44f496ff0796a",
+      "score_run_id": "campaign-9684ed3b7278-11",
+      "journal_status": "blocked",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": null,
+      "model_requests": 0,
+      "usage_available": null,
+      "official_resolved": null,
+      "score_category": "unscored",
+      "score_category_original_v765": "unscored",
+      "known_official_outcome": false,
+      "empty_patch": null,
+      "test_executed": null,
+      "artifacts": {
+        "artifact_files": null,
+        "artifact_bytes": null,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": null,
+        "artifact_read_ok_responses": null,
+        "artifact_read_end_markers": null,
+        "artifact_search_responses": null
+      }
+    },
+    {
+      "trial_id": "12-sympy__sympy-11870-off",
+      "instance_id": "sympy__sympy-11870",
+      "arm": "off",
+      "run_id": "37717e2cb4985200a7847eb32802ea26",
+      "score_run_id": "campaign-9684ed3b7278-12",
+      "journal_status": "blocked",
+      "journal_exists": true,
+      "blocked_evidence_source": null,
+      "solver_status": null,
+      "model_requests": 0,
+      "usage_available": null,
+      "official_resolved": null,
+      "score_category": "unscored",
+      "score_category_original_v765": "unscored",
+      "known_official_outcome": false,
+      "empty_patch": null,
+      "test_executed": null,
+      "artifacts": {
+        "artifact_files": null,
+        "artifact_bytes": null,
+        "artifact_file_hashes": [],
+        "artifact_read_responses": null,
+        "artifact_read_ok_responses": null,
+        "artifact_read_end_markers": null,
+        "artifact_search_responses": null
+      }
+    }
+  ],
+  "limits": [
+    "Prior v1 requests remain in the shared ledger but are excluded from current v2 trial totals.",
+    "A small fixed pilot is not a dataset pass rate or a general framework advantage.",
+    "Artifact read response counts do not prove complete evidence recovery or answer correctness.",
+    "Missing cache detail is not a measured zero cache hit rate.",
+    "Gold/test patches, hints, evaluator data, canonical directories and model sessions are not copied.",
+    "Categories are externally derived; original v765 category is preserved alongside unchanged original reports/state.",
+    "Empty patch is a known unsuccessful official submission with no tests executed, not an infrastructure failure."
+  ]
+}

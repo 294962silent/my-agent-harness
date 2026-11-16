@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-14T13:38:59.523Z",
+  "scope": "Langfuse two new real probes, reusable future experiment owner; no historical replay",
+  "files": [
+    {
+      "path": "experiments/benchmark_live/observation.py",
+      "bytes": 7266,
+      "sha256": "0a6d28723ed969889f57f2bf76d222b342664f29fceb9487d8a321d9fa12236c"
+    },
+    {
+      "path": "experiments/benchmark_live/observation_probe.py",
+      "bytes": 7567,
+      "sha256": "0493de88ebc01d2cffd8b5f4f9769bf223afc7278042d95384629a2f15dbc643"
+    },
+    {
+      "path": "experiments/benchmark_live/OBSERVATION.md",
+      "bytes": 4997,
+      "sha256": "6a3d8a4fb3eb5a660b9ec9a76941ad1ca56a536d87827e8b03c0661adf5454d1"
+    },
+    {
+      "path": "tests/experiments/test_experiment_observation.py",
+      "bytes": 10708,
+      "sha256": "fef60d293853db88a0659cca38579e6b1c53fdaa3f749ca4d3bd345c6e152068"
+    },
+    {
+      "path": "docs/experiments/results/langfuse-live-20261114/verification.json",
+      "bytes": 5628,
+      "sha256": "6c76fc6cde2edfa9993450fa0c31a46ee8b9225d53a4999a5cba743cbbd45fde"
+    }
+  ],
+  "root_readback_receipts_not_committed": true,
+  "credential_values_included": false
+}

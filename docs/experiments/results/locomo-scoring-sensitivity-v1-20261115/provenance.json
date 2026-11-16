@@ -1,0 +1,138 @@
+{
+  "base_url": "https://opencode.ai/inference/go/openai/v1",
+  "budget": {
+    "accounting_units": 250000,
+    "expected_model_calls": 12,
+    "max_requests": 12,
+    "retries": 0,
+    "wall_clock_seconds": 3600
+  },
+  "campaign_id": "memory-locomo-judge-sensitivity-20261115-v1",
+  "first_two_readback": {
+    "attempts_per_trace": {
+      "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_lexical": 1,
+      "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_mem0": 3
+    },
+    "backoff": {
+      "initial_seconds": 1.0,
+      "kind": "exponential",
+      "max_seconds": 30.0,
+      "waits_seconds": [
+        1.0,
+        2.0
+      ]
+    },
+    "campaign": "memory-locomo-judge-sensitivity-20261115-v1",
+    "distinct_traces": true,
+    "elapsed_seconds": 9.880564799997956,
+    "extra_model_requests": 0,
+    "model": "deepseek-v4.1-flash",
+    "one_observation_per_trace": true,
+    "project": "cmwg5sagt00ksad0j6au0463n",
+    "protocol": "locomo-judge-sensitivity-v1",
+    "query_errors_per_trace": {},
+    "rows": [
+      {
+        "arm": "facts_lexical",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "e8e62a9eedf3648c",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_lexical",
+        "session_id": "memory-locomo-judge-sensitivity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_1f86a8f6603e40ecabe5bd22",
+        "trace_id": "49ee7a28e18f738c9ee028136d62009e",
+        "usage_details": {
+          "input": 151,
+          "output": 578,
+          "total": 729
+        }
+      },
+      {
+        "arm": "facts_mem0",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "42a7170dcf8a9373",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_mem0",
+        "session_id": "memory-locomo-judge-sensitivity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_1f86a8f6603e40ecabe5bd22",
+        "trace_id": "68e9973e08daafd087ff2f9a259939ba",
+        "usage_details": {
+          "input": 151,
+          "output": 1855,
+          "total": 2006
+        }
+      }
+    ],
+    "same_campaign_session": true,
+    "sample_count": 2,
+    "schema_version": 1,
+    "status": "verified",
+    "window_seconds": 180.0
+  },
+  "gold": {
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3r1\\gold\\references.json",
+    "sha256": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf"
+  },
+  "ledger_request_count": 12,
+  "ledger_sha256": "83c2e0998e2abdf986379554f6fe282a89839e97f499165202a436650d939759",
+  "legacy_source_mismatches": [
+    {
+      "current_sha256": "e5f8f34ec7a77aa221f8a16a0d1c3854b3b0f8778c6f25ad18b6edb3d9d5320d",
+      "frozen_sha256": "509e56006d78075a7111cf561dcaf5ca71a77dc8a598929bc8b00dd1afd2e276",
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_runner_v3.py"
+    }
+  ],
+  "legacy_source_policy": "old plan/data/gold/answer/prompt/model bindings required; later implementation hash drift recorded",
+  "max_retries": 0,
+  "model": "deepseek-v4.1-flash",
+  "original_plan": {
+    "manifest_sha256": "1d55c514bf8dd5ea74c1d9e2b183a8085edcf470a0dc509fb5fa45e2c50519ab",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3r1\\plan\\plan.json",
+    "sha256": "716d25917f028793ed4a4f1263dc5aa03287fa7b0ceb6973eb975ad8a1c6bc1b"
+  },
+  "original_rows": {
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3r1-run\\reports\\rows.jsonl",
+    "sha256": "a5e1fa465b0ef928750a3203821be53c879cf3e1caea1f9724e8236e80a0629e"
+  },
+  "output_caps": {
+    "judge": 4096
+  },
+  "owner_close": {
+    "close_errors": 0,
+    "dropped": 0,
+    "export_errors": 0,
+    "llm_clients_closed": true,
+    "runtime_alive_after_close": false,
+    "runtime_close_complete": true
+  },
+  "plan_manifest_sha256": "5594cd479f364b8a909afb27861f85fec9f2f4d5f62cf33db114644d6afe0d3f",
+  "plan_sha256": "cb7b9dede7837b0cdc95a79bdbfb308e8c67345e5347db5235947522ff0da41d",
+  "prompts": {
+    "judge_sha256": "8d861de234d83a87ee7b16e7a26646563035758483d1c9fa368f70c1dc71ea31",
+    "original_answer_sha256": "6e6b760d17fe67582684187e4fc26b2cbb63114281b11d7c896e83de9b80b43c"
+  },
+  "protocol": "locomo-judge-sensitivity-v1",
+  "provider": "openai",
+  "ready_sha256": "8b0c05cd49e03b3abc8c653ae2fd1ad617715ddbdfe2990287ebf36106e484b8",
+  "requests": {
+    "completion_tokens": 9264,
+    "latency": 136.79512071609497,
+    "prompt_tokens": 1902,
+    "requests": 12,
+    "total_tokens": 11166
+  },
+  "schema_version": 1,
+  "selection": "all and only original rows with judge_status=length; no outcome-selective subset",
+  "summary_sha256": "44c9debba9431a1195c8edd9783115e6a375e41cc14988c9358332a1971f25da",
+  "temperature": 0,
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 12,
+    "unknown_or_inflight": false,
+    "used_tokens": 11166
+  }
+}

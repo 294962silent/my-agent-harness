@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source": "Frozen host references.json is_abstention field. Prepare rule: question_id suffix_abs OR original has_answer false. This fixed sample agrees with suffix for all12; classification was not inferred only from public names.",
+  "suffix_agrees_with_frozen_flags": true,
+  "groups": [
+    {
+      "arm": "none",
+      "abstention": {
+        "expected": 4,
+        "correct": 4
+      },
+      "non_abstention": {
+        "expected": 8,
+        "correct": 0
+      }
+    },
+    {
+      "arm": "lexical",
+      "abstention": {
+        "expected": 4,
+        "correct": 4
+      },
+      "non_abstention": {
+        "expected": 8,
+        "correct": 7
+      }
+    },
+    {
+      "arm": "mem0",
+      "abstention": {
+        "expected": 4,
+        "correct": 4
+      },
+      "non_abstention": {
+        "expected": 8,
+        "correct": 5
+      }
+    }
+  ]
+}

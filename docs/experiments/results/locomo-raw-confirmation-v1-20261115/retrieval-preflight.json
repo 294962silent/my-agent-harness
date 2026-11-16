@@ -1,0 +1,691 @@
+{
+  "arm_questions": 72,
+  "candidate_count_per_arm": 8,
+  "context_files": {
+    "preflight/contexts/q_02b9c1613abb834a080eb317.json": "d54a0005871ba3e11c9e9a90882c967c0935f31435d40b08e3e65544ad190707",
+    "preflight/contexts/q_07f5592d26d08f8caa4c4d9a.json": "ee026cca7bda305c512dbe9ccb5b2bf5d55ba104cc071c98fdb97b8a5a7f5302",
+    "preflight/contexts/q_0c13b4cf8b3361d1b5fd74f4.json": "2e01ffc3790881211940365cf005e6d20791cac74f293c22e059bf3dff359298",
+    "preflight/contexts/q_0cdc08231f2baa016028e681.json": "c1803589481c2139c6fe3cbf9541c4312f0fb94754b1a9e47a8f5824bdb0d30b",
+    "preflight/contexts/q_1e9d6e8aaaccaa9d9dcfba7c.json": "569f914b9cd4d859b4648f15e7a79c4b9d3bd2fb0fbb7da0cc08af0da6b4049a",
+    "preflight/contexts/q_237878f81d3e18d629972459.json": "6bb4a0526d81314566ab1151d6c137e1755956923e88c93e8d71c8a36f118ea4",
+    "preflight/contexts/q_254c49bbb609f13045b79297.json": "3a12b340aa7dd1c2774e262e548d9d895dd9bce7dc4c3b9316fbc363040a11f9",
+    "preflight/contexts/q_29d6c32ed3380b25594f0e19.json": "27a8ec41a395b19a2dfb8d943c2e1eb71c9ddc88e4800f099d7cb89a26e58863",
+    "preflight/contexts/q_3a58e1cb8843d924c1e366af.json": "39b380385229b94118f784edf12b637d815625425d5686a14e060b7a8a3514bd",
+    "preflight/contexts/q_3d60cc7a2c24cf1f0d1877c3.json": "24e7bd1623bd6f1e3fe712fe811fd425b59da7aa245697042e4d4418d08bc79c",
+    "preflight/contexts/q_3f3755ab0542d098eec5c006.json": "770038d357f55726571f578185271caa09d7b73307cae586c4c177acc9fcc211",
+    "preflight/contexts/q_4776cc50be81a1c897c3091b.json": "dcedd28c5aa42fd3258d0528763916929ed1f1f21df669520df0c34576c43835",
+    "preflight/contexts/q_48802d9dc30e40a199578b89.json": "48882b4edaafa93955b5085657c8880b59bc3d6ba5445c50abfa1f10f3160f1e",
+    "preflight/contexts/q_5d4d9f2533e7b89c69e741dd.json": "9a4750d0029fa700cfbdb8a60268490910d51a75cc7a35cf3e9e073958937b7f",
+    "preflight/contexts/q_797bf1c7b21844ded4575cbc.json": "65dedc10ca9b0ca44467d5e952f9f3808346e1b0a767cd890f34a600dd010328",
+    "preflight/contexts/q_b22be4030577d415aacfacde.json": "7a5229642682271bfe5d0fbdafc606d1f1c452b983f24dc6aa6111235ab35d51",
+    "preflight/contexts/q_ba5fa6772219452de15a3ce8.json": "81e3574b834a9bf6b997d880fed20d902c60c1ab346db1533fa00e5d18c67b96",
+    "preflight/contexts/q_c0f019c1bf00a108372f699f.json": "9c04d843af8561d3e269b54c5a9ec0ef4592b2c21292bb5a081a2718e6ca60af",
+    "preflight/contexts/q_c128c7fee0f80f5d7eca2abc.json": "0abd4f6571fe5d4cb1aa9609e7332be4f8b179e32b6b4bf2f1ea15e2e1fd0842",
+    "preflight/contexts/q_c2ac9bc074a3bbea8ee97f73.json": "fb93f9edbbc2549025de36c6db32709f8878972b30d35a07bb8aacb21f3e482b",
+    "preflight/contexts/q_d9d5bf6233686aeaed879612.json": "b2ef6bf68d56281bacba1d87fdcee6fc9afb2118dcb671dc49a3b84ad0f841f2",
+    "preflight/contexts/q_eba876a082381ba6c2e68d93.json": "76089a1d5e468f975e15fcbac28f9dcf9f3c38c5cfe9f9ca46d7c4111914f0eb",
+    "preflight/contexts/q_edf877a8c2d7a99b9d0bc304.json": "210f50cc73173a7e3cb3585585f69c6a732105798b5a413d89a51d9bdbeeac11",
+    "preflight/contexts/q_f5e768d312dad330d3388ed3.json": "11c00dd5a743bc8dd9b1b44a854fca80ff0da215bcc6dde3be42f9e00a696e4c"
+  },
+  "created_at": "2026-11-15T02:41:30.739376+00:00",
+  "embedding_invocations": 298,
+  "embedding_status": {
+    "conv-30": {
+      "batch_size": 1,
+      "compute_capability": [
+        12,
+        0
+      ],
+      "credentials_in_worker": false,
+      "cuda_device_total_bytes": 8546484224,
+      "cuda_visible_devices": "0",
+      "device": "cuda:0",
+      "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "dimensions": 1024,
+      "launcher_pid": 48640,
+      "max_length": 4096,
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "network_guard": "linux_seccomp_no_non_unix_socket_or_connect",
+      "normalized": true,
+      "pid": 843,
+      "profile": "local_qwen_gpu_wsl_stdio",
+      "ready": true,
+      "torch_version": "2.8.0+cu128",
+      "worker_pid": 843
+    },
+    "conv-43": {
+      "batch_size": 1,
+      "compute_capability": [
+        12,
+        0
+      ],
+      "credentials_in_worker": false,
+      "cuda_device_total_bytes": 8546484224,
+      "cuda_visible_devices": "0",
+      "device": "cuda:0",
+      "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "dimensions": 1024,
+      "launcher_pid": 31384,
+      "max_length": 4096,
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "network_guard": "linux_seccomp_no_non_unix_socket_or_connect",
+      "normalized": true,
+      "pid": 937,
+      "profile": "local_qwen_gpu_wsl_stdio",
+      "ready": true,
+      "torch_version": "2.8.0+cu128",
+      "worker_pid": 937
+    }
+  },
+  "max_context_chars": 5981,
+  "paid_model_calls": 0,
+  "plan_sha256": "6d4a41d19308526ae91dfa6bbc42cc3a972ec7084ce6b2def6b6753d970f4cbe",
+  "protocol": "locomo-raw-confirmation-v1",
+  "questions": 24,
+  "records": [
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5689,
+          "context_sha256": "f14f27679d63d291721222beb70dcb6b6ed99d10f22dd458d1417adb377cf247",
+          "count": 8,
+          "keys_sha256": "26f041411df5ddc4fdaa4ae0ddf961d7d8979ae052f147fb7b1cbff67398ac87"
+        },
+        "raw_lexical": {
+          "context_chars": 5705,
+          "context_sha256": "5662c1a84d07409e3f9487bbf1bb54748f46e40085362629259988f35c16ffff",
+          "count": 8,
+          "keys_sha256": "8790f442b67f2487b45f3fc197bbe2a1f6f31c1f8f8c3dec376bc6866071a285"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5883,
+          "context_sha256": "7411d05fbcb3adc8e86deda297bd3a890607dc8cddd015c665ed162ea4666050",
+          "count": 8,
+          "keys_sha256": "e7b499b1174d644b3eb0d6d35bea8675642a5ce48e59a289a51036626f0e6e84"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_c2ac9bc074a3bbea8ee97f73",
+      "semantic_seconds": 0.1525077000260353
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5903,
+          "context_sha256": "54fb275fc6cac7e395dcbb1b3e2e323048e7f26c95f0a82fa4f902db6b1009d6",
+          "count": 8,
+          "keys_sha256": "5216f1d5717bc1cf19f9590700245c88442709d604b6d3708dbc4916650e9767"
+        },
+        "raw_lexical": {
+          "context_chars": 5915,
+          "context_sha256": "4fdcaedb49d8c36c7b92dc91aa9bf0b71617b22b4fda4f345cd941013dd4aba5",
+          "count": 8,
+          "keys_sha256": "9fcc3fecea71e1a6e9f277193c39733cd449189c554756eee9973eeb7c589d3c"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5949,
+          "context_sha256": "43d1fdbb47d6dfe917f5a0a81b86901708e1b8aa5f586c6cd4e8c163ec562380",
+          "count": 8,
+          "keys_sha256": "b2c276592bab85fa02224f826090ba8ce70fed0b1000c67b4a0c803c077951d1"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_ba5fa6772219452de15a3ce8",
+      "semantic_seconds": 0.06712189997779205
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5239,
+          "context_sha256": "c78a6d734810a921ad8631870efede119c2a4ede7f2fa811d3f159d15acb9b78",
+          "count": 8,
+          "keys_sha256": "0941ea0342fb48ffb294b537b701584810ce8837516edd7f87e0f6f3fe86f1d1"
+        },
+        "raw_lexical": {
+          "context_chars": 5782,
+          "context_sha256": "49026691665b7d9be602bc0bf18e8981d2ed0728f533000a4fe6f61250852fef",
+          "count": 8,
+          "keys_sha256": "e7ebd315220d21c11db47f834b9304f58e46c3987b1f356b10b0026146aace72"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5015,
+          "context_sha256": "2c6243a6f46ee9941dbaba5be3416ba57a29f2b24cbd9cce073d90c2e9c3967c",
+          "count": 8,
+          "keys_sha256": "328586d7675a31d9b3780abfbbfab0f71645382ecf999f5a2cb862c0c0ed9bf5"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_07f5592d26d08f8caa4c4d9a",
+      "semantic_seconds": 0.09776869998313487
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5707,
+          "context_sha256": "a37ce005146a674d6bacc4905a7c02680e7bf1ce0fdba2bd9688a7bc74b00c23",
+          "count": 8,
+          "keys_sha256": "b184a0b2cb814ad7733a684fedda78333a2af6b618bbd9c4f3c8e0e417446f1a"
+        },
+        "raw_lexical": {
+          "context_chars": 5682,
+          "context_sha256": "26f6c4653eb25129689b367bdc2c64da8e6680c9f368a066f374950a6553585e",
+          "count": 8,
+          "keys_sha256": "7012783d93a2ea506576b66e326319e1267d2589c31a5ac0ded328e41cc8641c"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5981,
+          "context_sha256": "b6244c94ec099ce689281cf2fa84708fcaba7cf7984faa51105b37feebc5a818",
+          "count": 8,
+          "keys_sha256": "069433e770634748fc97d529965d7aa892c95c3f485513f51eff227b33623783"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_1e9d6e8aaaccaa9d9dcfba7c",
+      "semantic_seconds": 0.06750020000617951
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5798,
+          "context_sha256": "1e615e3069e028d83b68f027d8da59d2df36b256edb5f479b1c8fb99e7388534",
+          "count": 8,
+          "keys_sha256": "b4ea4262e8ec55054bcedcbf8ccb9a175772d5db69bd2475127cb9d33c160735"
+        },
+        "raw_lexical": {
+          "context_chars": 5509,
+          "context_sha256": "374df24d5688cfd17d2608e2269da4d8cfaa71273d0df57f02483385ca2df9cb",
+          "count": 8,
+          "keys_sha256": "3f46c2e8e2859521a136707c618f9290aca077a564593cc7631ecefcb9127fd6"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5883,
+          "context_sha256": "8d88b059eb86c8ca7099498443680126a4447ec16fb3bd0baa35ebbe427beb2b",
+          "count": 8,
+          "keys_sha256": "577ce5a5de453a92f1a48a2b6eb1dc8ada5c4095e7ff29d9bc9ad3be0c899af6"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_02b9c1613abb834a080eb317",
+      "semantic_seconds": 0.12871820002328604
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5362,
+          "context_sha256": "3a40c96a773588a5be10fd7c60ef1b9879e15879bf809858dd8f4e79a1fc6e73",
+          "count": 8,
+          "keys_sha256": "b456df18fdecd45898a1f98932afb3acb0e6cd30da719b3b631ca6e1763429fe"
+        },
+        "raw_lexical": {
+          "context_chars": 5443,
+          "context_sha256": "a39314cf61a33562ae2e254cf1206e520859bb23b899b5e59cab657109322d94",
+          "count": 7,
+          "keys_sha256": "f66b06a48a81453738be2efd19bebf4aebc9c4cce5e0aa33e770351168b9a708"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5289,
+          "context_sha256": "8a697dfba917c4dfa6616e52283c05f1ba7ca85f7545eaa94d64d81e20f97ae8",
+          "count": 8,
+          "keys_sha256": "998504fdeffd03adc43414ea5f30c04bff7d9c60f182ecbb5f392314352cc225"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_4776cc50be81a1c897c3091b",
+      "semantic_seconds": 0.04783350002253428
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5360,
+          "context_sha256": "24b2014461a707fb826764283b0258d2b2f04b919b79e4a7fa898413f5c3ecf6",
+          "count": 7,
+          "keys_sha256": "b5f75e934d5b04a8e105cd55a1d13055573be9b207b107f404271751cec84851"
+        },
+        "raw_lexical": {
+          "context_chars": 5368,
+          "context_sha256": "ca509f305f325a0d000920c096c54974a577ac2b631ca7bacab834f7b2941ca6",
+          "count": 7,
+          "keys_sha256": "5a7b52835913335e72eb0b3414578bea158d5e6c0ea9c520162adb63f841e4e2"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5970,
+          "context_sha256": "08672a189a8bc5c23b32b48210c149e342eb8e7660ea4fb586959c77b2c76574",
+          "count": 8,
+          "keys_sha256": "52b7e5aebafbc57005964b46b5da1998742fb3648fda1123c21ca98bad1509c8"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_edf877a8c2d7a99b9d0bc304",
+      "semantic_seconds": 0.07220709999091923
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5938,
+          "context_sha256": "0de32b0c8b1430984e8e3cf996083c303b9428e383c4c8182ac5eb5667eb9786",
+          "count": 8,
+          "keys_sha256": "687213a160edff072462d0c56e04808e9f1d02942c23428ff1d7730e494f6f78"
+        },
+        "raw_lexical": {
+          "context_chars": 5940,
+          "context_sha256": "bf43c3013bb162912b3d946d88e54f6214a9ab91df76e6603508dd4ee6f2f943",
+          "count": 8,
+          "keys_sha256": "a517ac96b49dada192eb6c88db951e5ec31404516e3ab4ccfbad6c39514fb529"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5704,
+          "context_sha256": "2cf283a7375be8e1806ea568df582512002cdf0872be4e4d9372f0f613d3c00c",
+          "count": 8,
+          "keys_sha256": "1fd6805f16fd51412d11379ebd06cb8b033fa8987102753e9a44ebd38a72a52b"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_f5e768d312dad330d3388ed3",
+      "semantic_seconds": 0.05395999999018386
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5768,
+          "context_sha256": "a5d5cd9d6477f2578af7abe2f2dae7880d53bf0c65cad582bf527c2c79b8fd81",
+          "count": 8,
+          "keys_sha256": "e0ba32bd31ded67f40682ed5c9de427352a0c2c1ba5f328f7dac259c32fe04ff"
+        },
+        "raw_lexical": {
+          "context_chars": 5880,
+          "context_sha256": "ceb9d32beb9db8c41eb5ff900fb7def75efb60ef371b243967ddf0a2e8fb9541",
+          "count": 8,
+          "keys_sha256": "b2318bf18cb7bc3087df623ea4d21762848b36dbd1609d69c841f4a028959ca3"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5557,
+          "context_sha256": "f3944f064815a72d5e2da053d9c61977bfcc0cb449e029ef914284bf00c5dd5f",
+          "count": 8,
+          "keys_sha256": "df9f22b2b4a664d637da4c79fca721e4e3499c7f7a22ae74e1688eda900d6f26"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_b22be4030577d415aacfacde",
+      "semantic_seconds": 0.052363399998284876
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5657,
+          "context_sha256": "064cb91f6fd31eac34395523689a918caffc3c1e37385f2fee17e6a4dfefb79c",
+          "count": 8,
+          "keys_sha256": "f0fa233f59c337f9d12d850950d82c4dc4c61315fb407a4bee2172cad9fe1445"
+        },
+        "raw_lexical": {
+          "context_chars": 5496,
+          "context_sha256": "48e34bd8f2bc205793f2a8a61d286972a6b7065e0115c1289256bef1b2488bb5",
+          "count": 8,
+          "keys_sha256": "5b96056bca54a305ff0806dc487867e6dca4b8c7a5f10e97d837bc3b0e5dea37"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5547,
+          "context_sha256": "8414e8cd1adf66319eeb79eba3c511568a9844b5cc80f5f4c30eb113ab8b185a",
+          "count": 8,
+          "keys_sha256": "f1fed7c80db8db55df0bec7235a152a7fcaf7264c176e12056c1e14e5420e11d"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_3d60cc7a2c24cf1f0d1877c3",
+      "semantic_seconds": 0.05210380000062287
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5556,
+          "context_sha256": "5894ca0ce993587ec78b25bf87eeaa1bcd72d607fe93a73d9fbf8d785361042f",
+          "count": 8,
+          "keys_sha256": "ae1400760a2d93a72c2b52039b5c44fb7d98a028feaf35fd7dee6f4c3de3508b"
+        },
+        "raw_lexical": {
+          "context_chars": 5692,
+          "context_sha256": "5032c8eaa5717f2dbcd2a35889ccb350824ff2841eb1218fe472a4901920e544",
+          "count": 8,
+          "keys_sha256": "8e3dbba8a32d164b6af0f85eaa1476d662d5f82476d72ab087408dd1b386eee6"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5771,
+          "context_sha256": "db39a4982af9f7f52e2aee544c83e4ca1237c731061a2e7578c7b468293f5861",
+          "count": 8,
+          "keys_sha256": "d4e05ac53eb5dd57b709dfcc9032baf5f3c34555415012ba432adc4e204f9f7b"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_5d4d9f2533e7b89c69e741dd",
+      "semantic_seconds": 0.062004200008232147
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5698,
+          "context_sha256": "e5100aa717f5411dee0d74faaa3c0c00e6aadd9dcd78d974e874648b66379a16",
+          "count": 8,
+          "keys_sha256": "cc6a2dd02a3211be84fd0355bc79cefaa2bb19f693653b9cc94eaba84ae04d1e"
+        },
+        "raw_lexical": {
+          "context_chars": 5606,
+          "context_sha256": "8b01533b9972d9d5dca7d0c49183879391cc872653e6c87dbf7391e150a68034",
+          "count": 8,
+          "keys_sha256": "8e14c71a37c2ac60e5baec76c459dfdc70beaa17b1c39196e463647782793855"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5935,
+          "context_sha256": "5b9401b4a620accb44d027040a8da8169d7ed661d06a1973fd23134bef95bb1e",
+          "count": 8,
+          "keys_sha256": "a1a9aa1c05900a6cb797afbdff25b6e21e2f8509fe656f2a22cebde6a0ee6969"
+        }
+      },
+      "conversation_id": "conv-30",
+      "question_id": "q_3f3755ab0542d098eec5c006",
+      "semantic_seconds": 0.13795310002751648
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5465,
+          "context_sha256": "a03e87e43e464523b7dde1a0673f798c185b66537081de6189280f2b59c90a9b",
+          "count": 8,
+          "keys_sha256": "6b83208acc96398103f65422c57d5fe243464722f7f0b944c757009534bb38db"
+        },
+        "raw_lexical": {
+          "context_chars": 5400,
+          "context_sha256": "1575b6987afa474fb614b39c0b7f8c6e37e5a3eb7d0d02d59568562d709aded7",
+          "count": 8,
+          "keys_sha256": "51690a260a3deef8811bbcfafe8ba179e9bff22f90ef484559b321177fd12c6e"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5461,
+          "context_sha256": "06db0a0689f2807a9b7cdb55c50da07b0717de0fe91ffaa56bdf6c6f0df5e033",
+          "count": 8,
+          "keys_sha256": "448672ac28fd3a7cf527f9837c57b3620eeda401fd0241f180e693ee8fe78430"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_eba876a082381ba6c2e68d93",
+      "semantic_seconds": 0.0770129999727942
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 4781,
+          "context_sha256": "150398481669a78ed5dcdc727f66d6f91621cd038a062ef0d2d4736aacf5e578",
+          "count": 8,
+          "keys_sha256": "61974f12ce6bd10d15865f246f2afb3757cd83cac2bec4dde7e7f7bd382878f8"
+        },
+        "raw_lexical": {
+          "context_chars": 5549,
+          "context_sha256": "abe652f861e9eaffe95ed8226fdaf45e1a60030709a7daccaa279a898e0cefbb",
+          "count": 8,
+          "keys_sha256": "caca8b334315239f3c1c8ea9b5059a375ccd761acf6a115f62c5b9669bcb42fc"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 4683,
+          "context_sha256": "3f84cad86035938a1e142836277474dce2340e5c4807cdfabeeadb8e4cd5df1d",
+          "count": 8,
+          "keys_sha256": "e92e7c4774ce302925f877d53562664e87544be1b1f7c153703e3cbb6a1b9f63"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_29d6c32ed3380b25594f0e19",
+      "semantic_seconds": 0.050763400038704276
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5413,
+          "context_sha256": "796d5920217f7e3ddc146f5ad77d9e47c41cade7c08ee5ae9eb4b65dc5bc2ca6",
+          "count": 8,
+          "keys_sha256": "a3c3f8fdb8c4618bdd2083e235d63c8e65891a6961028eaa357648b6e4f7d78c"
+        },
+        "raw_lexical": {
+          "context_chars": 5736,
+          "context_sha256": "a4b74aa7d606d1a07ec3755c5df792dc3a3f9040b16733312f86de20b7dbcaca",
+          "count": 8,
+          "keys_sha256": "485aee6a1a27406a41593fdd7089aeb58cac6b30058e599e1d3c8e926cb72c78"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5522,
+          "context_sha256": "0da036a53ceb6d6f319a7b59f657d59c101423214f17f7e1ab61b7be7fea4e58",
+          "count": 8,
+          "keys_sha256": "8093e13a3c791ce1c3c94aec3f043e5c4f61a6f0104b15c54778f7f130730fad"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_3a58e1cb8843d924c1e366af",
+      "semantic_seconds": 0.05907309998292476
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5475,
+          "context_sha256": "f8afab4247105afac6ad139bdd391a16aa66e483b8bc3eacdff1eded843a22ec",
+          "count": 7,
+          "keys_sha256": "84b72587449017b98cf3bd8f341f9b23422bd9fc459229b36def2110d6bef88a"
+        },
+        "raw_lexical": {
+          "context_chars": 5259,
+          "context_sha256": "25e85bd0e91fec2841894be33a0e641479eb9479ff5b2f6181a8f1bb2ddd6c61",
+          "count": 7,
+          "keys_sha256": "a3c97d6d38a8375de0e002767f61a4591aa25ed07b6a768852f8a402392c2c5c"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5226,
+          "context_sha256": "38dba69f8555bef13481a4f239e74abcd7edf19c0ce8dba3aa3edbd87d9cfd16",
+          "count": 7,
+          "keys_sha256": "e25b6d3266551abd4d7b4a377e490faaa9d73c37583644964efc4f85674580cf"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_c0f019c1bf00a108372f699f",
+      "semantic_seconds": 0.05972909997217357
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5093,
+          "context_sha256": "c6c7a6547924fa28c944426380f0a225363b24c1f016599489557ad0531fda6d",
+          "count": 8,
+          "keys_sha256": "16e7a6bc4a0dc5e8c68521d9bf43fc38c0dbaaac9728180192babfff1b64b757"
+        },
+        "raw_lexical": {
+          "context_chars": 5532,
+          "context_sha256": "809be751047671c038dd8b60bcaf93ccf6da078765f6028fbe7b474446aee08d",
+          "count": 8,
+          "keys_sha256": "b492446f4742ddf6bace5ba7c97cc1ad3a14246cc9a775887a940c678ea4adfe"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5354,
+          "context_sha256": "1de972bbe2fb344bb9dc9d8dda8c958d974529282fb36f868cf2878602d86a6e",
+          "count": 8,
+          "keys_sha256": "4079268632c3c3e2717bb88d9266ff681855812a93713a8eb3f8962678d33fbc"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_0c13b4cf8b3361d1b5fd74f4",
+      "semantic_seconds": 0.05017030000453815
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5748,
+          "context_sha256": "efb7205c4b8af150acc14a8fcd4700458fa6335e0dce68bb6422ef55d19d4a99",
+          "count": 8,
+          "keys_sha256": "ed6d9c6e38613085cda1cc2ba77f4581e5b9185f5e454812c91fb096414386c0"
+        },
+        "raw_lexical": {
+          "context_chars": 5747,
+          "context_sha256": "3e996cb0ac0dfc9d53c3f3a59e2f5f26b09fb6a6f9558b62ddc60c9185aac6fa",
+          "count": 8,
+          "keys_sha256": "f961f4f8395664eba50c09bd22386439d3a956b16544cfe3e5cd5717897d7365"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5290,
+          "context_sha256": "dc2058f0d51a6666f5afe112daecbf08294a495c36b8d5713cae0d0f48b2678f",
+          "count": 8,
+          "keys_sha256": "81c440cb5484ce92bb1e7cf33f80915171738530584c9df2de61449f71a73915"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_c128c7fee0f80f5d7eca2abc",
+      "semantic_seconds": 0.053972599969711155
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5013,
+          "context_sha256": "9c7abbdbf4b3b955e8c3b168ffb5cbee155caecbef1bfa2ede9dd8c8935a7f58",
+          "count": 8,
+          "keys_sha256": "bbe4d4a7595bba370a1278c9c5137b1fd8e7c34b8b58996035533e2e92673796"
+        },
+        "raw_lexical": {
+          "context_chars": 5433,
+          "context_sha256": "2f3c6375a53bf7f89fb1ff93af60448f2fc7564570ded4c4002723ba43229680",
+          "count": 8,
+          "keys_sha256": "096f64a45616788fc2e44bef6469eb99be655a68c68f7d350c633eaa67eb5a4a"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5209,
+          "context_sha256": "334b2c65f08d3992d0472421a8a86a16a827f12d9660f360ac4dfa9a02a55a99",
+          "count": 8,
+          "keys_sha256": "220ba70a3100d70667350f1e7200b3e04bad0a95067109f7470d5a043cc82910"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_237878f81d3e18d629972459",
+      "semantic_seconds": 0.054507600027136505
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5502,
+          "context_sha256": "541646c5d8dc7525e45e814e4feb0b2605157f732843efd3d66eda8544148012",
+          "count": 8,
+          "keys_sha256": "c91c4beb8dcf02dffca64a2b20db00de33fcd470ff8151b3903bcf53cbe8fe90"
+        },
+        "raw_lexical": {
+          "context_chars": 5560,
+          "context_sha256": "4fc4dc35023e6bb5482587593286ddd68be896f1d4217967eb624bed3bcec84a",
+          "count": 8,
+          "keys_sha256": "69a927aa25ae59a15304df5fe13ab535890b3676c9f7cccbdcd9bb90cff76dfc"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5544,
+          "context_sha256": "0be2ab38e59bad73ec17da7bd4dfdc7cfcc9fda591fc3a715e5e78c637e5aac4",
+          "count": 8,
+          "keys_sha256": "ae56f518bde0d1c8eaf42341034458fa977748cda38018432c8989f146599739"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_254c49bbb609f13045b79297",
+      "semantic_seconds": 0.050930899975355715
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 4978,
+          "context_sha256": "ec73bbc1b289170907568ff63136a86cda8a56f07dacd4514d819148d7c62620",
+          "count": 8,
+          "keys_sha256": "b64b0a25120287d9ea67f924ca94dc38ac1515337f597461d8f76df4476c968b"
+        },
+        "raw_lexical": {
+          "context_chars": 5767,
+          "context_sha256": "5e2bd25b238bd672f1a0f55b506f09ab5463f593d64ad9d9f285c3b422cf1be6",
+          "count": 8,
+          "keys_sha256": "622e58534959ba47e8230f4cfd10a5ff213e4e3ad6abf4bc1378f4036891e939"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 4198,
+          "context_sha256": "1c8e1616721955bf0e11a8b7da046320bb9508be673afdfe0478a60d4a13c345",
+          "count": 8,
+          "keys_sha256": "881fc446ad9ae72ab79d7966da212b48d3924458e1cb903022703aece063f190"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_797bf1c7b21844ded4575cbc",
+      "semantic_seconds": 0.052631800004746765
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5450,
+          "context_sha256": "da11deec7da8148401e130ee84ab9e31cf5ed22ece173a0fe6ccefcaf10b44ec",
+          "count": 8,
+          "keys_sha256": "29df40b9262c728316669195659ba61e26a81ad321221d9dd1f23d5d76367e8e"
+        },
+        "raw_lexical": {
+          "context_chars": 5649,
+          "context_sha256": "3a88e1d6ccc937dfdb8b25c4af66421e9343bcf0016adb7d00ceb426a74cf91b",
+          "count": 8,
+          "keys_sha256": "a78466e7623f973ac91e9ea3779f4ffb2de55d4db1688740322e8917d0d36189"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5367,
+          "context_sha256": "ab6ca15a4e2b439f10e9dc643c2e51db52f91e86fd650789d680e3b1fc44f31b",
+          "count": 8,
+          "keys_sha256": "b7f0c5b9e608218826d46b6e4593b929f8910541b1031adec95bc7f8a10c9ea5"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_d9d5bf6233686aeaed879612",
+      "semantic_seconds": 0.05324589996598661
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5709,
+          "context_sha256": "1b4caa45e799317487fad534f00a7f31f9a1c83cfed0959494d2acf93b1dc3db",
+          "count": 8,
+          "keys_sha256": "250bd1f3fcfb7cd1a901c773c4eadbfa707af64ea907c13b444fbe4b880dc03c"
+        },
+        "raw_lexical": {
+          "context_chars": 5899,
+          "context_sha256": "aad8e2954ccf3d9e729c30807e3133e33a458d18a4c6a970d3df497477c3e1dd",
+          "count": 8,
+          "keys_sha256": "c37140d4e42cb4b28ce71aaa0608e14cb629672c42fec4591ea30cb2021b6054"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5659,
+          "context_sha256": "ff02d545082851e2eca57bc22c6d58e88140b6c686c48873a9fd7e0171565d26",
+          "count": 8,
+          "keys_sha256": "fcf37b9bd7543f5ecab7f30e4e153bb46422b954b48b5f4db747d82ff4023281"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_48802d9dc30e40a199578b89",
+      "semantic_seconds": 0.05493649997515604
+    },
+    {
+      "candidates": {
+        "raw_hybrid_rrf": {
+          "context_chars": 5875,
+          "context_sha256": "01c395c22f5b9f0241dac5c917bd7a5d313def239ec7f64761dbffe6af8efd88",
+          "count": 8,
+          "keys_sha256": "6e92ff2b688883eea0269e9834736484babf4bc660e531b59eb5072d6193123e"
+        },
+        "raw_lexical": {
+          "context_chars": 5951,
+          "context_sha256": "f57c292e785f2083b13196d22c7b9cac824554393b2e5e88410c2cad5a8c3102",
+          "count": 8,
+          "keys_sha256": "6727513e4fac283d87642744d0ffcdc44a5419b8cae294e623b0068caaf5d8f2"
+        },
+        "raw_semantic_qwen": {
+          "context_chars": 5334,
+          "context_sha256": "c72a6fbc5700cd02323c4662cbbdd3e39c6bba91f52100d635c66c07419432c3",
+          "count": 8,
+          "keys_sha256": "df246c0f30aec8600bc99eda90a18a41166fd8e71bbd449577414061777abd04"
+        }
+      },
+      "conversation_id": "conv-43",
+      "question_id": "q_0cdc08231f2baa016028e681",
+      "semantic_seconds": 0.06692820001626387
+    }
+  ],
+  "schema_version": 1,
+  "status": "passed"
+}

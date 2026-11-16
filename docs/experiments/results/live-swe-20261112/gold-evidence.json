@@ -1,0 +1,19 @@
+{
+  "instance_id": "sympy__sympy-20590",
+  "metadata_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/solver-instance.json",
+  "metadata_format": "single JSON object; 7 solver-safe fields",
+  "metadata_sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7",
+  "official_full_metadata_sha256": "f1540af6ab1239f63ef70b6aae0eed29a34bdccc4bee5f675927715a58fc372d",
+  "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+  "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+  "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+  "resolved": true,
+  "official_report": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+  "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+  "official_report_counts": {
+    "completed_instances": 1,
+    "resolved_instances": 1,
+    "error_instances": 0
+  },
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d"
+}

@@ -1,0 +1,153 @@
+{
+  "derivation_version": 1,
+  "frozen_generation_commit": "765216830b1972ba3b3c0d20171315343c63d288",
+  "changes_frozen_source_or_raw_evidence": false,
+  "original_category_rule": "v765 swe_campaign.py:553-562, recomputed from original aggregate",
+  "empty_patch_rule": "instance in empty_patch_ids => empty_patch=True, official_resolved=False, test_executed=False, known outcome",
+  "records": [
+    {
+      "trial_id": "01-pytest-dev__pytest-5103-on",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "on",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a"
+    },
+    {
+      "trial_id": "02-pytest-dev__pytest-5103-off",
+      "instance_id": "pytest-dev__pytest-5103",
+      "arm": "off",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "08718034b3a9b2f4fd7c29f8f982034897d80c69a99bcdffb5dd05a0f2bcc47a"
+    },
+    {
+      "trial_id": "03-sympy__sympy-11400-on",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "on",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404"
+    },
+    {
+      "trial_id": "04-sympy__sympy-11400-off",
+      "instance_id": "sympy__sympy-11400",
+      "arm": "off",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "dd010dfac37ce7d6ed5095ae042732b80dcc2e3609818647c53f9e6df3689404"
+    },
+    {
+      "trial_id": "05-pytest-dev__pytest-5227-on",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "on",
+      "score_category_original_v765": "scored",
+      "score_category": "scored",
+      "known_official_outcome": true,
+      "official_resolved": true,
+      "empty_patch": false,
+      "test_executed": true,
+      "official_aggregate_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d"
+    },
+    {
+      "trial_id": "06-pytest-dev__pytest-5227-off",
+      "instance_id": "pytest-dev__pytest-5227",
+      "arm": "off",
+      "score_category_original_v765": "scored",
+      "score_category": "scored",
+      "known_official_outcome": true,
+      "official_resolved": true,
+      "empty_patch": false,
+      "test_executed": true,
+      "official_aggregate_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d"
+    },
+    {
+      "trial_id": "07-pytest-dev__pytest-5221-off",
+      "instance_id": "pytest-dev__pytest-5221",
+      "arm": "off",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "59731e31de8e25eb9b6e699ceb0b1419fff4293fada287ebff340f1c9f5495fa"
+    },
+    {
+      "trial_id": "08-pytest-dev__pytest-5221-on",
+      "instance_id": "pytest-dev__pytest-5221",
+      "arm": "on",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "59731e31de8e25eb9b6e699ceb0b1419fff4293fada287ebff340f1c9f5495fa"
+    },
+    {
+      "trial_id": "09-sympy__sympy-20590-off",
+      "instance_id": "sympy__sympy-20590",
+      "arm": "off",
+      "score_category_original_v765": "environment_or_execution_error",
+      "score_category": "empty_patch",
+      "known_official_outcome": true,
+      "official_resolved": false,
+      "empty_patch": true,
+      "test_executed": false,
+      "official_aggregate_sha256": "15e330d17c186fbd1b7c874a542ced6ac4b8859f742bb8f85e72b012048ed080"
+    },
+    {
+      "trial_id": "10-sympy__sympy-20590-on",
+      "instance_id": "sympy__sympy-20590",
+      "arm": "on",
+      "score_category_original_v765": "scored",
+      "score_category": "scored",
+      "known_official_outcome": true,
+      "official_resolved": true,
+      "empty_patch": false,
+      "test_executed": true,
+      "official_aggregate_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5"
+    },
+    {
+      "trial_id": "11-sympy__sympy-11870-on",
+      "instance_id": "sympy__sympy-11870",
+      "arm": "on",
+      "score_category_original_v765": "unscored",
+      "score_category": "unscored",
+      "known_official_outcome": false,
+      "official_resolved": null,
+      "empty_patch": null,
+      "test_executed": null,
+      "official_aggregate_sha256": null
+    },
+    {
+      "trial_id": "12-sympy__sympy-11870-off",
+      "instance_id": "sympy__sympy-11870",
+      "arm": "off",
+      "score_category_original_v765": "unscored",
+      "score_category": "unscored",
+      "known_official_outcome": false,
+      "official_resolved": null,
+      "empty_patch": null,
+      "test_executed": null,
+      "official_aggregate_sha256": null
+    }
+  ]
+}

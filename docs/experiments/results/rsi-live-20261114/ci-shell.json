@@ -1,0 +1,36 @@
+{
+  "source_commit_before_fix": "c927650f1f0e07f2db8901df33ec529ab8428467",
+  "ci_run": 43483613293,
+  "first_matrix": {
+    "ubuntu_311": "success",
+    "ubuntu_313_sdk": "success",
+    "windows_311": "failure",
+    "windows_313": "failure"
+  },
+  "failed_cases": [
+    "test_five_request_read_edit_test_endturn_consumes_frozen_v2_turn_limit[4]",
+    "test_five_request_read_edit_test_endturn_consumes_frozen_v2_turn_limit[12]"
+  ],
+  "remote_symptom": "tested.flag missing",
+  "local_reproduction": {
+    "cmd_original_command": "marker present",
+    "git_bash_original_command": "exit127; Windows backslashes consumed; marker absent"
+  },
+  "change": "Only fixture command quoting uses actual _resolve_shell().is_bash; Bash gets shlex.join and forward-slash executable, cmd keeps list2cmdline.",
+  "primary_verification": {
+    "cmd": {
+      "passed": 2,
+      "deselected": 43,
+      "seconds": 8.17
+    },
+    "git_bash": {
+      "passed": 2,
+      "deselected": 43,
+      "seconds": 7.85
+    }
+  },
+  "test_source_lf_sha256": "bc8f6b0b19d1c6e781994ab4b504ef8924b81e744e97ecccf031f33bac42b2ad",
+  "provider_calls_in_fix_validation": 0,
+  "frozen117_execution_files_unchanged": true,
+  "remote_fixed_head_status": "pending"
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-14T10:23:44.677Z",
+  "plan_sha256": "cc2a53c54bceb9e78e3f2ed4634bd029725e733db0d705d5fca4be3a1a671ee9",
+  "retrieval_manifest_sha256": "2095a80b3ef8742f3d4804ab22898e7e2e1d0c1ad3ae2ba503126588873cb624",
+  "records": 36,
+  "questions": 12,
+  "files": [
+    {
+      "file": "retrieval-summary.json",
+      "bytes": 2692,
+      "sha256": "d1df7ea743b1622420d96a5a61c20eb5e6e0a0a8a8710ea666a3577363086494"
+    },
+    {
+      "file": "retrieval-rows.jsonl",
+      "bytes": 34159,
+      "sha256": "badf4d83d8a9b7d5d1da0f53e7bb4b2db29220fd1a759841d1ca10d6c5eeee14"
+    },
+    {
+      "file": "retrieval-pairs.json",
+      "bytes": 14315,
+      "sha256": "0d72f0645ad559a4436c795e2021c37521cf5a1f02155dd2edb80c59b1ef36fb"
+    }
+  ],
+  "privacy": {
+    "raw_questions": false,
+    "history_text": false,
+    "answers": false,
+    "gold_text": false,
+    "credentials": false,
+    "anonymous_ids_only": true
+  }
+}

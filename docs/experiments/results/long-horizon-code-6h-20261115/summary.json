@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-15",
+  "phase_a": {
+    "repeat_per_scenario": 20,
+    "scenario_count": 7,
+    "baseline_pass": 0,
+    "enhanced_pass": 140,
+    "total_pairs": 140,
+    "docker_container_runs": 40,
+    "longitudinal_host_subprocesses": 80,
+    "paid_model_requests": 0
+  },
+  "phase_b": {
+    "model": "deepseek-v4.1-flash",
+    "terminal_bench_revision": "12b7565679ce5006230b820666353673a133db93",
+    "plan_sha256": "f15d6ade822a7dcc582e15d4df9d63d382387395f0f4578c334fccf5e254008b",
+    "fix_git": {
+      "baseline": {
+        "official_reward": 1,
+        "requests": 17,
+        "input_tokens": 85025,
+        "output_tokens": 6924,
+        "cost_usd": "0.033823"
+      },
+      "enhanced": {
+        "official_reward": 1,
+        "requests": 10,
+        "input_tokens": 32826,
+        "output_tokens": 2417,
+        "cost_usd": "0.012753"
+      },
+      "loo_artifact": {
+        "official_reward": 1,
+        "requests": 12,
+        "input_tokens": 55642,
+        "output_tokens": 3593,
+        "cost_usd": "0.021009"
+      },
+      "complete_scored_triplet": true,
+      "delta_enhanced_minus_baseline": 0,
+      "delta_enhanced_minus_loo": 0
+    },
+    "large_scale_text_editing_enhanced": {
+      "official_reward": null,
+      "run_status": "cancelled",
+      "requests": 22,
+      "input_tokens": 88968,
+      "output_tokens": 41638,
+      "cost_usd": "0.076664",
+      "agent_timeout_seconds": 1080,
+      "verifier_executed": true,
+      "verifier_tests_passed": 0,
+      "verifier_tests_failed": 5
+    },
+    "custom_memory_sidecar": {
+      "official_reward": null,
+      "model_requests": 0,
+      "run_status": "execution_or_verifier_error",
+      "reason": "LIVE_BENCH_API_KEY was not present in the first sidecar host process",
+      "retried": false
+    },
+    "requests": 61,
+    "input_tokens": 262461,
+    "output_tokens": 54572,
+    "cost_usd": "0.144249"
+  },
+  "failed_v2": {
+    "requests": 1,
+    "input_tokens": 662,
+    "output_tokens": 64,
+    "cost_usd": "0.000276",
+    "reason": "Langfuse ContextVar token crossed asyncio Tasks",
+    "retried": false
+  },
+  "phase_b_v4": {
+    "campaign_id": "lhpp-20261115-v4",
+    "plan_sha256": "90971e8b39c8b9660de2249bae8fd03d6ad285a8c1d0ef126e4b2ed030ebc288",
+    "task": "custom-memory-heap-crash",
+    "complete_scored_triplet": false,
+    "arms": {
+      "loo_artifact": {
+        "compaction_mode": "layered",
+        "artifact_projection": "off",
+        "official_reward": null,
+        "run_status": "ContextBudgetExceeded",
+        "requests": 24,
+        "input_tokens": 26429,
+        "output_tokens": 49037,
+        "cost_usd": "0.171078",
+        "verifier_executed": false
+      },
+      "baseline": {
+        "compaction_mode": "baseline",
+        "artifact_projection": "off",
+        "official_reward": 0,
+        "run_status": "end_turn",
+        "requests": 15,
+        "input_tokens": 13397,
+        "output_tokens": 35522,
+        "cost_usd": "0.079754",
+        "verifier_executed": true,
+        "verifier_tests_passed": 5,
+        "verifier_tests_failed": 1,
+        "failed_test": "test_outputs.py::test_release_build_runs_without_crash",
+        "release_returncode": -11
+      },
+      "enhanced": {
+        "compaction_mode": "layered",
+        "artifact_projection": "on",
+        "official_reward": 0,
+        "run_status": "end_turn",
+        "requests": 21,
+        "input_tokens": 28610,
+        "output_tokens": 58180,
+        "cost_usd": "0.118269",
+        "verifier_executed": true,
+        "verifier_tests_passed": 5,
+        "verifier_tests_failed": 1,
+        "failed_test": "test_outputs.py::test_release_build_runs_without_crash",
+        "release_returncode": -11
+      }
+    },
+    "requests": 60,
+    "input_tokens": 68436,
+    "output_tokens": 142739,
+    "cost_usd": "0.369101"
+  },
+  "v2_v3_v4": {
+    "requests": 122,
+    "cost_usd": "0.513626"
+  },
+  "langfuse": {
+    "sessions": [
+      {
+        "session_id": "lhpp-20261115-v3",
+        "traces": 4,
+        "generation_observations": 61,
+        "matches_ledger_requests": true
+      },
+      {
+        "session_id": "lhpp-20261115-v4",
+        "traces": 3,
+        "generation_observations": 60,
+        "matches_ledger_requests": true
+      }
+    ],
+    "traces": 7,
+    "generation_observations": 121,
+    "metadata_only": true
+  },
+  "claims": {
+    "allowed": [
+      "The deterministic fault matrix distinguishes failing baselines from production Harness seams.",
+      "Fix-git completed all three real-model arms with official reward 1.",
+      "Enhanced used fewer requests and tokens than baseline in the single fix-git trial.",
+      "Langfuse observations match all settled v3 requests.",
+      "Large-scale-text-editing did not pass within the frozen 1080-second agent cap.",
+      "The v4 custom-memory triplet ran, but no scored arm earned reward.",
+      "Artifact projection moved the layered v4 arm past a context-budget failure into a verifier run without improving correctness."
+    ],
+    "forbidden": [
+      "Five-layer compaction or artifact projection caused a statistically significant performance gain.",
+      "Large-scale-text-editing passed.",
+      "All custom-memory arms passed.",
+      "Artifact projection fixed the release-build crash or caused the custom-memory task to pass.",
+      "The experiment proves Terminal-Bench 2.1 overall superiority.",
+      "Memory or controlled strategy search produced learning benefits on these code tasks."
+    ]
+  }
+}

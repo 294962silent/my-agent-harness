@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-11-14T12:41:17.625Z",
+  "review_method": "Targeted manual inspection of private reference, corpus chunks, rendered contexts and hypotheses; no extra API, no new judge or rescoring.",
+  "sample_scope": "Two lexical-only correct cases and the one lexical/mem0 shared wrong case; not all12 evidence annotation.",
+  "answer_evidence_recall": "unavailable_no_complete_answer_bearing_chunk_labels",
+  "cases": [
+    {
+      "question_alias": "lme_f16814d7f87b624a7f8d84dd",
+      "question_type": "single-session-assistant",
+      "paired_outcome": "lexical_only_correct",
+      "evidence_session_hit": {
+        "lexical": true,
+        "mem0": true
+      },
+      "arms": {
+        "lexical": {
+          "context_chars": 6000,
+          "truncated": true,
+          "returned_chunks": 7,
+          "reviewed_support_chunks": [
+            {
+              "anonymous_chunk_key": "lme_a7762d64a8e3c9a100d05726",
+              "rendered_rank": 1,
+              "selected": true,
+              "full_chunk_in_rendered_context": true
+            }
+          ]
+        },
+        "mem0": {
+          "context_chars": 4828,
+          "truncated": false,
+          "returned_chunks": 8,
+          "reviewed_support_chunks": [
+            {
+              "anonymous_chunk_key": "lme_a7762d64a8e3c9a100d05726",
+              "rendered_rank": null,
+              "selected": false,
+              "full_chunk_in_rendered_context": false
+            }
+          ]
+        }
+      },
+      "manual_findings": "A decisive factual statement is fully present in lexical rank1 context. Mem0 hits the same labeled session but omits that supporting chunk from its returned8; its context is below6000 and untruncated, so the diagnosed omission occurs before character-budget rendering. Lexical has global truncation but retains this rank1 statement.",
+      "cause_limit": "Full pre-top8 semantic rankings/scores were not recorded. No exact excluded rank or universal encoder cause is asserted; manual spot-check is not quantitative evidence recall."
+    },
+    {
+      "question_alias": "lme_f7c6b941b12a5bb4092f3c00",
+      "question_type": "single-session-preference",
+      "paired_outcome": "both_incorrect",
+      "evidence_session_hit": {
+        "lexical": false,
+        "mem0": false
+      },
+      "arms": {
+        "lexical": {
+          "context_chars": 3643,
+          "truncated": false,
+          "returned_chunks": 8,
+          "reviewed_support_chunks": [
+            {
+              "anonymous_chunk_key": "lme_571231bd3f84d630a4621510",
+              "rendered_rank": null,
+              "selected": false,
+              "full_chunk_in_rendered_context": false
+            }
+          ]
+        },
+        "mem0": {
+          "context_chars": 3350,
+          "truncated": false,
+          "returned_chunks": 8,
+          "reviewed_support_chunks": [
+            {
+              "anonymous_chunk_key": "lme_571231bd3f84d630a4621510",
+              "rendered_rank": null,
+              "selected": false,
+              "full_chunk_in_rendered_context": false
+            }
+          ]
+        }
+      },
+      "manual_findings": "Neither arm returns the labeled session or the inspected relevant personalization chunk, although it exists in the frozen corpus. Both contexts are below6000 without truncation and both hypotheses abstain. Retrieval omission is consistent with the failure; the encoder, ranking and generator cannot be assigned separate causal responsibility from this single trace.",
+      "cause_limit": "Full pre-top8 semantic rankings/scores were not recorded. No exact excluded rank or universal encoder cause is asserted; manual spot-check is not quantitative evidence recall."
+    },
+    {
+      "question_alias": "lme_da00a576cac93baec68c34e5",
+      "question_type": "single-session-preference",
+      "paired_outcome": "lexical_only_correct",
+      "evidence_session_hit": {
+        "lexical": true,
+        "mem0": true
+      },
+      "arms": {
+        "lexical": {
+          "context_chars": 3173,
+          "truncated": false,
+          "returned_chunks": 8,
+          "reviewed_support_chunks": [
+            {
+              "anonymous_chunk_key": "lme_118b93a7d4232134db27aeb3",
+              "rendered_rank": 5,
+              "selected": true,
+              "full_chunk_in_rendered_context": true
+            },
+            {
+              "anonymous_chunk_key": "lme_8e93abf999006b4785c0f73d",
+              "rendered_rank": 8,
+              "selected": true,
+              "full_chunk_in_rendered_context": true
+            }
+          ]
+        },
+        "mem0": {
+          "context_chars": 2494,
+          "truncated": false,
+          "returned_chunks": 8,
+          "reviewed_support_chunks": [
+            {
+              "anonymous_chunk_key": "lme_118b93a7d4232134db27aeb3",
+              "rendered_rank": null,
+              "selected": false,
+              "full_chunk_in_rendered_context": false
+            },
+            {
+              "anonymous_chunk_key": "lme_8e93abf999006b4785c0f73d",
+              "rendered_rank": null,
+              "selected": false,
+              "full_chunk_in_rendered_context": false
+            }
+          ]
+        }
+      },
+      "manual_findings": "Lexical context contains a directly relevant preference statement and related suggestion material. Mem0 hits the labeled session but omits these inspected supporting chunks from its returned8; neither arm is character-truncated. This is chunk-level selection loss despite session hit; completeness of all reference facets is not asserted.",
+      "cause_limit": "Full pre-top8 semantic rankings/scores were not recorded. No exact excluded rank or universal encoder cause is asserted; manual spot-check is not quantitative evidence recall."
+    }
+  ]
+}

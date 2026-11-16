@@ -1,0 +1,338 @@
+{
+  "anchors": {
+    "plan_sha256": "184637586d25dfc6143ca6af8028e6bc406ee29b2a8bb4fe7c90cc91bc34450b",
+    "preflight_sha256": "5f5e41ed9fbca80d6f504a569160948d33b4628ca919a6e92795b5de6a896651",
+    "rows_sha256": "1a8242e6d03fed3bf612f535f2daa86a36c51eba2600a779aa79bcbe8020d356"
+  },
+  "arms": {
+    "semantic_mmr_top8": {
+      "accuracy": 0.375,
+      "answer_latency": 5.844320562500798,
+      "answer_usage": {
+        "completion_tokens": 5253,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 38241,
+        "total_tokens": 44390
+      },
+      "correct": 9,
+      "denominator": 24,
+      "invalid_answers": 1,
+      "invalid_judges": 0,
+      "judge_latency": 5.4751797416611225,
+      "judge_usage": {
+        "completion_tokens": 5639,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 3956,
+        "total_tokens": 9595
+      },
+      "length_judges": 0,
+      "mean_context_chars": 5275.583333333333,
+      "mean_evidence_turn_recall_at_8": 0.6065656565656565,
+      "mean_rendered_chunks": 7.958333333333333,
+      "mean_rendered_session_mrr": 0.6476190476190476,
+      "mean_rendered_session_recall_at_8": 0.8244047619047619,
+      "mean_session_mrr": 0.6476190476190476,
+      "mean_session_recall_at_8": 0.8244047619047619,
+      "valid_answers": 23,
+      "valid_judges": 24
+    },
+    "semantic_session_cap2": {
+      "accuracy": 0.4166666666666667,
+      "answer_latency": 5.6213828125013,
+      "answer_usage": {
+        "completion_tokens": 5637,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 9489,
+        "total_tokens": 44310
+      },
+      "correct": 10,
+      "denominator": 24,
+      "invalid_answers": 1,
+      "invalid_judges": 0,
+      "judge_latency": 4.4733261041643955,
+      "judge_usage": {
+        "completion_tokens": 2706,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 3918,
+        "total_tokens": 6624
+      },
+      "length_judges": 0,
+      "mean_context_chars": 5190.583333333333,
+      "mean_evidence_turn_recall_at_8": 0.6113636363636363,
+      "mean_rendered_chunks": 7.958333333333333,
+      "mean_rendered_session_mrr": 0.6244047619047619,
+      "mean_rendered_session_recall_at_8": 0.7209821428571429,
+      "mean_session_mrr": 0.6244047619047619,
+      "mean_session_recall_at_8": 0.7209821428571429,
+      "valid_answers": 23,
+      "valid_judges": 24
+    },
+    "semantic_top8": {
+      "accuracy": 0.375,
+      "answer_latency": 6.078357312500884,
+      "answer_usage": {
+        "completion_tokens": 5944,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 38566,
+        "total_tokens": 44510
+      },
+      "correct": 9,
+      "denominator": 24,
+      "invalid_answers": 1,
+      "invalid_judges": 0,
+      "judge_latency": 5.552852879174073,
+      "judge_usage": {
+        "completion_tokens": 4786,
+        "covered_requests": 24,
+        "expected_requests": 24,
+        "prompt_tokens": 4042,
+        "total_tokens": 8828
+      },
+      "length_judges": 0,
+      "mean_context_chars": 5181.958333333333,
+      "mean_evidence_turn_recall_at_8": 0.6321969696969697,
+      "mean_rendered_chunks": 7.958333333333333,
+      "mean_rendered_session_mrr": 0.6244047619047619,
+      "mean_rendered_session_recall_at_8": 0.7209821428571429,
+      "mean_session_mrr": 0.6244047619047619,
+      "mean_session_recall_at_8": 0.7209821428571429,
+      "valid_answers": 23,
+      "valid_judges": 24
+    }
+  },
+  "categories": {
+    "multi_hop": {
+      "semantic_mmr_top8": {
+        "correct": 1,
+        "denominator": 8
+      },
+      "semantic_session_cap2": {
+        "correct": 4,
+        "denominator": 8
+      },
+      "semantic_top8": {
+        "correct": 3,
+        "denominator": 8
+      }
+    },
+    "single_hop": {
+      "semantic_mmr_top8": {
+        "correct": 6,
+        "denominator": 8
+      },
+      "semantic_session_cap2": {
+        "correct": 4,
+        "denominator": 8
+      },
+      "semantic_top8": {
+        "correct": 4,
+        "denominator": 8
+      }
+    },
+    "temporal": {
+      "semantic_mmr_top8": {
+        "correct": 2,
+        "denominator": 8
+      },
+      "semantic_session_cap2": {
+        "correct": 2,
+        "denominator": 8
+      },
+      "semantic_top8": {
+        "correct": 2,
+        "denominator": 8
+      }
+    }
+  },
+  "data": [
+    {
+      "bytes": 132915,
+      "path": "conversations/conv-49.json",
+      "sha256": "32eb0599ccc7b654b44e96db6c670e8563d6e0f5bc00f3b8db9038151fe964f5"
+    },
+    {
+      "bytes": 175947,
+      "path": "conversations/conv-44.json",
+      "sha256": "736cb4053d2c9e6531d7f141b86846ce94f403cbfc0bdf8d61b1593d6032455d"
+    }
+  ],
+  "first_two_readback": {
+    "attempts_per_trace": {
+      "context-diversity.v1.answer.q_b6260ef0140ea7ed3b4c4d49.semantic_top8": 3,
+      "context-diversity.v1.judge.q_b6260ef0140ea7ed3b4c4d49.semantic_top8": 3
+    },
+    "backoff": {
+      "initial_seconds": 1.0,
+      "kind": "exponential",
+      "max_seconds": 30.0,
+      "waits_seconds": [
+        1.0,
+        2.0
+      ]
+    },
+    "campaign": "memory-locomo-context-diversity-20261115-v1",
+    "distinct_traces": true,
+    "elapsed_seconds": 10.628479100007098,
+    "extra_model_requests": 0,
+    "model": "deepseek-v4.1-flash",
+    "one_observation_per_trace": true,
+    "project": "cmwg5sagt00ksad0j6au0463n",
+    "protocol": "locomo-context-diversity-v1",
+    "query_errors_per_trace": {},
+    "rows": [
+      {
+        "arm": "semantic_top8",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "80cb0a426ed2d8d7",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "context-diversity.v1.answer.q_b6260ef0140ea7ed3b4c4d49.semantic_top8",
+        "session_id": "memory-locomo-context-diversity-20261115-v1",
+        "stage": "answer",
+        "task_id": "q_b6260ef0140ea7ed3b4c4d49",
+        "trace_id": "714d42688897d84c66bfeeaa7f11791e",
+        "usage_details": {
+          "input": 1654,
+          "output": 367,
+          "total": 2021
+        }
+      },
+      {
+        "arm": "semantic_top8",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "5848654c7642a2c7",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "context-diversity.v1.judge.q_b6260ef0140ea7ed3b4c4d49.semantic_top8",
+        "session_id": "memory-locomo-context-diversity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_b6260ef0140ea7ed3b4c4d49",
+        "trace_id": "09db8ee5cfa83d9061a183245dd03a89",
+        "usage_details": {
+          "input": 189,
+          "output": 68,
+          "total": 257
+        }
+      }
+    ],
+    "same_campaign_session": true,
+    "sample_count": 2,
+    "schema_version": 1,
+    "status": "verified",
+    "window_seconds": 180.0
+  },
+  "gold_sha256": "a0edc1f8fbd241506c51cf21933a1e38cce6858af487f642184198cdb39ef91e",
+  "invalid_results": {
+    "answers": 3,
+    "judges": 0,
+    "length_judges": 0,
+    "malformed_judges": 0
+  },
+  "owner_close": {
+    "close_errors": 0,
+    "dropped": 0,
+    "export_errors": 0,
+    "llm_clients_closed": true,
+    "runtime_alive_after_close": false,
+    "runtime_close_complete": true
+  },
+  "paired_comparisons": {
+    "semantic_mmr_top8__vs__semantic_session_cap2": {
+      "both_correct": 7,
+      "both_incorrect": 12,
+      "compared_pairs": 24,
+      "discordant": 5,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": -1,
+      "right_only_correct": 3
+    },
+    "semantic_top8__vs__semantic_mmr_top8": {
+      "both_correct": 7,
+      "both_incorrect": 13,
+      "compared_pairs": 24,
+      "discordant": 4,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": 0,
+      "right_only_correct": 2
+    },
+    "semantic_top8__vs__semantic_session_cap2": {
+      "both_correct": 8,
+      "both_incorrect": 13,
+      "compared_pairs": 24,
+      "discordant": 3,
+      "left_only_correct": 1,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": -1,
+      "right_only_correct": 2
+    }
+  },
+  "protocol": "locomo-context-diversity-v1",
+  "requests": {
+    "completion_tokens": 29965,
+    "latency": 729.3484816551208,
+    "prompt_tokens": 98212,
+    "requests": 144,
+    "total_tokens": 158257
+  },
+  "retrieval_preflight": {
+    "arm_questions": 72,
+    "cost_preflight": {
+      "accounting_budget": 2000000,
+      "estimate_method": "ceil(serialized prompt chars / 4) + output cap for every answer and judge call",
+      "estimated_emitted_token_count_from_char_quarters": 557386,
+      "expected_model_requests": 144,
+      "request_budget": 180,
+      "wall_clock_seconds": 7200
+    },
+    "embedding_invocations": 320,
+    "max_context_chars": 5902,
+    "paid_model_calls": 0,
+    "questions": 24
+  },
+  "rows": 72,
+  "schema_version": 1,
+  "selection": {
+    "conversations": [
+      "conv-49",
+      "conv-44"
+    ],
+    "excluded_conversations": [
+      "conv-30",
+      "conv-41",
+      "conv-42",
+      "conv-43",
+      "conv-47"
+    ],
+    "model_scores_used": false,
+    "rule": "metadata-only eligible conversation shuffle; four evidence-labeled QA per category per conversation",
+    "seed": 20261116,
+    "source_fields": [
+      "sample_id",
+      "qa.category",
+      "qa.evidence"
+    ]
+  },
+  "source": {
+    "bytes": 2805274,
+    "file": "data/locomo10.json",
+    "license": "CC BY-NC 4.0",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\data\\locomo-pinned\\data\\locomo10.json",
+    "repository": "snap-research/locomo",
+    "revision": "3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376",
+    "sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4"
+  },
+  "status": "complete",
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 144,
+    "unknown_or_inflight": false,
+    "used_tokens": 158257
+  }
+}

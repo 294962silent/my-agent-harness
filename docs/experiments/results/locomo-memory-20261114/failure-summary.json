@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "status": "blocked_before_first_valid_extraction",
+  "protocol": "locomo-multisession-four-arm-v1",
+  "campaign_id": "memory-locomo-four-arm-20261114-v1",
+  "evidence_date": "2026-11-14",
+  "freeze": {
+    "budget": {
+      "expected_model_calls": 332,
+      "frozen_accounting_units": 3000000,
+      "frozen_requests": 384,
+      "original_accounting_units": 1500000,
+      "original_requests": 168
+    },
+    "campaign_id": "memory-locomo-four-arm-20261114-v1",
+    "counts": {
+      "answer_calls": 120,
+      "dev_qa": 6,
+      "expected_model_calls": 332,
+      "extract_calls": 92,
+      "judge_calls": 120,
+      "sessions": 92,
+      "test_qa": 24
+    },
+    "embedding_calls": 0,
+    "environment_sha256": "2b0d5af414b598b5d4aa6e3539881b0132b7851873e6ca33784950e47e8fb01f",
+    "frozen_at": "2026-11-14T15:50:05.524147+00:00",
+    "gold_sha256": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf",
+    "ledger_created": false,
+    "model_manifest_sha256": "05bec2826e2d492f4146087960647fea98a694204ab14662dc0a96a800af8b3d",
+    "paid_calls": 0,
+    "plan_manifest_sha256": "d06c783114af1b72507d9e680c5a8f31980ca74e3f2cefe9df5933c6a6967da4",
+    "plan_path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-study\\plan\\plan.json",
+    "plan_sha256": "a88552fdd51734c7f5acc883cdf5870fa264705987a1bca5cd7c504b0dd5cd9d",
+    "protocol": "locomo-multisession-four-arm-v1",
+    "schema_version": 1,
+    "source_dataset_sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4",
+    "status": "ready"
+  },
+  "execution": {
+    "split": "dev",
+    "requests_observed": 1,
+    "request_status": "ok",
+    "usage": {
+      "prompt_tokens": 9303,
+      "completion_tokens": 2048,
+      "total_tokens": 11351
+    },
+    "actual_total_tokens": 11351,
+    "unknown_or_inflight": false,
+    "conservative_cost_usd": 0.005249,
+    "provider_billed_cost_usd": null,
+    "completion_tokens_equals_output_cap": true,
+    "extraction_valid": false,
+    "finish_reason_persisted": false,
+    "first_two_cloud_gate_reached": false,
+    "cloud_trace_single_failed_call": {
+      "match": {
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "extract.s_067187554733c33d1a8f04a4",
+        "session_id": "memory-locomo-four-arm-20261114-v1",
+        "task_id": "s_067187554733c33d1a8f04a4",
+        "trace_id": "280c31ff49d71d9fb579c7c1e5eaefbb",
+        "usage_details": {
+          "input": 9303,
+          "output": 2048,
+          "total": 11351
+        }
+      },
+      "metadata_only": true,
+      "observation_count": 1,
+      "request_status": "ok",
+      "status": "verified_single_failed_extract_trace",
+      "usage": {
+        "completion_tokens": 2048,
+        "prompt_tokens": 9303,
+        "total_tokens": 11351
+      }
+    },
+    "stop": {
+      "at": "2026-11-14T15:55:34.331618+00:00",
+      "automatic_retry": false,
+      "processed": [],
+      "reason": "LLMError",
+      "split": "dev",
+      "status": "stopped"
+    }
+  },
+  "unavailable": {
+    "raw_lexical_accuracy": null,
+    "raw_qwen_semantic_accuracy": null,
+    "facts_lexical_accuracy": null,
+    "facts_qwen_semantic_accuracy": null,
+    "paired_comparisons": null,
+    "session_recall_mrr": null,
+    "category_subgroups": null,
+    "cross_session_subgroups": null
+  },
+  "budget": {
+    "original_gate_requests": 168,
+    "original_gate_accounting_units": 1500000,
+    "frozen_gate_requests": 384,
+    "frozen_gate_accounting_units": 3000000,
+    "expected_model_calls": 332,
+    "user_declared_total_token_budget": 2000000000,
+    "retries": 0
+  },
+  "hardware": {
+    "enumerated_windows_devices": [
+      "0"
+    ],
+    "selected_cuda_visible_devices": "0",
+    "project_requested_cuda_visible_devices": "2",
+    "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "reason": "only one physical GPU is exposed on the current host"
+  },
+  "hashes": {
+    "plan": "a88552fdd51734c7f5acc883cdf5870fa264705987a1bca5cd7c504b0dd5cd9d",
+    "plan_manifest": "d06c783114af1b72507d9e680c5a8f31980ca74e3f2cefe9df5933c6a6967da4",
+    "gold": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf",
+    "source_dataset": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4",
+    "langfuse_trace_receipt": "0cea32c2861cd54bace7f9db039b08441261be2a909e422487d03f819c1dc180"
+  },
+  "reproduction": {
+    "prepare": "python -m experiments.memory_validation.multisession_runner prepare ...",
+    "freeze": "python -m experiments.memory_validation.multisession_runner freeze ...",
+    "run": "python -m experiments.memory_validation.multisession_runner run --split dev --use-configured-credential"
+  },
+  "limitations": [
+    "No four-arm outcomes exist after the fail-closed extraction contract stopped the campaign.",
+    "The exact provider finish string was not persisted; completion occupied the frozen 2,048-token cap.",
+    "No automatic retry or score-based rerun was performed."
+  ]
+}

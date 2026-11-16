@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "candidate_preflight": "passed: 24 questions x 3 arms, 8 candidates per arm, max context 5981 chars",
+    "export_contract": "passed: plan, plan manifest, preflight, source/data/gold, 72 safe rows and 144 ledger rows revalidated",
+    "langfuse_readback": "passed: two distinct traces, one exact observation per trace, extra model requests 0",
+    "owner_close": "passed: dropped=0, export_errors=0, close_errors=0, runtime_alive_after_close=false",
+    "pytest": "30 passed",
+    "qwen_worker": "passed: Qwen3-Embedding revision 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3, credential-free seccomp worker",
+    "ruff": "passed",
+    "terminal_ledger": "144/144 ok; unknown_or_inflight=false"
+  },
+  "date": "2026-11-15",
+  "protocol": "locomo-raw-confirmation-v1",
+  "status": "passed"
+}

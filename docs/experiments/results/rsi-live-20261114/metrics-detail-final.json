@@ -1,0 +1,610 @@
+{
+  "schema_version": 1,
+  "kind": "independent_final_scalar_metrics_audit",
+  "experiment_date": "2026-11-14",
+  "audit_provider_calls": 0,
+  "verification": {
+    "journal_hash_chain_valid": true,
+    "last_sequence": 2054,
+    "v2_all_requests_settled": true,
+    "pending_requests": 0,
+    "unknown_requests": 0,
+    "held_tokens": 0,
+    "unique_planned_started_terminal_slots": 53,
+    "sealed_terminal_final_result_chains_checked": 53,
+    "task_seed_schema_groups_checked": 12,
+    "continuation37_completed": true,
+    "original_failed_preserved": true
+  },
+  "sample": {
+    "collection_slots": 5,
+    "test_slots": 48,
+    "test_slots_per_arm": 12,
+    "independent_tasks": 6,
+    "scheduling_repeats": 2,
+    "not12_independent_tasks": true
+  },
+  "by_arm": {
+    "A": {
+      "planned_slots": 12,
+      "started_slots": 12,
+      "terminal_slots": 12,
+      "host_status_counts": {
+        "completed": 12
+      },
+      "protocol_candidate_delivered": 12,
+      "final_valid_true": 12,
+      "final_valid_false": 0,
+      "final_valid_unavailable": 0,
+      "final_pass_true": 12,
+      "final_pass_false": 0,
+      "final_pass_unavailable": 0,
+      "end_to_end_success": 12,
+      "usage": {
+        "requests": 221,
+        "settled_requests": 221,
+        "input_tokens": 655713,
+        "output_tokens": 45459,
+        "tokens": 701172,
+        "usage_basis": {
+          "reported_total_minus_completion": 221
+        },
+        "purpose_provider_requests": {
+          "agent": 221
+        },
+        "summary_purpose_provider_requests": 0,
+        "cache_field_request_coverage": {
+          "prompt_tokens": 221,
+          "completion_tokens": 221,
+          "total_tokens": 221,
+          "cache_read_tokens": 220,
+          "cache_write_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "known_cache_read_tokens": 586624,
+        "known_cache_write_tokens": null,
+        "complete_cache_hit_rate": null,
+        "cache_missing_not_imputed_zero": true,
+        "currency": null,
+        "money": null
+      },
+      "attempts": {
+        "attempt_valid": 48,
+        "attempt_invalid": 0,
+        "attempt_undispatched": 0
+      },
+      "context_activity": {
+        "recorded_attempts": 48,
+        "activity_observed_attempts": 48,
+        "activity_missing_attempts": 0,
+        "snapshots_observed": 24,
+        "phase_fold_views": 0,
+        "micro_groups": 0,
+        "positive_micro_snapshots": 0,
+        "positive_fold_snapshots": 0,
+        "tool_actions_observed_attempts": 48
+      },
+      "artifact_tools": {
+        "artifact_read": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        },
+        "artifact_search": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        }
+      },
+      "policy_hashes": [
+        "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8"
+      ]
+    },
+    "B": {
+      "planned_slots": 12,
+      "started_slots": 12,
+      "terminal_slots": 12,
+      "host_status_counts": {
+        "completed": 12
+      },
+      "protocol_candidate_delivered": 12,
+      "final_valid_true": 12,
+      "final_valid_false": 0,
+      "final_valid_unavailable": 0,
+      "final_pass_true": 12,
+      "final_pass_false": 0,
+      "final_pass_unavailable": 0,
+      "end_to_end_success": 12,
+      "usage": {
+        "requests": 231,
+        "settled_requests": 231,
+        "input_tokens": 630594,
+        "output_tokens": 39643,
+        "tokens": 670237,
+        "usage_basis": {
+          "reported_total_minus_completion": 231
+        },
+        "purpose_provider_requests": {
+          "agent": 231
+        },
+        "summary_purpose_provider_requests": 0,
+        "cache_field_request_coverage": {
+          "prompt_tokens": 231,
+          "completion_tokens": 231,
+          "total_tokens": 231,
+          "cache_read_tokens": 230,
+          "cache_write_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "known_cache_read_tokens": 555904,
+        "known_cache_write_tokens": null,
+        "complete_cache_hit_rate": null,
+        "cache_missing_not_imputed_zero": true,
+        "currency": null,
+        "money": null
+      },
+      "attempts": {
+        "attempt_valid": 48,
+        "attempt_invalid": 0,
+        "attempt_undispatched": 0
+      },
+      "context_activity": {
+        "recorded_attempts": 48,
+        "activity_observed_attempts": 48,
+        "activity_missing_attempts": 0,
+        "snapshots_observed": 231,
+        "phase_fold_views": 24,
+        "micro_groups": 0,
+        "positive_micro_snapshots": 0,
+        "positive_fold_snapshots": 24,
+        "tool_actions_observed_attempts": 48
+      },
+      "artifact_tools": {
+        "artifact_read": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        },
+        "artifact_search": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        }
+      },
+      "policy_hashes": [
+        "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8"
+      ]
+    },
+    "C": {
+      "planned_slots": 12,
+      "started_slots": 12,
+      "terminal_slots": 12,
+      "host_status_counts": {
+        "completed": 11,
+        "failed": 1
+      },
+      "protocol_candidate_delivered": 11,
+      "final_valid_true": 11,
+      "final_valid_false": 0,
+      "final_valid_unavailable": 1,
+      "final_pass_true": 11,
+      "final_pass_false": 0,
+      "final_pass_unavailable": 1,
+      "end_to_end_success": 11,
+      "usage": {
+        "requests": 214,
+        "settled_requests": 214,
+        "input_tokens": 587388,
+        "output_tokens": 40602,
+        "tokens": 627990,
+        "usage_basis": {
+          "reported_total_minus_completion": 214
+        },
+        "purpose_provider_requests": {
+          "agent": 214
+        },
+        "summary_purpose_provider_requests": 0,
+        "cache_field_request_coverage": {
+          "prompt_tokens": 214,
+          "completion_tokens": 214,
+          "total_tokens": 214,
+          "cache_read_tokens": 213,
+          "cache_write_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "known_cache_read_tokens": 517888,
+        "known_cache_write_tokens": null,
+        "complete_cache_hit_rate": null,
+        "cache_missing_not_imputed_zero": true,
+        "currency": null,
+        "money": null
+      },
+      "attempts": {
+        "attempt_valid": 46,
+        "attempt_invalid": 1,
+        "attempt_undispatched": 1
+      },
+      "context_activity": {
+        "recorded_attempts": 47,
+        "activity_observed_attempts": 46,
+        "activity_missing_attempts": 1,
+        "snapshots_observed": 214,
+        "phase_fold_views": 22,
+        "micro_groups": 2,
+        "positive_micro_snapshots": 2,
+        "positive_fold_snapshots": 22,
+        "tool_actions_observed_attempts": 46
+      },
+      "artifact_tools": {
+        "artifact_read": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        },
+        "artifact_search": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        }
+      },
+      "policy_hashes": [
+        "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8"
+      ]
+    },
+    "random": {
+      "planned_slots": 12,
+      "started_slots": 12,
+      "terminal_slots": 12,
+      "host_status_counts": {
+        "completed": 12
+      },
+      "protocol_candidate_delivered": 12,
+      "final_valid_true": 12,
+      "final_valid_false": 0,
+      "final_valid_unavailable": 0,
+      "final_pass_true": 12,
+      "final_pass_false": 0,
+      "final_pass_unavailable": 0,
+      "end_to_end_success": 12,
+      "usage": {
+        "requests": 219,
+        "settled_requests": 219,
+        "input_tokens": 590162,
+        "output_tokens": 39672,
+        "tokens": 629834,
+        "usage_basis": {
+          "reported_total_minus_completion": 219
+        },
+        "purpose_provider_requests": {
+          "agent": 219
+        },
+        "summary_purpose_provider_requests": 0,
+        "cache_field_request_coverage": {
+          "prompt_tokens": 219,
+          "completion_tokens": 219,
+          "total_tokens": 219,
+          "cache_read_tokens": 219,
+          "cache_write_tokens": 0,
+          "reasoning_tokens": 0
+        },
+        "known_cache_read_tokens": 521984,
+        "known_cache_write_tokens": null,
+        "complete_cache_hit_rate": 0.8844757880039718,
+        "cache_missing_not_imputed_zero": true,
+        "currency": null,
+        "money": null
+      },
+      "attempts": {
+        "attempt_valid": 48,
+        "attempt_invalid": 0,
+        "attempt_undispatched": 0
+      },
+      "context_activity": {
+        "recorded_attempts": 48,
+        "activity_observed_attempts": 48,
+        "activity_missing_attempts": 0,
+        "snapshots_observed": 219,
+        "phase_fold_views": 24,
+        "micro_groups": 1,
+        "positive_micro_snapshots": 1,
+        "positive_fold_snapshots": 24,
+        "tool_actions_observed_attempts": 48
+      },
+      "artifact_tools": {
+        "artifact_read": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        },
+        "artifact_search": {
+          "recorded_invocations": 0,
+          "end_events": 0,
+          "successful_read_count": null
+        }
+      },
+      "policy_hashes": [
+        "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8"
+      ]
+    }
+  },
+  "definitions": {
+    "delivery": "execution_integrity, selected_candidate, selected agent end_turn and exported patch hash; separate from final quality",
+    "final_tristate": "valid/pass null when unavailable; no zero imputation",
+    "requests": "unique settled provider request IDs",
+    "input_tokens": "total-completion; only missing total permits all four explicit components",
+    "summary": "summary purpose provider requests",
+    "artifact_read": "recorded invocations=ToolExecutionStart events; successful read count unavailable",
+    "context_activity": "snapshot-derived views/groups, not execution counts; repeated observed groups may reappear in snapshots",
+    "cache": "missing fields never zero-imputed; complete rate requires every request to carry cache_read",
+    "cost_scope": "collection+test+v1 budget calibration+one connectivity; explicitly excludes unrelated older campaign"
+  },
+  "costs": {
+    "collection_5": {
+      "requests": 84,
+      "settled_requests": 84,
+      "input_tokens": 223250,
+      "output_tokens": 13989,
+      "tokens": 237239,
+      "usage_basis": {
+        "reported_total_minus_completion": 84
+      },
+      "purpose_provider_requests": {
+        "agent": 84
+      },
+      "summary_purpose_provider_requests": 0,
+      "cache_field_request_coverage": {
+        "prompt_tokens": 84,
+        "completion_tokens": 84,
+        "total_tokens": 84,
+        "cache_read_tokens": 82,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0
+      },
+      "known_cache_read_tokens": 195840,
+      "known_cache_write_tokens": null,
+      "complete_cache_hit_rate": null,
+      "cache_missing_not_imputed_zero": true,
+      "currency": null,
+      "money": null
+    },
+    "test_48": {
+      "requests": 885,
+      "settled_requests": 885,
+      "input_tokens": 2463857,
+      "output_tokens": 165376,
+      "tokens": 2629233,
+      "usage_basis": {
+        "reported_total_minus_completion": 885
+      },
+      "purpose_provider_requests": {
+        "agent": 885
+      },
+      "summary_purpose_provider_requests": 0,
+      "cache_field_request_coverage": {
+        "prompt_tokens": 885,
+        "completion_tokens": 885,
+        "total_tokens": 885,
+        "cache_read_tokens": 882,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0
+      },
+      "known_cache_read_tokens": 2182400,
+      "known_cache_write_tokens": null,
+      "complete_cache_hit_rate": null,
+      "cache_missing_not_imputed_zero": true,
+      "currency": null,
+      "money": null
+    },
+    "v2_total": {
+      "requests": 969,
+      "settled_requests": 969,
+      "input_tokens": 2687107,
+      "output_tokens": 179365,
+      "tokens": 2866472,
+      "usage_basis": {
+        "reported_total_minus_completion": 969
+      },
+      "purpose_provider_requests": {
+        "agent": 969
+      },
+      "summary_purpose_provider_requests": 0,
+      "cache_field_request_coverage": {
+        "prompt_tokens": 969,
+        "completion_tokens": 969,
+        "total_tokens": 969,
+        "cache_read_tokens": 964,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0
+      },
+      "known_cache_read_tokens": 2378240,
+      "known_cache_write_tokens": null,
+      "complete_cache_hit_rate": null,
+      "cache_missing_not_imputed_zero": true,
+      "currency": null,
+      "money": null
+    },
+    "v1_budget_calibration": {
+      "requests": 4,
+      "settled_requests": 4,
+      "input_tokens": 8139,
+      "output_tokens": 357,
+      "tokens": 8496,
+      "usage_basis": {
+        "reported_total_minus_completion": 4
+      },
+      "purpose_provider_requests": {
+        "agent": 4
+      },
+      "summary_purpose_provider_requests": 0,
+      "cache_field_request_coverage": {
+        "prompt_tokens": 4,
+        "completion_tokens": 4,
+        "total_tokens": 4,
+        "cache_read_tokens": 3,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0
+      },
+      "known_cache_read_tokens": 5760,
+      "known_cache_write_tokens": null,
+      "complete_cache_hit_rate": null,
+      "cache_missing_not_imputed_zero": true,
+      "currency": null,
+      "money": null
+    },
+    "connectivity": {
+      "requests": 1,
+      "settled_requests": 1,
+      "input_tokens": 41,
+      "output_tokens": 14,
+      "tokens": 55,
+      "usage_basis": {
+        "reported_total_minus_completion": 1
+      },
+      "purpose_provider_requests": {
+        "connectivity": 1
+      },
+      "summary_purpose_provider_requests": 0,
+      "cache_field_request_coverage": {
+        "prompt_tokens": 1,
+        "completion_tokens": 1,
+        "total_tokens": 1,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "reasoning_tokens": 0
+      },
+      "known_cache_read_tokens": null,
+      "known_cache_write_tokens": null,
+      "complete_cache_hit_rate": null,
+      "cache_missing_not_imputed_zero": true,
+      "currency": null,
+      "money": null
+    },
+    "full_preparation_and_test_total": {
+      "requests": 974,
+      "input_tokens": 2695287,
+      "output_tokens": 179736,
+      "tokens": 2875023,
+      "currency": null,
+      "money": null
+    },
+    "offline_preflight": {
+      "provider_requests": 0,
+      "task_count": 11,
+      "host_checker_processes": 44,
+      "candidate_worker_processes": 44
+    },
+    "offline_sdk_recovery": {
+      "provider_requests": 0,
+      "leaf_evaluations": 48,
+      "train_leaves": 45,
+      "diagnostic_holdout_leaves": 3,
+      "replayed_node_actions": 82,
+      "unit": "offline scored-tree actions; not API requests/tokens",
+      "cpu_compute_cost": null
+    }
+  },
+  "schema_evidence": {
+    "groups_checked": 12,
+    "known_unique_tool_schema_hashes": [
+      "ae763ad8ec546cdb3dc109536f92969ceea24fbf7f1ac4c4479c5f262d5e01ae"
+    ],
+    "observed_actual_hash_difference_groups": [],
+    "missing_evidence_groups": [
+      {
+        "task_id": "HumanEval/6",
+        "seed": 23
+      }
+    ],
+    "missing_attempts": [
+      {
+        "trial_id": "test-HumanEval-6-s23-C",
+        "missing_count": 1
+      }
+    ],
+    "diagnosis": "missing observation only; all 190 known hashes equal. Cannot prove equality for missing observation.",
+    "primary_analyzer_status": "schema_mismatch",
+    "ranking": null,
+    "p_values": null
+  },
+  "compression_evidence": {
+    "positive_micro_snapshot_locations": [
+      {
+        "trial_id": "test-HumanEval-1-s23-random",
+        "attempt_id": "b1_a1",
+        "snapshot_index": 4,
+        "observed_groups": 1
+      },
+      {
+        "trial_id": "test-HumanEval-1-s47-C",
+        "attempt_id": "b0_a1",
+        "snapshot_index": 4,
+        "observed_groups": 1
+      },
+      {
+        "trial_id": "test-HumanEval-1-s47-C",
+        "attempt_id": "b1_a1",
+        "snapshot_index": 4,
+        "observed_groups": 1
+      }
+    ],
+    "positive_phase_fold_views_recorded": 78,
+    "actual_micro_operation_count": null,
+    "actual_phase_fold_operation_count": null,
+    "successful_artifact_backreads": null,
+    "indirect_artifact_reads_via_read_or_bash": "unavailable",
+    "observation_scope": "190/191 test-attempt context/action observations available; no claim about missing observation",
+    "no_long_horizon_or_causal_cache_gain_claim": true
+  },
+  "C_interpretation": {
+    "condition": "reference_fallback_not_trained_intervention",
+    "raw_sdk_selected": {
+      "role": "baseline",
+      "parameters": null,
+      "policy_hash": "f46ca7adbe15280bc7ec375255bee72fd0d5f55cb237e672ce05b8918d6aecc6"
+    },
+    "effective_parameters": {
+      "max_refine": 1,
+      "max_width": 2
+    },
+    "effective_policy_hash": "33030146a9b9f6f49b71087c77834e0f0542611ebf881ceb2d4c5370e996adb8",
+    "same_parameters_as_B": true,
+    "learning_contribution": "not_identifiable",
+    "full_validation_gain": null,
+    "publication_status": "validation_incomplete_rejected_for_publication"
+  },
+  "continuation": {
+    "original_failed_trial_id": "test-HumanEval-6-s23-C",
+    "original_failed_status": "failed",
+    "root_cause": "unlocalized",
+    "new_completed_slots": 37,
+    "new_failures": 0,
+    "sidecar_seal_sha256": "75af927bad26e44e3f2dbf8b10d6e8c493446b14791e5b7b2e89322bbb96d458",
+    "registered_receipt_sha256": "ea71024df4e7f7980e4a0ada694759a7caec3c95f703b63d297f9e92a9ed7142",
+    "wrapper_script_sha256": "cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34",
+    "pending37_set_sha256": "4efbc61b487915adb6540840609dc85b88b426c924a99159b7445a72491a059f",
+    "operator_exception_after_test_exposure": true
+  },
+  "source_hashes": {
+    "final_analysis": "8d03d793d335ec19d9cb637cc73cd257fee2feab79a572c9e54900d183614be0",
+    "final_continuation": "c39f2aafd34f1a91f969436ed019e4ca6c3d0d2ee0050ca22b0b314f59325082",
+    "v2_campaign": "f0812bfb09360c88fa6be1199d979c91ac2c11dcb7f18046bc03227e8505e576",
+    "v2_plan": "9c157bbe1de25fdd761a35aaa51e01ebe02462022b74f34c9db93c22e9b167fd",
+    "v2_journal": "e01e3416ad4eaa790c8df4d1a513fef68c25b99618401dffbbaf2ca31f78a2ac",
+    "v1_campaign": "ae83d915ead3f341c17d1c1b17b4ee295749070df65e1efcfaaeb6118723ad70",
+    "v1_journal": "f4043df4c05c21309dd1456a2fa7ba79693068aa54ac974d4f1b45d846021ed9",
+    "connectivity": "e203fdddf3e76c9b7ec3b52473ac6bc745fa151ef954b93bb8e0f4983f8c284d",
+    "preflight": "ae3eefe236cd9850220b308e34ebce6954cc6f8794863f77380477cdbf16ea99",
+    "sdk_evaluations": "96c9419079b8ff160594959df0a30cd701ddc3e992c0273ed966ccd2ab0c3480"
+  },
+  "limits": [
+    "Short public code tasks; not long-horizon results",
+    "6 tasks x2 scheduling repeats; no significance test",
+    "C is reference fallback, learning contribution not identifiable",
+    "Context numbers are snapshot-derived views/groups",
+    "Cache telemetry is not independently verified billing or causal benefit"
+  ],
+  "data_safety": {
+    "raw_prompt_response_candidate_gold_official_final_content_included": false,
+    "only_safe_scalars_ids_hashes_and_counts": true
+  }
+}

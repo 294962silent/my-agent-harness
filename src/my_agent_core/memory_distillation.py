@@ -15,6 +15,7 @@ import re
 from collections import deque
 from typing import TYPE_CHECKING
 
+from my_agent_llm.observation import observation_context
 from my_agent_llm import Message
 from my_agent_core.memory_safety import redact_memory_text
 
@@ -162,10 +163,11 @@ class MemoryDistiller:
             + json.dumps([{"user_evidence": text} for _, text in evidence], ensure_ascii=False)
         )
         try:
-            response = await asyncio.wait_for(
-                self.owner.llm.achat([Message(role="user", content=redact_memory_text(prompt))], tools=[], model=self.owner.model),
-                timeout=self.timeout,
-            )
+            with observation_context(purpose="memory_distill"):
+                response = await asyncio.wait_for(
+                    self.owner.llm.achat([Message(role="user", content=redact_memory_text(prompt))], tools=[], model=self.owner.model),
+                    timeout=self.timeout,
+                )
             text = str(response.content or "").strip()
             if text.startswith("```"):
                 text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)

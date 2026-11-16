@@ -1,0 +1,572 @@
+{
+  "schema_version": 1,
+  "records": 100,
+  "unique_cases": 12,
+  "failures": 0,
+  "groups": [
+    {
+      "module": "context",
+      "case": "artifact_roundtrip",
+      "arm": "off",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.003912999993190169,
+      "duration_p95_seconds": 0.00821110000833869,
+      "metrics": {
+        "artifact_disk_bytes": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "artifact_readback_supported": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "evidence_recoverable": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "handles": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "source_bytes": {
+          "mean": 120019,
+          "minimum": 120019,
+          "maximum": 120019
+        },
+        "view_bytes": {
+          "mean": 120019,
+          "minimum": 120019,
+          "maximum": 120019
+        },
+        "view_contains_full_source": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "context",
+      "case": "artifact_roundtrip",
+      "arm": "on",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.043170299992198125,
+      "duration_p95_seconds": 0.049984300014330074,
+      "metrics": {
+        "artifact_disk_bytes": {
+          "mean": 120361,
+          "minimum": 120361,
+          "maximum": 120361
+        },
+        "artifact_readback_matches_source": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "artifact_readback_supported": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "evidence_recoverable": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "handles": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "source_bytes": {
+          "mean": 120019,
+          "minimum": 120019,
+          "maximum": 120019
+        },
+        "view_bytes": {
+          "mean": 7041,
+          "minimum": 7041,
+          "maximum": 7041
+        },
+        "view_contains_full_source": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    },
+    {
+      "module": "context",
+      "case": "summary_source_binding",
+      "arm": "contract",
+      "kind": "contract",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.002517999993870035,
+      "duration_p95_seconds": 0.0036486000171862543,
+      "metrics": {
+        "changed_source_summary_leaks": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "summarizer_calls": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "unchanged_source_summary_reused": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "memory",
+      "case": "labeled_retrieval",
+      "arm": "off",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.033769400004530326,
+      "duration_p95_seconds": 0.03601429998525418,
+      "metrics": {
+        "hits": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "labeled_queries": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "recall": {
+          "mean": 0.0,
+          "minimum": 0.0,
+          "maximum": 0.0
+        },
+        "stale_hits": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    },
+    {
+      "module": "memory",
+      "case": "labeled_retrieval",
+      "arm": "on",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.03560589998960495,
+      "duration_p95_seconds": 0.04009970001061447,
+      "metrics": {
+        "hits": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "labeled_queries": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "recall": {
+          "mean": 1.0,
+          "minimum": 1.0,
+          "maximum": 1.0
+        },
+        "stale_hits": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    },
+    {
+      "module": "model",
+      "case": "stream_cancel",
+      "arm": "contract",
+      "kind": "contract",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.006189199979417026,
+      "duration_p95_seconds": 0.018961299996590242,
+      "metrics": {
+        "cancellation_propagated": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "provider_finalized": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "model",
+      "case": "stream_close",
+      "arm": "contract",
+      "kind": "contract",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.005035200010752305,
+      "duration_p95_seconds": 0.006046100024832413,
+      "metrics": {
+        "provider_finalized": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "terminal_records": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "observation",
+      "case": "auxiliary_coverage",
+      "arm": "off",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.010203399986494333,
+      "duration_p95_seconds": 0.050222899997606874,
+      "metrics": {
+        "actual_calls": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "coverage": {
+          "mean": 0.0,
+          "minimum": 0.0,
+          "maximum": 0.0
+        },
+        "linked_auxiliary": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "matched_ends": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "observed_calls": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "privacy_violations": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    },
+    {
+      "module": "observation",
+      "case": "auxiliary_coverage",
+      "arm": "on",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.009372900007292628,
+      "duration_p95_seconds": 0.011317099997540936,
+      "metrics": {
+        "actual_calls": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "coverage": {
+          "mean": 1.0,
+          "minimum": 1.0,
+          "maximum": 1.0
+        },
+        "linked_auxiliary": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "matched_ends": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "observed_calls": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "privacy_violations": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    },
+    {
+      "module": "permission",
+      "case": "unauthorized_write",
+      "arm": "off",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.026613199996063486,
+      "duration_p95_seconds": 0.034719099989160895,
+      "metrics": {
+        "unauthorized_side_effects": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "permission",
+      "case": "unauthorized_write",
+      "arm": "on",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.031489299988606945,
+      "duration_p95_seconds": 0.5924090000044089,
+      "metrics": {
+        "unauthorized_side_effects": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    },
+    {
+      "module": "runtime",
+      "case": "single_owner",
+      "arm": "contract",
+      "kind": "contract",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.011686600017128512,
+      "duration_p95_seconds": 0.012703799991868436,
+      "metrics": {
+        "concurrent_prompt_rejected": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "owner_released": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "runtime",
+      "case": "turn_budget",
+      "arm": "off",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.04827040000236593,
+      "duration_p95_seconds": 0.05324159999145195,
+      "metrics": {
+        "budget_exhausted": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "model_calls": {
+          "mean": 5,
+          "minimum": 5,
+          "maximum": 5
+        }
+      }
+    },
+    {
+      "module": "runtime",
+      "case": "turn_budget",
+      "arm": "on",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.02938749999157153,
+      "duration_p95_seconds": 0.03186290001031011,
+      "metrics": {
+        "budget_exhausted": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "model_calls": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        }
+      }
+    },
+    {
+      "module": "session",
+      "case": "branch_restore",
+      "arm": "off",
+      "kind": "comparison",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.023975699994480237,
+      "duration_p95_seconds": 0.026551299990387633,
+      "metrics": {
+        "branch_leaks": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "messages": {
+          "mean": 3,
+          "minimum": 3,
+          "maximum": 3
+        }
+      }
+    },
+    {
+      "module": "session",
+      "case": "branch_restore",
+      "arm": "on",
+      "kind": "comparison",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.023760099982609972,
+      "duration_p95_seconds": 0.025645699992310256,
+      "metrics": {
+        "branch_leaks": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        },
+        "messages": {
+          "mean": 2,
+          "minimum": 2,
+          "maximum": 2
+        }
+      }
+    },
+    {
+      "module": "tools",
+      "case": "safe_parallel",
+      "arm": "off",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.04860249999910593,
+      "duration_p95_seconds": 0.054242100013652816,
+      "metrics": {
+        "completed": {
+          "mean": 3,
+          "minimum": 3,
+          "maximum": 3
+        },
+        "peak_concurrency": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "tools",
+      "case": "safe_parallel",
+      "arm": "on",
+      "kind": "ablation",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.01593490000232123,
+      "duration_p95_seconds": 0.15749919999507256,
+      "metrics": {
+        "completed": {
+          "mean": 3,
+          "minimum": 3,
+          "maximum": 3
+        },
+        "peak_concurrency": {
+          "mean": 3,
+          "minimum": 3,
+          "maximum": 3
+        }
+      }
+    },
+    {
+      "module": "tools",
+      "case": "write_read_dependency",
+      "arm": "off",
+      "kind": "comparison",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.014877500012516975,
+      "duration_p95_seconds": 0.016116399987367913,
+      "metrics": {
+        "dependency_violations": {
+          "mean": 1,
+          "minimum": 1,
+          "maximum": 1
+        }
+      }
+    },
+    {
+      "module": "tools",
+      "case": "write_read_dependency",
+      "arm": "on",
+      "kind": "comparison",
+      "samples": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration_median_seconds": 0.017076099989935756,
+      "duration_p95_seconds": 0.017537399980938062,
+      "metrics": {
+        "dependency_violations": {
+          "mean": 0,
+          "minimum": 0,
+          "maximum": 0
+        }
+      }
+    }
+  ],
+  "tokens": null,
+  "cache": null,
+  "quality": null,
+  "limits": "Offline deterministic fixtures establish engineering contracts, not real-model quality or throughput."
+}

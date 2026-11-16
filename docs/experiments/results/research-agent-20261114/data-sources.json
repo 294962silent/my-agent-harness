@@ -1,0 +1,39 @@
+[
+  {
+    "uci_id": 186,
+    "source": "https://archive.ics.uci.edu/static/public/186/wine%2Bquality.zip",
+    "archive_sha256": "3ed56667f4b828242bd732d7d1dd7f2861e54432239d7fa63877014cbb0304d4",
+    "license": "CC-BY-4.0",
+    "outputs": [
+      {
+        "file": "winequality-red.csv",
+        "rows": 1599,
+        "columns": 12,
+        "sha256": "d22f4f11db0456ff21745d2fa96d26fa348a8cdb889efda65bde802085be45fd",
+        "target": "quality"
+      },
+      {
+        "file": "winequality-white.csv",
+        "rows": 4898,
+        "columns": 12,
+        "sha256": "d99ea899f7ea892b717e34b0b6eaca33244c52d0d038dc4fcb6c728a64842562",
+        "target": "quality"
+      }
+    ]
+  },
+  {
+    "uci_id": 291,
+    "source": "https://archive.ics.uci.edu/static/public/291/airfoil%2Bself%2Bnoise.zip",
+    "archive_sha256": "5c7767ba53ad827d3f48ba1eb9434117f4892df8f10bc4c99e118a9e8a7ae07c",
+    "license": "CC-BY-4.0",
+    "outputs": [
+      {
+        "file": "airfoil.csv",
+        "rows": 1503,
+        "columns": 6,
+        "sha256": "6d80f05069521d4d9168ab5935b24981813ffbaf9cc73ce4462a813dc52f6059",
+        "target": "sound_pressure"
+      }
+    ]
+  }
+]

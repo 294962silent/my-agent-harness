@@ -1,0 +1,28 @@
+{
+  "accuracy_per_arm": null,
+  "by_category": {
+    "multi_hop": 10,
+    "single_hop": 10,
+    "temporal": 10
+  },
+  "by_cross_session": {
+    "cross_session": 10,
+    "single_session": 20
+  },
+  "by_evidence_session_count": {
+    "1": 20,
+    "2": 6,
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "7": 1
+  },
+  "correct_per_arm": null,
+  "planned_rows_per_arm": 30,
+  "questions": {
+    "dev": 6,
+    "test": 24,
+    "total": 30
+  },
+  "realized_rows_per_arm": 0
+}

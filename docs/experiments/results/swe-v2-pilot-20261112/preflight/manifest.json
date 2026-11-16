@@ -1,0 +1,75 @@
+{
+  "purpose": "Original pre-model gold and environment evidence; source-stage snapshot is not the final generation commit",
+  "files": [
+    {
+      "file": "gold-evidence/pytest-dev__pytest-5103.json",
+      "bytes": 1036,
+      "sha256": "f2ee3b6c8d066f844ebe4fcee6ac06a7e6d188b87075ee945ebe7a90fb4f579e"
+    },
+    {
+      "file": "gold-evidence/pytest-dev__pytest-5221.json",
+      "bytes": 1036,
+      "sha256": "99b109d2762075d092af69e8cd60f8d4dffc0087e56c2634de1cc7645f4f6e4b"
+    },
+    {
+      "file": "gold-evidence/pytest-dev__pytest-5227.json",
+      "bytes": 1036,
+      "sha256": "c8797dee36e9fc5003c4a8707b0a86ec07b0f37e1dc6892ad7e15453450e8781"
+    },
+    {
+      "file": "gold-evidence/sympy__sympy-11400.json",
+      "bytes": 1016,
+      "sha256": "f31e074a51feedf59e6537667eb87212fe0b9eea8e5e9c4b59c44ca31c29d391"
+    },
+    {
+      "file": "gold-evidence/sympy__sympy-11870.json",
+      "bytes": 1017,
+      "sha256": "b1ec00f53a9ba27945507b121bf0e446e5cbb677bbbe2afca14c8f1151a99734"
+    },
+    {
+      "file": "gold-evidence/sympy__sympy-20590.json",
+      "bytes": 983,
+      "sha256": "96f94b3ae684efd7f1afb6d5a8767e69285e1f09de9c043ebf7ef7a51f576fde"
+    },
+    {
+      "file": "gold-report/pytest-dev__pytest-5103.json",
+      "bytes": 850,
+      "sha256": "8baf02c582bd77983cc578cef735d213284798653b4fe5b1a80130c2dd2ef999"
+    },
+    {
+      "file": "gold-report/pytest-dev__pytest-5221.json",
+      "bytes": 850,
+      "sha256": "ce9ad9d66bb99c0120865829a5ad562496eab9de14d53b1774a2e9e12f1091b9"
+    },
+    {
+      "file": "gold-report/pytest-dev__pytest-5227.json",
+      "bytes": 850,
+      "sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d"
+    },
+    {
+      "file": "gold-report/sympy__sympy-11400.json",
+      "bytes": 830,
+      "sha256": "930dd3f0aef1736d80bcaf57775f6b438399ea352b1dbe579cf65e6a98d046fe"
+    },
+    {
+      "file": "gold-report/sympy__sympy-11870.json",
+      "bytes": 883,
+      "sha256": "787e8e0442a49425945403922923810c9fcac21083137fd7744d8c54e67a2128"
+    },
+    {
+      "file": "gold-report/sympy__sympy-20590.json",
+      "bytes": 830,
+      "sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5"
+    },
+    {
+      "file": "official-files.json",
+      "bytes": 12356,
+      "sha256": "d1bca13735687a7cf83e81ff49acbe81326f3552da8b147066ba9b738c266118"
+    },
+    {
+      "file": "preflight-summary.json",
+      "bytes": 16117,
+      "sha256": "862d072c0fb76438366a906fe93bb5f7fd4a1ee7d6850db80de063d7f957af3c"
+    }
+  ]
+}

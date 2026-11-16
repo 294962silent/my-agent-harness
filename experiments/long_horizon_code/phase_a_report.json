@@ -1,0 +1,594 @@
+{
+  "kind": "deterministic_fault_injection",
+  "phase": "A",
+  "repeat": 20,
+  "scenario_count": 7,
+  "scenarios": [
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "artifact_id": "artifact:7a80012f12ec966c:982715933e98c3e553f9b6a964894db0",
+          "baseline_context_chars": 936,
+          "canonical_session_body_preserved": true,
+          "critical_hit_lines": [
+            2501
+          ],
+          "enhanced_context_chars": 5570
+        },
+        "signature_sha256": "72559a7fe13c0d7ad7ab4e1c2d26f0d982de5aeef1537241ef7e5733266bccea"
+      },
+      "failure_classification": {
+        "baseline": {
+          "critical_evidence_evicted_without_artifact": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "critical_evidence_evicted_without_artifact",
+        "enhanced": null
+      },
+      "implementation_level": "production ArtifactStore plus layered ContextManager",
+      "metrics": {
+        "first_observation": {
+          "artifact_hits": 1,
+          "baseline_patch_success": false,
+          "enhanced_patch_success": true,
+          "preview_chars": 5228,
+          "tool_output_chars": 73468
+        },
+        "repetitions": 20
+      },
+      "scenario": "context_budget_artifact_readback",
+      "scope": "Real artifact persistence and context projection; synthetic large tool output and scripted baseline clipping; no provider call.",
+      "status": "completed"
+    },
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "baseline_value": "us-east-1",
+          "cross_scope_candidate_used": false,
+          "enhanced_retrieval": "<RETRIEVED_MEMORY>\n- subject=\"user\" key=\"deployment_region\" value=eu-west-1\n</RETRIEVED_MEMORY>",
+          "enhanced_value": "eu-west-1",
+          "stale_candidate_revision_matches_current": false
+        },
+        "signature_sha256": "fa1dcfc5c99a74ef697deb8480d4442177f5beb8a6deef0241d5747f2221b733"
+      },
+      "failure_classification": {
+        "baseline": {
+          "stale_candidate_used_without_revision_scope_check": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "stale_candidate_used_without_revision_scope_check",
+        "enhanced": null
+      },
+      "implementation_level": "production MemoryStore.aretrieve with fake semantic candidate index",
+      "metrics": {
+        "first_observation": {
+          "authoritative_value_is_current": true,
+          "candidate_count": 2,
+          "candidate_rejections_expected": 2
+        },
+        "repetitions": 20
+      },
+      "scenario": "memory_revision_scope",
+      "scope": "Real local facts, revisions and scope checks; synthetic stale/cross-scope semantic candidates; no vector service call.",
+      "status": "completed"
+    },
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "baseline_worklog": [
+            "analysis",
+            "analysis",
+            "patch"
+          ],
+          "campaign_manifest_sha256": "7bde6407ab0f0edf2204088b39971ad44b743691bc99a7221f3568ecae7f7178",
+          "enhanced_worklog": [
+            "patch"
+          ],
+          "event_kinds": [
+            "prepared",
+            "work_unit_committed",
+            "work_unit_committed"
+          ],
+          "journal_sequence": [
+            0,
+            1,
+            2
+          ]
+        },
+        "signature_sha256": "3635d7e752c47781a7d3843c49275ebb0780f9dd972ed16d5ddd57ac543b0136"
+      },
+      "failure_classification": {
+        "baseline": {
+          "in_memory_state_lost_after_reconstruction": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "in_memory_state_lost_after_reconstruction",
+        "enhanced": null
+      },
+      "implementation_level": "production ResearchTask and ResearchCampaign journal/load integration fixture",
+      "metrics": {
+        "first_observation": {
+          "baseline_replayed_units": 1,
+          "committed_units": 2,
+          "enhanced_replayed_units": 0,
+          "journal_events": 3
+        },
+        "repetitions": 20
+      },
+      "scenario": "checkpoint_resume",
+      "scope": "Real campaign plan plus hash-chained fsynced journal reload; synthetic two-unit work executes no model or Docker round.",
+      "status": "completed"
+    },
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "baseline_final_file": "C:\\Users\\MLL\\AppData\\Local\\Temp\\harness-mutation-fault-9gc4c8rk\\baseline-0.json",
+          "baseline_values": [
+            "left"
+          ],
+          "enhanced_final_file": "C:\\Users\\MLL\\AppData\\Local\\Temp\\harness-mutation-fault-9gc4c8rk\\enhanced-0.json",
+          "enhanced_values": [
+            "left",
+            "right"
+          ]
+        },
+        "signature_sha256": "107656ca1c8cc7703d22defda37d19cb1ad7c66f5513fcaad6b441e10d880d88"
+      },
+      "failure_classification": {
+        "baseline": {
+          "read_modify_write_race_lost_update": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "read_modify_write_race_lost_update",
+        "enhanced": null
+      },
+      "implementation_level": "production FileMutationQueue.acquire",
+      "metrics": {
+        "first_observation": {
+          "baseline_lost_updates": 1,
+          "baseline_writes": 2,
+          "enhanced_lost_updates": 0,
+          "enhanced_writes": 2
+        },
+        "repetitions": 20
+      },
+      "scenario": "concurrent_file_mutation",
+      "scope": "Real same-path async mutation queue; synthetic barrier makes the unprotected lost-update race deterministic.",
+      "status": "completed"
+    },
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "baseline_active_policy_hash": "d053903de64ba892e33f88405edeb7460739b905b6c47a969272b0e254d47503",
+          "candidate_policy_hash": "d053903de64ba892e33f88405edeb7460739b905b6c47a969272b0e254d47503",
+          "enhanced_active_after_rejection": "6c25c7347b3ae820181349373987342a583da4a7abd35869c9aad13d36f97e40",
+          "expected_previous_version": "9ba16c4efddbc5277d20550157bdc736d36b9eb31cbe4dc1047e8f7420e282ad",
+          "incumbent_policy_hash": "6c25c7347b3ae820181349373987342a583da4a7abd35869c9aad13d36f97e40",
+          "incumbent_version": "ca4ef062c662ad57dab24b4912661698815ab3b4e123f8aa467f2f56083c227d",
+          "rollback_active_version": "9ba16c4efddbc5277d20550157bdc736d36b9eb31cbe4dc1047e8f7420e282ad"
+        },
+        "signature_sha256": "54c92c9876a1df1fe86f56c5c24924a1ad6430015b481f60aaa147f6c90d7ab7"
+      },
+      "failure_classification": {
+        "baseline": {
+          "train_only_overfit_promoted": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "train_only_overfit_promoted",
+        "enhanced": null
+      },
+      "implementation_level": "production PolicyRegistry snapshot and rollback plus strict holdout rule seam",
+      "metrics": {
+        "first_observation": {
+          "holdout_gain_vs_baseline": -0.020000000000000018,
+          "holdout_gain_vs_incumbent": -0.07000000000000006,
+          "incumbent_retained": true,
+          "min_gain": 0.01,
+          "rollback_success": true,
+          "train_gain": 0.26
+        },
+        "repetitions": 20
+      },
+      "scenario": "controlled_policy_promotion",
+      "scope": "Real immutable registry and rollback mechanics; synthetic score vectors and deterministic strict-gain rule; full DREAM-RSI optimizer not run.",
+      "status": "completed"
+    },
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "docker_prefix": [
+            "wsl.exe",
+            "-d",
+            "Ubuntu-20.04",
+            "--",
+            "docker"
+          ],
+          "escaped_feedback": "candidate execution failed",
+          "escaped_output_files": [
+            "predictions.csv"
+          ],
+          "extra_workspace_error": "candidate workspace must contain only train.py",
+          "host_recomputed_score": 0.125,
+          "reported_score": 1.0,
+          "requested_image": "sha256:896edfbcbf0c29ad15681617a8886cb9871b7f24c5fde4606114c8ee6bfe4c70",
+          "valid_feedback": "Host dev RMSE: 7; utility: 0.125",
+          "valid_output_files": [
+            "predictions.csv"
+          ],
+          "verified_image_id": "sha256:896edfbcbf0c29ad15681617a8886cb9871b7f24c5fde4606114c8ee6bfe4c70"
+        },
+        "signature_sha256": "56c56f5325c194d6d24e337d10e868350fc7e7ca1cff89799f997fad8332c87f"
+      },
+      "failure_classification": {
+        "baseline": {
+          "candidate_self_report_trusted": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "candidate_self_report_trusted",
+        "enhanced": null
+      },
+      "implementation_level": "production NumericPredictionEvaluator + DockerRunner + ResearchTask",
+      "metrics": {
+        "container_runs_total": 40,
+        "first_observation": {
+          "container_runs": 2,
+          "escaped_output_rejected": true,
+          "extra_workspace_rejected": true,
+          "image_identity_verified": true,
+          "reported_minus_host_score": 0.875,
+          "self_report_ignored": true,
+          "valid_candidate_accepted": true
+        },
+        "repetitions": 20,
+        "requested_container_runs": 40
+      },
+      "scenario": "host_scoring_sandbox",
+      "scope": "Real pinned-image WSL Docker execution with production network/file/resource policy; synthetic candidates and self-reported score.",
+      "status": "completed"
+    },
+    {
+      "baseline_pass": 0,
+      "baseline_pass_rate": 0.0,
+      "baseline_total": 20,
+      "blocked_reason": null,
+      "enhanced_pass": 20,
+      "enhanced_pass_rate": 1.0,
+      "enhanced_total": 20,
+      "evidence": {
+        "deterministic": true,
+        "distinct_signatures": 1,
+        "first_observation": {
+          "baseline_final_files": [
+            "app.py",
+            "config.json",
+            "owners.json",
+            "region.txt",
+            "resume.json",
+            "tests/test_repair.py"
+          ],
+          "enhanced_final_files": [
+            "app.py",
+            "config.json",
+            "owners.json",
+            "region.txt",
+            "resume.json",
+            "tests/test_repair.py"
+          ],
+          "host_validation": {
+            "baseline": {
+              "evidence": {
+                "compile_returncode": 0,
+                "test_returncode": 1,
+                "test_stderr_tail": " ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'legacy-region' != 'ap-southeast-1'\n- legacy-region\n+ ap-southeast-1\n\n\n======================================================================\nFAIL: test_resume (test_repair.RepairTests.test_resume)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\MLL\\AppData\\Local\\Temp\\harness-longitudinal-repair-tej7eq3q\\run-0\\baseline-repo\\tests\\test_repair.py\", line 17, in test_resume\n    self.assertTrue(state['journal_resumed'])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: False is not true\n\n----------------------------------------------------------------------\nRan 4 tests in 0.002s\n\nFAILED (failures=4)\n",
+                "test_stdout_tail": ""
+              },
+              "metrics": {
+                "host_subprocesses": 2
+              },
+              "pass": false
+            },
+            "enhanced": {
+              "evidence": {
+                "compile_returncode": 0,
+                "test_returncode": 0,
+                "test_stderr_tail": "test_config (test_repair.RepairTests.test_config) ... ok\ntest_conflicting_mutations_merge (test_repair.RepairTests.test_conflicting_mutations_merge) ... ok\ntest_region (test_repair.RepairTests.test_region) ... ok\ntest_resume (test_repair.RepairTests.test_resume) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n",
+                "test_stdout_tail": ""
+              },
+              "metrics": {
+                "host_subprocesses": 2
+              },
+              "pass": true
+            }
+          },
+          "stages": [
+            {
+              "baseline_pass": false,
+              "enhanced_pass": true,
+              "evidence": {
+                "baseline": {
+                  "critical_evidence_visible": false,
+                  "visible_chars": 936
+                },
+                "enhanced": {
+                  "artifact_id": "artifact:b1c68fc31f0d0437:72b2e3a01ba11ed4fea22a74174605b8",
+                  "canonical_output_preserved": true,
+                  "critical_hit_lines": [
+                    2401
+                  ]
+                }
+              },
+              "metrics": {
+                "baseline": {
+                  "diagnostic_chars": 81031,
+                  "retry_limit": 4
+                },
+                "enhanced": {
+                  "artifact_hits": 1,
+                  "retry_limit": 7
+                }
+              },
+              "stage": "diagnostic_and_config"
+            },
+            {
+              "baseline_pass": false,
+              "enhanced_pass": true,
+              "evidence": {
+                "baseline": {
+                  "selected_region": "legacy-region"
+                },
+                "enhanced": {
+                  "cross_scope_candidate_rejected": true,
+                  "current_scope": "886f724a608d050140d87c6f7073780d9e50e91faa7d0686fa610362011fb603",
+                  "retrieved_text": "<RETRIEVED_MEMORY>\n- subject=\"user\" key=\"deployment_region\" value=ap-southeast-1\n</RETRIEVED_MEMORY>",
+                  "selected_region": "ap-southeast-1",
+                  "stale_revision_rejected": true
+                }
+              },
+              "metrics": {
+                "baseline": {
+                  "trusted_candidates": 1
+                },
+                "enhanced": {
+                  "candidates_received": 2,
+                  "validated_current_facts": 1
+                }
+              },
+              "stage": "regional_constraint_revision"
+            },
+            {
+              "baseline_pass": false,
+              "enhanced_pass": true,
+              "evidence": {
+                "baseline": {
+                  "state": {
+                    "completed_units": [
+                      "stage1_config",
+                      "stage2_region",
+                      "stage3_resume"
+                    ],
+                    "journal_resumed": false,
+                    "replayed_units": [
+                      "stage1_config",
+                      "stage2_region",
+                      "stage3_resume"
+                    ]
+                  },
+                  "worklog": [
+                    "stage1_config",
+                    "stage2_region",
+                    "stage1_config",
+                    "stage2_region",
+                    "stage3_resume"
+                  ]
+                },
+                "enhanced": {
+                  "journal_events": [
+                    "prepared",
+                    "work_unit_committed",
+                    "work_unit_committed",
+                    "work_unit_committed"
+                  ],
+                  "state": {
+                    "completed_units": [
+                      "stage1_config",
+                      "stage2_region",
+                      "stage3_resume"
+                    ],
+                    "journal_resumed": true,
+                    "replayed_units": []
+                  },
+                  "worklog_after_reconstruction": [
+                    "stage3_resume"
+                  ]
+                }
+              },
+              "metrics": {
+                "baseline": {
+                  "replayed_units": 3
+                },
+                "enhanced": {
+                  "journal_sequence": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "replayed_units": 0
+                }
+              },
+              "stage": "journal_resume_after_reconstruction"
+            },
+            {
+              "baseline_pass": false,
+              "enhanced_pass": true,
+              "evidence": {
+                "baseline": {
+                  "owners": [
+                    "left"
+                  ]
+                },
+                "enhanced": {
+                  "owners": [
+                    "left",
+                    "right"
+                  ]
+                }
+              },
+              "metrics": {
+                "baseline": {
+                  "lost_updates": 1,
+                  "writes": 2
+                },
+                "enhanced": {
+                  "lost_updates": 0,
+                  "writes": 2
+                }
+              },
+              "stage": "conflicting_file_mutations"
+            }
+          ]
+        },
+        "signature_sha256": "b85f6f2b56a8ef2f497b585772b4595fc8860387c65e852f320fb67335be318f"
+      },
+      "failure_classification": {
+        "baseline": {
+          "diagnostic_and_config_failed": 20
+        },
+        "enhanced": {
+          "none": 20
+        }
+      },
+      "failure_reason": {
+        "baseline": "diagnostic_and_config_failed",
+        "enhanced": null
+      },
+      "implementation_level": "scripted four-stage integration over production Harness primitives",
+      "metrics": {
+        "first_observation": {
+          "baseline_compile_and_tests_pass": false,
+          "baseline_stage_passes": 0,
+          "enhanced_compile_and_tests_pass": true,
+          "enhanced_stage_passes": 4,
+          "host_subprocesses": 4,
+          "stages": 4
+        },
+        "repetitions": 20
+      },
+      "scenario": "longitudinal_repo_repair",
+      "scope": "Temp Python repository plus fixed host compile/unit-test subprocesses; no model call and no claim of real model long-task behavior.",
+      "status": "completed"
+    }
+  ],
+  "schema_version": 1,
+  "scope": {
+    "mode": "offline deterministic Phase A",
+    "paid_model_calls": false,
+    "real_components": [
+      "ArtifactStore",
+      "ContextManager",
+      "MemoryStore",
+      "ResearchCampaign",
+      "FileMutationQueue",
+      "PolicyRegistry",
+      "ResearchTask",
+      "NumericPredictionEvaluator",
+      "DockerRunner"
+    ],
+    "synthetic_components": [
+      "large tool output",
+      "stale and cross-scope semantic candidates",
+      "two-unit interrupted worklog",
+      "same-file race barrier",
+      "train/holdout score vectors",
+      "forged candidate score and undeclared artifact",
+      "four-stage temp repository repair script"
+    ],
+    "unsupported_claim": "This is module-level and scripted integration evidence, not a Terminal-Bench score or real-model long-task result."
+  },
+  "summary": {
+    "baseline_pass": 0,
+    "baseline_total": 140,
+    "blocked_scenarios": 0,
+    "completed_scenarios": 7,
+    "enhanced_pass": 140,
+    "enhanced_total": 140
+  }
+}

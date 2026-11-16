@@ -1,0 +1,116 @@
+[
+  {
+    "request_id": "2ddbfcdc740f4e0398ac34c8de8a17f1",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "input_token_bound": 5100,
+    "max_output_tokens": 1024,
+    "held_micro_usd": 2759,
+    "usage": {
+      "prompt_tokens": 100,
+      "completion_tokens": 54,
+      "total_tokens": 154
+    },
+    "cost_micro_usd": 95,
+    "created_at": 1794565228.7223492,
+    "finished_at": 1794565234.3031514
+  },
+  {
+    "request_id": "7c49af71e6b44032bfe9148d1879f07f",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "input_token_bound": 10377,
+    "max_output_tokens": 1024,
+    "held_micro_usd": 4342,
+    "usage": {
+      "prompt_tokens": 1407,
+      "completion_tokens": 124,
+      "total_tokens": 1531
+    },
+    "cost_micro_usd": 571,
+    "created_at": 1794565234.3151343,
+    "finished_at": 1794565239.7242556
+  },
+  {
+    "request_id": "7d905df064374eb6ba84409bb634a00d",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "input_token_bound": 8802,
+    "max_output_tokens": 1024,
+    "held_micro_usd": 3870,
+    "usage": {
+      "prompt_tokens": 1079,
+      "completion_tokens": 203,
+      "total_tokens": 1282
+    },
+    "cost_micro_usd": 568,
+    "created_at": 1794565239.7358303,
+    "finished_at": 1794565245.203129
+  },
+  {
+    "request_id": "01b02c21a336460c987601ac08628fc7",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "input_token_bound": 5099,
+    "max_output_tokens": 1024,
+    "held_micro_usd": 2759,
+    "usage": {
+      "prompt_tokens": 150,
+      "completion_tokens": 29,
+      "total_tokens": 179
+    },
+    "cost_micro_usd": 80,
+    "created_at": 1794565505.6562583,
+    "finished_at": 1794565509.88297
+  },
+  {
+    "request_id": "007180af4368409881817d9c335f16a0",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "input_token_bound": 5123,
+    "max_output_tokens": 1024,
+    "held_micro_usd": 2766,
+    "usage": {
+      "prompt_tokens": 159,
+      "completion_tokens": 19,
+      "total_tokens": 178
+    },
+    "cost_micro_usd": 71,
+    "created_at": 1794565509.8959844,
+    "finished_at": 1794565512.9203186
+  },
+  {
+    "request_id": "cacccb713c24409eb6ee9361491d1ab1",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "input_token_bound": 5145,
+    "max_output_tokens": 1024,
+    "held_micro_usd": 2773,
+    "usage": {
+      "prompt_tokens": 167,
+      "completion_tokens": 41,
+      "total_tokens": 208
+    },
+    "cost_micro_usd": 100,
+    "created_at": 1794565512.9399526,
+    "finished_at": 1794565516.2399144
+  }
+]

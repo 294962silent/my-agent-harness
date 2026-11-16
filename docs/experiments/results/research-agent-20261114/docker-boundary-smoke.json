@@ -1,0 +1,50 @@
+{
+  "source_sha256": "eba9471c3307e0a34e9b71c6102f5504e3fb20580ed1566d9a37c21f1cbeb2bc",
+  "results": {
+    "mean": {
+      "valid": true,
+      "rmse": 22.070593809662462,
+      "score": 0.04334522155130565,
+      "feedback": "Host dev RMSE: 22.0705938097; utility: 0.0433452215513"
+    },
+    "linear": {
+      "valid": true,
+      "rmse": 0.0,
+      "score": 1.0,
+      "feedback": "Host dev RMSE: 0; utility: 1"
+    },
+    "forged_stdout": {
+      "valid": true,
+      "rmse": 48.815980989835694,
+      "score": 0.020073879508747144,
+      "feedback": "Host dev RMSE: 48.8159809898; utility: 0.0200738795087"
+    },
+    "nan": {
+      "valid": false,
+      "rmse": null,
+      "score": null,
+      "feedback": "invalid predictions: require exact ids, finite numbers and declared CSV only"
+    },
+    "wrong_ids": {
+      "valid": false,
+      "rmse": null,
+      "score": null,
+      "feedback": "invalid predictions: require exact ids, finite numbers and declared CSV only"
+    },
+    "privacy": {
+      "valid": true,
+      "rmse": 0.0,
+      "score": 1.0,
+      "feedback": "Host dev RMSE: 0; utility: 1"
+    },
+    "timeout": {
+      "valid": false,
+      "rmse": null,
+      "score": null,
+      "feedback": "candidate execution timed out"
+    },
+    "cancel": {
+      "cancelled": true
+    }
+  }
+}

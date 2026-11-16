@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "on_independent_expected_values": true,
+    "off_independent_expected_values": true,
+    "batch_global_historical_cost_and_token_totals": true,
+    "missing_cache_fields_stay_null": true,
+    "same_size_tampered_hash_rejected": true,
+    "manifest_path_escape_rejected": true,
+    "stdlib_portable_from_unrelated_working_directory": true
+  },
+  "result": "passed",
+  "metrics_sha256": "7a8d88c9197881a46b8d91a5359e7a2d292df2af4929d185a564faff889162b0",
+  "script_sha256": "c5709602bd7881e62aca06533bfcf2fefca6930e5bbfcfc6b89a0cba3389312a",
+  "raw_manifest_sha256": "7321985b32f571baa37d96361b45ab51c1a91ea5343b1dd381b6e6219f69e282",
+  "verification_notes": "Negative cases used temporary synthetic inputs; actual raw archive was never modified. No trial patch/session/gold body parsed. All81 manifest entries hashed as opaque bytes."
+}

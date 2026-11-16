@@ -1,0 +1,36 @@
+{
+  "adapter_protocol": "v2",
+  "mode": "offline_fake_provider",
+  "provider_requests": 0,
+  "records": [
+    {
+      "file": "test_v2_projection_and_real_ar0-off.json",
+      "adapter": "swe",
+      "arm": "off",
+      "sha256": "dca30a2cbff3d928be4d5a89e5f8e9a9cdff7bd3e5c31172e72d66f2617ee51c",
+      "bytes": 435
+    },
+    {
+      "file": "test_v2_projection_and_real_ar0-on.json",
+      "adapter": "swe",
+      "arm": "on",
+      "sha256": "5c648d6b1db41e98c078cccb6040044df37feacafd8ef876096b2d5b6fc9dfcd",
+      "bytes": 433
+    },
+    {
+      "file": "test_v2_projection_and_real_ar1-off.json",
+      "adapter": "harbor",
+      "arm": "off",
+      "sha256": "d0efaa1e81cc25f26e883bb156bef17a256db28a39700a50b9a98151ceda3d5e",
+      "bytes": 438
+    },
+    {
+      "file": "test_v2_projection_and_real_ar1-on.json",
+      "adapter": "harbor",
+      "arm": "on",
+      "sha256": "33f127287687dfc76bae67773a33a3e9d71550696509fe7be1a043cb1ba5d5f7",
+      "bytes": 436
+    }
+  ],
+  "limits": "Production tool read roundtrip is verified with synthetic output and fake LLM; no v2 real-model score is claimed."
+}

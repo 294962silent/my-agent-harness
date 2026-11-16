@@ -1,0 +1,2883 @@
+[
+  {
+    "request_id": "2ddbfcdc740f4e0398ac34c8de8a17f1",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 95,
+    "usage": {
+      "prompt_tokens": 100,
+      "completion_tokens": 54,
+      "total_tokens": 154
+    },
+    "created_at": 1794565228.7223492,
+    "finished_at": 1794565234.3031514
+  },
+  {
+    "request_id": "7c49af71e6b44032bfe9148d1879f07f",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 571,
+    "usage": {
+      "prompt_tokens": 1407,
+      "completion_tokens": 124,
+      "total_tokens": 1531
+    },
+    "created_at": 1794565234.3151343,
+    "finished_at": 1794565239.7242556
+  },
+  {
+    "request_id": "7d905df064374eb6ba84409bb634a00d",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 568,
+    "usage": {
+      "prompt_tokens": 1079,
+      "completion_tokens": 203,
+      "total_tokens": 1282
+    },
+    "created_at": 1794565239.7358303,
+    "finished_at": 1794565245.203129
+  },
+  {
+    "request_id": "01b02c21a336460c987601ac08628fc7",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 80,
+    "usage": {
+      "prompt_tokens": 150,
+      "completion_tokens": 29,
+      "total_tokens": 179
+    },
+    "created_at": 1794565505.6562583,
+    "finished_at": 1794565509.88297
+  },
+  {
+    "request_id": "007180af4368409881817d9c335f16a0",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 71,
+    "usage": {
+      "prompt_tokens": 159,
+      "completion_tokens": 19,
+      "total_tokens": 178
+    },
+    "created_at": 1794565509.8959844,
+    "finished_at": 1794565512.9203186
+  },
+  {
+    "request_id": "cacccb713c24409eb6ee9361491d1ab1",
+    "run_id": "lme-6d946de38daf968f-275ca884cc4144da6e6896c5-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 100,
+    "usage": {
+      "prompt_tokens": 167,
+      "completion_tokens": 41,
+      "total_tokens": 208
+    },
+    "created_at": 1794565512.9399526,
+    "finished_at": 1794565516.2399144
+  },
+  {
+    "request_id": "4b30d86809b8448aa7b42945614d7aee",
+    "run_id": "lme-6d946de38daf968f-766668166010fada94fb5cb4-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 153,
+    "usage": {
+      "prompt_tokens": 116,
+      "completion_tokens": 98,
+      "total_tokens": 214
+    },
+    "created_at": 1794569902.7883399,
+    "finished_at": 1794569907.4210734
+  },
+  {
+    "request_id": "e165fdad79f7410fafc1154594fafddc",
+    "run_id": "lme-6d946de38daf968f-766668166010fada94fb5cb4-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 653,
+    "usage": {
+      "prompt_tokens": 1358,
+      "completion_tokens": 204,
+      "total_tokens": 1562
+    },
+    "created_at": 1794569907.4336767,
+    "finished_at": 1794569911.5911891
+  },
+  {
+    "request_id": "0154922a8a3441cdbde4ee25a6f11d98",
+    "run_id": "lme-6d946de38daf968f-766668166010fada94fb5cb4-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 466,
+    "usage": {
+      "prompt_tokens": 1148,
+      "completion_tokens": 101,
+      "total_tokens": 1249
+    },
+    "created_at": 1794569911.606452,
+    "finished_at": 1794569914.992758
+  },
+  {
+    "request_id": "2abdcad761b840d39043f0c34475d167",
+    "run_id": "lme-6d946de38daf968f-5ab6e87353c0bc6f1e6de7c2-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 104,
+    "usage": {
+      "prompt_tokens": 104,
+      "completion_tokens": 60,
+      "total_tokens": 164
+    },
+    "created_at": 1794569915.0156825,
+    "finished_at": 1794569917.3578906
+  },
+  {
+    "request_id": "9cb4393cff3e4a19bbf42f06b14979a0",
+    "run_id": "lme-6d946de38daf968f-5ab6e87353c0bc6f1e6de7c2-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 574,
+    "usage": {
+      "prompt_tokens": 1272,
+      "completion_tokens": 160,
+      "total_tokens": 1432
+    },
+    "created_at": 1794569917.3793972,
+    "finished_at": 1794569920.913284
+  },
+  {
+    "request_id": "8f5452519e784f9099e1547edbbf2418",
+    "run_id": "lme-6d946de38daf968f-5ab6e87353c0bc6f1e6de7c2-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 417,
+    "usage": {
+      "prompt_tokens": 956,
+      "completion_tokens": 108,
+      "total_tokens": 1064
+    },
+    "created_at": 1794569920.9367962,
+    "finished_at": 1794569924.196527
+  },
+  {
+    "request_id": "a26f312b7e024cf88404a7602f7e10d0",
+    "run_id": "lme-6d946de38daf968f-7e42e6c0803330f6b9b187cf-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 113,
+    "usage": {
+      "prompt_tokens": 102,
+      "completion_tokens": 68,
+      "total_tokens": 170
+    },
+    "created_at": 1794569924.220839,
+    "finished_at": 1794569927.203412
+  },
+  {
+    "request_id": "07c2147f086c448994a42140de756a39",
+    "run_id": "lme-6d946de38daf968f-7e42e6c0803330f6b9b187cf-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 549,
+    "usage": {
+      "prompt_tokens": 1363,
+      "completion_tokens": 116,
+      "total_tokens": 1479
+    },
+    "created_at": 1794569927.216308,
+    "finished_at": 1794569930.626406
+  },
+  {
+    "request_id": "ec5667e85c274bcdbe6f62520ca9724b",
+    "run_id": "lme-6d946de38daf968f-7e42e6c0803330f6b9b187cf-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 445,
+    "usage": {
+      "prompt_tokens": 985,
+      "completion_tokens": 124,
+      "total_tokens": 1109
+    },
+    "created_at": 1794569930.6474056,
+    "finished_at": 1794569935.0296443
+  },
+  {
+    "request_id": "bd5ca1a8f07e4852a1159a07800f10b9",
+    "run_id": "lme-6d946de38daf968f-d5c550a52b98961d536d5012-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 103,
+    "usage": {
+      "prompt_tokens": 103,
+      "completion_tokens": 60,
+      "total_tokens": 163
+    },
+    "created_at": 1794569935.0530922,
+    "finished_at": 1794569937.9834857
+  },
+  {
+    "request_id": "27ebb9d465b8443dbc0ed8e374e63069",
+    "run_id": "lme-6d946de38daf968f-d5c550a52b98961d536d5012-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 571,
+    "usage": {
+      "prompt_tokens": 1326,
+      "completion_tokens": 144,
+      "total_tokens": 1470
+    },
+    "created_at": 1794569938.011602,
+    "finished_at": 1794569942.6050394
+  },
+  {
+    "request_id": "80e745edcf914667a140697dcffd06d2",
+    "run_id": "lme-6d946de38daf968f-d5c550a52b98961d536d5012-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 600,
+    "usage": {
+      "prompt_tokens": 962,
+      "completion_tokens": 195,
+      "total_tokens": 1413,
+      "cache_read_tokens": 256
+    },
+    "created_at": 1794569942.6256392,
+    "finished_at": 1794569947.0041444
+  },
+  {
+    "request_id": "d9261c59a595442aa9e4e4590250adb3",
+    "run_id": "lme-6d946de38daf968f-784fa525e00f9834d61ef952-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 96,
+    "usage": {
+      "prompt_tokens": 105,
+      "completion_tokens": 53,
+      "total_tokens": 158
+    },
+    "created_at": 1794569947.0287144,
+    "finished_at": 1794569949.926833
+  },
+  {
+    "request_id": "270c113824e346eea6a4476847645d5d",
+    "run_id": "lme-6d946de38daf968f-784fa525e00f9834d61ef952-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 606,
+    "usage": {
+      "prompt_tokens": 1365,
+      "completion_tokens": 163,
+      "total_tokens": 1528
+    },
+    "created_at": 1794569949.9489524,
+    "finished_at": 1794569955.6282685
+  },
+  {
+    "request_id": "d4ea9b906606476bacba09aaf049cef5",
+    "run_id": "lme-6d946de38daf968f-784fa525e00f9834d61ef952-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 452,
+    "usage": {
+      "prompt_tokens": 1232,
+      "completion_tokens": 68,
+      "total_tokens": 1300
+    },
+    "created_at": 1794569955.6432378,
+    "finished_at": 1794569958.6888921
+  },
+  {
+    "request_id": "2213f398b73e4d17b19d947665dff6e2",
+    "run_id": "lme-6d946de38daf968f-dee4f714f614864819056081-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 89,
+    "usage": {
+      "prompt_tokens": 102,
+      "completion_tokens": 48,
+      "total_tokens": 150
+    },
+    "created_at": 1794569958.7040858,
+    "finished_at": 1794569961.6360667
+  },
+  {
+    "request_id": "6de496e91621498d9f8d7f404808f623",
+    "run_id": "lme-6d946de38daf968f-dee4f714f614864819056081-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 654,
+    "usage": {
+      "prompt_tokens": 1476,
+      "completion_tokens": 176,
+      "total_tokens": 1652
+    },
+    "created_at": 1794569961.6601868,
+    "finished_at": 1794569966.0962284
+  },
+  {
+    "request_id": "ceb36a5723dc4bf38347fe5ed4d1ec7f",
+    "run_id": "lme-6d946de38daf968f-dee4f714f614864819056081-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 604,
+    "usage": {
+      "prompt_tokens": 1276,
+      "completion_tokens": 184,
+      "total_tokens": 1460
+    },
+    "created_at": 1794569966.1193655,
+    "finished_at": 1794569970.5560496
+  },
+  {
+    "request_id": "7c86a67a287441b484dc77bda14ab0ad",
+    "run_id": "lme-6d946de38daf968f-0cba22f1de71389aa596c673-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 99,
+    "usage": {
+      "prompt_tokens": 103,
+      "completion_tokens": 56,
+      "total_tokens": 159
+    },
+    "created_at": 1794569970.578895,
+    "finished_at": 1794569974.2841094
+  },
+  {
+    "request_id": "e47f2f660ce64624ac612900065c1059",
+    "run_id": "lme-6d946de38daf968f-0cba22f1de71389aa596c673-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 846,
+    "usage": {
+      "prompt_tokens": 1514,
+      "completion_tokens": 326,
+      "total_tokens": 1840
+    },
+    "created_at": 1794569974.3065512,
+    "finished_at": 1794569981.839059
+  },
+  {
+    "request_id": "7dfacd40e0774bf7a154241c702490ad",
+    "run_id": "lme-6d946de38daf968f-0cba22f1de71389aa596c673-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 505,
+    "usage": {
+      "prompt_tokens": 1067,
+      "completion_tokens": 154,
+      "total_tokens": 1221
+    },
+    "created_at": 1794569981.8627453,
+    "finished_at": 1794569986.459931
+  },
+  {
+    "request_id": "cdec0178745d4ca6880458dfeb4c7254",
+    "run_id": "lme-6d946de38daf968f-b29d713ffe708fd27d1594f4-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 100,
+    "usage": {
+      "prompt_tokens": 105,
+      "completion_tokens": 57,
+      "total_tokens": 162
+    },
+    "created_at": 1794569986.4862518,
+    "finished_at": 1794569990.0007365
+  },
+  {
+    "request_id": "87db102fff5f4f9083597e31de7e926f",
+    "run_id": "lme-6d946de38daf968f-b29d713ffe708fd27d1594f4-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 685,
+    "usage": {
+      "prompt_tokens": 1407,
+      "completion_tokens": 219,
+      "total_tokens": 1626
+    },
+    "created_at": 1794569990.0169773,
+    "finished_at": 1794569994.9400637
+  },
+  {
+    "request_id": "cb0a1a2c789148abb55696b6a5637e13",
+    "run_id": "lme-6d946de38daf968f-b29d713ffe708fd27d1594f4-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 513,
+    "usage": {
+      "prompt_tokens": 1188,
+      "completion_tokens": 130,
+      "total_tokens": 1318
+    },
+    "created_at": 1794569994.9627836,
+    "finished_at": 1794569998.606436
+  },
+  {
+    "request_id": "f1cc380c509940d0ac2a066b96b22aac",
+    "run_id": "lme-6d946de38daf968f-9c857b69099001834d3ac2d4-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 104,
+    "usage": {
+      "prompt_tokens": 104,
+      "completion_tokens": 60,
+      "total_tokens": 164
+    },
+    "created_at": 1794569998.6297421,
+    "finished_at": 1794570002.1161785
+  },
+  {
+    "request_id": "4df6a89d957e475c9c756e29f6e12a5a",
+    "run_id": "lme-6d946de38daf968f-9c857b69099001834d3ac2d4-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 539,
+    "usage": {
+      "prompt_tokens": 1440,
+      "completion_tokens": 89,
+      "total_tokens": 1529
+    },
+    "created_at": 1794570002.1396146,
+    "finished_at": 1794570006.2002075
+  },
+  {
+    "request_id": "c55a5d9ccda146b7a39bd67c630d20cc",
+    "run_id": "lme-6d946de38daf968f-9c857b69099001834d3ac2d4-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 585,
+    "usage": {
+      "prompt_tokens": 1185,
+      "completion_tokens": 191,
+      "total_tokens": 1376
+    },
+    "created_at": 1794570006.2143798,
+    "finished_at": 1794570010.8346674
+  },
+  {
+    "request_id": "627fdcc734104512a6442be4949bff1b",
+    "run_id": "lme-6d946de38daf968f-57b430c9c177f386b9542749-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 101,
+    "usage": {
+      "prompt_tokens": 140,
+      "completion_tokens": 49,
+      "total_tokens": 189
+    },
+    "created_at": 1794570010.8601449,
+    "finished_at": 1794570014.4682758
+  },
+  {
+    "request_id": "18caeb10e3824a8890d970ed64f943b5",
+    "run_id": "lme-6d946de38daf968f-57b430c9c177f386b9542749-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 465,
+    "usage": {
+      "prompt_tokens": 1234,
+      "completion_tokens": 79,
+      "total_tokens": 1313
+    },
+    "created_at": 1794570014.4915922,
+    "finished_at": 1794570018.316661
+  },
+  {
+    "request_id": "c98fd67f38c243acb083fe4a205098e3",
+    "run_id": "lme-6d946de38daf968f-57b430c9c177f386b9542749-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 429,
+    "usage": {
+      "prompt_tokens": 1221,
+      "completion_tokens": 52,
+      "total_tokens": 1273
+    },
+    "created_at": 1794570018.3405457,
+    "finished_at": 1794570022.648589
+  },
+  {
+    "request_id": "7ada5ebe842e409d9f2f202e6fdb4639",
+    "run_id": "lme-6d946de38daf968f-e8be655d29ff08df7c6c3728-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 117,
+    "usage": {
+      "prompt_tokens": 130,
+      "completion_tokens": 65,
+      "total_tokens": 195
+    },
+    "created_at": 1794570022.6744003,
+    "finished_at": 1794570026.562869
+  },
+  {
+    "request_id": "b9e284348be04df98048dc304e277bac",
+    "run_id": "lme-6d946de38daf968f-e8be655d29ff08df7c6c3728-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 559,
+    "usage": {
+      "prompt_tokens": 1591,
+      "completion_tokens": 68,
+      "total_tokens": 1659
+    },
+    "created_at": 1794570026.5863812,
+    "finished_at": 1794570029.5620797
+  },
+  {
+    "request_id": "54e2ed9e80634892a4bd3c399fdf8c8c",
+    "run_id": "lme-6d946de38daf968f-e8be655d29ff08df7c6c3728-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 480,
+    "usage": {
+      "prompt_tokens": 1283,
+      "completion_tokens": 79,
+      "total_tokens": 1362
+    },
+    "created_at": 1794570029.5856442,
+    "finished_at": 1794570033.3204963
+  },
+  {
+    "request_id": "055b9a40ea9741638c7f6e82ea486e40",
+    "run_id": "lme-6d946de38daf968f-56479703b213f074761e1426-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 111,
+    "usage": {
+      "prompt_tokens": 116,
+      "completion_tokens": 63,
+      "total_tokens": 179
+    },
+    "created_at": 1794570033.347546,
+    "finished_at": 1794570037.9713528
+  },
+  {
+    "request_id": "a48e23a508a64f568f58d89cb22a0ef6",
+    "run_id": "lme-6d946de38daf968f-56479703b213f074761e1426-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 663,
+    "usage": {
+      "prompt_tokens": 1745,
+      "completion_tokens": 116,
+      "total_tokens": 1861
+    },
+    "created_at": 1794570037.9969454,
+    "finished_at": 1794570042.2587805
+  },
+  {
+    "request_id": "1323596a0aa84790935cb499d14aa701",
+    "run_id": "lme-6d946de38daf968f-56479703b213f074761e1426-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 594,
+    "usage": {
+      "prompt_tokens": 1596,
+      "completion_tokens": 96,
+      "total_tokens": 1692
+    },
+    "created_at": 1794570042.2828143,
+    "finished_at": 1794570045.5564854
+  },
+  {
+    "request_id": "3c32f6b067c04f1cb96b0ef4850b4082",
+    "run_id": "lme-6d946de38daf968f-b924d9557ca6cb389200a472-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 95,
+    "usage": {
+      "prompt_tokens": 108,
+      "completion_tokens": 52,
+      "total_tokens": 160
+    },
+    "created_at": 1794570045.5817485,
+    "finished_at": 1794570048.6051502
+  },
+  {
+    "request_id": "413ba5e5b9174e3fb3a60e37db4eeba1",
+    "run_id": "lme-6d946de38daf968f-b924d9557ca6cb389200a472-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 434,
+    "usage": {
+      "prompt_tokens": 1234,
+      "completion_tokens": 53,
+      "total_tokens": 1287
+    },
+    "created_at": 1794570048.6296556,
+    "finished_at": 1794570051.462277
+  },
+  {
+    "request_id": "0573e16804b2458ea34f68911c47d941",
+    "run_id": "lme-6d946de38daf968f-b924d9557ca6cb389200a472-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 435,
+    "usage": {
+      "prompt_tokens": 1220,
+      "completion_tokens": 57,
+      "total_tokens": 1277
+    },
+    "created_at": 1794570051.487536,
+    "finished_at": 1794570053.7202072
+  },
+  {
+    "request_id": "efff587ea7cb460a817cccd4437d1e0d",
+    "run_id": "lme-6d946de38daf968f-f150c6a6bc6e8dff7893757e-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 120,
+    "usage": {
+      "prompt_tokens": 126,
+      "completion_tokens": 68,
+      "total_tokens": 194
+    },
+    "created_at": 1794570053.7447603,
+    "finished_at": 1794570056.4202547
+  },
+  {
+    "request_id": "1d7eafcbaf3b44aa99654f458858c870",
+    "run_id": "lme-6d946de38daf968f-f150c6a6bc6e8dff7893757e-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 795,
+    "usage": {
+      "prompt_tokens": 1365,
+      "completion_tokens": 321,
+      "total_tokens": 1686
+    },
+    "created_at": 1794570056.4444501,
+    "finished_at": 1794570061.7906206
+  },
+  {
+    "request_id": "a714e23eb68c4cd3b297fbf7c2eaede1",
+    "run_id": "lme-6d946de38daf968f-f150c6a6bc6e8dff7893757e-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 691,
+    "usage": {
+      "prompt_tokens": 1387,
+      "completion_tokens": 229,
+      "total_tokens": 1616
+    },
+    "created_at": 1794570061.8142052,
+    "finished_at": 1794570066.1282713
+  },
+  {
+    "request_id": "7617d48d0c2e401fbd34065566c29c47",
+    "run_id": "lme-6d946de38daf968f-07b2f05a1c9c8c71cdae1936-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 105,
+    "usage": {
+      "prompt_tokens": 102,
+      "completion_tokens": 62,
+      "total_tokens": 164
+    },
+    "created_at": 1794570066.1465948,
+    "finished_at": 1794570069.101841
+  },
+  {
+    "request_id": "1d629d2e9b7448db972bb82b8f4e1a56",
+    "run_id": "lme-6d946de38daf968f-07b2f05a1c9c8c71cdae1936-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 498,
+    "usage": {
+      "prompt_tokens": 1218,
+      "completion_tokens": 110,
+      "total_tokens": 1328
+    },
+    "created_at": 1794570069.127001,
+    "finished_at": 1794570073.2086678
+  },
+  {
+    "request_id": "6a8ec5a2f7564464941adb009bb3b79d",
+    "run_id": "lme-6d946de38daf968f-07b2f05a1c9c8c71cdae1936-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 711,
+    "usage": {
+      "prompt_tokens": 1364,
+      "completion_tokens": 251,
+      "total_tokens": 1615
+    },
+    "created_at": 1794570073.2360168,
+    "finished_at": 1794570078.6412487
+  },
+  {
+    "request_id": "5c5cba825a314369b4d14faadbb1fa69",
+    "run_id": "lme-6d946de38daf968f-fb8e4ec646f49d62328f4b7e-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 92,
+    "usage": {
+      "prompt_tokens": 106,
+      "completion_tokens": 50,
+      "total_tokens": 156
+    },
+    "created_at": 1794570078.6670947,
+    "finished_at": 1794570081.2567394
+  },
+  {
+    "request_id": "1c8f91ee84a246749a50b6d874902696",
+    "run_id": "lme-6d946de38daf968f-fb8e4ec646f49d62328f4b7e-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 391,
+    "usage": {
+      "prompt_tokens": 1039,
+      "completion_tokens": 66,
+      "total_tokens": 1105
+    },
+    "created_at": 1794570081.2845469,
+    "finished_at": 1794570084.6667836
+  },
+  {
+    "request_id": "1f666a55af364158bbbb50fc7895661c",
+    "run_id": "lme-6d946de38daf968f-fb8e4ec646f49d62328f4b7e-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 339,
+    "usage": {
+      "prompt_tokens": 899,
+      "completion_tokens": 57,
+      "total_tokens": 956
+    },
+    "created_at": 1794570084.6928952,
+    "finished_at": 1794570088.0866392
+  },
+  {
+    "request_id": "b7cf68c8ad534f988cd5c386450c7773",
+    "run_id": "lme-6d946de38daf968f-eddf4ad8fdc21a6e82f53e4f-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 98,
+    "usage": {
+      "prompt_tokens": 104,
+      "completion_tokens": 55,
+      "total_tokens": 159
+    },
+    "created_at": 1794570088.113953,
+    "finished_at": 1794570091.2485743
+  },
+  {
+    "request_id": "0775ea60f1cb4742949a32dba5bdddae",
+    "run_id": "lme-6d946de38daf968f-eddf4ad8fdc21a6e82f53e4f-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 584,
+    "usage": {
+      "prompt_tokens": 1117,
+      "completion_tokens": 207,
+      "total_tokens": 1324
+    },
+    "created_at": 1794570091.274703,
+    "finished_at": 1794570095.8074446
+  },
+  {
+    "request_id": "49e1a90c019c4c3b829347134ca7adc6",
+    "run_id": "lme-6d946de38daf968f-eddf4ad8fdc21a6e82f53e4f-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 408,
+    "usage": {
+      "prompt_tokens": 986,
+      "completion_tokens": 93,
+      "total_tokens": 1079
+    },
+    "created_at": 1794570095.8339887,
+    "finished_at": 1794570099.0729644
+  },
+  {
+    "request_id": "583f969c5c9b45be90e1a6a08b05b7f5",
+    "run_id": "lme-6d946de38daf968f-9afb031b093af349fb9fd17b-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 100,
+    "usage": {
+      "prompt_tokens": 109,
+      "completion_tokens": 56,
+      "total_tokens": 165
+    },
+    "created_at": 1794570099.1009226,
+    "finished_at": 1794570102.3250263
+  },
+  {
+    "request_id": "6e34a48028fc473e9bb79121777995b9",
+    "run_id": "lme-6d946de38daf968f-9afb031b093af349fb9fd17b-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 688,
+    "usage": {
+      "prompt_tokens": 1264,
+      "completion_tokens": 257,
+      "total_tokens": 1521
+    },
+    "created_at": 1794570102.355814,
+    "finished_at": 1794570109.3123765
+  },
+  {
+    "request_id": "efb1c06990434f39b175f8f148211bd6",
+    "run_id": "lme-6d946de38daf968f-9afb031b093af349fb9fd17b-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 563,
+    "usage": {
+      "prompt_tokens": 1043,
+      "completion_tokens": 208,
+      "total_tokens": 1251
+    },
+    "created_at": 1794570109.3399956,
+    "finished_at": 1794570114.6920269
+  },
+  {
+    "request_id": "0551fe706e5045ce8805ed75ad7b2231",
+    "run_id": "lme-6d946de38daf968f-693f3a0d3b2f87c57d4269f6-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 107,
+    "usage": {
+      "prompt_tokens": 112,
+      "completion_tokens": 61,
+      "total_tokens": 173
+    },
+    "created_at": 1794570114.7195988,
+    "finished_at": 1794570118.016612
+  },
+  {
+    "request_id": "110786b6f92a4beb9e2bd36dc6755bb2",
+    "run_id": "lme-6d946de38daf968f-693f3a0d3b2f87c57d4269f6-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 536,
+    "usage": {
+      "prompt_tokens": 1429,
+      "completion_tokens": 89,
+      "total_tokens": 1518
+    },
+    "created_at": 1794570118.0461183,
+    "finished_at": 1794570121.2596848
+  },
+  {
+    "request_id": "85f8aa3da7464226a8f4e20430cd4432",
+    "run_id": "lme-6d946de38daf968f-693f3a0d3b2f87c57d4269f6-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 549,
+    "usage": {
+      "prompt_tokens": 1309,
+      "completion_tokens": 130,
+      "total_tokens": 1439
+    },
+    "created_at": 1794570121.287992,
+    "finished_at": 1794570126.0623922
+  },
+  {
+    "request_id": "0adb1ccbcec04b19a36a9bbc940b204a",
+    "run_id": "lme-6d946de38daf968f-c1053377466b2692161f3d05-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 87,
+    "usage": {
+      "prompt_tokens": 97,
+      "completion_tokens": 48,
+      "total_tokens": 145
+    },
+    "created_at": 1794570126.0945735,
+    "finished_at": 1794570129.2226052
+  },
+  {
+    "request_id": "b7ef0849496b44f491bc5fc9d7cc4a6d",
+    "run_id": "lme-6d946de38daf968f-c1053377466b2692161f3d05-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 398,
+    "usage": {
+      "prompt_tokens": 1117,
+      "completion_tokens": 52,
+      "total_tokens": 1169
+    },
+    "created_at": 1794570129.2467947,
+    "finished_at": 1794570132.9896374
+  },
+  {
+    "request_id": "2e6c3037ea144e1eb6ea5c4a66d0fdc6",
+    "run_id": "lme-6d946de38daf968f-c1053377466b2692161f3d05-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 324,
+    "usage": {
+      "prompt_tokens": 879,
+      "completion_tokens": 50,
+      "total_tokens": 929
+    },
+    "created_at": 1794570133.0193994,
+    "finished_at": 1794570136.9740381
+  },
+  {
+    "request_id": "4bc781b4227d4c1aab5be1f8c0cf917e",
+    "run_id": "lme-6d946de38daf968f-bd3a35a95b7443b8a8864815-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 93,
+    "usage": {
+      "prompt_tokens": 98,
+      "completion_tokens": 53,
+      "total_tokens": 151
+    },
+    "created_at": 1794570137.003761,
+    "finished_at": 1794570141.3213801
+  },
+  {
+    "request_id": "aa42ef36ece94266965d7f150dd0f3ba",
+    "run_id": "lme-6d946de38daf968f-bd3a35a95b7443b8a8864815-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 487,
+    "usage": {
+      "prompt_tokens": 1214,
+      "completion_tokens": 102,
+      "total_tokens": 1316
+    },
+    "created_at": 1794570141.3506987,
+    "finished_at": 1794570147.5957196
+  },
+  {
+    "request_id": "cb1e51e306244729badeda964c169af7",
+    "run_id": "lme-6d946de38daf968f-bd3a35a95b7443b8a8864815-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 276,
+    "usage": {
+      "prompt_tokens": 815,
+      "completion_tokens": 26,
+      "total_tokens": 841
+    },
+    "created_at": 1794570147.6289146,
+    "finished_at": 1794570151.0146465
+  },
+  {
+    "request_id": "5936325dc849419589b3aa4e4f9fe3c0",
+    "run_id": "lme-6d946de38daf968f-5f7b615f26178791e86fb489-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 91,
+    "usage": {
+      "prompt_tokens": 99,
+      "completion_tokens": 51,
+      "total_tokens": 150
+    },
+    "created_at": 1794570151.0352218,
+    "finished_at": 1794570154.916929
+  },
+  {
+    "request_id": "432c07f16f9642e880ebdcac72810d2c",
+    "run_id": "lme-6d946de38daf968f-5f7b615f26178791e86fb489-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 445,
+    "usage": {
+      "prompt_tokens": 1347,
+      "completion_tokens": 34,
+      "total_tokens": 1381
+    },
+    "created_at": 1794570154.9456909,
+    "finished_at": 1794570157.6799884
+  },
+  {
+    "request_id": "23c89cf78e7e43b59922e72de97a7ff8",
+    "run_id": "lme-6d946de38daf968f-5f7b615f26178791e86fb489-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 430,
+    "usage": {
+      "prompt_tokens": 1280,
+      "completion_tokens": 38,
+      "total_tokens": 1318
+    },
+    "created_at": 1794570157.7177498,
+    "finished_at": 1794570160.9239945
+  },
+  {
+    "request_id": "7c9f294492604df7892769d933636415",
+    "run_id": "lme-6d946de38daf968f-409ec3d94e3fb69de9b3e025-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 99,
+    "usage": {
+      "prompt_tokens": 104,
+      "completion_tokens": 56,
+      "total_tokens": 160
+    },
+    "created_at": 1794570160.951544,
+    "finished_at": 1794570164.8451312
+  },
+  {
+    "request_id": "021314ee7f064990a9aea6395fe1fa5f",
+    "run_id": "lme-6d946de38daf968f-409ec3d94e3fb69de9b3e025-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 451,
+    "usage": {
+      "prompt_tokens": 1261,
+      "completion_tokens": 60,
+      "total_tokens": 1321
+    },
+    "created_at": 1794570164.8772438,
+    "finished_at": 1794570169.5399306
+  },
+  {
+    "request_id": "f611c34e3a5c4d0ebdd520821456b89a",
+    "run_id": "lme-6d946de38daf968f-409ec3d94e3fb69de9b3e025-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 477,
+    "usage": {
+      "prompt_tokens": 1372,
+      "completion_tokens": 54,
+      "total_tokens": 1426
+    },
+    "created_at": 1794570169.5738978,
+    "finished_at": 1794570173.3678403
+  },
+  {
+    "request_id": "77cbdb8356064b1b9bfedab7ce5c73eb",
+    "run_id": "lme-6d946de38daf968f-55d698607e04f49db420a8a3-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 86,
+    "usage": {
+      "prompt_tokens": 102,
+      "completion_tokens": 46,
+      "total_tokens": 148
+    },
+    "created_at": 1794570173.4016805,
+    "finished_at": 1794570176.7305398
+  },
+  {
+    "request_id": "0d2d1ab2a5c64df994edb842cc859832",
+    "run_id": "lme-6d946de38daf968f-55d698607e04f49db420a8a3-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 530,
+    "usage": {
+      "prompt_tokens": 1582,
+      "completion_tokens": 46,
+      "total_tokens": 1628
+    },
+    "created_at": 1794570176.7615795,
+    "finished_at": 1794570179.6674414
+  },
+  {
+    "request_id": "6d70cb0ed19440e8afc3f5e90d7c4198",
+    "run_id": "lme-6d946de38daf968f-55d698607e04f49db420a8a3-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 459,
+    "usage": {
+      "prompt_tokens": 1202,
+      "completion_tokens": 82,
+      "total_tokens": 1284
+    },
+    "created_at": 1794570179.6983376,
+    "finished_at": 1794570184.033153
+  },
+  {
+    "request_id": "a63cfbcedc0e4bbc9f3c4c72e29cb38a",
+    "run_id": "lme-6d946de38daf968f-171922196706b121b6cd12c6-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 104,
+    "usage": {
+      "prompt_tokens": 108,
+      "completion_tokens": 59,
+      "total_tokens": 167
+    },
+    "created_at": 1794570184.0685704,
+    "finished_at": 1794570187.1792846
+  },
+  {
+    "request_id": "a56514336b074349b4abe5fdae43f4fe",
+    "run_id": "lme-6d946de38daf968f-171922196706b121b6cd12c6-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 767,
+    "usage": {
+      "prompt_tokens": 1438,
+      "completion_tokens": 279,
+      "total_tokens": 1717
+    },
+    "created_at": 1794570187.2255478,
+    "finished_at": 1794570193.0522313
+  },
+  {
+    "request_id": "42096ab86f2b4f36bf742c901145da48",
+    "run_id": "lme-6d946de38daf968f-171922196706b121b6cd12c6-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 347,
+    "usage": {
+      "prompt_tokens": 843,
+      "completion_tokens": 78,
+      "total_tokens": 921
+    },
+    "created_at": 1794570193.084234,
+    "finished_at": 1794570196.1650786
+  },
+  {
+    "request_id": "1147327650ce4bd1a3aec1019f35beb9",
+    "run_id": "lme-6d946de38daf968f-58821011193981eca7f02602-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 98,
+    "usage": {
+      "prompt_tokens": 105,
+      "completion_tokens": 55,
+      "total_tokens": 160
+    },
+    "created_at": 1794570196.1868024,
+    "finished_at": 1794570198.97631
+  },
+  {
+    "request_id": "03a1e044cdbd4d38875707498cc8c248",
+    "run_id": "lme-6d946de38daf968f-58821011193981eca7f02602-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 458,
+    "usage": {
+      "prompt_tokens": 1044,
+      "completion_tokens": 120,
+      "total_tokens": 1164
+    },
+    "created_at": 1794570199.0071902,
+    "finished_at": 1794570202.7350888
+  },
+  {
+    "request_id": "e4295c7d24e64f71bb191de8ee001b34",
+    "run_id": "lme-6d946de38daf968f-58821011193981eca7f02602-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 386,
+    "usage": {
+      "prompt_tokens": 873,
+      "completion_tokens": 103,
+      "total_tokens": 976
+    },
+    "created_at": 1794570202.7658522,
+    "finished_at": 1794570205.9165082
+  },
+  {
+    "request_id": "21036a706def4e82b37ceb26c2e18b25",
+    "run_id": "lme-6d946de38daf968f-2a873fa22a53eb0a1454d398-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 96,
+    "usage": {
+      "prompt_tokens": 106,
+      "completion_tokens": 53,
+      "total_tokens": 159
+    },
+    "created_at": 1794570205.94636,
+    "finished_at": 1794570208.9656909
+  },
+  {
+    "request_id": "81d0ea2a489d4dd19fc73d2614b2c10a",
+    "run_id": "lme-6d946de38daf968f-2a873fa22a53eb0a1454d398-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 679,
+    "usage": {
+      "prompt_tokens": 1649,
+      "completion_tokens": 153,
+      "total_tokens": 1802
+    },
+    "created_at": 1794570208.9994283,
+    "finished_at": 1794570214.2289026
+  },
+  {
+    "request_id": "1ebf0aa191b1430a9f4f45e1d7d090f3",
+    "run_id": "lme-6d946de38daf968f-2a873fa22a53eb0a1454d398-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 505,
+    "usage": {
+      "prompt_tokens": 1375,
+      "completion_tokens": 77,
+      "total_tokens": 1452
+    },
+    "created_at": 1794570214.260289,
+    "finished_at": 1794570217.882071
+  },
+  {
+    "request_id": "9cf2035ee664404a9bbbcf6a1151bfc6",
+    "run_id": "lme-6d946de38daf968f-2ff6cf253aa3dd4f4571ab28-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 102,
+    "usage": {
+      "prompt_tokens": 105,
+      "completion_tokens": 58,
+      "total_tokens": 163
+    },
+    "created_at": 1794570217.9134605,
+    "finished_at": 1794570221.1031156
+  },
+  {
+    "request_id": "d0ef8ef281574365936d61affbea674b",
+    "run_id": "lme-6d946de38daf968f-2ff6cf253aa3dd4f4571ab28-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 607,
+    "usage": {
+      "prompt_tokens": 1138,
+      "completion_tokens": 221,
+      "total_tokens": 1359
+    },
+    "created_at": 1794570221.1347082,
+    "finished_at": 1794570225.4081225
+  },
+  {
+    "request_id": "4a68cc4906b14f089452d08d9dfab867",
+    "run_id": "lme-6d946de38daf968f-2ff6cf253aa3dd4f4571ab28-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 489,
+    "usage": {
+      "prompt_tokens": 808,
+      "completion_tokens": 205,
+      "total_tokens": 1013
+    },
+    "created_at": 1794570225.445308,
+    "finished_at": 1794570230.5122035
+  },
+  {
+    "request_id": "a1fd4a61c75045d0bedd67be2504d768",
+    "run_id": "lme-6d946de38daf968f-730906bc4bda88f0259b970d-none-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 99,
+    "usage": {
+      "prompt_tokens": 107,
+      "completion_tokens": 55,
+      "total_tokens": 162
+    },
+    "created_at": 1794570230.5479512,
+    "finished_at": 1794570234.2700105
+  },
+  {
+    "request_id": "f8048b628bce487ba8014c1e12c1ff96",
+    "run_id": "lme-6d946de38daf968f-730906bc4bda88f0259b970d-lexical-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 653,
+    "usage": {
+      "prompt_tokens": 1463,
+      "completion_tokens": 178,
+      "total_tokens": 1641
+    },
+    "created_at": 1794570234.2933767,
+    "finished_at": 1794570239.8233657
+  },
+  {
+    "request_id": "d3d638b663a0458ca2180ae746dce828",
+    "run_id": "lme-6d946de38daf968f-730906bc4bda88f0259b970d-mem0-answer",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_answer",
+    "status": "ok",
+    "cost_micro_usd": 604,
+    "usage": {
+      "prompt_tokens": 1188,
+      "completion_tokens": 206,
+      "total_tokens": 1394
+    },
+    "created_at": 1794570239.865087,
+    "finished_at": 1794570245.05979
+  },
+  {
+    "request_id": "5da34b7b40874a44b9b8db3f64c429ed",
+    "run_id": "lme-6d946de38daf968f-766668166010fada94fb5cb4-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 93,
+    "usage": {
+      "prompt_tokens": 162,
+      "completion_tokens": 37,
+      "total_tokens": 199
+    },
+    "created_at": 1794570254.3088346,
+    "finished_at": 1794570257.2591515
+  },
+  {
+    "request_id": "868974eb1c4e4ff2bb2c1ef85825b967",
+    "run_id": "lme-6d946de38daf968f-766668166010fada94fb5cb4-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 109,
+    "usage": {
+      "prompt_tokens": 167,
+      "completion_tokens": 49,
+      "total_tokens": 216
+    },
+    "created_at": 1794570257.2749827,
+    "finished_at": 1794570260.2997851
+  },
+  {
+    "request_id": "0838ffc999ca4f42bdf5f7c11fa94c44",
+    "run_id": "lme-6d946de38daf968f-766668166010fada94fb5cb4-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 120,
+    "usage": {
+      "prompt_tokens": 183,
+      "completion_tokens": 54,
+      "total_tokens": 237
+    },
+    "created_at": 1794570260.3212392,
+    "finished_at": 1794570264.6983972
+  },
+  {
+    "request_id": "d0082515bdbb4f84ae8d9cb90ae88d8a",
+    "run_id": "lme-6d946de38daf968f-5ab6e87353c0bc6f1e6de7c2-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 89,
+    "usage": {
+      "prompt_tokens": 172,
+      "completion_tokens": 31,
+      "total_tokens": 203
+    },
+    "created_at": 1794570264.7217176,
+    "finished_at": 1794570268.608926
+  },
+  {
+    "request_id": "c048e349455c4968b01cd899305a313d",
+    "run_id": "lme-6d946de38daf968f-5ab6e87353c0bc6f1e6de7c2-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 102,
+    "usage": {
+      "prompt_tokens": 173,
+      "completion_tokens": 41,
+      "total_tokens": 214
+    },
+    "created_at": 1794570268.6312625,
+    "finished_at": 1794570271.9272795
+  },
+  {
+    "request_id": "db89b29c3c6f4e0da74cd81a3a76a1e9",
+    "run_id": "lme-6d946de38daf968f-5ab6e87353c0bc6f1e6de7c2-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 92,
+    "usage": {
+      "prompt_tokens": 168,
+      "completion_tokens": 34,
+      "total_tokens": 202
+    },
+    "created_at": 1794570271.950451,
+    "finished_at": 1794570275.0441442
+  },
+  {
+    "request_id": "d47a6cafc5b04571aa8e4cf3d9b8f172",
+    "run_id": "lme-6d946de38daf968f-7e42e6c0803330f6b9b187cf-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 98,
+    "usage": {
+      "prompt_tokens": 154,
+      "completion_tokens": 43,
+      "total_tokens": 197
+    },
+    "created_at": 1794570275.0668323,
+    "finished_at": 1794570278.1849694
+  },
+  {
+    "request_id": "b791b38cc3ab4c8e9472ab7bcef29104",
+    "run_id": "lme-6d946de38daf968f-7e42e6c0803330f6b9b187cf-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 69,
+    "usage": {
+      "prompt_tokens": 148,
+      "completion_tokens": 20,
+      "total_tokens": 168
+    },
+    "created_at": 1794570278.2090924,
+    "finished_at": 1794570281.0353835
+  },
+  {
+    "request_id": "8ce49618456d4ed58e2ce58d4e2d834f",
+    "run_id": "lme-6d946de38daf968f-7e42e6c0803330f6b9b187cf-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 69,
+    "usage": {
+      "prompt_tokens": 148,
+      "completion_tokens": 20,
+      "total_tokens": 168
+    },
+    "created_at": 1794570281.0578966,
+    "finished_at": 1794570284.16932
+  },
+  {
+    "request_id": "c784c538e5044aa19f786de5bbb6ce79",
+    "run_id": "lme-6d946de38daf968f-d5c550a52b98961d536d5012-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 96,
+    "usage": {
+      "prompt_tokens": 158,
+      "completion_tokens": 40,
+      "total_tokens": 198
+    },
+    "created_at": 1794570284.195205,
+    "finished_at": 1794570287.6937993
+  },
+  {
+    "request_id": "edc9bb949e874f8e8639170cf1d70db0",
+    "run_id": "lme-6d946de38daf968f-d5c550a52b98961d536d5012-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 332,
+    "usage": {
+      "prompt_tokens": 166,
+      "completion_tokens": 235,
+      "total_tokens": 401
+    },
+    "created_at": 1794570287.7200284,
+    "finished_at": 1794570292.4272907
+  },
+  {
+    "request_id": "0741c37bbc7f4fe1882a260ca1672a65",
+    "run_id": "lme-6d946de38daf968f-d5c550a52b98961d536d5012-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 396,
+    "usage": {
+      "prompt_tokens": 181,
+      "completion_tokens": 284,
+      "total_tokens": 465
+    },
+    "created_at": 1794570292.4516973,
+    "finished_at": 1794570299.120072
+  },
+  {
+    "request_id": "f17dce49f231444387fc66760937fcfb",
+    "run_id": "lme-6d946de38daf968f-784fa525e00f9834d61ef952-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 111,
+    "usage": {
+      "prompt_tokens": 168,
+      "completion_tokens": 50,
+      "total_tokens": 218
+    },
+    "created_at": 1794570299.1446798,
+    "finished_at": 1794570302.8547618
+  },
+  {
+    "request_id": "dd41a1353f7949099eb6f8e2b1e92fc2",
+    "run_id": "lme-6d946de38daf968f-784fa525e00f9834d61ef952-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 248,
+    "usage": {
+      "prompt_tokens": 188,
+      "completion_tokens": 159,
+      "total_tokens": 347
+    },
+    "created_at": 1794570302.8779035,
+    "finished_at": 1794570307.808755
+  },
+  {
+    "request_id": "ffbb9d3826654da7a1dd727bf42715e9",
+    "run_id": "lme-6d946de38daf968f-784fa525e00f9834d61ef952-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 129,
+    "usage": {
+      "prompt_tokens": 181,
+      "completion_tokens": 62,
+      "total_tokens": 243
+    },
+    "created_at": 1794570307.8330133,
+    "finished_at": 1794570310.786686
+  },
+  {
+    "request_id": "a5a373eaacc44e2380a0f454c514801d",
+    "run_id": "lme-6d946de38daf968f-dee4f714f614864819056081-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 98,
+    "usage": {
+      "prompt_tokens": 165,
+      "completion_tokens": 40,
+      "total_tokens": 205
+    },
+    "created_at": 1794570310.811057,
+    "finished_at": 1794570313.741154
+  },
+  {
+    "request_id": "01b9a1e0864d45e48f06d15c6ebca4c7",
+    "run_id": "lme-6d946de38daf968f-dee4f714f614864819056081-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 87,
+    "usage": {
+      "prompt_tokens": 178,
+      "completion_tokens": 28,
+      "total_tokens": 206
+    },
+    "created_at": 1794570313.7656996,
+    "finished_at": 1794570316.5421798
+  },
+  {
+    "request_id": "7d57d0e56f6e4ec195579943b5600d98",
+    "run_id": "lme-6d946de38daf968f-dee4f714f614864819056081-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 122,
+    "usage": {
+      "prompt_tokens": 184,
+      "completion_tokens": 55,
+      "total_tokens": 239
+    },
+    "created_at": 1794570316.5588672,
+    "finished_at": 1794570320.0862873
+  },
+  {
+    "request_id": "b35f6b11662247119bd653c92abc5d01",
+    "run_id": "lme-6d946de38daf968f-0cba22f1de71389aa596c673-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 114,
+    "usage": {
+      "prompt_tokens": 166,
+      "completion_tokens": 53,
+      "total_tokens": 219
+    },
+    "created_at": 1794570320.1130044,
+    "finished_at": 1794570323.0144734
+  },
+  {
+    "request_id": "5c1231f6a24742d19b7c5ce77190037c",
+    "run_id": "lme-6d946de38daf968f-0cba22f1de71389aa596c673-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 93,
+    "usage": {
+      "prompt_tokens": 173,
+      "completion_tokens": 34,
+      "total_tokens": 207
+    },
+    "created_at": 1794570323.035397,
+    "finished_at": 1794570326.3391614
+  },
+  {
+    "request_id": "d659535d87e849388f560e7bb849f733",
+    "run_id": "lme-6d946de38daf968f-0cba22f1de71389aa596c673-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 156,
+    "usage": {
+      "prompt_tokens": 185,
+      "completion_tokens": 83,
+      "total_tokens": 268
+    },
+    "created_at": 1794570326.3650856,
+    "finished_at": 1794570330.2327623
+  },
+  {
+    "request_id": "f52ff48aa78842eb9669b2614922b862",
+    "run_id": "lme-6d946de38daf968f-b29d713ffe708fd27d1594f4-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 86,
+    "usage": {
+      "prompt_tokens": 177,
+      "completion_tokens": 27,
+      "total_tokens": 204
+    },
+    "created_at": 1794570330.2495363,
+    "finished_at": 1794570332.8323383
+  },
+  {
+    "request_id": "22824d0b116e4d5fa892f941ec837076",
+    "run_id": "lme-6d946de38daf968f-b29d713ffe708fd27d1594f4-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 184,
+    "usage": {
+      "prompt_tokens": 200,
+      "completion_tokens": 103,
+      "total_tokens": 303
+    },
+    "created_at": 1794570332.8572357,
+    "finished_at": 1794570336.1691477
+  },
+  {
+    "request_id": "23f20a42635a481fbf3fe024fe0e8d77",
+    "run_id": "lme-6d946de38daf968f-b29d713ffe708fd27d1594f4-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 314,
+    "usage": {
+      "prompt_tokens": 185,
+      "completion_tokens": 215,
+      "total_tokens": 400
+    },
+    "created_at": 1794570336.187777,
+    "finished_at": 1794570340.4346244
+  },
+  {
+    "request_id": "cb33dc4f6ebf4e59942e939a6bdfc634",
+    "run_id": "lme-6d946de38daf968f-9c857b69099001834d3ac2d4-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 105,
+    "usage": {
+      "prompt_tokens": 174,
+      "completion_tokens": 44,
+      "total_tokens": 218
+    },
+    "created_at": 1794570340.4539733,
+    "finished_at": 1794570342.7718635
+  },
+  {
+    "request_id": "8c5621bce4fa4f9c872b851d409f96f4",
+    "run_id": "lme-6d946de38daf968f-9c857b69099001834d3ac2d4-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 122,
+    "usage": {
+      "prompt_tokens": 186,
+      "completion_tokens": 55,
+      "total_tokens": 241
+    },
+    "created_at": 1794570342.7892742,
+    "finished_at": 1794570345.4510603
+  },
+  {
+    "request_id": "96efda6eb8404fbea1057c7d4c26ab17",
+    "run_id": "lme-6d946de38daf968f-9c857b69099001834d3ac2d4-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 81,
+    "usage": {
+      "prompt_tokens": 172,
+      "completion_tokens": 24,
+      "total_tokens": 196
+    },
+    "created_at": 1794570345.4691064,
+    "finished_at": 1794570347.814458
+  },
+  {
+    "request_id": "4c2425d707e744e1a1960db85c60bbd4",
+    "run_id": "lme-6d946de38daf968f-57b430c9c177f386b9542749-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 111,
+    "usage": {
+      "prompt_tokens": 204,
+      "completion_tokens": 41,
+      "total_tokens": 245
+    },
+    "created_at": 1794570347.8357594,
+    "finished_at": 1794570350.5776703
+  },
+  {
+    "request_id": "6436ff26a73745ce9d947183ea81d7d6",
+    "run_id": "lme-6d946de38daf968f-57b430c9c177f386b9542749-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 78,
+    "usage": {
+      "prompt_tokens": 199,
+      "completion_tokens": 15,
+      "total_tokens": 214
+    },
+    "created_at": 1794570350.5971112,
+    "finished_at": 1794570352.95638
+  },
+  {
+    "request_id": "21cd3547cd744402ad54489b2f178d2d",
+    "run_id": "lme-6d946de38daf968f-57b430c9c177f386b9542749-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 84,
+    "usage": {
+      "prompt_tokens": 199,
+      "completion_tokens": 20,
+      "total_tokens": 219
+    },
+    "created_at": 1794570352.9870152,
+    "finished_at": 1794570355.2333279
+  },
+  {
+    "request_id": "832e4301812b4b358a94d8d66cb63497",
+    "run_id": "lme-6d946de38daf968f-e8be655d29ff08df7c6c3728-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 102,
+    "usage": {
+      "prompt_tokens": 197,
+      "completion_tokens": 35,
+      "total_tokens": 232
+    },
+    "created_at": 1794570355.2580345,
+    "finished_at": 1794570359.1738613
+  },
+  {
+    "request_id": "6ae8882ed55f4051b31fa2d1df44f9a1",
+    "run_id": "lme-6d946de38daf968f-e8be655d29ff08df7c6c3728-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 75,
+    "usage": {
+      "prompt_tokens": 191,
+      "completion_tokens": 14,
+      "total_tokens": 205
+    },
+    "created_at": 1794570359.2043102,
+    "finished_at": 1794570362.3703222
+  },
+  {
+    "request_id": "22317fadb26947fbb825c57defe3d72a",
+    "run_id": "lme-6d946de38daf968f-e8be655d29ff08df7c6c3728-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 112,
+    "usage": {
+      "prompt_tokens": 203,
+      "completion_tokens": 42,
+      "total_tokens": 245
+    },
+    "created_at": 1794570362.3956647,
+    "finished_at": 1794570365.772746
+  },
+  {
+    "request_id": "cedd2d9d20f64957b7bfd6a5507a84fe",
+    "run_id": "lme-6d946de38daf968f-56479703b213f074761e1426-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 113,
+    "usage": {
+      "prompt_tokens": 199,
+      "completion_tokens": 44,
+      "total_tokens": 243
+    },
+    "created_at": 1794570365.7987676,
+    "finished_at": 1794570368.8592
+  },
+  {
+    "request_id": "3e21f5bd0e884ec8824c7326aa130867",
+    "run_id": "lme-6d946de38daf968f-56479703b213f074761e1426-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 75,
+    "usage": {
+      "prompt_tokens": 179,
+      "completion_tokens": 17,
+      "total_tokens": 196
+    },
+    "created_at": 1794570368.884295,
+    "finished_at": 1794570372.1138432
+  },
+  {
+    "request_id": "1018af6899c34d56877c1df1f01f60b5",
+    "run_id": "lme-6d946de38daf968f-56479703b213f074761e1426-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 77,
+    "usage": {
+      "prompt_tokens": 179,
+      "completion_tokens": 19,
+      "total_tokens": 198
+    },
+    "created_at": 1794570372.138547,
+    "finished_at": 1794570375.6749747
+  },
+  {
+    "request_id": "c5d17483a02444009523c1c9f0b1a6f9",
+    "run_id": "lme-6d946de38daf968f-b924d9557ca6cb389200a472-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 111,
+    "usage": {
+      "prompt_tokens": 170,
+      "completion_tokens": 50,
+      "total_tokens": 220
+    },
+    "created_at": 1794570375.7009292,
+    "finished_at": 1794570379.3571117
+  },
+  {
+    "request_id": "f29d38af818e48b4931e5eba21e35c02",
+    "run_id": "lme-6d946de38daf968f-b924d9557ca6cb389200a472-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 75,
+    "usage": {
+      "prompt_tokens": 157,
+      "completion_tokens": 23,
+      "total_tokens": 180
+    },
+    "created_at": 1794570379.3835907,
+    "finished_at": 1794570382.7597845
+  },
+  {
+    "request_id": "75b66528bf7b40e0b2266659e2e73f19",
+    "run_id": "lme-6d946de38daf968f-b924d9557ca6cb389200a472-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 74,
+    "usage": {
+      "prompt_tokens": 157,
+      "completion_tokens": 22,
+      "total_tokens": 179
+    },
+    "created_at": 1794570382.7862625,
+    "finished_at": 1794570385.6670837
+  },
+  {
+    "request_id": "e1132fd13bec41d3b53682bd9e1247e3",
+    "run_id": "lme-6d946de38daf968f-f150c6a6bc6e8dff7893757e-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 126,
+    "usage": {
+      "prompt_tokens": 203,
+      "completion_tokens": 54,
+      "total_tokens": 257
+    },
+    "created_at": 1794570385.6934445,
+    "finished_at": 1794570389.135191
+  },
+  {
+    "request_id": "ccad8c231c9e457a8d4d63924243b6f8",
+    "run_id": "lme-6d946de38daf968f-f150c6a6bc6e8dff7893757e-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 225,
+    "usage": {
+      "prompt_tokens": 256,
+      "completion_tokens": 123,
+      "total_tokens": 379
+    },
+    "created_at": 1794570389.161512,
+    "finished_at": 1794570394.2539964
+  },
+  {
+    "request_id": "fdd540e41f6f4fd580d7635a8b092915",
+    "run_id": "lme-6d946de38daf968f-f150c6a6bc6e8dff7893757e-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 497,
+    "usage": {
+      "prompt_tokens": 236,
+      "completion_tokens": 355,
+      "total_tokens": 591
+    },
+    "created_at": 1794570394.2806838,
+    "finished_at": 1794570400.8207316
+  },
+  {
+    "request_id": "181d33a056804d5eb4c83e644ba4627d",
+    "run_id": "lme-6d946de38daf968f-07b2f05a1c9c8c71cdae1936-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 304,
+    "usage": {
+      "prompt_tokens": 191,
+      "completion_tokens": 205,
+      "total_tokens": 396
+    },
+    "created_at": 1794570400.8476858,
+    "finished_at": 1794570406.9529734
+  },
+  {
+    "request_id": "6c28604804494ef4be6820be021386b7",
+    "run_id": "lme-6d946de38daf968f-07b2f05a1c9c8c71cdae1936-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 159,
+    "usage": {
+      "prompt_tokens": 207,
+      "completion_tokens": 80,
+      "total_tokens": 287
+    },
+    "created_at": 1794570406.9857993,
+    "finished_at": 1794570411.5786939
+  },
+  {
+    "request_id": "3c13623dd62c45f8985444073a1b69ae",
+    "run_id": "lme-6d946de38daf968f-07b2f05a1c9c8c71cdae1936-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 190,
+    "usage": {
+      "prompt_tokens": 207,
+      "completion_tokens": 106,
+      "total_tokens": 313
+    },
+    "created_at": 1794570411.6049068,
+    "finished_at": 1794570416.24604
+  },
+  {
+    "request_id": "0603d58bcb0e475bac2ff0064cc3b581",
+    "run_id": "lme-6d946de38daf968f-fb8e4ec646f49d62328f4b7e-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 214,
+    "usage": {
+      "prompt_tokens": 223,
+      "completion_tokens": 122,
+      "total_tokens": 345
+    },
+    "created_at": 1794570416.272853,
+    "finished_at": 1794570420.3246098
+  },
+  {
+    "request_id": "aa954094360a45bfb7681d061defeb74",
+    "run_id": "lme-6d946de38daf968f-fb8e4ec646f49d62328f4b7e-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 149,
+    "usage": {
+      "prompt_tokens": 220,
+      "completion_tokens": 69,
+      "total_tokens": 289
+    },
+    "created_at": 1794570420.3514886,
+    "finished_at": 1794570425.0351274
+  },
+  {
+    "request_id": "90c63e9aa9334594801db40e3eb93a89",
+    "run_id": "lme-6d946de38daf968f-fb8e4ec646f49d62328f4b7e-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 167,
+    "usage": {
+      "prompt_tokens": 226,
+      "completion_tokens": 82,
+      "total_tokens": 308
+    },
+    "created_at": 1794570425.062882,
+    "finished_at": 1794570429.6209865
+  },
+  {
+    "request_id": "adf4a285a82940738c224f2f7083fa17",
+    "run_id": "lme-6d946de38daf968f-eddf4ad8fdc21a6e82f53e4f-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 187,
+    "usage": {
+      "prompt_tokens": 214,
+      "completion_tokens": 102,
+      "total_tokens": 316
+    },
+    "created_at": 1794570429.6484327,
+    "finished_at": 1794570433.3245633
+  },
+  {
+    "request_id": "c7823a772b714985b33fa2a3365fcc55",
+    "run_id": "lme-6d946de38daf968f-eddf4ad8fdc21a6e82f53e4f-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 462,
+    "usage": {
+      "prompt_tokens": 228,
+      "completion_tokens": 328,
+      "total_tokens": 556
+    },
+    "created_at": 1794570433.3520207,
+    "finished_at": 1794570440.0597847
+  },
+  {
+    "request_id": "e764a8d96d2c400e8e70cc56851da3c2",
+    "run_id": "lme-6d946de38daf968f-eddf4ad8fdc21a6e82f53e4f-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 201,
+    "usage": {
+      "prompt_tokens": 213,
+      "completion_tokens": 114,
+      "total_tokens": 327
+    },
+    "created_at": 1794570440.0783052,
+    "finished_at": 1794570446.7724328
+  },
+  {
+    "request_id": "a7160478926941dba8d558dcf116bcde",
+    "run_id": "lme-6d946de38daf968f-9afb031b093af349fb9fd17b-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 168,
+    "usage": {
+      "prompt_tokens": 231,
+      "completion_tokens": 82,
+      "total_tokens": 313
+    },
+    "created_at": 1794570446.800169,
+    "finished_at": 1794570450.6718917
+  },
+  {
+    "request_id": "b33e4ef56c274ab3a5b13415cb47bae0",
+    "run_id": "lme-6d946de38daf968f-9afb031b093af349fb9fd17b-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 1306,
+    "usage": {
+      "prompt_tokens": 257,
+      "completion_tokens": 1024,
+      "total_tokens": 1281
+    },
+    "created_at": 1794570450.6921105,
+    "finished_at": 1794570464.251284
+  },
+  {
+    "request_id": "716cb73cb9d14575bba7b5e0fe8e215d",
+    "run_id": "lme-6d946de38daf968f-9afb031b093af349fb9fd17b-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 858,
+    "usage": {
+      "prompt_tokens": 257,
+      "completion_tokens": 650,
+      "total_tokens": 907
+    },
+    "created_at": 1794570464.2797732,
+    "finished_at": 1794570473.896767
+  },
+  {
+    "request_id": "356722f355fc4a149872c02915570f3c",
+    "run_id": "lme-6d946de38daf968f-693f3a0d3b2f87c57d4269f6-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 138,
+    "usage": {
+      "prompt_tokens": 257,
+      "completion_tokens": 50,
+      "total_tokens": 307
+    },
+    "created_at": 1794570473.9257953,
+    "finished_at": 1794570476.13251
+  },
+  {
+    "request_id": "c0998444b00b4e87948d306517c3c87a",
+    "run_id": "lme-6d946de38daf968f-693f3a0d3b2f87c57d4269f6-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 153,
+    "usage": {
+      "prompt_tokens": 255,
+      "completion_tokens": 63,
+      "total_tokens": 318
+    },
+    "created_at": 1794570476.160651,
+    "finished_at": 1794570478.6279426
+  },
+  {
+    "request_id": "76052c63ee2c4902a2904345416bab5d",
+    "run_id": "lme-6d946de38daf968f-693f3a0d3b2f87c57d4269f6-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 133,
+    "usage": {
+      "prompt_tokens": 258,
+      "completion_tokens": 46,
+      "total_tokens": 304
+    },
+    "created_at": 1794570478.6577835,
+    "finished_at": 1794570482.2533658
+  },
+  {
+    "request_id": "857e78199fdc4a928e7df66f9208dddf",
+    "run_id": "lme-6d946de38daf968f-c1053377466b2692161f3d05-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 108,
+    "usage": {
+      "prompt_tokens": 156,
+      "completion_tokens": 51,
+      "total_tokens": 207
+    },
+    "created_at": 1794570482.2875607,
+    "finished_at": 1794570484.7010517
+  },
+  {
+    "request_id": "27ee3134337a4da6987710e7c56cd46f",
+    "run_id": "lme-6d946de38daf968f-c1053377466b2692161f3d05-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 107,
+    "usage": {
+      "prompt_tokens": 159,
+      "completion_tokens": 49,
+      "total_tokens": 208
+    },
+    "created_at": 1794570484.7310097,
+    "finished_at": 1794570488.2006278
+  },
+  {
+    "request_id": "afdf4874a6a74833a5648dad933ec64c",
+    "run_id": "lme-6d946de38daf968f-c1053377466b2692161f3d05-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 88,
+    "usage": {
+      "prompt_tokens": 156,
+      "completion_tokens": 34,
+      "total_tokens": 190
+    },
+    "created_at": 1794570488.2315042,
+    "finished_at": 1794570492.3198276
+  },
+  {
+    "request_id": "e376509fb0794019bacebed1c1599b28",
+    "run_id": "lme-6d946de38daf968f-bd3a35a95b7443b8a8864815-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 107,
+    "usage": {
+      "prompt_tokens": 163,
+      "completion_tokens": 48,
+      "total_tokens": 211
+    },
+    "created_at": 1794570492.3475466,
+    "finished_at": 1794570495.1687422
+  },
+  {
+    "request_id": "c144e19190ee470198312973fbc3ebea",
+    "run_id": "lme-6d946de38daf968f-bd3a35a95b7443b8a8864815-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 106,
+    "usage": {
+      "prompt_tokens": 165,
+      "completion_tokens": 47,
+      "total_tokens": 212
+    },
+    "created_at": 1794570495.201562,
+    "finished_at": 1794570498.2906153
+  },
+  {
+    "request_id": "1f42516de4b941b8bea4733e6bb1f63a",
+    "run_id": "lme-6d946de38daf968f-bd3a35a95b7443b8a8864815-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 66,
+    "usage": {
+      "prompt_tokens": 151,
+      "completion_tokens": 17,
+      "total_tokens": 168
+    },
+    "created_at": 1794570498.3190062,
+    "finished_at": 1794570502.6409743
+  },
+  {
+    "request_id": "c74aafd716de4d889b0c0dc1f6e10944",
+    "run_id": "lme-6d946de38daf968f-5f7b615f26178791e86fb489-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 133,
+    "usage": {
+      "prompt_tokens": 163,
+      "completion_tokens": 70,
+      "total_tokens": 233
+    },
+    "created_at": 1794570502.6712759,
+    "finished_at": 1794570506.1200566
+  },
+  {
+    "request_id": "d4667a0516774940bed3e4aa3d9b8ada",
+    "run_id": "lme-6d946de38daf968f-5f7b615f26178791e86fb489-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 71,
+    "usage": {
+      "prompt_tokens": 152,
+      "completion_tokens": 21,
+      "total_tokens": 173
+    },
+    "created_at": 1794570506.149771,
+    "finished_at": 1794570508.8840992
+  },
+  {
+    "request_id": "3e41105a503f41569ef660e3fa7c5997",
+    "run_id": "lme-6d946de38daf968f-5f7b615f26178791e86fb489-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 69,
+    "usage": {
+      "prompt_tokens": 152,
+      "completion_tokens": 19,
+      "total_tokens": 171
+    },
+    "created_at": 1794570508.914848,
+    "finished_at": 1794570512.1395853
+  },
+  {
+    "request_id": "4f256c9f925f4cda8338ec8faa73aeca",
+    "run_id": "lme-6d946de38daf968f-409ec3d94e3fb69de9b3e025-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 107,
+    "usage": {
+      "prompt_tokens": 171,
+      "completion_tokens": 46,
+      "total_tokens": 217
+    },
+    "created_at": 1794570512.1687288,
+    "finished_at": 1794570514.6615162
+  },
+  {
+    "request_id": "3ed0b63ac3844465909131f299f45995",
+    "run_id": "lme-6d946de38daf968f-409ec3d94e3fb69de9b3e025-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 69,
+    "usage": {
+      "prompt_tokens": 149,
+      "completion_tokens": 20,
+      "total_tokens": 169
+    },
+    "created_at": 1794570514.6916268,
+    "finished_at": 1794570517.4518204
+  },
+  {
+    "request_id": "8e2d0ec9627b4d5f8d5cb644e4475ee5",
+    "run_id": "lme-6d946de38daf968f-409ec3d94e3fb69de9b3e025-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 67,
+    "usage": {
+      "prompt_tokens": 149,
+      "completion_tokens": 18,
+      "total_tokens": 167
+    },
+    "created_at": 1794570517.4827142,
+    "finished_at": 1794570519.9306853
+  },
+  {
+    "request_id": "8baa01961169492ca2c53aae3e62989e",
+    "run_id": "lme-6d946de38daf968f-55d698607e04f49db420a8a3-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 131,
+    "usage": {
+      "prompt_tokens": 168,
+      "completion_tokens": 67,
+      "total_tokens": 235
+    },
+    "created_at": 1794570519.996138,
+    "finished_at": 1794570523.467683
+  },
+  {
+    "request_id": "89c0a1dfa85640908d210bd51bef71ff",
+    "run_id": "lme-6d946de38daf968f-55d698607e04f49db420a8a3-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 79,
+    "usage": {
+      "prompt_tokens": 151,
+      "completion_tokens": 28,
+      "total_tokens": 179
+    },
+    "created_at": 1794570523.5110257,
+    "finished_at": 1794570526.514586
+  },
+  {
+    "request_id": "6fd194af01174a65b59d5dd01ff404dd",
+    "run_id": "lme-6d946de38daf968f-55d698607e04f49db420a8a3-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 117,
+    "usage": {
+      "prompt_tokens": 168,
+      "completion_tokens": 55,
+      "total_tokens": 223
+    },
+    "created_at": 1794570526.5405626,
+    "finished_at": 1794570529.9889429
+  },
+  {
+    "request_id": "738514eba1894a3e9b0c3c54096db8c8",
+    "run_id": "lme-6d946de38daf968f-171922196706b121b6cd12c6-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 132,
+    "usage": {
+      "prompt_tokens": 256,
+      "completion_tokens": 46,
+      "total_tokens": 302
+    },
+    "created_at": 1794570530.0241718,
+    "finished_at": 1794570533.3619697
+  },
+  {
+    "request_id": "97361da610284cb08529e700d4811189",
+    "run_id": "lme-6d946de38daf968f-171922196706b121b6cd12c6-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 118,
+    "usage": {
+      "prompt_tokens": 273,
+      "completion_tokens": 30,
+      "total_tokens": 303
+    },
+    "created_at": 1794570533.3870268,
+    "finished_at": 1794570536.0973632
+  },
+  {
+    "request_id": "c65d6c91e0144f2da616a09e3d42701a",
+    "run_id": "lme-6d946de38daf968f-171922196706b121b6cd12c6-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 143,
+    "usage": {
+      "prompt_tokens": 264,
+      "completion_tokens": 53,
+      "total_tokens": 317
+    },
+    "created_at": 1794570536.1216812,
+    "finished_at": 1794570539.4346511
+  },
+  {
+    "request_id": "aff780e0fb0b44c394a616b312acf3f9",
+    "run_id": "lme-6d946de38daf968f-58821011193981eca7f02602-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 138,
+    "usage": {
+      "prompt_tokens": 239,
+      "completion_tokens": 55,
+      "total_tokens": 294
+    },
+    "created_at": 1794570539.4673555,
+    "finished_at": 1794570543.4815965
+  },
+  {
+    "request_id": "07a7b2f5a78947eb8dfe65874e053895",
+    "run_id": "lme-6d946de38daf968f-58821011193981eca7f02602-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 106,
+    "usage": {
+      "prompt_tokens": 249,
+      "completion_tokens": 26,
+      "total_tokens": 275
+    },
+    "created_at": 1794570543.5137746,
+    "finished_at": 1794570547.626344
+  },
+  {
+    "request_id": "ededee2c43ba482fac8489afd679c965",
+    "run_id": "lme-6d946de38daf968f-58821011193981eca7f02602-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 126,
+    "usage": {
+      "prompt_tokens": 254,
+      "completion_tokens": 41,
+      "total_tokens": 295
+    },
+    "created_at": 1794570547.660247,
+    "finished_at": 1794570550.770005
+  },
+  {
+    "request_id": "206dd75b7f3f42e6bfeacf6df34d1892",
+    "run_id": "lme-6d946de38daf968f-2a873fa22a53eb0a1454d398-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 93,
+    "usage": {
+      "prompt_tokens": 177,
+      "completion_tokens": 33,
+      "total_tokens": 210
+    },
+    "created_at": 1794570550.8027773,
+    "finished_at": 1794570553.6017842
+  },
+  {
+    "request_id": "4dc36b154f6a40f0bea05a3e38049b01",
+    "run_id": "lme-6d946de38daf968f-2a873fa22a53eb0a1454d398-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 135,
+    "usage": {
+      "prompt_tokens": 187,
+      "completion_tokens": 65,
+      "total_tokens": 252
+    },
+    "created_at": 1794570553.632347,
+    "finished_at": 1794570556.5082617
+  },
+  {
+    "request_id": "993583fe21d842a3acee779b641339e9",
+    "run_id": "lme-6d946de38daf968f-2a873fa22a53eb0a1454d398-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 231,
+    "usage": {
+      "prompt_tokens": 172,
+      "completion_tokens": 149,
+      "total_tokens": 321
+    },
+    "created_at": 1794570556.5403702,
+    "finished_at": 1794570560.856809
+  },
+  {
+    "request_id": "5cd7708312b5439599d46c6d8570ae78",
+    "run_id": "lme-6d946de38daf968f-2ff6cf253aa3dd4f4571ab28-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 129,
+    "usage": {
+      "prompt_tokens": 243,
+      "completion_tokens": 46,
+      "total_tokens": 289
+    },
+    "created_at": 1794570560.8896515,
+    "finished_at": 1794570564.7860563
+  },
+  {
+    "request_id": "177525eb9e474cea95d2d1a235d35e54",
+    "run_id": "lme-6d946de38daf968f-2ff6cf253aa3dd4f4571ab28-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 144,
+    "usage": {
+      "prompt_tokens": 274,
+      "completion_tokens": 51,
+      "total_tokens": 325
+    },
+    "created_at": 1794570564.811086,
+    "finished_at": 1794570567.54219
+  },
+  {
+    "request_id": "297ed1b0298d47c9a77f3a11a00ccd02",
+    "run_id": "lme-6d946de38daf968f-2ff6cf253aa3dd4f4571ab28-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 124,
+    "usage": {
+      "prompt_tokens": 272,
+      "completion_tokens": 35,
+      "total_tokens": 307
+    },
+    "created_at": 1794570567.572899,
+    "finished_at": 1794570569.9731183
+  },
+  {
+    "request_id": "a83db9f32a5f45ff988a240232a77471",
+    "run_id": "lme-6d946de38daf968f-730906bc4bda88f0259b970d-none-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 135,
+    "usage": {
+      "prompt_tokens": 243,
+      "completion_tokens": 51,
+      "total_tokens": 294
+    },
+    "created_at": 1794570570.0089843,
+    "finished_at": 1794570572.858963
+  },
+  {
+    "request_id": "18e549344ad54395b04f1dcf29f1ea4d",
+    "run_id": "lme-6d946de38daf968f-730906bc4bda88f0259b970d-lexical-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 114,
+    "usage": {
+      "prompt_tokens": 258,
+      "completion_tokens": 30,
+      "total_tokens": 288
+    },
+    "created_at": 1794570572.8827913,
+    "finished_at": 1794570576.1854503
+  },
+  {
+    "request_id": "38a621d1e05747158a1b503ad358bcda",
+    "run_id": "lme-6d946de38daf968f-730906bc4bda88f0259b970d-mem0-judge",
+    "model": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "purpose": "longmem_judge",
+    "status": "ok",
+    "cost_micro_usd": 164,
+    "usage": {
+      "prompt_tokens": 264,
+      "completion_tokens": 70,
+      "total_tokens": 334
+    },
+    "created_at": 1794570576.2177517,
+    "finished_at": 1794570579.852005
+  }
+]

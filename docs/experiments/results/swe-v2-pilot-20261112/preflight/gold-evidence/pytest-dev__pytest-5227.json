@@ -1,0 +1,16 @@
+{
+  "instance_id": "pytest-dev__pytest-5227",
+  "base_commit": "2051e30b9b596e944524ccb787ed20f9f5be93e3",
+  "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5227:latest",
+  "image_id": "sha256:6faff6caa94117d96d7f8818c812d33306d34ecd9937ba82ef0bb56faa67f664",
+  "metadata_sha256": "cf7ac733a7492a656fe0f13520edb9ff9204549856c9c76c17c069efa8ee5a7f",
+  "resolved": true,
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "source_repository": "https://github.com/SWE-bench/swe-bench-tasks",
+  "official_report": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5227/gold.pilot-gold-20261112-pytest-dev__pytest-5227.json",
+  "official_report_sha256": "dbd5624e6cbe3341248b67632c10b5ba06d0a6f2ce44cbd978d376c4f20bc28d",
+  "evaluation_dataset_sha256": "89271c182d21e6eea3e4136f6a70972e58cef0d00d6fb8e3d3bfe1664a73333d",
+  "canonical_verified_files": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/verified-files.json",
+  "reused_gold": false,
+  "gold_model_requests": 0
+}

@@ -1,0 +1,374 @@
+{
+  "arms": [
+    "raw_lexical",
+    "raw_mem0",
+    "facts_lexical",
+    "facts_mem0"
+  ],
+  "base_url": "https://opencode.ai/inference/go/openai/v1",
+  "budget": {
+    "accounting_units": 5000000,
+    "call_namespace": "v3r1.",
+    "change_reason": "v3 recovery after v1 truncation, v2 one-shot visibility failure, and the preserved v3 8192-token reasoning-only length stop; raises extraction output to 32768 and request timeout to 600 seconds without changing questions, source data, arms, retrieval, or scoring",
+    "expected_model_calls": 332,
+    "inherited_by_campaign": {
+      "memory-locomo-four-arm-20261114-v1": {
+        "completion_tokens": 2048,
+        "conservative_cost_usd": 0.005249,
+        "prompt_tokens": 9303,
+        "requests": 1,
+        "total_tokens": 11351
+      },
+      "memory-locomo-four-arm-20261115-v2": {
+        "completion_tokens": 7437,
+        "conservative_cost_usd": 0.014496,
+        "prompt_tokens": 10889,
+        "requests": 2,
+        "total_tokens": 26006
+      },
+      "memory-locomo-four-arm-20261115-v3": {
+        "completion_tokens": 25431,
+        "conservative_cost_usd": 0.053627999999999995,
+        "prompt_tokens": 21086,
+        "requests": 8,
+        "total_tokens": 102453
+      }
+    },
+    "inherited_terminal_usage": {
+      "call_identities": [
+        "extract.s_067187554733c33d1a8f04a4",
+        "extract.s_21822e0027340ac212567b59",
+        "extract.v3.s_067187554733c33d1a8f04a4",
+        "extract.v3.s_21822e0027340ac212567b59",
+        "extract.v3.s_36b67364d2cb26f6deadbc95",
+        "extract.v3.s_53e6293ddbaa6e5badbab8da",
+        "extract.v3.s_58e82fe02860689e3f2d2ba7",
+        "extract.v3.s_c044968e5cde64e44f088868",
+        "extract.v3.s_dadf405b5a5a00c61ff60894",
+        "extract.v3.s_f02f4f1eea6d5fd6227ca3bc"
+      ],
+      "completion_tokens": 34916,
+      "conservative_cost_usd": 0.073373,
+      "prompt_tokens": 41278,
+      "requests": 11,
+      "total_tokens": 139810
+    },
+    "max_requests": 384,
+    "original_gate": {
+      "accounting_units": 1500000,
+      "conflict": "gate smaller than 332-call reentry requirement",
+      "max_requests": 168,
+      "status": "superseded_before_any_new_paid_call"
+    },
+    "output_caps": {
+      "answer": 1024,
+      "extract": 32768,
+      "judge": 512
+    },
+    "planning_basis": {
+      "extraction_if_all_92_match_observed_prompt_and_v3r1_cap": 3870532,
+      "observed_v1_extraction_prompt_tokens": 9303,
+      "remaining_units_for_240_reader_and_judge_calls": 989658,
+      "scope": "planning bound derived from the one preserved genuine v1 extraction, not a provider-wide token guarantee"
+    },
+    "policy": "reserve before each request, settle exactly once, unknown usage stops all later dispatches",
+    "remaining_accounting_units_after_inherited_usage": 4860190,
+    "request_headroom_after_expected_v3_calls": 41,
+    "retries": 0,
+    "user_declared_total_token_budget": 2000000000,
+    "v1_terminal_failure": {
+      "completion_tokens": 2048,
+      "conservative_cost_usd": 0.005249,
+      "prompt_tokens": 9303,
+      "protocol": "locomo-multisession-four-arm-v1",
+      "requests": 1,
+      "status": "preserved_not_replayed",
+      "total_tokens": 11351
+    },
+    "v2_terminal_failure": {
+      "cache_read_tokens": 7680,
+      "completion_tokens": 7437,
+      "conservative_cost_usd": 0.014496,
+      "prompt_tokens": 10889,
+      "protocol": "locomo-multisession-four-arm-v2",
+      "requests": 2,
+      "status": "preserved_not_replayed",
+      "total_tokens": 26006
+    },
+    "v3_initial_recovery_failure": {
+      "failed_completion_tokens": 8192,
+      "finish_reason": "length",
+      "protocol": "locomo-multisession-four-arm-v3",
+      "requests": 8,
+      "status": "preserved_not_replayed",
+      "valid_extracts_before_failure": 7
+    },
+    "wall_clock_hours": 8
+  },
+  "campaign_id": "memory-locomo-four-arm-20261115-v3r1",
+  "context_chars": 6000,
+  "conversations": [
+    {
+      "conversation_id": "conv-47",
+      "file": "conversations/conv-47.json",
+      "questions": 6,
+      "raw_chunks": 164,
+      "sessions": 31,
+      "split": "dev"
+    },
+    {
+      "conversation_id": "conv-41",
+      "file": "conversations/conv-41.json",
+      "questions": 12,
+      "raw_chunks": 183,
+      "sessions": 32,
+      "split": "test"
+    },
+    {
+      "conversation_id": "conv-42",
+      "file": "conversations/conv-42.json",
+      "questions": 12,
+      "raw_chunks": 151,
+      "sessions": 29,
+      "split": "test"
+    }
+  ],
+  "counts": {
+    "answer_calls": 120,
+    "dev_qa": 6,
+    "expected_model_calls": 332,
+    "extract_calls": 92,
+    "judge_calls": 120,
+    "sessions": 92,
+    "test_qa": 24
+  },
+  "created_at": "2026-11-14T16:50:04.837887+00:00",
+  "data": [
+    {
+      "bytes": 289472,
+      "path": "conversations/conv-47.json",
+      "sha256": "b7fbee5440fa2ea8a099343db0fbe7412c1245fd3ae45544d59d85d4427d8bcd"
+    },
+    {
+      "bytes": 318883,
+      "path": "conversations/conv-41.json",
+      "sha256": "73826696ffd083344025a9489ba4eb15250a2dee4036aa2ffd391119a672ef97"
+    },
+    {
+      "bytes": 269328,
+      "path": "conversations/conv-42.json",
+      "sha256": "772f89826d04dc9e6b1e698af7232d382b42b5e0ae6b5c8a98e7012c8ebe2212"
+    }
+  ],
+  "embedding": {
+    "batch_size": 1,
+    "cuda_visible_devices": "0",
+    "dimensions": 1024,
+    "manifest": {
+      "bytes": 2925,
+      "path": "C:\\Users\\MLL\\.cache\\my-agent-harness\\models\\qwen3-embedding-0.6b\\97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3\\harness-model-manifest.json",
+      "sha256": "05bec2826e2d492f4146087960647fea98a694204ab14662dc0a96a800af8b3d"
+    },
+    "max_length": 4096,
+    "model_dir": "C:\\Users\\MLL\\.cache\\my-agent-harness\\models\\qwen3-embedding-0.6b\\97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "network": "WSL seccomp no non-unix socket/connect",
+    "python_executable": "/home/mll/.cache/my-agent-bench/qwen3-probe-venv/bin/python",
+    "repo": "Qwen/Qwen3-Embedding-0.6B",
+    "request_timeout": 180,
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "startup_timeout": 240,
+    "wsl_distribution": "Ubuntu-20.04"
+  },
+  "environment": {
+    "critical_versions": {
+      "anthropic": "1.5.0",
+      "filelock": "3.32.6",
+      "langfuse": "5.2.0",
+      "mem0ai": "2.2.1",
+      "numpy": "2.5.4",
+      "openai": "3.13.0",
+      "pydantic": "2.13.5",
+      "qdrant-client": "1.20.0",
+      "torch": "2.8.0+cu128"
+    },
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-study\\environment.json"
+  },
+  "fact_corpus": "one native ADD snapshot shared by facts_lexical and facts_mem0",
+  "gold": {
+    "bytes": 9180,
+    "manifest_sha256": "ffdf9c52a4f17f03720be709ce5ade5a634a1e0678a3d6629e57b3baf1858393",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3r1\\gold\\references.json",
+    "sha256": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf"
+  },
+  "judge": "fixed nonofficial DeepSeek prompt; exact JSON boolean; malformed retained as incorrect; no retries",
+  "ledger_path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3r1\\ledger.json",
+  "limitations": [
+    "pilot selection is one seed with 30 questions",
+    "native Mem0 additive extraction is shared and not fact-quality ablation",
+    "fact turn-level evidence recall is unavailable; session-level recall is reported where provenance exists",
+    "extraction output cap is raised to 32768 after the preserved v3 reasoning-only length stop; it is not a truncation-free guarantee"
+  ],
+  "max_retries": 0,
+  "model": "deepseek-v4.1-flash",
+  "observability": {
+    "campaign_session": "memory-locomo-four-arm-20261115-v3r1",
+    "cloud_base_url": "https://cloud.langfuse.com",
+    "first_two_extractions": "distinct v3 traces; 180-second bounded exponential polling of one metadata/usage lookup per trace; exactly one matching observation per trace; ambiguity or timeout stops",
+    "model_request_retries": 0,
+    "owner": "ExperimentLLMOwnerV3",
+    "project_id": "cmwg5sagt00ksad0j6au0463n",
+    "required": true
+  },
+  "prior_ledgers": [
+    {
+      "bytes": 1210,
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-study\\ledger.json",
+      "sha256": "34c2897d698bd881412213c163acf27fd57bd7dc715a6273117c1a6b3172e573"
+    },
+    {
+      "bytes": 2105,
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v2\\ledger.json",
+      "sha256": "12d04ce4fb22e3080e904cee7f0424cb3cd863ea092d7b03a1df899e1fd157dc"
+    },
+    {
+      "bytes": 9348,
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3\\ledger.json",
+      "sha256": "d1a7d2d97d6ec0137cd856f92a9c34e85ca49d6d8aae3771fff019d68c5584dc"
+    }
+  ],
+  "prompts": {
+    "answer_sha256": "6e6b760d17fe67582684187e4fc26b2cbb63114281b11d7c896e83de9b80b43c",
+    "extract_sha256": "122237c3236e28075c59ef8ae3e839f18984d7f3c142bc71b06aa58793343ca8",
+    "judge_sha256": "8d861de234d83a87ee7b16e7a26646563035758483d1c9fa368f70c1dc71ea31"
+  },
+  "protocol": "locomo-multisession-four-arm-v3",
+  "provider": "openai",
+  "raw_chunk_chars": 800,
+  "raw_corpus": "one raw copy shared by raw_lexical and raw_mem0",
+  "recovery_reason": "initial v3 extraction hit the 8192 completion limit with empty content after required cloud polling passed; preserve that request and raise only the extraction ceiling",
+  "recovery_revision": 1,
+  "request_timeout_seconds": 600,
+  "schema_version": 1,
+  "session_document_chars": 6000,
+  "source": {
+    "bytes": 2805274,
+    "file": "data/locomo10.json",
+    "license": "CC BY-NC 4.0",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\data\\locomo-pinned\\data\\locomo10.json",
+    "repository": "snap-research/locomo",
+    "revision": "3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376",
+    "sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4"
+  },
+  "sources": [
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\benchmark_live\\budget.py",
+      "sha256": "6da87c68cb269407037c70b53739a9076ee80817ec47a4809dd138cb9ea61731"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\benchmark_live\\observation.py",
+      "sha256": "974805d9f75dd080fef805efef819e6b8207e8e0e17e94b8d749802ccafd09ec"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_adapter.py",
+      "sha256": "f39e36edce6f97c870cac2593cf12f1cb9cbcaf8d5e7d7958bfbef6b36a3fdc8"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_adapter_v3.py",
+      "sha256": "9462796f7610b2229f3df7e44bbd15b5f71c560690237ecefacff4b494314d7c"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\budget_v3.py",
+      "sha256": "d5dcee05aeb7808ca0a2de428465c4eddf45bdc39cbb59c4bdd0b1b57877e9fd"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_embedding.py",
+      "sha256": "11c6ea9f42f7386454b0db964f1269c7f65c1e234211de866ce6f1dab7669c71"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_index.py",
+      "sha256": "e5dc31c1ac29435d3b43e2f8e4464ae86c06556d899bb4da41bf04660a078c07"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_observation.py",
+      "sha256": "538ba252cc3ae60465a13bef57a9c6ddb085cba0854cdccade7e47c1c1f80159"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_observation_v3.py",
+      "sha256": "b561a9139ab78f46b154092dc56972b09425fad2c044cbff704cf52e33d41141"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_protocol.py",
+      "sha256": "9df0ce5e08aeecd549798c9e5c48ec273014a6f22c96afd34bb394b2d786d7ea"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\multisession_runner_v3.py",
+      "sha256": "509e56006d78075a7111cf561dcaf5ca71a77dc8a598929bc8b00dd1afd2e276"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\qwen_seccomp_worker.py",
+      "sha256": "600545cae34fc66100bb9078d698b3b8b7aecbaa0543f7076beb66044d8432e5"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\experiments\\memory_validation\\runner.py",
+      "sha256": "bf7589697bda737bc581ca9484c8797fd6f996340888f379f570aa3f2cd634d2"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_core\\_memory_qwen_worker.py",
+      "sha256": "db02b64871affc0fda2d6349be22e8f53e197b473f4f7d60903423c744ad7601"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_core\\memory_local.py",
+      "sha256": "b1e3cfd4ad696ea505cc0ba2f2f476d77623633e58bf4f5c0504774fb5228636"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_core\\memory_qwen.py",
+      "sha256": "ae27a0192a7b0fedc8a23d4f47e6584eb6bd103481168f7fc3a2b6e8a9f7b320"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\client.py",
+      "sha256": "60c44455f3bc805b380d9ea30def7523df4540e29f2565d06b9e6e4a0ed1f101"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\auth\\__init__.py",
+      "sha256": "32de0210158454319a15662b209d60eba1d9563684db508f0a0c28339bcfeddd"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\auth\\antigravity.py",
+      "sha256": "2d6ded594655ba4910766aae89a243df152050cf30fef8dad8aac98d16d97b35"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\auth\\manager.py",
+      "sha256": "48184856c903d7bae297ca56e7127a7b17237f0575a44b99d47bcad28338808c"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\auth\\quota.py",
+      "sha256": "5470c85934c689bcfea6ed705cc25e581bd0d60f3f9ba1dd0790892b099b127b"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\auth\\schema.py",
+      "sha256": "bab78761660b10e5367cb7cf54b5fb98a811e805adf718216dab3daefbec3327"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\langfuse_export.py",
+      "sha256": "1fee486e8c553c1eb56ce04c3f72b3579c0ec01236d393e17a1a6ebe987979b5"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\observation.py",
+      "sha256": "46d5b833484ac15875972c499094802c244d5fa647241e22aaca9715fc03e314"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\observation_export.py",
+      "sha256": "2ccb432fe1f09c97b5284821a70a8bbf98b3c091092ff6db4b1077e2761c9f0c"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_agent_llm\\observation_runtime.py",
+      "sha256": "38fc5bd2db9994c8109119b5d1548562e0258f39f53516b6ec4085bf6620d936"
+    },
+    {
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.worktrees\\interview-redesign\\src\\my_coding_agent\\paths.py",
+      "sha256": "454ffa4fcda0c9d1916a20a4831cbf476d3e1120695b3fbadb7d01856be96e38"
+    }
+  ],
+  "temperature": 0,
+  "top_k": 8
+}

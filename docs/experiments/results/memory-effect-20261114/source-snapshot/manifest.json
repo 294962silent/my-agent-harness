@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-11-14T12:51:44.386Z",
+  "purpose": "Exact historical source bytes for the completed Memory study, before the prepare-layout guard fix.",
+  "base_commit": "0b63386a4800a16611ed03fa3a831ff7952b23bb",
+  "base_remote_tracking_ref": "origin/codex/interview-harness-redesign",
+  "base_remote_tracking_tip": "0b63386a4800a16611ed03fa3a831ff7952b23bb",
+  "git_lookup_scope": "Local remote-tracking history was inspected; no network fetch was performed.",
+  "historical_study": {
+    "plan_sha256": "e45e2ca7d9453787136243a9779b438760400a5461161199683d5c96b1a39727",
+    "data_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+    "runner_sha256": "8792a9ae16985c20318521ee3382a7be67238f609c8a3628bc8bde0de8e57d05"
+  },
+  "source_pins": [
+    {
+      "file": "experiments/longmemeval/harness_ablation.py",
+      "sha256": "ee659b15837f56c7fff6ec65aa51959267f6a0a4e1c5686dcad73ecadd94553f",
+      "bytes": 21034,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:experiments/longmemeval/harness_ablation.py"
+    },
+    {
+      "file": "experiments/longmemeval/harness_corpus.py",
+      "sha256": "a2dd13eb523cf6b5464513228e9da1acdd9551cac16da92d60cae5d856eba650",
+      "bytes": 7479,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:experiments/longmemeval/harness_corpus.py"
+    },
+    {
+      "file": "experiments/longmemeval/harness_retrieval.py",
+      "sha256": "e3f8e735ddc47e4813598559eaf5cdc97985bf7a05f24ef87ab5a9e427e626d5",
+      "bytes": 11987,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:experiments/longmemeval/harness_retrieval.py"
+    },
+    {
+      "file": "experiments/longmemeval/harness_paid.py",
+      "sha256": "13cc4f0a2a357b24d7e71ab582575c65d4bb3f758a714a1937046996a2dc85b7",
+      "bytes": 15484,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:experiments/longmemeval/harness_paid.py"
+    },
+    {
+      "file": "experiments/benchmark_live/budget.py",
+      "sha256": "3b9ad53f0c621ec6db96b16b29b8f80db532dbfc256e14d816313fa780d144b1",
+      "bytes": 19258,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:experiments/benchmark_live/budget.py"
+    },
+    {
+      "file": "experiments/longmemeval/judge.py",
+      "sha256": "9b72fd2dcffbf68d48402c8d8e0ff50910fc44d0482e0265aba40847cd6b125e",
+      "bytes": 7609,
+      "source": "snapshot",
+      "snapshot_path": "files/experiments/longmemeval/judge.py",
+      "base_file_exists": true,
+      "base_sha256": "d36eb49b9f4e5cbed301ba09f0f6166556e29ed816869b990e93cca47fd2cd75",
+      "exact_blob_reachable_from_remote_refs": false
+    },
+    {
+      "file": "src/my_agent_core/memory.py",
+      "sha256": "b02ffe326e3d955c208f19ddaae76917271c547277a25cf49b08109ce4ab1d31",
+      "bytes": 23199,
+      "source": "snapshot",
+      "snapshot_path": "files/src/my_agent_core/memory.py",
+      "base_file_exists": true,
+      "base_sha256": "fcc9547483c6580858e77f16b8fe8a9e061e503e762861dee036835fa6ae54ae",
+      "exact_blob_reachable_from_remote_refs": false
+    },
+    {
+      "file": "src/my_agent_core/memory_index.py",
+      "sha256": "4cb338c5e008f0ab0f771b54b34a85004fee271c7a08db921cf19ebe69815d41",
+      "bytes": 18641,
+      "source": "snapshot",
+      "snapshot_path": "files/src/my_agent_core/memory_index.py",
+      "base_file_exists": true,
+      "base_sha256": "d1bbbb96bdea8e6564174d907b30a31a1eb08a4337d38273bb9950fa4ccc5ff0",
+      "exact_blob_reachable_from_remote_refs": false
+    },
+    {
+      "file": "src/my_agent_core/memory_mem0.py",
+      "sha256": "d6f0141514c50a2e2485dff59477d173cdeb2a6790f52626fda26cd1dd393e2c",
+      "bytes": 10241,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:src/my_agent_core/memory_mem0.py"
+    },
+    {
+      "file": "src/my_agent_core/memory_local.py",
+      "sha256": "b1e3cfd4ad696ea505cc0ba2f2f476d77623633e58bf4f5c0504774fb5228636",
+      "bytes": 14166,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:src/my_agent_core/memory_local.py"
+    },
+    {
+      "file": "src/my_agent_core/memory_safety.py",
+      "sha256": "00abbe66b85bcc83b487067ac6bf1939cd4052d796d60775c11a3ddee8485c31",
+      "bytes": 2001,
+      "source": "snapshot",
+      "snapshot_path": "files/src/my_agent_core/memory_safety.py",
+      "base_file_exists": true,
+      "base_sha256": "53e1580eed37d3b7600280c77c50d35aa3fd9a2a72aca029bcc7b25b4ad471ec",
+      "exact_blob_reachable_from_remote_refs": false
+    },
+    {
+      "file": "experiments/memory_validation/runner.py",
+      "sha256": "8792a9ae16985c20318521ee3382a7be67238f609c8a3628bc8bde0de8e57d05",
+      "bytes": 30614,
+      "source": "snapshot",
+      "snapshot_path": "files/experiments/memory_validation/runner.py",
+      "base_file_exists": false,
+      "exact_blob_reachable_from_remote_refs": false
+    },
+    {
+      "file": "src/my_agent_llm/client.py",
+      "sha256": "60c44455f3bc805b380d9ea30def7523df4540e29f2565d06b9e6e4a0ed1f101",
+      "bytes": 10800,
+      "source": "git_base",
+      "git_spec": "0b63386a4800a16611ed03fa3a831ff7952b23bb:src/my_agent_llm/client.py"
+    }
+  ],
+  "snapshotted_files": [
+    {
+      "original_path": "experiments/longmemeval/judge.py",
+      "snapshot_path": "files/experiments/longmemeval/judge.py",
+      "sha256": "9b72fd2dcffbf68d48402c8d8e0ff50910fc44d0482e0265aba40847cd6b125e",
+      "bytes": 7609,
+      "git_blob_sha1": "72ed896e383ed8567e1b4569e9f686ad82de92a9"
+    },
+    {
+      "original_path": "src/my_agent_core/memory.py",
+      "snapshot_path": "files/src/my_agent_core/memory.py",
+      "sha256": "b02ffe326e3d955c208f19ddaae76917271c547277a25cf49b08109ce4ab1d31",
+      "bytes": 23199,
+      "git_blob_sha1": "dc2fb129608a0b7d6d0a67dcdca1c9ba57e10502"
+    },
+    {
+      "original_path": "src/my_agent_core/memory_index.py",
+      "snapshot_path": "files/src/my_agent_core/memory_index.py",
+      "sha256": "4cb338c5e008f0ab0f771b54b34a85004fee271c7a08db921cf19ebe69815d41",
+      "bytes": 18641,
+      "git_blob_sha1": "b7257bff3e5a4a600326f51e1faadfba8b7030f8"
+    },
+    {
+      "original_path": "src/my_agent_core/memory_safety.py",
+      "snapshot_path": "files/src/my_agent_core/memory_safety.py",
+      "sha256": "00abbe66b85bcc83b487067ac6bf1939cd4052d796d60775c11a3ddee8485c31",
+      "bytes": 2001,
+      "git_blob_sha1": "159445fe76229a00fd830e63d70f87905a16f1c9"
+    },
+    {
+      "original_path": "experiments/memory_validation/runner.py",
+      "snapshot_path": "files/experiments/memory_validation/runner.py",
+      "sha256": "8792a9ae16985c20318521ee3382a7be67238f609c8a3628bc8bde0de8e57d05",
+      "bytes": 30614,
+      "git_blob_sha1": "adc0fa17de6bec55ffa7698ea98b9c4a0ab4b179"
+    }
+  ],
+  "privacy": {
+    "source_only": true,
+    "raw_questions": false,
+    "raw_histories": false,
+    "answers": false,
+    "gold": false,
+    "auth_files": false,
+    "credentials": false
+  },
+  "limitations": [
+    "Historical runner intentionally retains the then-existing ledger layout bug; current runner has the separately tested post-study guard.",
+    "This source archive does not contain private datasets, host references, answer records, environment authentication or a credential bridge.",
+    "Inspecting/restoring source is free; paid reproduction needs an explicitly budgeted new study and valid data/model inputs."
+  ]
+}

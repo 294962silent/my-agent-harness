@@ -1,0 +1,9 @@
+{
+  "instance_id": "pytest-dev__pytest-5221",
+  "repo": "pytest-dev/pytest",
+  "base_commit": "4a2fdce62b73944030cff9b3e52862868ca9584d",
+  "version": "4.4",
+  "environment_setup_commit": "4ccaa987d47566e3907f2f74167c4ab7997f622f",
+  "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221:latest",
+  "problem_statement": "Display fixture scope with `pytest --fixtures`\nIt would be useful to show fixture scopes with `pytest --fixtures`; currently the only way to learn the scope of a fixture is look at the docs (when that is documented) or at the source code.\n"
+}

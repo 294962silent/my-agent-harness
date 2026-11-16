@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-11-14T13:34:54.587Z",
+  "project": {
+    "id": "cmwg5sagt00ksad0j6au0463n",
+    "name": "My Project",
+    "base_url": "https://cloud.langfuse.com"
+  },
+  "sdk": {
+    "langfuse": "5.2.0",
+    "opentelemetry": "1.45.2",
+    "upgraded": false
+  },
+  "verification_kind": "Two new real provider requests; no historical backfill",
+  "probes": [
+    {
+      "kind": "existing_runtime_direct_attachment",
+      "root_id": "langfuse-live-verification-20261114-ds2-v1",
+      "trace_id": "6949168683e670ee30a08ec971270e7c",
+      "trace_url": "https://cloud.langfuse.com/project/cmwg5sagt00ksad0j6au0463n/traces/6949168683e670ee30a08ec971270e7c",
+      "session_id": null,
+      "model": "deepseek-v4.1-flash",
+      "usage": {
+        "prompt_tokens": 38,
+        "completion_tokens": 19,
+        "total_tokens": 57
+      },
+      "ledger": {
+        "requests": 1,
+        "used_tokens": 57,
+        "held_tokens": 0,
+        "unknown_or_inflight": false
+      },
+      "close": {
+        "runtime_close_complete": true,
+        "export_errors": 0,
+        "close_errors": 0,
+        "dropped": 0,
+        "runtime_alive_after_close": false,
+        "llm_clients_closed": true
+      },
+      "remote_http_status": 200,
+      "remote_observation_type": "GENERATION",
+      "remote_usage_matches": true,
+      "root_independent_readback": true
+    },
+    {
+      "kind": "reusable_experiment_owner_cli",
+      "root_id": "langfuse-owner-live-20261114-probe-v1",
+      "campaign_id": "langfuse-owner-live-20261114",
+      "trace_id": "a6249bf9c98cadede781b034e58ea58d",
+      "trace_url": "https://cloud.langfuse.com/project/cmwg5sagt00ksad0j6au0463n/traces/a6249bf9c98cadede781b034e58ea58d",
+      "session_id": "langfuse-owner-live-20261114",
+      "safe_metadata": {
+        "campaign": "langfuse-owner-live-20261114",
+        "arm": "probe",
+        "stage": "probe",
+        "task_id": "live_validation"
+      },
+      "model": "deepseek-v4.1-flash",
+      "usage": {
+        "prompt_tokens": 38,
+        "completion_tokens": 18,
+        "total_tokens": 56
+      },
+      "ledger": {
+        "requests": 1,
+        "used_tokens": 56,
+        "held_tokens": 0,
+        "unknown_or_inflight": false
+      },
+      "close": {
+        "runtime_close_complete": true,
+        "export_errors": 0,
+        "close_errors": 0,
+        "dropped": 0,
+        "runtime_alive_after_close": false,
+        "llm_clients_closed": true
+      },
+      "source_sha256": {
+        "owner": "0a6d28723ed969889f57f2bf76d222b342664f29fceb9487d8a321d9fa12236c",
+        "probe": "0493de88ebc01d2cffd8b5f4f9769bf223afc7278042d95384629a2f15dbc643",
+        "budget": "3b9ad53f0c621ec6db96b16b29b8f80db532dbfc256e14d816313fa780d144b1"
+      },
+      "remote_readback": {
+        "http_status": 200,
+        "observations": 1,
+        "project_matches": true,
+        "trace_matches": true,
+        "model_matches": true,
+        "session_matches": true,
+        "usage_matches": true,
+        "metadata_matches": true,
+        "total_cost": null
+      },
+      "remote_observation": {
+        "id": "5f311c2e7d0cc3b4",
+        "name": "llm.experiment_probe",
+        "type": "GENERATION",
+        "startTime": "2026-11-14T13:32:55.538Z",
+        "endTime": "2026-11-14T13:32:58.642Z",
+        "environment": "default",
+        "sessionId": "langfuse-owner-live-20261114",
+        "usageDetails": {
+          "output": 18,
+          "total": 56,
+          "input": 38
+        }
+      }
+    }
+  ],
+  "totals": {
+    "requests": 2,
+    "prompt_tokens": 76,
+    "completion_tokens": 37,
+    "total_tokens": 113,
+    "held_tokens": 0,
+    "unknown_or_inflight": false,
+    "provider_retries": 0,
+    "monetary_cost_usd": null
+  },
+  "offline_validation": {
+    "command": "uv run --no-sync pytest -q tests/experiments/test_experiment_observation.py tests/integrations/test_langfuse_sdk.py tests/llm/test_observation_runtime.py",
+    "passed": 17,
+    "exit_code": 0,
+    "ruff": "All checks passed!",
+    "new_owner_tests": 10
+  },
+  "scope": {
+    "global_observation_enabled": true,
+    "other_global_settings_preserved": true,
+    "frozen_memory_and_rsi_sources_modified": false,
+    "old_memory_requests_cloud_traced": false,
+    "already_run_rsi_requests_cloud_traced": false,
+    "raw_questions_history_gold_exported": false,
+    "application_prompt_or_response_exported": false,
+    "credential_values_in_this_receipt": false,
+    "multi_turn_or_multi_trace_session_grouping_live_verified": false
+  },
+  "limitations": [
+    "A single generation with sessionId was remotely verified; multi-turn and multiple-trace session grouping were not exercised.",
+    "Metadata-only tracing omits inputs/outputs, so prompt replay and content-based cloud evaluation are unavailable.",
+    "Remote totalCost is null; provider token usage is verified, monetary cost is unavailable.",
+    "Global observation settings alone do not retrofit the frozen standalone Memory entry or already running RSI jobs."
+  ],
+  "official_docs": [
+    {
+      "url": "https://langfuse.com/docs/observability/get-started.md",
+      "http_status": 200,
+      "sha256": "661a790d09a144cac8bbfdb59582322b438142eaf5e909f3a7c529c5cec3000a"
+    },
+    {
+      "url": "https://langfuse.com/docs/observability/best-practices.md",
+      "http_status": 200,
+      "sha256": "1723a68481ed421337b8dd94800f9b79f36383963fd78f335078351a32642395"
+    },
+    {
+      "url": "https://langfuse.com/docs/observability/features/sessions.md",
+      "http_status": 200,
+      "sha256": "0276b67236836ae3d1b8b3fbdb088cdba2c7a06491f540054b4551ea69a99f4c"
+    }
+  ]
+}

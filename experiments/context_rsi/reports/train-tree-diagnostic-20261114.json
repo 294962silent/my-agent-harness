@@ -1,0 +1,339 @@
+{
+  "kind": "readonly_train_tree_numeric_diagnostic",
+  "audit_model_calls": 0,
+  "audit_sdk_replays": 0,
+  "train_tree_count": 3,
+  "source_hashes": {
+    "projection_manifest": "23f8e058edbe722da1d0a548444adea47489290c86869299b17bfa46934a06b8",
+    "sdk_return": "cae5d6746b93c24c72ba100eb9fdc01114f77c559c7241d0dd468042f59a6116",
+    "evaluations": "96c9419079b8ff160594959df0a30cd701ddc3e992c0273ed966ccd2ab0c3480"
+  },
+  "train_trees": [
+    {
+      "task_id": "HumanEval/7",
+      "trace_sha256": "bcfc87aa0319fbd921745b3f04bc8fbe07a76be66f696c86ccc313027935994a",
+      "baseline_score": 0.0,
+      "nodes": [
+        {
+          "id": "b0_a0",
+          "branch": 0,
+          "attempt": 0,
+          "score": 1.0
+        },
+        {
+          "id": "b1_a0",
+          "branch": 1,
+          "attempt": 0,
+          "score": 1.0
+        },
+        {
+          "id": "b0_a1",
+          "branch": 0,
+          "attempt": 1,
+          "score": 1.0
+        },
+        {
+          "id": "b1_a1",
+          "branch": 1,
+          "attempt": 1,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "task_id": "HumanEval/11",
+      "trace_sha256": "2b72a87cdabf88b24bc5a3acf5f45befa284ffa93717bcb4d4a3914d885dd39c",
+      "baseline_score": 0.0,
+      "nodes": [
+        {
+          "id": "b0_a0",
+          "branch": 0,
+          "attempt": 0,
+          "score": 1.0
+        },
+        {
+          "id": "b1_a0",
+          "branch": 1,
+          "attempt": 0,
+          "score": 1.0
+        },
+        {
+          "id": "b0_a1",
+          "branch": 0,
+          "attempt": 1,
+          "score": 1.0
+        },
+        {
+          "id": "b1_a1",
+          "branch": 1,
+          "attempt": 1,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "task_id": "HumanEval/27",
+      "trace_sha256": "c0870693539f170fc64b2aa85753481e051e27f7cadf5304b30c5e0bd9867d46",
+      "baseline_score": 0.0,
+      "nodes": [
+        {
+          "id": "b0_a0",
+          "branch": 0,
+          "attempt": 0,
+          "score": 1.0
+        },
+        {
+          "id": "b1_a0",
+          "branch": 1,
+          "attempt": 0,
+          "score": 1.0
+        },
+        {
+          "id": "b0_a1",
+          "branch": 0,
+          "attempt": 1,
+          "score": 1.0
+        },
+        {
+          "id": "b1_a1",
+          "branch": 1,
+          "attempt": 1,
+          "score": 1.0
+        }
+      ]
+    }
+  ],
+  "initial_task_baseline_histogram": {
+    "0.0": 3
+  },
+  "recorded_node_score_histogram": {
+    "1.0": 12
+  },
+  "train_replay_leaves": [
+    {
+      "role": "baseline",
+      "budget_limit": 1,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "baseline",
+      "budget_limit": 2,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "baseline",
+      "budget_limit": 4,
+      "actual_replay_actions": [
+        4,
+        4,
+        4
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c00",
+      "budget_limit": 1,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c00",
+      "budget_limit": 2,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c00",
+      "budget_limit": 4,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c01",
+      "budget_limit": 1,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c01",
+      "budget_limit": 2,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c01",
+      "budget_limit": 4,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c02",
+      "budget_limit": 1,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c02",
+      "budget_limit": 2,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c02",
+      "budget_limit": 4,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c03",
+      "budget_limit": 1,
+      "actual_replay_actions": [
+        1,
+        1,
+        1
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c03",
+      "budget_limit": 2,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "role": "c03",
+      "budget_limit": 4,
+      "actual_replay_actions": [
+        2,
+        2,
+        2
+      ],
+      "best_scores": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
+  "train_scores": {
+    "baseline": 1.0,
+    "c00": 1.0,
+    "c01": 1.0,
+    "c02": 1.0,
+    "c03": 1.0
+  },
+  "selected": {
+    "parameters": null,
+    "policy_hash": "f46ca7adbe15280bc7ec375255bee72fd0d5f55cb237e672ce05b8918d6aecc6",
+    "role": "baseline"
+  },
+  "tie_rule": "score_desc,fixed_reference,width_asc,depth_asc",
+  "diagnosis": "All 12 recorded discovery nodes score 1 while the 3 source baselines score 0. All 45 training replay leaves best=1; the recorded score objective saturates at the first action. Fixed-reference tie precedence selects SDK baseline, not evidence that candidates cost more. c00 uses fewer offline actions at limits 2/4, but the selection objective does not reward that saving.",
+  "scope": "SDK baseline is the full-shape reference policy, not the zero-scoring source prompt stub. Replay actions are not real LLM requests/tokens. No task text/code/gold/final content analyzed or output; selected strategy remains unchanged."
+}

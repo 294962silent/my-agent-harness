@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-12T09:58:58.054330+00:00",
+  "git_sha": "1f150e1a433c2b31ee83c8a2d11300e4a1fc3548",
+  "dirty_worktree": true,
+  "source_sha256": "19d94923b9843545da609de18225815c71e2490e1f3360db98b3fe359d8cdfd7",
+  "source_hash_scope": [
+    "src/**/*.py",
+    "experiments/harness_eval/**/*.py",
+    "tests/experiments/**/*.py"
+  ],
+  "python": "3.13.13 (main, Apr 14 2026, 14:30:19) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "seed": 23,
+  "config": {
+    "mode": "offline",
+    "suites": [
+      "tools",
+      "session",
+      "context",
+      "memory",
+      "permission",
+      "runtime",
+      "observation",
+      "model"
+    ],
+    "repeats": 5
+  },
+  "license_files": [
+    "LICENSE"
+  ],
+  "fixture_license": "Synthetic project-authored fixtures; no external benchmark dataset.",
+  "provider_requests": 0,
+  "tokens": null,
+  "cache": null,
+  "quality": null,
+  "source_sha256_after_run": "19d94923b9843545da609de18225815c71e2490e1f3360db98b3fe359d8cdfd7",
+  "source_changed_during_run": false
+}

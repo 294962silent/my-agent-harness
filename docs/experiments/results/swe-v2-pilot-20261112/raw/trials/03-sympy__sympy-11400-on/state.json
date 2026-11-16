@@ -1,0 +1,37 @@
+{
+  "plan_sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+  "run_id": "8c99e89e19365f7895c3ad04d498a4a1",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/03-sympy__sympy-11400-on/agent/.session.jsonl.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/aa6eadb4ad03c157/66ec51e228ff67c934ef2efbf9afbbc9.json",
+      "sha256": "f10d818338aa886aa9fcac028433a4f00b88b5765370bcaeb528937bf35e17db",
+      "bytes": 427
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/03-sympy__sympy-11400-on/agent/artifacts/.my_agent_core/artifacts/aa6eadb4ad03c157/66ec51e228ff67c934ef2efbf9afbbc9.txt",
+      "sha256": "66ec51e228ff67c934ef2efbf9afbbc9d488f16d47eb5e15a6b4d7a93c081980",
+      "bytes": 7277
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/03-sympy__sympy-11400-on/agent/model_patch.jsonl",
+      "sha256": "125e0cc8b943e798cfe7dd25e292401d17c26815b8062cafd4e82a72a014907c",
+      "bytes": 102
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/03-sympy__sympy-11400-on/agent/run.json",
+      "sha256": "90759be871c82a1c57d92c40cfb325c85e733a1f5b7e2322d456033f88550cd9",
+      "bytes": 3339
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/03-sympy__sympy-11400-on/agent/session.jsonl",
+      "sha256": "3b0a89672fc8c76f48e09df305ff784020614ebfd3985e5cd3311467899aebc0",
+      "bytes": 41981
+    }
+  ]
+}

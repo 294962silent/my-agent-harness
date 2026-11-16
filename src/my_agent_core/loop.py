@@ -45,6 +45,7 @@ from my_agent_core.tool_history import (
     clean_provider_context,
 )
 from my_agent_core.artifacts import apply_previews as apply_artifact_previews  # pyright: ignore[reportMissingImports]
+from my_agent_core.run_lifecycle import RunBudget
 from my_agent_core.tools import ToolResult
 from my_agent_core.types import ContextManagerProtocol, LLMProtocol
 from my_agent_llm import Message, MessageContent, StreamChunk, ToolCall
@@ -135,40 +136,40 @@ async def _assistant_turn(
         events_yielded: list[Event] = []
         error_event: StreamErrorEvent | None = None
 
-        async for ev in event_stream:
-            if isinstance(ev, StreamErrorEvent):
-                error_event = ev
-                break
-            elif isinstance(ev, StreamStartEvent):
-                events_yielded.append(MessageStart(ev.partial))
-            elif isinstance(ev, TextDeltaEvent):
-                while events_yielded:
-                    yield events_yielded.pop(0)
-                yield MessageUpdate(message=ev.partial, chunk=StreamChunk(content=ev.delta))
-            elif isinstance(ev, ThinkingDeltaEvent):
-                while events_yielded:
-                    yield events_yielded.pop(0)
-                yield MessageUpdate(
-                    message=ev.partial,
-                    chunk=StreamChunk(content="", metadata={"reasoning_content": ev.delta}),
-                )
-            elif isinstance(ev, ToolCallDoneEvent):
-                while events_yielded:
-                    yield events_yielded.pop(0)
-                yield MessageUpdate(
-                    message=ev.partial,
-                    chunk=StreamChunk(content="", tool_calls=[ev.tool_call]),
-                )
-            elif isinstance(ev, StreamDoneEvent):
-                while events_yielded:
-                    yield events_yielded.pop(0)
-                if ev.usage and context_manager is not None:
-                    rec_fn = getattr(context_manager, "record_usage", None)
-                    if callable(rec_fn):
-                        with contextlib.suppress(Exception):
-                            rec_fn(ev.usage)
-                yield MessageEnd(ev.message)
-
+        async with contextlib.aclosing(event_stream):
+            async for ev in event_stream:
+                if isinstance(ev, StreamErrorEvent):
+                    error_event = ev
+                    break
+                elif isinstance(ev, StreamStartEvent):
+                    events_yielded.append(MessageStart(ev.partial))
+                elif isinstance(ev, TextDeltaEvent):
+                    while events_yielded:
+                        yield events_yielded.pop(0)
+                    yield MessageUpdate(message=ev.partial, chunk=StreamChunk(content=ev.delta))
+                elif isinstance(ev, ThinkingDeltaEvent):
+                    while events_yielded:
+                        yield events_yielded.pop(0)
+                    yield MessageUpdate(
+                        message=ev.partial,
+                        chunk=StreamChunk(content="", metadata={"reasoning_content": ev.delta}),
+                    )
+                elif isinstance(ev, ToolCallDoneEvent):
+                    while events_yielded:
+                        yield events_yielded.pop(0)
+                    yield MessageUpdate(
+                        message=ev.partial,
+                        chunk=StreamChunk(content="", tool_calls=[ev.tool_call]),
+                    )
+                elif isinstance(ev, StreamDoneEvent):
+                    while events_yielded:
+                        yield events_yielded.pop(0)
+                    if ev.usage and context_manager is not None:
+                        rec_fn = getattr(context_manager, "record_usage", None)
+                        if callable(rec_fn):
+                            with contextlib.suppress(Exception):
+                                rec_fn(ev.usage)
+                    yield MessageEnd(ev.message)
         if error_event is not None:
             # 1. 用户主动取消信号触发，直接终止，绝不重试
             if signal is not None and signal.is_cancelled():
@@ -553,6 +554,7 @@ async def run_agent_loop(
     before_tool_call: (Callable[[ToolCallHook], Awaitable[HookResult | None] | HookResult | None] | None) = None,
     after_tool_call: (Callable[[ToolResultHook], Awaitable[HookResult | None] | HookResult | None] | None) = None,
     retry_policy: AutoRetryPolicy | None = None,
+    run_budget: RunBudget | None = None,
 ) -> AsyncIterator[Event]:
     """对标 Tau 的极简纯函数异步微内核，主状态机约 110 行。"""
     if isinstance(tools, ToolRegistry):
@@ -612,6 +614,8 @@ async def run_agent_loop(
         # 【内层循环】：微观 ReAct 迭代与 Steer 即时转向
         # ──────────────────────────────────────────────────────
         while has_more_tools or pending_messages:
+            if run_budget is not None:
+                run_budget.begin_turn()
             iteration += 1
 
             # 轮次开端：先注入并清空 pending_messages (Steering)
@@ -675,7 +679,7 @@ async def run_agent_loop(
 
             # 委托模型车间
             assistant: Message | None = None
-            async for ev in _assistant_turn(
+            assistant_stream = _assistant_turn(
                 llm=llm,
                 view=view,
                 tool_schemas=registry.get_schemas(),
@@ -683,10 +687,12 @@ async def run_agent_loop(
                 signal=signal,
                 context_manager=context_manager,
                 retry_policy=retry_policy,
-            ):
-                yield ev
-                if isinstance(ev, MessageEnd):
-                    assistant = ev.message
+            )
+            async with contextlib.aclosing(assistant_stream):
+                async for ev in assistant_stream:
+                    yield ev
+                    if isinstance(ev, MessageEnd):
+                        assistant = ev.message
 
             if assistant is None:
                 assistant = Message(
@@ -738,12 +744,12 @@ async def run_agent_loop(
                         preserve_full_output=artifact_store is not None,
                     )
                 )
-                async for ev in tool_stream:
-                    yield ev
-                    if isinstance(ev, MessageEnd) and ev.message.role == "tool":
-                        tool_results.append(ev.message)
-                        messages.append(ev.message)
-
+                async with contextlib.aclosing(tool_stream):
+                    async for ev in tool_stream:
+                        yield ev
+                        if isinstance(ev, MessageEnd) and ev.message.role == "tool":
+                            tool_results.append(ev.message)
+                            messages.append(ev.message)
                 # 阶段 7: 批量优雅熔断判定（any 语义）
                 terminating_obs = [m.text_content for m in tool_results if (m.metadata or {}).get("terminate")]
                 if terminating_obs:

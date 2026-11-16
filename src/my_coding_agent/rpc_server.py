@@ -352,12 +352,14 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         )
         self._permission_gate = gate
         skill_dirs = get_all_skill_dirs(workspace_path, paths)
+        await self._close_agent_for_replacement()
         self.agent = CodingAgent(
             workspace=workspace_path,
             llm=llm,
             session=target_session,
             permission_gate=gate,
             skill_dirs=skill_dirs,
+            **self._integration_options(),
         )
 
         if initial_name := params.get("name"):
@@ -566,11 +568,17 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
         if self.tracer:
             self.tracer.close()
             self.tracer = None
-        if self.agent and hasattr(self.agent, "close_mcp"):
-            res = self.agent.close_mcp()
+        close_complete = True
+        if self.agent and (hasattr(self.agent, "aclose") or hasattr(self.agent, "close_mcp")):
+            close = getattr(self.agent, "aclose", None) or self.agent.close_mcp
+            res = close()
             if inspect.isawaitable(res):
-                await res
-        return self.send_response(req_id, result={"status": "ok"})
+                res = await res
+            close_complete = res is not False
+        return self.send_response(req_id, result={
+            "status": "ok" if close_complete else "closing",
+            "close_status": getattr(self.agent, "close_status", {}) if self.agent else {},
+        })
 
     async def handle_request(self, req: dict[str, Any]) -> dict[str, Any]:
         """分发并处理单个 RPC 请求。"""

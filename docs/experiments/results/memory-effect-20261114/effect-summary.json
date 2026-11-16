@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "reported_at_utc": "2026-11-14T12:21:09.777Z",
+  "protocol": "memory-effect-v1-disjoint12-bge-cpu",
+  "campaign_id": "memory-effect-v1-disjoint12-bge-cpu",
+  "scientific_selection": {
+    "dataset": "LongMemEval cleaned",
+    "source_revision": "98d7416c24c778c2fee6e6f3006e7a073259d48f",
+    "source_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+    "source_bytes": 277383467,
+    "source_license": "MIT",
+    "language": "original_english",
+    "questions": 12,
+    "types": 6,
+    "per_type": 2,
+    "seed": 24,
+    "excluded_old_questions": 30,
+    "overlap_with_old_sample": 0
+  },
+  "model": {
+    "name": "deepseek-v4.1-flash",
+    "provider": "openai",
+    "temperature": 0,
+    "max_output_tokens": 1024,
+    "timeout_seconds": 180,
+    "max_retries": 0,
+    "judge_template": "official LongMemEval prompt",
+    "judge_model_status": "nonofficial DeepSeek model",
+    "blind_to_arm": true
+  },
+  "retrieval_protocol": {
+    "arms": [
+      "none",
+      "lexical",
+      "mem0"
+    ],
+    "chunk_chars": 800,
+    "top_k_chunks": 8,
+    "budget_chars": 6000,
+    "encoder": "BAAI/bge-small-zh-v1.5",
+    "encoder_revision": "46fbe35fd4374a00fee7de77dfddaeb6dd6a2c59",
+    "encoder_manifest_sha256": "03283f4998f67e65623a88a408716bd8e8f22af9753c4c3132c28e3e59a6ab42",
+    "dimensions": 512,
+    "threads": 2,
+    "device": "CPU",
+    "network_boundary": "linux_seccomp_no_non_unix_socket_or_connect",
+    "valid_rows": 36,
+    "close_complete": 36,
+    "semantic_fallback_used": false,
+    "answer_block_evidence_recall": "unavailable_no_annotated_answer_chunks"
+  },
+  "provenance": {
+    "original_plan_sha256": "cc2a53c54bceb9e78e3f2ed4634bd029725e733db0d705d5fca4be3a1a671ee9",
+    "amended_plan_sha256": "e45e2ca7d9453787136243a9779b438760400a5461161199683d5c96b1a39727",
+    "changed_plan_fields": [
+      "ledger_path"
+    ],
+    "scientific_pins_unchanged": true,
+    "original_retrieval_manifest_sha256": "2095a80b3ef8742f3d4804ab22898e7e2e1d0c1ad3ae2ba503126588873cb624",
+    "amended_retrieval_manifest_sha256": "53a312bd80cb4b9188822f68d6deaa006916a21376c56c051d5f1326db5f4b9d",
+    "answer_manifest_sha256": "fdfecaa75c1f11c03781aa8d309f74ad083361980e8ae9ae11fbe564d0710c76",
+    "judge_manifest_sha256": "d11b9fb2257a79f84815b6d1015bb3ef0bd2f93e852352dd5b08814a05918c3c",
+    "ledger_sha256": "162763f701aa072c48a1591033663d9ed7fac4323795656c2c6669fdeb1be929",
+    "reused_result_state_files": 24,
+    "reindexed": false,
+    "prior_five_completed_results_unchanged": true
+  },
+  "budget": {
+    "actual_requests": 72,
+    "settled_requests": 72,
+    "status_counts": {
+      "ok": 72
+    },
+    "actual_prompt_tokens": 36211,
+    "actual_completion_tokens": 5641,
+    "actual_total_tokens": 41852,
+    "held_requests": 0,
+    "campaign_blocked": false,
+    "max_requests": 72,
+    "max_actual_tokens": 3000000,
+    "cost_usd": null,
+    "cost_reason": "Provider billing not verified; legacy USD30 ledger ceiling is a compatibility proxy."
+  },
+  "arms": {
+    "none": {
+      "expected": 12,
+      "answers_completed": 12,
+      "valid_judges": 12,
+      "correct": 4,
+      "accuracy_over_expected": 0.3333333333333333,
+      "unavailable_or_pending": 0,
+      "answer_length": 0,
+      "judge_length": 0,
+      "answer_latency": {
+        "count": 12,
+        "total_seconds": 40.82444710016716,
+        "mean_seconds": 3.4020372583472636,
+        "median_seconds": 3.4073985500144772
+      },
+      "judge_latency": {
+        "count": 12,
+        "total_seconds": 36.43828270008089,
+        "mean_seconds": 3.036523558340074,
+        "median_seconds": 2.782758500019554
+      },
+      "retrieval": {
+        "questions": 12,
+        "retrieval_valid": 12,
+        "close_complete": 12,
+        "session_labeled_nonabstention_questions": 8,
+        "mean_session_recall_at_8": 0,
+        "mean_session_mrr": 0,
+        "retrieval_total_seconds_mean": 0.00000383825000790002,
+        "retrieval_total_seconds_median": 0.0000037775000016893046,
+        "retrieval_total_seconds_sum": 0.00004605900009480024
+      }
+    },
+    "lexical": {
+      "expected": 12,
+      "answers_completed": 12,
+      "valid_judges": 12,
+      "correct": 11,
+      "accuracy_over_expected": 0.9166666666666666,
+      "unavailable_or_pending": 0,
+      "answer_length": 0,
+      "judge_length": 0,
+      "answer_latency": {
+        "count": 12,
+        "total_seconds": 50.58360860001994,
+        "mean_seconds": 4.215300716668328,
+        "median_seconds": 3.960604850028176
+      },
+      "judge_latency": {
+        "count": 12,
+        "total_seconds": 34.54316000023391,
+        "mean_seconds": 2.878596666686159,
+        "median_seconds": 2.5317831500142347
+      },
+      "retrieval": {
+        "questions": 12,
+        "retrieval_valid": 12,
+        "close_complete": 12,
+        "session_labeled_nonabstention_questions": 8,
+        "mean_session_recall_at_8": 0.8125,
+        "mean_session_mrr": 0.875,
+        "retrieval_total_seconds_mean": 4.329053163166679,
+        "retrieval_total_seconds_median": 4.293355989500016,
+        "retrieval_total_seconds_sum": 51.94863795800015
+      }
+    },
+    "mem0": {
+      "expected": 12,
+      "answers_completed": 12,
+      "valid_judges": 12,
+      "correct": 9,
+      "accuracy_over_expected": 0.75,
+      "unavailable_or_pending": 0,
+      "answer_length": 0,
+      "judge_length": 0,
+      "answer_latency": {
+        "count": 12,
+        "total_seconds": 46.695831899822224,
+        "mean_seconds": 3.891319324985185,
+        "median_seconds": 3.817674599966267
+      },
+      "judge_latency": {
+        "count": 12,
+        "total_seconds": 33.849714699957985,
+        "mean_seconds": 2.8208095583298323,
+        "median_seconds": 2.3998042999883182
+      },
+      "retrieval": {
+        "questions": 12,
+        "retrieval_valid": 12,
+        "close_complete": 12,
+        "session_labeled_nonabstention_questions": 8,
+        "mean_session_recall_at_8": 0.84375,
+        "mean_session_mrr": 0.8125,
+        "retrieval_total_seconds_mean": 99.93189676716666,
+        "retrieval_total_seconds_median": 96.830004591,
+        "retrieval_total_seconds_sum": 1199.182761206
+      }
+    }
+  },
+  "paired_comparisons": {
+    "lexical_vs_none": {
+      "common_valid": 12,
+      "a_correct_b_incorrect": 7,
+      "a_incorrect_b_correct": 0,
+      "both_correct": 4,
+      "both_incorrect": 1,
+      "correct_count_delta_over_expected": 0.5833333333333333
+    },
+    "mem0_vs_none": {
+      "common_valid": 12,
+      "a_correct_b_incorrect": 5,
+      "a_incorrect_b_correct": 0,
+      "both_correct": 4,
+      "both_incorrect": 3,
+      "correct_count_delta_over_expected": 0.4166666666666667
+    },
+    "mem0_vs_lexical": {
+      "common_valid": 12,
+      "a_correct_b_incorrect": 0,
+      "a_incorrect_b_correct": 2,
+      "both_correct": 9,
+      "both_incorrect": 1,
+      "correct_count_delta_over_expected": -0.16666666666666663
+    }
+  },
+  "per_question_metadata": "effect-rows.jsonl",
+  "paired_metadata": "effect-pairs.json",
+  "definitions": {
+    "accuracy": "correct / 12 expected per arm; unavailable and length retain expected denominator",
+    "valid_judge": "exact yes/no; this run all36 valid",
+    "session_recall": "macro average over 8 nonabstention questions with official session labels; four abstention rows unavailable",
+    "answer_evidence": "No answer-bearing chunk labels. Session recall is not answer evidence recall.",
+    "cold_retrieval": "Per-question store/index/query/close elapsed time; includes cold initialization, not warm query latency",
+    "cost": "actual provider currency cost unavailable; historical USD30 ledger ceiling is a compatibility proxy"
+  },
+  "limitations": [
+    "Fresh balanced12-question sample; no general population or long engineering performance claim.",
+    "Chinese BGE encoder evaluated on original English histories; fixed before run, no tuning or model swap.",
+    "DeepSeek model judges official template outputs; not official LongMemEval scorer results.",
+    "No retries or new questions were added; all72 requests settled; no invalid or length cases in this run.",
+    "Mem0 session recall higher than lexical in this sample while accuracy lower; no semantic memory quality advantage demonstrated."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "files": {
+    "failed-extract-readback.json": {
+      "bytes": 686,
+      "sha256": "0cea32c2861cd54bace7f9db039b08441261be2a909e422487d03f819c1dc180"
+    },
+    "ledger.json": {
+      "bytes": 1210,
+      "sha256": "34c2897d698bd881412213c163acf27fd57bd7dc715a6273117c1a6b3172e573"
+    },
+    "run/STOPPED.json": {
+      "bytes": 167,
+      "sha256": "6f5d82c0df51497be025e9e73a5e7082439a2dd42d3caa63e8b9f75e538de14a"
+    },
+    "run/private/calls/extract.s_067187554733c33d1a8f04a4.json": {
+      "bytes": 364,
+      "sha256": "b6ceddf0aa5b278384f4fa1e27be46d513f89014c474a703171fa42352d507ef"
+    },
+    "run/reports/summary.json": {
+      "bytes": 5286,
+      "sha256": "5a9a212924a3489f53584b2e0a0fa1b84f93ec0e98eaa22b9cfbe26476028d68"
+    }
+  },
+  "protocol": "locomo-multisession-four-arm-v1",
+  "status": "preserved_not_replayed"
+}

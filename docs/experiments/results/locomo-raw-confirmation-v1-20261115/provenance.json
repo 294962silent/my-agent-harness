@@ -1,0 +1,281 @@
+{
+  "anchors": {
+    "ledger_sha256": "05a504179bf55e0e6f3b25a4f32c5e4b3296d2ac3a81af8b3fdda91bc66a43cb",
+    "plan_manifest_sha256": "1fe76e7e625782b7f6e478ef61cfd7d671d5cd3065ec3031d486cb70a0339ddd",
+    "plan_sha256": "6d4a41d19308526ae91dfa6bbc42cc3a972ec7084ce6b2def6b6753d970f4cbe",
+    "ready_sha256": "b236d0eff5ea614b5fef333dfa43dd603364bfea349fa090ad9c67585159300a",
+    "safe_rows_sha256": "0421c3e88b83e72f2a3fd33fceef11975e4bd61b22e61330ea9ddd5697c4a49f",
+    "summary_sha256": "4705e048e26cdab83a89bf0922648bad62b5edd773ed2855b01032965a2785c0"
+  },
+  "arms": [
+    "raw_lexical",
+    "raw_semantic_qwen",
+    "raw_hybrid_rrf"
+  ],
+  "base_url": "https://opencode.ai/inference/go/openai/v1",
+  "campaign_id": "memory-locomo-raw-confirmation-20261115-v1",
+  "counts": {
+    "answer_calls": 72,
+    "categories": {
+      "1": 8,
+      "2": 8,
+      "4": 8
+    },
+    "conversations": 2,
+    "expected_model_calls": 144,
+    "judge_calls": 72,
+    "questions": 24,
+    "raw_chunks": 274,
+    "retrieval_arm_questions": 72,
+    "sessions": 48
+  },
+  "data": [
+    {
+      "bytes": 96654,
+      "path": "conversations/conv-30.json",
+      "sha256": "dbafb527c5b919f5f9565929824aa6f2e001eed8fc59fc1ec7df1df9fbcda8bb"
+    },
+    {
+      "bytes": 185068,
+      "path": "conversations/conv-43.json",
+      "sha256": "2c1cb7bf2bdc487d46c7d51844a1293724a4819aeadd22313c48a2974a3d334d"
+    }
+  ],
+  "embedding": {
+    "batch_size": 1,
+    "cuda_visible_devices": "0",
+    "dimensions": 1024,
+    "manifest": {
+      "bytes": 2925,
+      "path": "C:\\Users\\MLL\\.cache\\my-agent-harness\\models\\qwen3-embedding-0.6b\\97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3\\harness-model-manifest.json",
+      "sha256": "05bec2826e2d492f4146087960647fea98a694204ab14662dc0a96a800af8b3d"
+    },
+    "max_length": 4096,
+    "network": "WSL seccomp no non-unix socket/connect",
+    "python_executable": "/home/mll/.cache/my-agent-bench/qwen3-probe-venv/bin/python",
+    "repo": "Qwen/Qwen3-Embedding-0.6B",
+    "request_timeout": 180,
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "startup_timeout": 240,
+    "wsl_distribution": "Ubuntu-20.04"
+  },
+  "execution_hardware": {
+    "conv-30": {
+      "batch_size": 1,
+      "compute_capability": [
+        12,
+        0
+      ],
+      "credentials_in_worker": false,
+      "cuda_device_total_bytes": 8546484224,
+      "cuda_visible_devices": "0",
+      "device": "cuda:0",
+      "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "dimensions": 1024,
+      "launcher_pid": 48640,
+      "max_length": 4096,
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "network_guard": "linux_seccomp_no_non_unix_socket_or_connect",
+      "normalized": true,
+      "pid": 843,
+      "profile": "local_qwen_gpu_wsl_stdio",
+      "ready": true,
+      "torch_version": "2.8.0+cu128",
+      "worker_pid": 843
+    },
+    "conv-43": {
+      "batch_size": 1,
+      "compute_capability": [
+        12,
+        0
+      ],
+      "credentials_in_worker": false,
+      "cuda_device_total_bytes": 8546484224,
+      "cuda_visible_devices": "0",
+      "device": "cuda:0",
+      "device_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "dimensions": 1024,
+      "launcher_pid": 31384,
+      "max_length": 4096,
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+      "network_guard": "linux_seccomp_no_non_unix_socket_or_connect",
+      "normalized": true,
+      "pid": 937,
+      "profile": "local_qwen_gpu_wsl_stdio",
+      "ready": true,
+      "torch_version": "2.8.0+cu128",
+      "worker_pid": 937
+    }
+  },
+  "execution_hardware_note": "Host exposed one RTX 5060 as CUDA_VISIBLE_DEVICES=0; device 2 was unavailable. Model revision did not change.",
+  "first_two_readback": {
+    "attempts_per_trace": {
+      "confirmation.v1.answer.q_c2ac9bc074a3bbea8ee97f73.raw_lexical": 3,
+      "confirmation.v1.judge.q_c2ac9bc074a3bbea8ee97f73.raw_lexical": 3
+    },
+    "backoff": {
+      "initial_seconds": 1.0,
+      "kind": "exponential",
+      "max_seconds": 30.0,
+      "waits_seconds": [
+        1.0,
+        2.0
+      ]
+    },
+    "campaign": "memory-locomo-raw-confirmation-20261115-v1",
+    "distinct_traces": true,
+    "elapsed_seconds": 11.161244700022507,
+    "extra_model_requests": 0,
+    "model": "deepseek-v4.1-flash",
+    "one_observation_per_trace": true,
+    "project": "cmwg5sagt00ksad0j6au0463n",
+    "protocol": "locomo-raw-confirmation-v1",
+    "query_errors_per_trace": {},
+    "rows": [
+      {
+        "arm": "raw_lexical",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "131231f86b722fb4",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "confirmation.v1.answer.q_c2ac9bc074a3bbea8ee97f73.raw_lexical",
+        "session_id": "memory-locomo-raw-confirmation-20261115-v1",
+        "stage": "answer",
+        "task_id": "q_c2ac9bc074a3bbea8ee97f73",
+        "trace_id": "5b2c4cfebceed656cb96d5766b601b5c",
+        "usage_details": {
+          "input": 1783,
+          "output": 117,
+          "total": 1900
+        }
+      },
+      {
+        "arm": "raw_lexical",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "30b8af666a84a998",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "confirmation.v1.judge.q_c2ac9bc074a3bbea8ee97f73.raw_lexical",
+        "session_id": "memory-locomo-raw-confirmation-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_c2ac9bc074a3bbea8ee97f73",
+        "trace_id": "1ad9ae82d86e9f3553297f2663b4a010",
+        "usage_details": {
+          "input": 163,
+          "output": 95,
+          "total": 258
+        }
+      }
+    ],
+    "same_campaign_session": true,
+    "sample_count": 2,
+    "schema_version": 1,
+    "status": "verified",
+    "window_seconds": 180.0
+  },
+  "gold": {
+    "bytes": 6507,
+    "manifest_sha256": "797be88468a237ea36f635300924619db91fa35a832338f7ac0b2bf539a07759",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-confirmation-v1\\gold\\references.json",
+    "sha256": "92a19d57814f0fabca6b884e7f2fb098afce8a2d013bbb1108a62b0005860372"
+  },
+  "ledger_request_count": 144,
+  "max_retries": 0,
+  "model": "deepseek-v4.1-flash",
+  "output_caps": {
+    "answer": 1024,
+    "judge": 1024
+  },
+  "owner_close": {
+    "close_errors": 0,
+    "dropped": 0,
+    "export_errors": 0,
+    "llm_clients_closed": true,
+    "runtime_alive_after_close": false,
+    "runtime_close_complete": true
+  },
+  "preflight": {
+    "arm_questions": 72,
+    "candidate_count_per_arm": 8,
+    "embedding_invocations": 298,
+    "max_context_chars": 5981,
+    "paid_model_calls": 0,
+    "questions": 24,
+    "sha256": "5eed0e3aef8c1e7def362e5454719ac5955a42eb5dc0e9c98aa56dae8d5525d1"
+  },
+  "prompts": {
+    "answer_sha256": "6e6b760d17fe67582684187e4fc26b2cbb63114281b11d7c896e83de9b80b43c",
+    "judge_sha256": "8d861de234d83a87ee7b16e7a26646563035758483d1c9fa368f70c1dc71ea31"
+  },
+  "protocol": "locomo-raw-confirmation-v1",
+  "provider": "openai",
+  "ready": {
+    "campaign_id": "memory-locomo-raw-confirmation-20261115-v1",
+    "embedding_calls": 298,
+    "expected_model_calls": 144,
+    "frozen_at": "2026-11-15T02:41:42.940406+00:00",
+    "ledger_created": false,
+    "paid_calls": 0,
+    "plan_manifest_sha256": "1fe76e7e625782b7f6e478ef61cfd7d671d5cd3065ec3031d486cb70a0339ddd",
+    "plan_sha256": "6d4a41d19308526ae91dfa6bbc42cc3a972ec7084ce6b2def6b6753d970f4cbe",
+    "preflight_questions": 24,
+    "preflight_sha256": "5eed0e3aef8c1e7def362e5454719ac5955a42eb5dc0e9c98aa56dae8d5525d1",
+    "protocol": "locomo-raw-confirmation-v1",
+    "schema_version": 1,
+    "status": "ready"
+  },
+  "requests": {
+    "completion_tokens": 31824,
+    "latency": 704.2670433521271,
+    "prompt_tokens": 131070,
+    "requests": 144,
+    "total_tokens": 163278
+  },
+  "retrieval": {
+    "context_chars": 6000,
+    "hybrid": "RRF over lexical top-8 and semantic top-8; k=60; select top 8; key tie-break",
+    "lexical": "BM25 k1=1.5,b=0.75 as inherited; top 8 includes zero-overlap ties",
+    "raw_chunk_chars": 800,
+    "rrf_k": 60,
+    "semantic": "local Qwen dense search over the same raw chunks; top 8",
+    "top_k": 8
+  },
+  "schema_version": 1,
+  "selection": {
+    "conversations": [
+      "conv-30",
+      "conv-43"
+    ],
+    "excluded_conversations": [
+      "conv-41",
+      "conv-42",
+      "conv-47"
+    ],
+    "model_scores_used": false,
+    "rule": "metadata-only eligible conversation shuffle; four evidence-labeled QA per category",
+    "seed": 20261115,
+    "source_fields": [
+      "sample_id",
+      "qa.category",
+      "qa.evidence"
+    ]
+  },
+  "source": {
+    "bytes": 2805274,
+    "file": "data/locomo10.json",
+    "license": "CC BY-NC 4.0",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\data\\locomo-pinned\\data\\locomo10.json",
+    "repository": "snap-research/locomo",
+    "revision": "3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376",
+    "sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4"
+  },
+  "temperature": 0,
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 144,
+    "unknown_or_inflight": false,
+    "used_tokens": 163278
+  }
+}

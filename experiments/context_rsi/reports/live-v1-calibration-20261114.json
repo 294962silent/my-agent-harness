@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "audit_kind": "independent_readonly_real_train_budget_calibration_negative_result",
+  "campaign_id": "rsi-live-20261114-v1",
+  "trial_id": "collect-HumanEval-7-s23",
+  "task_id": "HumanEval/7",
+  "split": "train",
+  "artifact_sha256": {
+    "campaign": "ae83d915ead3f341c17d1c1b17b4ee295749070df65e1efcfaaeb6118723ad70",
+    "plan": "9c157bbe1de25fdd761a35aaa51e01ebe02462022b74f34c9db93c22e9b167fd",
+    "journal": "f4043df4c05c21309dd1456a2fa7ba79693068aa54ac974d4f1b45d846021ed9",
+    "runtime_result": "0d26bb7c09602bdaa093a2dc38f4df28db653025a38cafffb671e837a7699e4c",
+    "final_evaluation": "c08b4e52f5000b4b3e99439b8a345bef6c7b7c15c0ad36f3a765e828d8dfb069"
+  },
+  "integrity": {
+    "journal_hash_chain_valid": true,
+    "reservation_precedes_each_settlement": true,
+    "runtime_final_and_terminal_hashes_match": true,
+    "pending_requests": 0,
+    "unknown_requests": 0,
+    "held_tokens": 0,
+    "cleanup_error_count": 0,
+    "current_source_matches_v1_frozen_snapshot": false,
+    "current_source_mismatch_paths": [
+      "experiments/context_rsi/live_runner.py"
+    ],
+    "source_drift_scope": "Current source comparison is after v1 completed; requires a new campaign for subsequent dispatch and does not establish drift during v1 execution.",
+    "historical_ledger": {
+      "independent_readonly_hash_check": true,
+      "method": "local_SHA256",
+      "sha256": "495d9e656deccd64ff67ca5c4db9d4c391520700bd0bb672e8fad72a45018e3d",
+      "matches_frozen_reference": true,
+      "scope": "Content unchanged at audit time; no reconciliation or held reservation release."
+    }
+  },
+  "provider_provenance": {
+    "kind": "observed",
+    "client_class": "my_agent_llm.client.LLM",
+    "client_source_sha256": "60c44455f3bc805b380d9ea30def7523df4540e29f2565d06b9e6e4a0ed1f101",
+    "provider_class": "my_agent_llm.providers.openai.OpenAIProvider",
+    "provider_source_sha256": "e4debb68f6569e092b6d46536bbeb3fb22e17d21eaf3ac2c2bf285b68dae92c4",
+    "model": "deepseek-v4.1-flash",
+    "native_cache_edits": "not_sent",
+    "request_projection_supported": true
+  },
+  "usage": {
+    "calls": 4,
+    "input_tokens": 8139,
+    "output_tokens": 357,
+    "total_tokens": 8496,
+    "complete": true,
+    "currency": null,
+    "cost": null,
+    "authoritative_source": "Durably settled provider-normalized Response.usage, not reservations or an independently verified invoice.",
+    "per_request": [
+      {
+        "request_number": 1,
+        "status": "settled",
+        "provider_normalized_Response_usage": {
+          "completion_tokens": 76,
+          "prompt_tokens": 1830,
+          "total_tokens": 1906
+        },
+        "accounted_input_tokens": 1830,
+        "accounted_output_tokens": 76,
+        "accounted_total_tokens": 1906,
+        "cache_read_field_present": false
+      },
+      {
+        "request_number": 2,
+        "status": "settled",
+        "provider_normalized_Response_usage": {
+          "cache_read_tokens": 1792,
+          "completion_tokens": 39,
+          "prompt_tokens": 145,
+          "total_tokens": 1976
+        },
+        "accounted_input_tokens": 1937,
+        "accounted_output_tokens": 39,
+        "accounted_total_tokens": 1976,
+        "cache_read_field_present": true
+      },
+      {
+        "request_number": 3,
+        "status": "settled",
+        "provider_normalized_Response_usage": {
+          "cache_read_tokens": 1920,
+          "completion_tokens": 117,
+          "prompt_tokens": 156,
+          "total_tokens": 2193
+        },
+        "accounted_input_tokens": 2076,
+        "accounted_output_tokens": 117,
+        "accounted_total_tokens": 2193,
+        "cache_read_field_present": true
+      },
+      {
+        "request_number": 4,
+        "status": "settled",
+        "provider_normalized_Response_usage": {
+          "cache_read_tokens": 2048,
+          "completion_tokens": 125,
+          "prompt_tokens": 248,
+          "total_tokens": 2421
+        },
+        "accounted_input_tokens": 2296,
+        "accounted_output_tokens": 125,
+        "accounted_total_tokens": 2421,
+        "cache_read_field_present": true
+      }
+    ],
+    "cache_read_coverage": {
+      "field_present_requests": 3,
+      "requests": 4,
+      "known_tokens": 5760,
+      "complete_hit_rate": null,
+      "missing_field": "unavailable; never imputed as zero"
+    },
+    "cache_write_tokens": "unavailable",
+    "reasoning_tokens": "unavailable"
+  },
+  "observed_tool_actions": {
+    "bash": {
+      "distinct_calls": 1,
+      "event_counts": {
+        "ToolExecutionStart": 1,
+        "ToolExecutionUpdate": 2,
+        "ToolExecutionEnd": 1
+      }
+    },
+    "edit": {
+      "distinct_calls": 1,
+      "event_counts": {
+        "ToolExecutionStart": 1,
+        "ToolExecutionEnd": 1
+      }
+    },
+    "find": {
+      "distinct_calls": 1,
+      "event_counts": {
+        "ToolExecutionStart": 1,
+        "ToolExecutionEnd": 1
+      }
+    },
+    "ls": {
+      "distinct_calls": 1,
+      "event_counts": {
+        "ToolExecutionStart": 1,
+        "ToolExecutionEnd": 1
+      }
+    },
+    "read": {
+      "distinct_calls": 1,
+      "event_counts": {
+        "ToolExecutionStart": 1,
+        "ToolExecutionEnd": 1
+      }
+    }
+  },
+  "outcome": {
+    "child_iterations": 4,
+    "child_stop_reason": "budget_exhausted",
+    "runtime_status": "invalid_attempt",
+    "attempt_stage": "completed",
+    "attempt_valid": false,
+    "visible_evaluations": {
+      "baseline": {
+        "valid": true,
+        "score": 0.0
+      },
+      "attempt": {
+        "valid": true,
+        "score": 1.0,
+        "exit_code": 0,
+        "stdout_sha256": "b5fb0ccd26306ae82f250c226321ecb79f81d639f80143f1953730b2c9b68468",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "selected_candidate": null,
+    "selected_patch_sha256": null,
+    "final_evaluation": null,
+    "trace_created": false,
+    "valid_attempts": 0,
+    "invalid_attempts": 1,
+    "planned_attempts": 4,
+    "not_dispatched_attempts": 3,
+    "host_episode_status": "completed",
+    "agent_success": false,
+    "interpretation": "Visible score 1 does not override missing valid end_turn terminal. Host completion is not Agent task success; there is no selected solution or final-quality result."
+  },
+  "scope_and_decisions": {
+    "completed_slots": 1,
+    "registered_slots": 53,
+    "unrun_slots": 52,
+    "executed_test_split_slots": 0,
+    "parent_decision": "Preserve v1 calibration and stop 52 unrun slots; no alternate-ID retry.",
+    "next_campaign_required_before_any_test": {
+      "registration_status": "parent_decision_not_independently_verified_registered",
+      "attempt_max_turns": 12,
+      "max_requests": 64,
+      "max_tokens": 1000000,
+      "max_seconds": 1800,
+      "max_evaluations": 6
+    },
+    "not_a_four_arm_comparison": true,
+    "not_a_long_horizon_or_model_quality_result": true,
+    "audit_model_calls": 0,
+    "audit_extra_hidden_final_evaluations": 0
+  },
+  "disclosure": {
+    "prompt_response_candidate_code_final_tests_in_public_report": false,
+    "only_hashes_counts_types_statuses_and_provider_usage": true,
+    "isolation": "Trusted-host protocol separation, not OS sandbox or remote authenticity attestation."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "export_contract": "passed: plan/data/gold/answer SHA, 12 safe cases and 12 ledger rows revalidated",
+    "langfuse_readback": "passed: two distinct traces, one exact observation per trace, extra model requests 0",
+    "owner_close": "passed: dropped=0, export_errors=0, close_errors=0, runtime_alive_after_close=false",
+    "pytest": "30 passed",
+    "ruff": "passed",
+    "terminal_ledger": "12/12 ok; unknown_or_inflight=false"
+  },
+  "date": "2026-11-15",
+  "protocol": "locomo-judge-sensitivity-v1",
+  "status": "passed"
+}

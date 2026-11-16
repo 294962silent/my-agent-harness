@@ -1,0 +1,69 @@
+{
+  "actual_v3_counts": {
+    "answer": 120,
+    "extract": 94,
+    "judge": 120
+  },
+  "counts": {
+    "answer_calls": 120,
+    "dev_qa": 6,
+    "expected_model_calls": 332,
+    "extract_calls": 92,
+    "judge_calls": 120,
+    "sessions": 92,
+    "test_qa": 24
+  },
+  "embedding": {
+    "batch_size": 1,
+    "cuda_visible_devices": "0",
+    "dimensions": 1024,
+    "manifest": {
+      "bytes": 2925,
+      "path": "C:\\Users\\MLL\\.cache\\my-agent-harness\\models\\qwen3-embedding-0.6b\\97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3\\harness-model-manifest.json",
+      "sha256": "05bec2826e2d492f4146087960647fea98a694204ab14662dc0a96a800af8b3d"
+    },
+    "max_length": 4096,
+    "model_dir": "C:\\Users\\MLL\\.cache\\my-agent-harness\\models\\qwen3-embedding-0.6b\\97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "network": "WSL seccomp no non-unix socket/connect",
+    "python_executable": "/home/mll/.cache/my-agent-bench/qwen3-probe-venv/bin/python",
+    "repo": "Qwen/Qwen3-Embedding-0.6B",
+    "request_timeout": 180,
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "startup_timeout": 240,
+    "wsl_distribution": "Ubuntu-20.04"
+  },
+  "gold_sha256": "3c91283cc2fda4bb21ce5c363712f50c6363d9f2be0fffee0734c629308e0abf",
+  "model": "deepseek-v4.1-flash",
+  "plan_manifest_sha256": "1d55c514bf8dd5ea74c1d9e2b183a8085edcf470a0dc509fb5fa45e2c50519ab",
+  "plan_sha256": "716d25917f028793ed4a4f1263dc5aa03287fa7b0ceb6973eb975ad8a1c6bc1b",
+  "prior_ledgers": [
+    {
+      "bytes": 1210,
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-study\\ledger.json",
+      "sha256": "34c2897d698bd881412213c163acf27fd57bd7dc715a6273117c1a6b3172e573"
+    },
+    {
+      "bytes": 2105,
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v2\\ledger.json",
+      "sha256": "12d04ce4fb22e3080e904cee7f0424cb3cd863ea092d7b03a1df899e1fd157dc"
+    },
+    {
+      "bytes": 9348,
+      "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\memory-locomo-v3\\ledger.json",
+      "sha256": "d1a7d2d97d6ec0137cd856f92a9c34e85ca49d6d8aae3771fff019d68c5584dc"
+    }
+  ],
+  "protocol": "locomo-multisession-four-arm-v3",
+  "request_count_note": "The frozen planner counted 92 unique session IDs, but session_documents produced 94 extraction documents because two long session IDs were split for the 6000-character bound. The real call ledger is authoritative.",
+  "schema_version": 1,
+  "selected_question_count": 30,
+  "source_dataset": {
+    "bytes": 2805274,
+    "file": "data/locomo10.json",
+    "license": "CC BY-NC 4.0",
+    "path": "C:\\Users\\MLL\\Desktop\\my-agent-harness\\.git\\codex-delivery\\effect-validation-20261114\\data\\locomo-pinned\\data\\locomo10.json",
+    "repository": "snap-research/locomo",
+    "revision": "3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376",
+    "sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4"
+  }
+}

@@ -1,0 +1,1534 @@
+{
+  "schema_version": 1,
+  "kind": "posthoc_numeric_no_gain_diagnostic",
+  "audit_api_calls": 0,
+  "audit_rescorings": 0,
+  "score_saturation": {
+    "train_trees": [
+      {
+        "task_id": "HumanEval/7",
+        "recorded_node_scores": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "task_id": "HumanEval/11",
+        "recorded_node_scores": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "task_id": "HumanEval/27",
+        "recorded_node_scores": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    ],
+    "train_recorded_nodes": 12,
+    "train_recorded_visible_full_score_nodes": 12,
+    "test_first_attempt_visible_histogram": {
+      "1.0": 48
+    },
+    "test_all_recorded_attempt_visible_histogram": {
+      "1.0": 190,
+      "None": 1
+    },
+    "selected_candidates_with_valid_final": {
+      "b0_a0": 47
+    },
+    "selected47_are_actual_first_branch": true,
+    "test_final_pass": 47,
+    "test_final_unavailable": 1,
+    "unselected_or_ungraded_candidate_hidden_quality": "unavailable; first visible=1 does not establish other candidates hidden pass"
+  },
+  "test_by_arm": {
+    "B": {
+      "planned_slots": 12,
+      "first_attempt_ids": {
+        "b0_a0": 12
+      },
+      "first_attempt_visible_scores": {
+        "1.0": 12
+      },
+      "all_recorded_visible_scores": {
+        "1.0": 48
+      },
+      "selected_candidate_given_valid_final": {
+        "b0_a0": 12
+      },
+      "recorded_attempts": 48,
+      "valid_attempts": 48,
+      "invalid_attempts": 0,
+      "undispatched_attempts": 0,
+      "attempts_with_provider_requests": 48,
+      "terminal_reasons": {
+        "end_turn": 48
+      },
+      "runtime_statuses": {
+        "completed": 12
+      },
+      "episode_budget_exhausted_ids": [],
+      "first_attempt_provider_requests": 69,
+      "first_attempt_tokens": 179257,
+      "later_attempt_provider_requests": 162,
+      "later_attempt_tokens": 490980,
+      "unmapped_provider_requests": 0,
+      "final_pass_true": 12,
+      "final_pass_false": 0,
+      "final_unavailable": 0,
+      "total_requests": 231,
+      "total_tokens": 670237,
+      "mean_requests_per_slot": 19.25,
+      "mean_tokens_per_slot": 55853.083333333336,
+      "mean_tokens_per_request": 2901.4588744588746,
+      "reported_input_token_peak": 5090,
+      "reported_input_token_min": 1835,
+      "child_budget_exhausted_attempts": 0
+    },
+    "random": {
+      "planned_slots": 12,
+      "first_attempt_ids": {
+        "b0_a0": 12
+      },
+      "first_attempt_visible_scores": {
+        "1.0": 12
+      },
+      "all_recorded_visible_scores": {
+        "1.0": 48
+      },
+      "selected_candidate_given_valid_final": {
+        "b0_a0": 12
+      },
+      "recorded_attempts": 48,
+      "valid_attempts": 48,
+      "invalid_attempts": 0,
+      "undispatched_attempts": 0,
+      "attempts_with_provider_requests": 48,
+      "terminal_reasons": {
+        "end_turn": 48
+      },
+      "runtime_statuses": {
+        "completed": 12
+      },
+      "episode_budget_exhausted_ids": [],
+      "first_attempt_provider_requests": 62,
+      "first_attempt_tokens": 152019,
+      "later_attempt_provider_requests": 157,
+      "later_attempt_tokens": 477815,
+      "unmapped_provider_requests": 0,
+      "final_pass_true": 12,
+      "final_pass_false": 0,
+      "final_unavailable": 0,
+      "total_requests": 219,
+      "total_tokens": 629834,
+      "mean_requests_per_slot": 18.25,
+      "mean_tokens_per_slot": 52486.166666666664,
+      "mean_tokens_per_request": 2875.9543378995436,
+      "reported_input_token_peak": 4598,
+      "reported_input_token_min": 1835,
+      "child_budget_exhausted_attempts": 0
+    },
+    "C": {
+      "planned_slots": 12,
+      "first_attempt_ids": {
+        "b0_a0": 12
+      },
+      "first_attempt_visible_scores": {
+        "1.0": 12
+      },
+      "all_recorded_visible_scores": {
+        "1.0": 46,
+        "None": 1
+      },
+      "selected_candidate_given_valid_final": {
+        "b0_a0": 11
+      },
+      "recorded_attempts": 47,
+      "valid_attempts": 46,
+      "invalid_attempts": 1,
+      "undispatched_attempts": 1,
+      "attempts_with_provider_requests": 46,
+      "terminal_reasons": {
+        "end_turn": 46,
+        "unavailable": 1
+      },
+      "runtime_statuses": {
+        "completed": 11,
+        "invalid": 1
+      },
+      "episode_budget_exhausted_ids": [],
+      "first_attempt_provider_requests": 59,
+      "first_attempt_tokens": 140373,
+      "later_attempt_provider_requests": 155,
+      "later_attempt_tokens": 487617,
+      "unmapped_provider_requests": 0,
+      "final_pass_true": 11,
+      "final_pass_false": 0,
+      "final_unavailable": 1,
+      "total_requests": 214,
+      "total_tokens": 627990,
+      "mean_requests_per_slot": 17.833333333333332,
+      "mean_tokens_per_slot": 52332.5,
+      "mean_tokens_per_request": 2934.532710280374,
+      "reported_input_token_peak": 5897,
+      "reported_input_token_min": 1835,
+      "child_budget_exhausted_attempts": 0
+    },
+    "A": {
+      "planned_slots": 12,
+      "first_attempt_ids": {
+        "b0_a0": 12
+      },
+      "first_attempt_visible_scores": {
+        "1.0": 12
+      },
+      "all_recorded_visible_scores": {
+        "1.0": 48
+      },
+      "selected_candidate_given_valid_final": {
+        "b0_a0": 12
+      },
+      "recorded_attempts": 48,
+      "valid_attempts": 48,
+      "invalid_attempts": 0,
+      "undispatched_attempts": 0,
+      "attempts_with_provider_requests": 48,
+      "terminal_reasons": {
+        "end_turn": 48
+      },
+      "runtime_statuses": {
+        "completed": 12
+      },
+      "episode_budget_exhausted_ids": [],
+      "first_attempt_provider_requests": 69,
+      "first_attempt_tokens": 178185,
+      "later_attempt_provider_requests": 152,
+      "later_attempt_tokens": 522987,
+      "unmapped_provider_requests": 0,
+      "final_pass_true": 12,
+      "final_pass_false": 0,
+      "final_unavailable": 0,
+      "total_requests": 221,
+      "total_tokens": 701172,
+      "mean_requests_per_slot": 18.416666666666668,
+      "mean_tokens_per_slot": 58431.0,
+      "mean_tokens_per_request": 3172.7239819004526,
+      "reported_input_token_peak": 7627,
+      "reported_input_token_min": 1835,
+      "child_budget_exhausted_attempts": 0
+    }
+  },
+  "cost_pairs_posthoc_diagnostic_only": [
+    {
+      "task_id": "HumanEval/1",
+      "seed": 23,
+      "arms": {
+        "B": {
+          "trial_id": "test-HumanEval-1-s23-B",
+          "requests": 20,
+          "tokens": 54886,
+          "input_tokens": 52009,
+          "output_tokens": 2877,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-1-s23-random",
+          "requests": 22,
+          "tokens": 64500,
+          "input_tokens": 61030,
+          "output_tokens": 3470,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-1-s23-C",
+          "requests": 25,
+          "tokens": 87765,
+          "input_tokens": 82630,
+          "output_tokens": 5135,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-1-s23-A",
+          "requests": 20,
+          "tokens": 63518,
+          "input_tokens": 60320,
+          "output_tokens": 3198,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 0,
+          "tokens": -8632,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": 5,
+          "tokens": 32879,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": 2,
+          "tokens": 9614,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/1",
+      "seed": 47,
+      "arms": {
+        "random": {
+          "trial_id": "test-HumanEval-1-s47-random",
+          "requests": 20,
+          "tokens": 58419,
+          "input_tokens": 55489,
+          "output_tokens": 2930,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-1-s47-A",
+          "requests": 21,
+          "tokens": 68598,
+          "input_tokens": 64067,
+          "output_tokens": 4531,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-1-s47-B",
+          "requests": 20,
+          "tokens": 56392,
+          "input_tokens": 53341,
+          "output_tokens": 3051,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-1-s47-C",
+          "requests": 20,
+          "tokens": 56595,
+          "input_tokens": 53796,
+          "output_tokens": 2799,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": -1,
+          "tokens": -12206,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": 0,
+          "tokens": 203,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": 0,
+          "tokens": 2027,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/20",
+      "seed": 23,
+      "arms": {
+        "random": {
+          "trial_id": "test-HumanEval-20-s23-random",
+          "requests": 17,
+          "tokens": 51134,
+          "input_tokens": 47581,
+          "output_tokens": 3553,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-20-s23-B",
+          "requests": 18,
+          "tokens": 54087,
+          "input_tokens": 50333,
+          "output_tokens": 3754,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-20-s23-C",
+          "requests": 17,
+          "tokens": 54427,
+          "input_tokens": 49086,
+          "output_tokens": 5341,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-20-s23-A",
+          "requests": 21,
+          "tokens": 89757,
+          "input_tokens": 83690,
+          "output_tokens": 6067,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": -3,
+          "tokens": -35670,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -1,
+          "tokens": 340,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": -1,
+          "tokens": -2953,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/20",
+      "seed": 47,
+      "arms": {
+        "C": {
+          "trial_id": "test-HumanEval-20-s47-C",
+          "requests": 16,
+          "tokens": 46218,
+          "input_tokens": 42734,
+          "output_tokens": 3484,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-20-s47-B",
+          "requests": 16,
+          "tokens": 44620,
+          "input_tokens": 41886,
+          "output_tokens": 2734,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-20-s47-random",
+          "requests": 18,
+          "tokens": 54512,
+          "input_tokens": 49631,
+          "output_tokens": 4881,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-20-s47-A",
+          "requests": 19,
+          "tokens": 65183,
+          "input_tokens": 58053,
+          "output_tokens": 7130,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": -3,
+          "tokens": -20563,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": 0,
+          "tokens": 1598,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": 2,
+          "tokens": 9892,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/33",
+      "seed": 23,
+      "arms": {
+        "B": {
+          "trial_id": "test-HumanEval-33-s23-B",
+          "requests": 18,
+          "tokens": 53158,
+          "input_tokens": 49993,
+          "output_tokens": 3165,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-33-s23-random",
+          "requests": 17,
+          "tokens": 46250,
+          "input_tokens": 44064,
+          "output_tokens": 2186,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-33-s23-A",
+          "requests": 17,
+          "tokens": 49356,
+          "input_tokens": 46845,
+          "output_tokens": 2511,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-33-s23-C",
+          "requests": 16,
+          "tokens": 43096,
+          "input_tokens": 41061,
+          "output_tokens": 2035,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 1,
+          "tokens": 3802,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -2,
+          "tokens": -10062,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": -1,
+          "tokens": -6908,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/33",
+      "seed": 47,
+      "arms": {
+        "random": {
+          "trial_id": "test-HumanEval-33-s47-random",
+          "requests": 18,
+          "tokens": 53231,
+          "input_tokens": 49947,
+          "output_tokens": 3284,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-33-s47-A",
+          "requests": 19,
+          "tokens": 58679,
+          "input_tokens": 55122,
+          "output_tokens": 3557,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-33-s47-B",
+          "requests": 21,
+          "tokens": 63022,
+          "input_tokens": 59879,
+          "output_tokens": 3143,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-33-s47-C",
+          "requests": 17,
+          "tokens": 50291,
+          "input_tokens": 47284,
+          "output_tokens": 3007,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 2,
+          "tokens": 4343,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -4,
+          "tokens": -12731,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": -3,
+          "tokens": -9791,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/40",
+      "seed": 23,
+      "arms": {
+        "C": {
+          "trial_id": "test-HumanEval-40-s23-C",
+          "requests": 16,
+          "tokens": 47838,
+          "input_tokens": 43901,
+          "output_tokens": 3937,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-40-s23-random",
+          "requests": 17,
+          "tokens": 49296,
+          "input_tokens": 46135,
+          "output_tokens": 3161,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-40-s23-A",
+          "requests": 16,
+          "tokens": 49351,
+          "input_tokens": 46102,
+          "output_tokens": 3249,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-40-s23-B",
+          "requests": 21,
+          "tokens": 70486,
+          "input_tokens": 65609,
+          "output_tokens": 4877,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 5,
+          "tokens": 21135,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -5,
+          "tokens": -22648,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": -4,
+          "tokens": -21190,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/40",
+      "seed": 47,
+      "arms": {
+        "A": {
+          "trial_id": "test-HumanEval-40-s47-A",
+          "requests": 15,
+          "tokens": 46058,
+          "input_tokens": 43000,
+          "output_tokens": 3058,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-40-s47-C",
+          "requests": 19,
+          "tokens": 56102,
+          "input_tokens": 52160,
+          "output_tokens": 3942,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-40-s47-random",
+          "requests": 17,
+          "tokens": 50979,
+          "input_tokens": 46423,
+          "output_tokens": 4556,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-40-s47-B",
+          "requests": 17,
+          "tokens": 50057,
+          "input_tokens": 45986,
+          "output_tokens": 4071,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 2,
+          "tokens": 3999,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": 2,
+          "tokens": 6045,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": 0,
+          "tokens": 922,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/6",
+      "seed": 23,
+      "arms": {
+        "B": {
+          "trial_id": "test-HumanEval-6-s23-B",
+          "requests": 18,
+          "tokens": 50662,
+          "input_tokens": 47573,
+          "output_tokens": 3089,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-6-s23-random",
+          "requests": 18,
+          "tokens": 48961,
+          "input_tokens": 46051,
+          "output_tokens": 2910,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-6-s23-C",
+          "requests": 10,
+          "tokens": 22670,
+          "input_tokens": 21285,
+          "output_tokens": 1385,
+          "host_status": "failed",
+          "final_pass": null
+        },
+        "A": {
+          "trial_id": "test-HumanEval-6-s23-A",
+          "requests": 18,
+          "tokens": 52611,
+          "input_tokens": 49302,
+          "output_tokens": 3309,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 0,
+          "tokens": -1949,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -8,
+          "tokens": -27992,
+          "both_host_completed": false
+        },
+        "random_minus_B": {
+          "requests": 0,
+          "tokens": -1701,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/6",
+      "seed": 47,
+      "arms": {
+        "C": {
+          "trial_id": "test-HumanEval-6-s47-C",
+          "requests": 21,
+          "tokens": 60235,
+          "input_tokens": 56713,
+          "output_tokens": 3522,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-6-s47-A",
+          "requests": 16,
+          "tokens": 44903,
+          "input_tokens": 42030,
+          "output_tokens": 2873,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-6-s47-random",
+          "requests": 17,
+          "tokens": 45694,
+          "input_tokens": 43185,
+          "output_tokens": 2509,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "B": {
+          "trial_id": "test-HumanEval-6-s47-B",
+          "requests": 16,
+          "tokens": 42153,
+          "input_tokens": 39691,
+          "output_tokens": 2462,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 0,
+          "tokens": -2750,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": 5,
+          "tokens": 18082,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": 1,
+          "tokens": 3541,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/9",
+      "seed": 23,
+      "arms": {
+        "B": {
+          "trial_id": "test-HumanEval-9-s23-B",
+          "requests": 21,
+          "tokens": 56999,
+          "input_tokens": 54490,
+          "output_tokens": 2509,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-9-s23-C",
+          "requests": 18,
+          "tokens": 48133,
+          "input_tokens": 45858,
+          "output_tokens": 2275,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-9-s23-random",
+          "requests": 16,
+          "tokens": 41109,
+          "input_tokens": 39043,
+          "output_tokens": 2066,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-9-s23-A",
+          "requests": 20,
+          "tokens": 57830,
+          "input_tokens": 54906,
+          "output_tokens": 2924,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 1,
+          "tokens": -831,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -3,
+          "tokens": -8866,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": -5,
+          "tokens": -15890,
+          "both_host_completed": true
+        }
+      }
+    },
+    {
+      "task_id": "HumanEval/9",
+      "seed": 47,
+      "arms": {
+        "B": {
+          "trial_id": "test-HumanEval-9-s47-B",
+          "requests": 25,
+          "tokens": 73715,
+          "input_tokens": 69804,
+          "output_tokens": 3911,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "random": {
+          "trial_id": "test-HumanEval-9-s47-random",
+          "requests": 22,
+          "tokens": 65749,
+          "input_tokens": 61583,
+          "output_tokens": 4166,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "C": {
+          "trial_id": "test-HumanEval-9-s47-C",
+          "requests": 19,
+          "tokens": 54620,
+          "input_tokens": 50880,
+          "output_tokens": 3740,
+          "host_status": "completed",
+          "final_pass": true
+        },
+        "A": {
+          "trial_id": "test-HumanEval-9-s47-A",
+          "requests": 19,
+          "tokens": 55328,
+          "input_tokens": 52276,
+          "output_tokens": 3052,
+          "host_status": "completed",
+          "final_pass": true
+        }
+      },
+      "differences": {
+        "B_minus_A": {
+          "requests": 6,
+          "tokens": 18387,
+          "both_host_completed": true
+        },
+        "C_minus_B": {
+          "requests": -6,
+          "tokens": -19095,
+          "both_host_completed": true
+        },
+        "random_minus_B": {
+          "requests": -3,
+          "tokens": -7966,
+          "both_host_completed": true
+        }
+      }
+    }
+  ],
+  "cost_pair_distributions": {
+    "B_minus_A": {
+      "requests": {
+        "n_scheduling_pairs": 12,
+        "sum": 10,
+        "mean": 0.8333333333333334,
+        "median": 0.5,
+        "min": -3,
+        "max": 6,
+        "negative_count": 3,
+        "zero_count": 3,
+        "positive_count": 6
+      },
+      "tokens": {
+        "n_scheduling_pairs": 12,
+        "sum": -30935,
+        "mean": -2577.9166666666665,
+        "median": -1390.0,
+        "min": -35670,
+        "max": 21135,
+        "negative_count": 7,
+        "zero_count": 0,
+        "positive_count": 5
+      }
+    },
+    "C_minus_B": {
+      "requests": {
+        "n_scheduling_pairs": 12,
+        "sum": -17,
+        "mean": -1.4166666666666667,
+        "median": -1.5,
+        "min": -8,
+        "max": 5,
+        "negative_count": 7,
+        "zero_count": 2,
+        "positive_count": 3
+      },
+      "tokens": {
+        "n_scheduling_pairs": 12,
+        "sum": -42247,
+        "mean": -3520.5833333333335,
+        "median": -4331.5,
+        "min": -27992,
+        "max": 32879,
+        "negative_count": 6,
+        "zero_count": 0,
+        "positive_count": 6
+      }
+    },
+    "random_minus_B": {
+      "requests": {
+        "n_scheduling_pairs": 12,
+        "sum": -12,
+        "mean": -1,
+        "median": -0.5,
+        "min": -5,
+        "max": 2,
+        "negative_count": 6,
+        "zero_count": 3,
+        "positive_count": 3
+      },
+      "tokens": {
+        "n_scheduling_pairs": 12,
+        "sum": -40403,
+        "mean": -3366.9166666666665,
+        "median": -2327.0,
+        "min": -21190,
+        "max": 9892,
+        "negative_count": 7,
+        "zero_count": 0,
+        "positive_count": 5
+      }
+    }
+  },
+  "BA_task_decomposition": [
+    {
+      "task_id": "HumanEval/1",
+      "repeats": 2,
+      "B_minus_A_requests": -1,
+      "B_minus_A_tokens": -20838
+    },
+    {
+      "task_id": "HumanEval/20",
+      "repeats": 2,
+      "B_minus_A_requests": -6,
+      "B_minus_A_tokens": -56233
+    },
+    {
+      "task_id": "HumanEval/33",
+      "repeats": 2,
+      "B_minus_A_requests": 3,
+      "B_minus_A_tokens": 8145
+    },
+    {
+      "task_id": "HumanEval/40",
+      "repeats": 2,
+      "B_minus_A_requests": 7,
+      "B_minus_A_tokens": 25134
+    },
+    {
+      "task_id": "HumanEval/6",
+      "repeats": 2,
+      "B_minus_A_requests": 0,
+      "B_minus_A_tokens": -4699
+    },
+    {
+      "task_id": "HumanEval/9",
+      "repeats": 2,
+      "B_minus_A_requests": 7,
+      "B_minus_A_tokens": 17556
+    }
+  ],
+  "BA_accounting_decomposition": {
+    "tokens_delta": -30935,
+    "tokens_relative_change": -0.04411898934926095,
+    "requests_delta": 10,
+    "requests_relative_change": 0.045248868778280604,
+    "mean_tokens_per_request_relative_change": -0.08549911968046175,
+    "input_tokens_delta": -25119,
+    "output_tokens_delta": -5816,
+    "task20_pair_sum_delta": -56233,
+    "other5_tasks_sum_delta": 25298
+  },
+  "observed_first_vs_later_attempt_cost": {
+    "first_attempt_provider_requests": 259,
+    "first_attempt_tokens": 649834,
+    "later_attempt_provider_requests": 626,
+    "later_attempt_tokens": 1979399,
+    "unmapped_provider_requests": 0
+  },
+  "first_vs_later_interpretation": "Already-incurred logged costs, not an early-stop counterfactual saving guarantee. Four attempts are not four equal-cost units.",
+  "context_pressure": {
+    "observed_metadata": {
+      "collection:B": {
+        "estimated_tokens": {
+          "min": 121,
+          "max": 6430,
+          "recorded_observations": 84
+        },
+        "input_threshold": {
+          "min": 25600,
+          "max": 25600,
+          "recorded_observations": 84
+        },
+        "model_context_window": {
+          "min": 32000,
+          "max": 32000,
+          "recorded_observations": 84
+        },
+        "estimated_view_to_threshold_ratio": {
+          "min": 0.0047265625,
+          "max": 0.251171875,
+          "recorded_observations": 84
+        }
+      },
+      "test:B": {
+        "estimated_tokens": {
+          "min": 159,
+          "max": 5254,
+          "recorded_observations": 231
+        },
+        "input_threshold": {
+          "min": 25600,
+          "max": 25600,
+          "recorded_observations": 231
+        },
+        "model_context_window": {
+          "min": 32000,
+          "max": 32000,
+          "recorded_observations": 231
+        },
+        "estimated_view_to_threshold_ratio": {
+          "min": 0.0062109375,
+          "max": 0.205234375,
+          "recorded_observations": 231
+        }
+      },
+      "test:random": {
+        "estimated_tokens": {
+          "min": 159,
+          "max": 4951,
+          "recorded_observations": 219
+        },
+        "input_threshold": {
+          "min": 25600,
+          "max": 25600,
+          "recorded_observations": 219
+        },
+        "model_context_window": {
+          "min": 32000,
+          "max": 32000,
+          "recorded_observations": 219
+        },
+        "estimated_view_to_threshold_ratio": {
+          "min": 0.0062109375,
+          "max": 0.1933984375,
+          "recorded_observations": 219
+        }
+      },
+      "test:C": {
+        "estimated_tokens": {
+          "min": 159,
+          "max": 6019,
+          "recorded_observations": 214
+        },
+        "input_threshold": {
+          "min": 25600,
+          "max": 25600,
+          "recorded_observations": 214
+        },
+        "model_context_window": {
+          "min": 32000,
+          "max": 32000,
+          "recorded_observations": 214
+        },
+        "estimated_view_to_threshold_ratio": {
+          "min": 0.0062109375,
+          "max": 0.2351171875,
+          "recorded_observations": 214
+        }
+      },
+      "test:A": {
+        "model_context_window": {
+          "min": 32000,
+          "max": 32000,
+          "recorded_observations": 24
+        },
+        "estimated_tokens": null,
+        "input_threshold": null,
+        "estimated_view_to_threshold_ratio": null
+      }
+    },
+    "configured_client_window": 32000,
+    "recorded_layered_threshold": 25600,
+    "canonical_history_token_peak": null,
+    "effective_server_window_verified": false,
+    "evidence_limit": "Post-projection view estimates and reported provider inputs are available; neither is a complete canonical-history high-water mark. Zero summary calls alone cannot rule out near-window pressure."
+  },
+  "context_scope": {
+    "v2_all_phase_fold_views": 78,
+    "test": {
+      "phase_fold_views": 70,
+      "micro_groups": 3,
+      "missing_activity_attempts": 1
+    },
+    "collection": {
+      "phase_fold_views": 8,
+      "micro_groups": 0
+    },
+    "micro_snapshot_locations": [
+      {
+        "phase": "test",
+        "trial_id": "test-HumanEval-1-s23-random",
+        "attempt_id": "b1_a1",
+        "snapshot_index": 4,
+        "observed_groups": 1
+      },
+      {
+        "phase": "test",
+        "trial_id": "test-HumanEval-1-s47-C",
+        "attempt_id": "b0_a1",
+        "snapshot_index": 4,
+        "observed_groups": 1
+      },
+      {
+        "phase": "test",
+        "trial_id": "test-HumanEval-1-s47-C",
+        "attempt_id": "b1_a1",
+        "snapshot_index": 4,
+        "observed_groups": 1
+      }
+    ],
+    "actual_micro_operation_count": null,
+    "actual_fold_operation_count": null,
+    "summary_purpose_provider_requests_v2": 0,
+    "artifact_read_recorded_invocations_test": 0,
+    "artifact_read_successful_backreads": null,
+    "unit": "snapshot-derived views/groups; tool recorded starts and provider summary requests are separate measures"
+  },
+  "failure_scope": {
+    "test_noncompleted": [
+      {
+        "trial_id": "test-HumanEval-6-s23-C",
+        "status": "failed",
+        "final_pass": null,
+        "requests": 10,
+        "tokens": 22670
+      }
+    ],
+    "C_failed_pair": [
+      {
+        "task_id": "HumanEval/6",
+        "seed": 23,
+        "arms": {
+          "B": {
+            "trial_id": "test-HumanEval-6-s23-B",
+            "requests": 18,
+            "tokens": 50662,
+            "input_tokens": 47573,
+            "output_tokens": 3089,
+            "host_status": "completed",
+            "final_pass": true
+          },
+          "random": {
+            "trial_id": "test-HumanEval-6-s23-random",
+            "requests": 18,
+            "tokens": 48961,
+            "input_tokens": 46051,
+            "output_tokens": 2910,
+            "host_status": "completed",
+            "final_pass": true
+          },
+          "C": {
+            "trial_id": "test-HumanEval-6-s23-C",
+            "requests": 10,
+            "tokens": 22670,
+            "input_tokens": 21285,
+            "output_tokens": 1385,
+            "host_status": "failed",
+            "final_pass": null
+          },
+          "A": {
+            "trial_id": "test-HumanEval-6-s23-A",
+            "requests": 18,
+            "tokens": 52611,
+            "input_tokens": 49302,
+            "output_tokens": 3309,
+            "host_status": "completed",
+            "final_pass": true
+          }
+        },
+        "differences": {
+          "B_minus_A": {
+            "requests": 0,
+            "tokens": -1949,
+            "both_host_completed": true
+          },
+          "C_minus_B": {
+            "requests": -8,
+            "tokens": -27992,
+            "both_host_completed": false
+          },
+          "random_minus_B": {
+            "requests": 0,
+            "tokens": -1701,
+            "both_host_completed": true
+          }
+        }
+      }
+    ],
+    "test_episode_budget_exhausted": 0,
+    "test_child_budget_exhausted": 0,
+    "collection_budget_exhausted_task_ids": [
+      "HumanEval/32"
+    ],
+    "ungraded_types": {
+      "test_permission_error": 1,
+      "collection_child_turn_budget": 1
+    }
+  },
+  "interpretation": {
+    "C": "reference fallback with same 2/1 parameters as B; learning contribution not identifiable",
+    "selection": "Score-saturated train ties chose SDK fixed reference. Final selected first branch in 47 graded slots; extra exploration did not improve selected observed quality in this batch.",
+    "cost": "B has lower token total but more requests; variation across task/seed pairs and outputs prevents causal compression or saving attribution.",
+    "pressure": "No recorded sent-view threshold hit, but canonical history and effective server-window evidence are unavailable; sustained long-context benefit was not established.",
+    "Mem0_quality": "not evaluated by these task metadata; no retrieval-quality controlled comparison",
+    "Langfuse_quality": "not evaluated; no exporter reliability/completeness or feedback-quality controlled comparison",
+    "sample": "6 tasks x 2 scheduling repeats, not 12 independent tasks",
+    "ranking": null,
+    "p_values": null,
+    "no_current_test_retuning": true
+  },
+  "source_hashes": {
+    "final_metrics": "0e58cafcfac242929e7ff47f91fa6bbb3ecd3908e0ba081cf6e494f8eede72bd",
+    "final_analysis": "8d03d793d335ec19d9cb637cc73cd257fee2feab79a572c9e54900d183614be0",
+    "sealed_runtime_results": [
+      {
+        "trial_id": "collect-HumanEval-7-s23",
+        "sha256": "da8ade82ff251f86c8e80998ec4c5e6c9ea9f159667343458dec362d7bff7d76"
+      },
+      {
+        "trial_id": "collect-HumanEval-11-s23",
+        "sha256": "0a60d2b652bad728cd12abe146cf6eeb8d119df22b2eee391ba46c1033a287b7"
+      },
+      {
+        "trial_id": "collect-HumanEval-27-s23",
+        "sha256": "9b3d9ff70ed6aeeb9f36da372c218c2e059fd034a07d4bc237d24aba7e35458f"
+      },
+      {
+        "trial_id": "collect-HumanEval-32-s23",
+        "sha256": "89a8141843516e72d7f600da2c65181820977db2d9e0317de1e1551cb692d044"
+      },
+      {
+        "trial_id": "collect-HumanEval-45-s23",
+        "sha256": "f1ab16b7c937690f8dce792aa7455ddd640b30f26f7686165d1a291336f04119"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s23-B",
+        "sha256": "8dfdc770b863f65a2abf7a20c5ebcc478cda3d603a82b4dd098ea89da05f0ec2"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s23-random",
+        "sha256": "dcf162452779d0d90b75cf60dcbe7d1066673d04421660b6cceb2bbb4f2d241b"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s23-C",
+        "sha256": "d873d0f74646714ceed805669b946801d8cf6544ca5bb76b0b872368b2de1891"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s23-A",
+        "sha256": "9e3e512fa990b8ba29533733959573eec259c3a9bc44e1484709a8b12f78ef6b"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s47-random",
+        "sha256": "a3861e245447ca56d05e078b42a01851235decacc15d2351372bd8bc508a8e80"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s47-A",
+        "sha256": "b4721e2571507484bf5ae5f3688b90570c0279d37dc1c681a3ac983d308ade91"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s47-B",
+        "sha256": "1ae05a895df40c31eaf3faf92362983a8004b1365261ce18ab2474245162ce6d"
+      },
+      {
+        "trial_id": "test-HumanEval-1-s47-C",
+        "sha256": "231dcd86bc9a88b81695e0970d480b6d590ce339e034d4ee2864642f9ffe33c3"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s23-B",
+        "sha256": "58645eda06d3a14709055eb14f649d9119db25a9d1d8d515ad4d02c318723583"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s23-random",
+        "sha256": "07b4e7e57224861383f02a0e28075916329f2a4595fd5c94e0b07fab00207535"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s23-C",
+        "sha256": "0abb66dc68a1be2153c9b1440e66736c616edf6f82e7e612782e2adf1f345e4c"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s23-A",
+        "sha256": "0d35b79233a79a0bb809a41ff8b6451802be2777dc019dd52af1fe45f7319a3a"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-C",
+        "sha256": "fdbe411c9fdf31e6a390bef553d7730471ed9ad0248e1500826fdc1ed5d98147"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-A",
+        "sha256": "b01a3856fd0c85a7040aabc8bdfd23d9180f61a5fbea7e7ad3e17b6b72b5f528"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-random",
+        "sha256": "873cb414aeed17a5ae948e59a8ec9d5779e6ebdd94e4d16bf31cb25d61764407"
+      },
+      {
+        "trial_id": "test-HumanEval-6-s47-B",
+        "sha256": "d47c32e1db4e664deaf24f58e7a4190cb73ae0fbe1644e779dfb2a1d4e01648e"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-B",
+        "sha256": "7c25119c3365de3c4b60b612d290106f95b98af45dae851b4ba9285cbf576d70"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-C",
+        "sha256": "2a50edd2b6631883a24b434c796a173d380fa95dbacb0469feeb036c37f40a92"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-random",
+        "sha256": "be7c3e2bd1bf5d3dd268daefd27f95897e581f5d3d0b4f33f446da9c17c6bd1d"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s23-A",
+        "sha256": "a93ba94c4e69e6d504bee050e5249f740d8c341bb8d39db6461ea1d26b8c787f"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-B",
+        "sha256": "c74902662630f5172d68650325152cb82006d002fbb1eb98833a4465d9fa4fc9"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-random",
+        "sha256": "ce7dabb7fa8b55225c3a9cbd7b7d9189bcc0dcf00ac68a020346aa9d47222e29"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-C",
+        "sha256": "5fcb95b6ac127bfaf0da79598820d702e9b95b877a3de387bb6f432ec624dd7c"
+      },
+      {
+        "trial_id": "test-HumanEval-9-s47-A",
+        "sha256": "6399bd1bfcd38099eb2ef3cc71a7bcc8e7c5d9c6424946edcd0a714e6db8b5f2"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-random",
+        "sha256": "0bb30072ee75c46a880a985929e973495dda77d74796c8363e382109482bc9ca"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-B",
+        "sha256": "6b86dde96c069a13d98127b9c013b6815a5ce6bbeb9f57962b9e69bc404d80a9"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-C",
+        "sha256": "31825f3a0caab0d26f297386a15f709def7d0256523be23303b8ca26477926fb"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s23-A",
+        "sha256": "f7fbe04c72b11669ed97b618345df33bb6c24b3c488e78bb78c0752bf97b9983"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-C",
+        "sha256": "fe9c53d3d84c7dd8f69783ed1d8086c9f5a0cbad700625adc0adb1c9925ffbc7"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-B",
+        "sha256": "27c9e122da6e1427dfc103d3bfcad0c50941256e220b6a914767925a9fc35192"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-random",
+        "sha256": "1a9e2866d77fa96084ae35d7043c855d2e0dbb5125799a4430145db86ead546d"
+      },
+      {
+        "trial_id": "test-HumanEval-20-s47-A",
+        "sha256": "41ee43cf147ffd721ae6923dd9990348d4a43c42847bcdddde98907592c7e2f8"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-B",
+        "sha256": "e6099dc82944f173205f87ef9ea86c426f0be2a6730af5a47a4dead8876ce800"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-random",
+        "sha256": "b2aee359afeeab214c99f48c0babb2040b9edbeafa0f266e79d0a0fc80499b47"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-A",
+        "sha256": "fbdeaf2d3ad2a954c495e18c3d8fccba10e950ffb5f3beb558871552eff2b4b8"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s23-C",
+        "sha256": "b177dec6e9e34f3ba7287ef3c66f5a23907aff9d0646b909c1bbe8a4ce5b4f50"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-random",
+        "sha256": "a858ef190d356178f242afec281a18e5b2150f833602e3fde9fe5fceb363c0ad"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-A",
+        "sha256": "856cd8c661a8403fdc2932197cf3fc56f68ae3f172cd9fe613fab0d34d9bd811"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-B",
+        "sha256": "d9677a77ef31584bae31bd28fb497ca87e7f825312f1466d5ddf379cdc6a9298"
+      },
+      {
+        "trial_id": "test-HumanEval-33-s47-C",
+        "sha256": "b9cf6f530737e2f88a4d6d1d88a47df364164d34af906bacbafaa3c5181838b4"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-C",
+        "sha256": "4c38bbd83ae7d9b1ed1dcd6b9a2e35badc10edc5e7165fbb78714d9b6ff3f84f"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-random",
+        "sha256": "cc1facff7c7e40b9f34b0125bdcc2c63e1adb9ad50ef325e7e872dae4e98de6b"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-A",
+        "sha256": "9460bd00db5b4977e7c598d97547f7a523cbc6921f592f3456cca6b2892c6ce4"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s23-B",
+        "sha256": "b23b21385db0671bd212d425d0aaf7947e787731cdfb81958741f40ceb075b6b"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-A",
+        "sha256": "33669509ae0a100bb33e77192d4ef6bc1d31a05abb622ae88345970c3b8b446c"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-C",
+        "sha256": "11af7adec0bc80a4ff2702da51c3a6c1dda0ab9091d7f3bd6eb1c5ceb3be35ff"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-random",
+        "sha256": "24f1365f3852741a78c7f87c93863f6ac0e4273b76596fb0089739f1ed2d91cb"
+      },
+      {
+        "trial_id": "test-HumanEval-40-s47-B",
+        "sha256": "3c649cd4fdf1d47c7fce405d2d24ada829cc17c803689f9c9fc1e70fa10d15bb"
+      }
+    ]
+  },
+  "data_safety": {
+    "raw_prompt_response_candidate_gold_official_test_content_included": false,
+    "original_results_modified": false
+  }
+}

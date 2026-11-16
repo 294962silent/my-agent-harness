@@ -1,0 +1,211 @@
+{
+  "accounting_units": {
+    "expected_model_calls": 332,
+    "frozen_requests": 384,
+    "frozen_units": 5000000,
+    "output_caps": {
+      "answer": 1024,
+      "extract": 8192,
+      "judge": 512
+    },
+    "user_declared_total_token_budget": 2000000000,
+    "wall_clock_hours_per_split": 8
+  },
+  "arms": {
+    "facts_lexical": {
+      "accuracy": null,
+      "answer_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "correct": 0,
+      "expected": 0,
+      "judge_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "mean_answer_seconds": null,
+      "mean_evidence_turn_recall_at_8": null,
+      "mean_judge_seconds": null,
+      "mean_retrieval_seconds": null,
+      "mean_session_mrr": null,
+      "mean_session_recall_at_8": null,
+      "valid_answers": 0,
+      "valid_judges": 0
+    },
+    "facts_mem0": {
+      "accuracy": null,
+      "answer_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "correct": 0,
+      "expected": 0,
+      "judge_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "mean_answer_seconds": null,
+      "mean_evidence_turn_recall_at_8": null,
+      "mean_judge_seconds": null,
+      "mean_retrieval_seconds": null,
+      "mean_session_mrr": null,
+      "mean_session_recall_at_8": null,
+      "valid_answers": 0,
+      "valid_judges": 0
+    },
+    "raw_lexical": {
+      "accuracy": null,
+      "answer_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "correct": 0,
+      "expected": 0,
+      "judge_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "mean_answer_seconds": null,
+      "mean_evidence_turn_recall_at_8": null,
+      "mean_judge_seconds": null,
+      "mean_retrieval_seconds": null,
+      "mean_session_mrr": null,
+      "mean_session_recall_at_8": null,
+      "valid_answers": 0,
+      "valid_judges": 0
+    },
+    "raw_mem0": {
+      "accuracy": null,
+      "answer_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "correct": 0,
+      "expected": 0,
+      "judge_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "mean_answer_seconds": null,
+      "mean_evidence_turn_recall_at_8": null,
+      "mean_judge_seconds": null,
+      "mean_retrieval_seconds": null,
+      "mean_session_mrr": null,
+      "mean_session_recall_at_8": null,
+      "valid_answers": 0,
+      "valid_judges": 0
+    }
+  },
+  "campaign_elapsed_seconds": 89.81466865539551,
+  "categories": {},
+  "conservative_cost_usd": 0.014496,
+  "cross_session_subgroups": {},
+  "evidence_session_length_subgroups": {},
+  "expected_rows": 120,
+  "failures": [],
+  "first_extract_readback": null,
+  "generated_at": "2026-11-14T16:17:27.296036+00:00",
+  "limitations": [
+    "pilot selection is one seed with 30 questions",
+    "native Mem0 additive extraction is shared and not fact-quality ablation",
+    "fact turn-level evidence recall is unavailable; session-level recall is reported where provenance exists",
+    "extraction output cap is raised to 8192 to reduce truncation; it is not a truncation-free guarantee"
+  ],
+  "missing_conversations": [
+    "conv-47",
+    "conv-41",
+    "conv-42"
+  ],
+  "owner_close": null,
+  "paired_comparisons": {
+    "facts_lexical__vs__facts_mem0": {
+      "both_correct": 0,
+      "both_incorrect": 0,
+      "compared_pairs": 0,
+      "left_only_correct": 0,
+      "right_only_correct": 0
+    },
+    "raw_lexical__vs__facts_lexical": {
+      "both_correct": 0,
+      "both_incorrect": 0,
+      "compared_pairs": 0,
+      "left_only_correct": 0,
+      "right_only_correct": 0
+    },
+    "raw_lexical__vs__facts_mem0": {
+      "both_correct": 0,
+      "both_incorrect": 0,
+      "compared_pairs": 0,
+      "left_only_correct": 0,
+      "right_only_correct": 0
+    },
+    "raw_lexical__vs__raw_mem0": {
+      "both_correct": 0,
+      "both_incorrect": 0,
+      "compared_pairs": 0,
+      "left_only_correct": 0,
+      "right_only_correct": 0
+    },
+    "raw_mem0__vs__facts_lexical": {
+      "both_correct": 0,
+      "both_incorrect": 0,
+      "compared_pairs": 0,
+      "left_only_correct": 0,
+      "right_only_correct": 0
+    },
+    "raw_mem0__vs__facts_mem0": {
+      "both_correct": 0,
+      "both_incorrect": 0,
+      "compared_pairs": 0,
+      "left_only_correct": 0,
+      "right_only_correct": 0
+    }
+  },
+  "protocol": "locomo-multisession-four-arm-v2",
+  "provider_billed_cost_usd": null,
+  "request_accounting_by_stage": {
+    "extract": {
+      "completion_tokens": 7437,
+      "known_usage_requests": 2,
+      "latency_seconds_sum": 87.15862727165222,
+      "prompt_tokens": 10889,
+      "requests": 2,
+      "total_tokens": 26006,
+      "unknown_or_pending_requests": 0
+    }
+  },
+  "rows": 0,
+  "schema_version": 1,
+  "status": "partial",
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 2,
+    "unknown_or_inflight": false,
+    "used_tokens": 26006
+  }
+}

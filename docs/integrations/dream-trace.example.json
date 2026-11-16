@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "workspace": "synthetic-scored-contract",
+  "exported_at": "2026-11-12T00:00:00+00:00",
+  "n_problems": 1,
+  "baseline": {
+    "evaluated": true,
+    "combined_score": 1.0,
+    "n_valid": 1,
+    "n_total": 1
+  },
+  "nodes": [
+    {
+      "id": "b0_a0",
+      "branch": 0,
+      "attempt": 0,
+      "parent_id": null,
+      "intent": "",
+      "tags": [],
+      "path": "not-accessed/b0_a0",
+      "status": "done",
+      "raw": {
+        "evaluated": true,
+        "combined_score": 2.0,
+        "n_valid": 1,
+        "n_total": 1
+      }
+    },
+    {
+      "id": "b0_a1",
+      "branch": 0,
+      "attempt": 1,
+      "parent_id": "b0_a0",
+      "intent": "",
+      "tags": [],
+      "path": "not-accessed/b0_a1",
+      "status": "done",
+      "raw": {
+        "evaluated": true,
+        "combined_score": 3.0,
+        "n_valid": 1,
+        "n_total": 1
+      }
+    },
+    {
+      "id": "b1_a0",
+      "branch": 1,
+      "attempt": 0,
+      "parent_id": null,
+      "intent": "",
+      "tags": [],
+      "path": "not-accessed/b1_a0",
+      "status": "done",
+      "raw": {
+        "evaluated": true,
+        "combined_score": 1.5,
+        "n_valid": 1,
+        "n_total": 1
+      }
+    }
+  ]
+}

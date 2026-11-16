@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "id": "fixture-a",
+      "key": "diagnostic_code_a",
+      "file": "fixture-a.log",
+      "sha256": "b6403f9aa6bce813c7e15740df4f04df14a0ac46aacd179b17a34162db2a255f",
+      "target_sha256": "1b9cac679d26a5d981a814cd9dc350fb98235069d9f103f860e0f58346acdba3"
+    },
+    {
+      "id": "fixture-b",
+      "key": "diagnostic_code_b",
+      "file": "fixture-b.log",
+      "sha256": "49751ceaa4611042ea0c918dc6e5c3dadfceb6ca23eb96087b11142037158327",
+      "target_sha256": "1c117b4fe7cc22b7e10e7be61d37d9c9107143167ba076a197a5111eeadcae93"
+    }
+  ]
+}

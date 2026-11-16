@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "at_utc": "2026-11-14T12:21:52.961Z",
+  "privacy": {
+    "contains_raw_questions": false,
+    "contains_history_text": false,
+    "contains_answers": false,
+    "contains_gold": false,
+    "contains_credentials": false
+  },
+  "rows": 36,
+  "paired_questions": 12,
+  "files": [
+    {
+      "file": "effect-summary.json",
+      "bytes": 8313,
+      "sha256": "887e0ad869a1f55c017d2bd3f13ebf9bb111f624f33b653d6f8ed3ebe46906e3"
+    },
+    {
+      "file": "effect-pairs.json",
+      "bytes": 17116,
+      "sha256": "a60a62c751762dac90eaf80e1ad582f004b8bc6f73360417d49ac34015ee90e9"
+    },
+    {
+      "file": "effect-rows.jsonl",
+      "bytes": 61362,
+      "sha256": "c1fc61a346f83e279d8386da1697b0d95363203bf6a1eeb2d15fcd4778e874c5"
+    },
+    {
+      "file": "bookkeeping-amendment.json",
+      "bytes": 1309,
+      "sha256": "12c9ccea00aa79337f8a575b47d812960c73e2d5e45d8c5d10edd1d16b7e5b20"
+    }
+  ]
+}

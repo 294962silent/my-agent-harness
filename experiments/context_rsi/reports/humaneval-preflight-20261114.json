@@ -1,0 +1,178 @@
+{
+  "kind": "real-local-preflight-no-model-calls",
+  "commit": "b9453e8f1865df0a0057a1383767caa400acfbcf",
+  "data_git_blob": "998d25196e17af24daf9b6cb3a975fe752528e46",
+  "data_sha256": "b796127e635a67f93fb35c04f4cb03cf06f38c8072ee7cee8833d7bee06979ef",
+  "license": "MIT",
+  "license_sha256": "bcba3de214851cce46ed5af42d6698044616eeace887c3231bc7a20474ab639e",
+  "prepared_manifest_sha256": "d08d1b4c26220adb6b42e3dbbb590be3900855b167b93059b5d929edf19d98d2",
+  "model_requests": 0,
+  "task_count": 11,
+  "evaluation_processes": 44,
+  "scheduling_seeds": [
+    23,
+    47
+  ],
+  "limitations": [
+    "public short-code pipeline calibration only",
+    "protocol separation, not an OS sandbox",
+    "no official leaderboard or long-horizon generalization result"
+  ],
+  "investigation_correction": "Initial probe counted helper poly docstring for HumanEval/32; entry_point find_zero has 2 official visible examples. No task or protocol change.",
+  "tasks": [
+    {
+      "task_id": "HumanEval/7",
+      "split": "train",
+      "entry_point": "filter_by_substring",
+      "source_sha": "5eecb2c6bb2b4fcd70989d66291a7c4c02d3afbf31591ad684e926a1e60ee969",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 2,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/11",
+      "split": "train",
+      "entry_point": "string_xor",
+      "source_sha": "ab1ec5c88f83f3fd16def18381c88b33bd5109b84f05147a54f50f95eca66c89",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 1,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/27",
+      "split": "train",
+      "entry_point": "flip_case",
+      "source_sha": "497a1ae9517dff889ad676a36f0e0bdcbe5afec3d283ad12045fd34df3e1dba4",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 1,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/32",
+      "split": "val",
+      "entry_point": "find_zero",
+      "source_sha": "17c137edab480f3be30b47bb48eea2748f23b120a73b2bb80c7901112e1b223f",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 2,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/45",
+      "split": "val",
+      "entry_point": "triangle_area",
+      "source_sha": "2ffd4f475e7fbe32b636a57d40751aedd393c3a1096cd6a1edaef3981d7c8564",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 1,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/1",
+      "split": "test",
+      "entry_point": "separate_paren_groups",
+      "source_sha": "ba4d0641a184fb3cdd632060a25d6408a7e91fe9d79b5c341407e74b80536327",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 1,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/6",
+      "split": "test",
+      "entry_point": "parse_nested_parens",
+      "source_sha": "39b4ae7cbb22820ff04ffe8a3cbe4bd4332d16046130335d78f36d75a5c3cf4c",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 1,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/9",
+      "split": "test",
+      "entry_point": "rolling_max",
+      "source_sha": "583b281fbe1bf261fbade6e1a03119de96084ac87b508387f0d23c3b0cfdbbdb",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 1,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/20",
+      "split": "test",
+      "entry_point": "find_closest_elements",
+      "source_sha": "881d52f394307cce02e432bc6342c93bfe0f6652b203f0bf1a0fc365ed87c594",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 2,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/33",
+      "split": "test",
+      "entry_point": "sort_third",
+      "source_sha": "41c45573886f68a38b5dc46f74ab70ef4cb79656e72bc97a04b861810158fa8c",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 2,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    },
+    {
+      "task_id": "HumanEval/40",
+      "split": "test",
+      "entry_point": "triples_sum_to_zero",
+      "source_sha": "9d88f259a8dff048e25628589b4c2a1b4fb22419540df1e34d2d731216ae41dc",
+      "host_evaluator_sha": "fa4b25703efa6cbc5d159015519bf6248362a683d6be11631d77ff4856f57a97",
+      "preflight_proof": {
+        "final_empty": 0,
+        "final_gold": 1,
+        "visible_cases": 5,
+        "visible_empty": 0,
+        "visible_gold": 1
+      }
+    }
+  ]
+}

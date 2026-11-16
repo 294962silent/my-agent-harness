@@ -1,0 +1,31 @@
+{
+  "evidence_kind": "operator transcript of observed tool results; not a campaign journal event",
+  "optimizer_check": {
+    "command": "python -m my_coding_agent.research_cli optimize <live-v2/red>",
+    "phase": "after two committed rounds, before final",
+    "tool_output_chunk_id": "4fd4ea",
+    "exit_code": 0,
+    "result": {
+      "promoted": false,
+      "reason": "explicit independent train/holdout task dataset required",
+      "status": "blocked"
+    },
+    "limitations": "No optimizer_started/finished event was created; this is a transcribed command result, not independent sealed optimization evidence."
+  },
+  "v2_operational_amendment": {
+    "source": "LIVE_SMOKE_PLAN.md#首次失败后的运维修订v2首请求前登记",
+    "registered_before_v2_first_request": true,
+    "v1_preserved_blocked": true,
+    "v1_spent_requests": 1,
+    "v1_spent_tokens": 1252,
+    "v1_spent_evaluations": 1,
+    "v1_spent_active_seconds": 21.2123297,
+    "v2_limits": {"max_requests": 31, "max_tokens": 198748, "max_evaluations": 19, "max_seconds": 878.78}
+  },
+  "scope_reduction": {
+    "reason": "user requested a one-day resume-ready engineering release",
+    "completed_scope": "red-wine CPU workflow, two rounds, pause/new-process resume, independent final",
+    "not_started": ["airfoil strategy holdout", "white-wine frozen-policy test", "three-arm same-budget quality ablation"],
+    "scientific_comparison_complete": false
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "at_utc": "2026-11-14T12:16:53.164Z",
+  "approval": "parent explicit bookkeeping amendment authorization",
+  "changed_plan_fields": [
+    "ledger_path"
+  ],
+  "original_plan_sha256": "cc2a53c54bceb9e78e3f2ed4634bd029725e733db0d705d5fca4be3a1a671ee9",
+  "amended_plan_sha256": "e45e2ca7d9453787136243a9779b438760400a5461161199683d5c96b1a39727",
+  "original_retrieval_manifest_sha256": "2095a80b3ef8742f3d4804ab22898e7e2e1d0c1ad3ae2ba503126588873cb624",
+  "amended_retrieval_manifest_sha256": "53a312bd80cb4b9188822f68d6deaa006916a21376c56c051d5f1326db5f4b9d",
+  "copied_result_and_state_files": 24,
+  "old_results_unchanged": true,
+  "source_question_encoder_prompt_budget_implementation_pins_unchanged": true,
+  "reindexed": false,
+  "paid_requests_before_migration": 0,
+  "unknown_or_held_before_migration": 0,
+  "probe": {
+    "requests": 3,
+    "actual_tokens": 2748,
+    "settled": 3,
+    "unknown_or_held": 0
+  },
+  "probe_answer_sha256": [
+    {
+      "arm": "lexical",
+      "sha256": "f515e56a65bbbbef2f05d3ebd441cded4a415ff83864e7acdcf0b7d62628a5b9"
+    },
+    {
+      "arm": "mem0",
+      "sha256": "abbe46b7c39bcf79c6cd531f08b8ce04e8d80aa6a52f946fcc4cd1b285311e35"
+    },
+    {
+      "arm": "none",
+      "sha256": "fec350e8da742716cce00f7bd3d7726acd45f66bd835e3693b3894f882953adf"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/home/mll/.cache/my-agent-bench/venv/bin/python",
+    "-m",
+    "swebench.harness.run_evaluation",
+    "--dataset_name",
+    "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5227/evaluation-dataset.json",
+    "--predictions_path",
+    "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/06-pytest-dev__pytest-5227-off/agent/model_patch.jsonl",
+    "--instance_ids",
+    "pytest-dev__pytest-5227",
+    "--max_workers",
+    "1",
+    "--timeout",
+    "600",
+    "--run_id",
+    "campaign-9684ed3b7278-06",
+    "--report_dir",
+    "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/06-pytest-dev__pytest-5227-off/score"
+  ],
+  "cwd": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/pytest-dev__pytest-5227",
+  "harness": "swebench",
+  "version": "5.0.2"
+}

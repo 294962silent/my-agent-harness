@@ -1,0 +1,16 @@
+{
+  "instance_id": "sympy__sympy-20590",
+  "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+  "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+  "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+  "metadata_sha256": "25728576eb7aa6926a81ee42e4639b6bf0e53c80bf7a4b8102eccce0c7cf64c7",
+  "resolved": true,
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "source_repository": "https://github.com/SWE-bench/swe-bench-tasks",
+  "official_report": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold.preflight-gold-sympy-20590.json",
+  "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+  "evaluation_dataset_sha256": "35e31272815cfee79e2aeec18382d2a7819897c2825dc84438543e30f1ba752e",
+  "canonical_verified_files": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/verified-files.json",
+  "reused_gold": true,
+  "gold_model_requests": 0
+}

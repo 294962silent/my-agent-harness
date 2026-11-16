@@ -1,0 +1,77 @@
+{
+  "plan_sha256": "b7a3ddfbd871743026fa76601805f24a138b1beac93a2e48882d5fcb22c1398a",
+  "run_id": "a1e09012485151f1969dd04bf842511a",
+  "status": "completed",
+  "outputs": [
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/.session.jsonl.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/7384093aa68f2b151bcbb92093d064ac.json",
+      "sha256": "3f57ccd1971d41eb52f803ef4ff3623536a45dea70e23d2da2486cafcaee1f80",
+      "bytes": 432
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/7384093aa68f2b151bcbb92093d064ac.txt",
+      "sha256": "7384093aa68f2b151bcbb92093d064acd391ee60d269eccdec164c096d1e5a31",
+      "bytes": 7112
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/ab3763449ce735a460dd9b8c7e475e2c.json",
+      "sha256": "f243848dcf3458292aafe6e1058f3303bc4cc446a30f856b992e7f7c126b4bb3",
+      "bytes": 433
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/ab3763449ce735a460dd9b8c7e475e2c.txt",
+      "sha256": "ab3763449ce735a460dd9b8c7e475e2c1f0bd635005de0038852bd2327eac21c",
+      "bytes": 10705
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/dac3196aa78b770e3155e301d324cd38.json",
+      "sha256": "7a2d1e1f1bb1d980880cb35592c68b58224e395aeda152698624e5825a775346",
+      "bytes": 432
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/dac3196aa78b770e3155e301d324cd38.txt",
+      "sha256": "dac3196aa78b770e3155e301d324cd38810e24f951457978ce16dd451b576b8d",
+      "bytes": 9934
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/f7de53c614da08489403d9c14835fa51.json",
+      "sha256": "2deeca0126fe891dee6d566983150e9f10ab44ae7f7acfb827efc1c4bc9d3991",
+      "bytes": 433
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/f7de53c614da08489403d9c14835fa51.txt",
+      "sha256": "f7de53c614da08489403d9c14835fa5163f885abd33835ef429eb7bef874cd56",
+      "bytes": 10333
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/ff4ac1f1319c49810483eca845e351a5.json",
+      "sha256": "dec5d97b36ff474b3cbd58def068ca7309b055d7083c154e5fe55cbd3eda9fbf",
+      "bytes": 432
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/artifacts/.my_agent_core/artifacts/0de5179a80e2cf3b/ff4ac1f1319c49810483eca845e351a5.txt",
+      "sha256": "ff4ac1f1319c49810483eca845e351a5bbcb57446814848363e4a23a2f35aea7",
+      "bytes": 8601
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/model_patch.jsonl",
+      "sha256": "4e016a90c8ffa5069758dc521707bda905a1e878b3b057bb0a93ee4e37830028",
+      "bytes": 638
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/run.json",
+      "sha256": "20a6d452121bc5afc162437df748bb8c2d1df625c2d9d6530d7a403206095f1b",
+      "bytes": 3418
+    },
+    {
+      "path": "/home/mll/.cache/my-agent-bench/swe-v2-pilot-20261112/campaign-v2-7652168/trials/05-pytest-dev__pytest-5227-on/agent/session.jsonl",
+      "sha256": "fc6cb00378d7b84f372b6d2fa19dca703e4a18724666e4210a9e8a42fbd94f19",
+      "bytes": 97268
+    }
+  ]
+}

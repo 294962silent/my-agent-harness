@@ -1,0 +1,252 @@
+{
+  "instance_id": "sympy__sympy-20590",
+  "dataset": "SWE-bench/SWE-bench_Lite",
+  "scope": "one explicitly selected official quickstart task; paired arm results, not a dataset pass rate",
+  "task_repository_revision": "3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d",
+  "base_commit": "cffd4e0f86fefd4802349a9f9b19ed70934ea354",
+  "image": "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest",
+  "image_id": "sha256:fcfe2aec281d3a1af6a71bedef4637a446bcb076e0acdec6fec03b9b25a346f2",
+  "gold_evidence_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/gold-evidence.json",
+  "arms": {
+    "on": {
+      "arm": "on",
+      "recorded_at": "2026-11-12T10:48:45.164276+00:00",
+      "model_run_path": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r2/run.json",
+      "model_run_sha256": "62c6c8db7fd8ab8b9d461bbb0fbc931661201b755d94f61750c4ff56dccfe7d0",
+      "solver_status": "budget_exhausted",
+      "solver_stop_reason": "budget_exhausted",
+      "solver_requests": 16,
+      "prediction_exists": true,
+      "model_run_budget_details": {
+        "kind": "max_turns",
+        "limit": 16,
+        "observed": 16
+      },
+      "solver_usage_available": true,
+      "solver_cost_usd": 0.029658,
+      "prediction_path": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r2/model_patch.jsonl",
+      "prediction_body_read_by_reporting": false,
+      "evaluation": {
+        "harness": "swebench",
+        "harness_version": "5.0.2",
+        "run_id": "live-sympy-on-r2",
+        "gold_mode": false,
+        "workers": 1,
+        "timeout_seconds": 600,
+        "wall_seconds": 21.85,
+        "test_runtime_seconds": 4.23,
+        "official_report_path": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r2/my-agent-harness-on.live-sympy-on-r2.json",
+        "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+        "official_report": {
+          "total_instances": 1,
+          "submitted_instances": 1,
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "unresolved_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0,
+          "empty_patch_instances": 0,
+          "error_instances": 0,
+          "completed_ids": [
+            "sympy__sympy-20590"
+          ],
+          "incomplete_ids": [],
+          "empty_patch_ids": [],
+          "submitted_ids": [
+            "sympy__sympy-20590"
+          ],
+          "resolved_ids": [
+            "sympy__sympy-20590"
+          ],
+          "unresolved_ids": [],
+          "infra_failure_ids": [],
+          "ambiguous_failure_ids": [],
+          "failure_reasons": {},
+          "error_ids": [],
+          "schema_version": 2,
+          "unstopped_instances": 0,
+          "unstopped_containers": [],
+          "unremoved_images": [
+            "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest"
+          ]
+        },
+        "instance_report_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-on-r2/my-agent-harness-on/sympy__sympy-20590/report.json",
+        "instance_report_sha256": "8b9789cc302b46bed7edeaed0ecc1e0f8af15c9263c46131c34440347f809717",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "infra_failure": false,
+        "test_counts": {
+          "FAIL_TO_PASS": {
+            "success": 1,
+            "failure": 0
+          },
+          "PASS_TO_PASS": {
+            "success": 21,
+            "failure": 0
+          },
+          "FAIL_TO_FAIL": {
+            "success": 0,
+            "failure": 0
+          },
+          "PASS_TO_FAIL": {
+            "success": 0,
+            "failure": 0
+          }
+        },
+        "failed_test_count": 0,
+        "test_output_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-on-r2/my-agent-harness-on/sympy__sympy-20590/test_output.txt",
+        "test_output_sha256": "d85f4c78d9548eed5e4ed921aecb094feeb1d2ff43fc89a3f6bfc631f156dd3e"
+      }
+    },
+    "off": {
+      "arm": "off",
+      "recorded_at": "2026-11-12T10:51:10.950692+00:00",
+      "model_run_path": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-off-r2/run.json",
+      "model_run_sha256": "36b152f8c894ff30c98ff9ee8a5af3b222f67a3a6126b2efa03c3bcf44cc9510",
+      "solver_status": "budget_exhausted",
+      "solver_stop_reason": "budget_exhausted",
+      "solver_requests": 16,
+      "prediction_exists": true,
+      "model_run_budget_details": {
+        "kind": "max_turns",
+        "limit": 16,
+        "observed": 16
+      },
+      "solver_usage_available": true,
+      "solver_cost_usd": 0.038939,
+      "prediction_path": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-off-r2/model_patch.jsonl",
+      "prediction_body_read_by_reporting": false,
+      "evaluation": {
+        "harness": "swebench",
+        "harness_version": "5.0.2",
+        "run_id": "live-sympy-off-r2",
+        "gold_mode": false,
+        "workers": 1,
+        "timeout_seconds": 600,
+        "wall_seconds": 21.49,
+        "test_runtime_seconds": 3.75,
+        "official_report_path": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-off-r2/my-agent-harness-off.live-sympy-off-r2.json",
+        "official_report_sha256": "21ce17ca478679292a6bbd9d1c6aaf29b5f2efdd80e9d5a6bd153514c3dd55f5",
+        "official_report": {
+          "total_instances": 1,
+          "submitted_instances": 1,
+          "completed_instances": 1,
+          "resolved_instances": 1,
+          "unresolved_instances": 0,
+          "infra_failure_instances": 0,
+          "ambiguous_failure_instances": 0,
+          "empty_patch_instances": 0,
+          "error_instances": 0,
+          "completed_ids": [
+            "sympy__sympy-20590"
+          ],
+          "incomplete_ids": [],
+          "empty_patch_ids": [],
+          "submitted_ids": [
+            "sympy__sympy-20590"
+          ],
+          "resolved_ids": [
+            "sympy__sympy-20590"
+          ],
+          "unresolved_ids": [],
+          "infra_failure_ids": [],
+          "ambiguous_failure_ids": [],
+          "failure_reasons": {},
+          "error_ids": [],
+          "schema_version": 2,
+          "unstopped_instances": 0,
+          "unstopped_containers": [],
+          "unremoved_images": [
+            "swebench/sweb.eval.x86_64.sympy_1776_sympy-20590:latest"
+          ]
+        },
+        "instance_report_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-off-r2/my-agent-harness-off/sympy__sympy-20590/report.json",
+        "instance_report_sha256": "8b9789cc302b46bed7edeaed0ecc1e0f8af15c9263c46131c34440347f809717",
+        "resolved": true,
+        "patch_successfully_applied": true,
+        "infra_failure": false,
+        "test_counts": {
+          "FAIL_TO_PASS": {
+            "success": 1,
+            "failure": 0
+          },
+          "PASS_TO_PASS": {
+            "success": 21,
+            "failure": 0
+          },
+          "FAIL_TO_FAIL": {
+            "success": 0,
+            "failure": 0
+          },
+          "PASS_TO_FAIL": {
+            "success": 0,
+            "failure": 0
+          }
+        },
+        "failed_test_count": 0,
+        "test_output_path": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-off-r2/my-agent-harness-off/sympy__sympy-20590/test_output.txt",
+        "test_output_sha256": "0b343159ff07cb0bcf3242a77ffb699ef1f102186d74a531d0ed0cd860fad304"
+      }
+    }
+  },
+  "limitations": [
+    "Each arm has one run on one task; no statistical or generalized advantage claim.",
+    "A budget_exhausted solver run can still submit a patch; its terminal status is retained separately from official scoring.",
+    "No evaluation feedback is sent to either solver during generation.",
+    "Reporting and official scoring do not initiate model requests."
+  ],
+  "status": "paired_complete",
+  "design": {
+    "unique_tasks": 1,
+    "model_trials": 2,
+    "model_trials_per_arm": 1,
+    "arm_order": [
+      "on",
+      "off"
+    ],
+    "campaign_seed": 23,
+    "seed_scope": "campaign order/selection metadata supplied by coordinator; not a claim of deterministic provider sampling",
+    "directory_r2_note": "Each r2 directory is the first actual model run for that arm; on-r1 was a pre-agent zero-request environment failure.",
+    "feature": "artifact projection on/off",
+    "solver_turn_request_cap": 16,
+    "provider_model": "deepseek-v4.1-flash",
+    "same_official_scoring": true,
+    "contrast_status": "configuration toggled but inactive; no artifact-effect estimate"
+  },
+  "excluded_pre_agent_attempts": [
+    {
+      "arm": "on",
+      "directory": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r1",
+      "model_requests": 0,
+      "solver_status": "RuntimeError",
+      "prediction_exists": false,
+      "reason": "pre-agent environment failure; not a model trial",
+      "run_json": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r1/run.json",
+      "run_json_sha256": "2220cf5271e8107917fb6b9e52e3de826a51df530aaa49e5a4b8a245b104d83e"
+    }
+  ],
+  "safe_evidence_files": [
+    {
+      "arm": "on",
+      "official_aggregate_json": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r2/my-agent-harness-on.live-sympy-on-r2.json",
+      "official_instance_json": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-on-r2/my-agent-harness-on/sympy__sympy-20590/report.json",
+      "sanitized_solver_run_json": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-on-r2/run.json",
+      "official_test_stdout": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-on-r2/my-agent-harness-on/sympy__sympy-20590/test_output.txt",
+      "note": "These are evaluation feedback; do not feed back to either solver. run_instance.log may contain model patch and is excluded from recommended summary artifacts."
+    },
+    {
+      "arm": "off",
+      "official_aggregate_json": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-off-r2/my-agent-harness-off.live-sympy-off-r2.json",
+      "official_instance_json": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-off-r2/my-agent-harness-off/sympy__sympy-20590/report.json",
+      "sanitized_solver_run_json": "/home/mll/.cache/my-agent-bench/campaign-20261112/sympy20590-off-r2/run.json",
+      "official_test_stdout": "/home/mll/.cache/my-agent-bench/sympy-gold-preflight/logs/run_evaluation/live-sympy-off-r2/my-agent-harness-off/sympy__sympy-20590/test_output.txt",
+      "note": "These are evaluation feedback; do not feed back to either solver. run_instance.log may contain model patch and is excluded from recommended summary artifacts."
+    }
+  ],
+  "adapter_protocol": "v1",
+  "evidence_level": "pipeline_smoke",
+  "artifact_externalizations_observed_on": 0,
+  "artifact_projection_activated": false,
+  "no_causal_token_comparison": true,
+  "v2_results_not_included": true
+}

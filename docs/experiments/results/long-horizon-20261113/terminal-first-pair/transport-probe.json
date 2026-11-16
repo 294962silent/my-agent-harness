@@ -1,0 +1,86 @@
+{
+  "kind": "fresh_transport_only",
+  "model_requests": 0,
+  "test_script_executed": false,
+  "session_id": "sol2-transport-b0e5c01f03cc",
+  "resource_limits": {
+    "cpus": 1,
+    "memory_mb": 2048,
+    "gpus": 0
+  },
+  "image": "alexgshaw/cancel-async-tasks:20251031",
+  "started_at": 1794572444.2178383,
+  "source_sha256": "9764d929549bd149c945642c9c1bbe50733ece9e7bdbb09aa0c721a2b79b13a5",
+  "exec_source_sha256": "4f74e08941b3534864643405dd6ff43543597248539d7f5de7208ec5c2f5b511",
+  "commands": [
+    {
+      "name": "env_route_metadata",
+      "sha256": "c58bb8e94ea38d598785ec0f708afda2b17d288cba2a2d27c17d6203e5054af4"
+    },
+    {
+      "name": "curl_presence",
+      "sha256": "65d47921932f708b60cc4d3051c3792ba387b89f453c84db1ade264188a1cae6"
+    },
+    {
+      "name": "curl_base_preparation",
+      "sha256": "18f1373b015e7d8ac892fbe6cc387fcfa597ff9d77aba9ce4c15e750c9a3c44b"
+    },
+    {
+      "name": "official_uv_release_transport",
+      "sha256": "b20842b9cc0e443bf8a9ff1ea9bf420f31a01d2e30b11eac5376b81eb7d88419"
+    }
+  ],
+  "env_route_metadata_exit": 0,
+  "env_route_metadata": {
+    "https_value_matches_frozen": true,
+    "https_lower_matches_upper": true,
+    "http_values_empty": true,
+    "no_proxy_present": false,
+    "bypass_github": false,
+    "bypass_release_assets": false
+  },
+  "curl_preparation_exit": 0,
+  "curl_exit": 0,
+  "status": "transport_completed",
+  "route_events": [
+    {
+      "proxy_variable_used": "https_proxy"
+    },
+    {
+      "connect_target": "github.com:443"
+    },
+    {
+      "connect_target": "github.com:443"
+    },
+    {
+      "http_status": "HTTP/1.1 200"
+    },
+    {
+      "tls_established": true
+    },
+    {
+      "http_status": "HTTP/2 302"
+    },
+    {
+      "proxy_variable_used": "https_proxy"
+    },
+    {
+      "connect_target": "release-assets.githubusercontent.com:443"
+    },
+    {
+      "connect_target": "release-assets.githubusercontent.com:443"
+    },
+    {
+      "http_status": "HTTP/1.1 200"
+    },
+    {
+      "tls_established": true
+    },
+    {
+      "http_status": "HTTP/2 200"
+    }
+  ],
+  "cleanup": "completed",
+  "finished_at": 1794572482.719348,
+  "raw_source_sha256": "0e840d59892513b0d77663fdd725a6e6d7091f9ae9355ac50cf91ce722dced6a"
+}

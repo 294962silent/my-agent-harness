@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "candidate_id": "MLL-project-materials",
+    "target_roles": [
+      "Agent 开发实习生",
+      "大模型应用开发实习生"
+    ],
+    "updated_at": "2026-11-14"
+  },
+  "claims": [
+    {
+      "id": "research-scoring-001",
+      "source_fact": "项目提供固定数据、受限文件工具、Docker 预测和宿主重算 RMSE；8项Docker边界验证有证据。",
+      "candidate_wording": "代码实验 Agent 将训练脚本置于受限 Docker 执行，由宿主校验预测并重算 RMSE，附8项边界验证。",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/interview/13-代码实验Agent的可信评分与恢复.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        },
+        {
+          "type": "project_document",
+          "location": "docs/experiments/results/research-agent-20261114/docker-boundary-smoke.json",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "已确认",
+      "allowed_uses": [
+        "Agent / 大模型应用实习简历的项目事实",
+        "HR 开场白",
+        "面试项目说明"
+      ],
+      "interview_details": {
+        "decisions": [
+          "候选只输出预测，宿主保存标签与评分权"
+        ],
+        "difficulties": [
+          "防范伪造stdout、非法预测、输出越界与超时"
+        ],
+        "verification": [
+          "本地8项Docker边界验证；具体项与命令以结果文件为准"
+        ],
+        "result": "工程隔离与可信评分链路已实现并本地验证"
+      },
+      "boundary": "确认的是项目功能；个人负责模块未知。Docker不是完整攻击隔离。",
+      "risk_notes": [],
+      "last_verified": "2026-11-14"
+    },
+    {
+      "id": "research-recovery-002",
+      "source_fact": "项目实现请求预留、usage结算、全journal预算恢复、round边界检查点及独立final；离线脚本模型回归通过。真实v2完成两轮、新进程恢复和独立final，预算未清零。",
+      "candidate_wording": "通过journal记录请求预留和用量结算，真实模型完成两轮、新进程恢复及独立final，累计预算连续；未知工作阻断重放。",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/experiments/reports/research-sol2-20261114.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        },
+        {
+          "type": "project_document",
+          "location": "tests/coding/test_research_runtime.py",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "已确认",
+      "allowed_uses": [
+        "Agent / 大模型应用实习简历的项目事实",
+        "HR 开场白",
+        "面试项目说明"
+      ],
+      "interview_details": {
+        "decisions": [
+          "先预留后调用；只在完整round提交检查点"
+        ],
+        "difficulties": [
+          "远程请求与本地落盘不能组成原子事务"
+        ],
+        "verification": [
+          "27项runtime/integration定向回归exit0；含真实CodingAgent与脚本LLM、假evaluator恢复测试",
+          "live-summary.json独立验证journal链、checkpoint、逐请求tokens和final预测hash"
+        ],
+        "result": "离线恢复与fail-closed契约验证通过"
+      },
+      "boundary": "仅完成red工程流程，不是任意指令exactly-once；两轮均保留baseline，没有算法改进，个人职责仍待确认。",
+      "risk_notes": [],
+      "last_verified": "2026-11-14"
+    },
+    {
+      "id": "research-integrations-003",
+      "source_fact": "项目具备Mem0本地CPU经验入口、Langfuse本地SDK观测、Dream-RSI受控参数实现。真实v2第二轮Mem0有效候选1、embedding_calls3、fallbackfalse、closedtrue；本地trace24请求完整。",
+      "candidate_wording": "接入本地经验检索和SDK观测，并固定受控搜索的参数及经验来源，保留baseline。",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/interview/13-代码实验Agent的可信评分与恢复.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        },
+        {
+          "type": "project_document",
+          "location": "docs/experiments/reports/research-sol2-20261114.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "已确认",
+      "allowed_uses": [
+        "Agent / 大模型应用实习简历的项目事实",
+        "HR 开场白",
+        "面试项目说明"
+      ],
+      "interview_details": {
+        "decisions": [
+          "经验候选不掌控状态和预算；final不回流记忆和选参"
+        ],
+        "difficulties": [
+          "区分词法fallback、有效语义候选、本地trace和云上传"
+        ],
+        "verification": [
+          "本地SDK契约与定向测试；首轮空库不构成语义召回成功"
+        ],
+        "result": "本地CPU语义候选功能及本地观测覆盖有真实运行证据；没有质量收益或云上传证据"
+      },
+      "boundary": "不宣称Mem0或RSI质量提升，不宣称Langfuse云上传；个人贡献仍须确认。",
+      "risk_notes": [],
+      "last_verified": "2026-11-14"
+    },
+    {
+      "id": "research-delivery-004",
+      "source_fact": "核心提交160118f已推origin，PR2为open未合并；本地定向、Docker边界、wheel有验证证据。",
+      "candidate_wording": "核心实现已提交并推送origin，PR #2协作中，提供本地回归、Docker边界及wheel验证材料。",
+      "sources": [
+        {
+          "type": "pull_request",
+          "location": "https://github.com/294962silent/my-agent-harness/pull/2",
+          "public": true,
+          "note": "项目证据；不自动证明个人贡献"
+        },
+        {
+          "type": "project_document",
+          "location": "docs/experiments/HARNESS_EXPERIMENT_LOG.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "已确认",
+      "allowed_uses": [
+        "Agent / 大模型应用实习简历的项目事实",
+        "HR 开场白",
+        "面试项目说明"
+      ],
+      "interview_details": {
+        "decisions": [
+          "把实现、本地验证、真实链路和合并状态分开记录"
+        ],
+        "difficulties": [
+          "避免把open PR和本地通过写为维护者采用或CI通过"
+        ],
+        "verification": [
+          "主代理提供160118f推送和PR状态证据；定向、Docker及wheel证据以最终日志为准"
+        ],
+        "result": "已提交/推送，PR协作中"
+      },
+      "boundary": "不是已合并、生产部署或上游采用；个人责任不可从提交归属推断。",
+      "risk_notes": [
+        "PR状态会变化，正式投递前刷新"
+      ],
+      "last_verified": "2026-11-14"
+    },
+    {
+      "id": "research-live-failure-005",
+      "source_fact": "red live-v1实际1次真实DeepSeek请求1252 tokens已结算，MemoryError，1 baseline eval，0 committed rounds，未执行final。",
+      "candidate_wording": "保留真实调用结算与MemoryError失败证据；最小离线工具重放通过，原campaign保持阻断。",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/experiments/reports/research-sol2-20261114.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "已确认",
+      "allowed_uses": [
+        "面试诊断案例",
+        "内部审计"
+      ],
+      "interview_details": {
+        "decisions": [
+          "不自动重跑未知或未完成round；负结果也留档"
+        ],
+        "difficulties": [
+          "原异常栈未保存，不能恢复具体失败行"
+        ],
+        "verification": [
+          "journal、calls、session、result元数据交叉核对；离线ls/find重放0付费请求"
+        ],
+        "result": "真实首版失败有据；没有候选checkpoint或final成绩"
+      },
+      "boundary": "仅用于面试诊断案例，不包装为成功闭环或已确认资源根因。",
+      "risk_notes": [],
+      "last_verified": "2026-11-14"
+    },
+    {
+      "id": "research-live-v2-006",
+      "source_fact": "red真实v2完成两轮、新进程resume与独立final；24API106826reportedtokens/8dev+1final；两轮均保留原均值baseline。",
+      "candidate_wording": "在固定red回归任务验证真实模型两轮、跨进程恢复和独立final；保留baseline与无效候选证据，未声称质量提升。",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/experiments/results/research-agent-20261114/live-summary.json",
+          "public": false,
+          "note": "独立聚合hash/元数据审计，不含标签或session原文"
+        },
+        {
+          "type": "project_document",
+          "location": "docs/experiments/results/research-agent-20261114/operator-evidence.json",
+          "public": false,
+          "note": "CLI结果转录，不是journal封印的优化证据"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "已确认",
+      "allowed_uses": [
+        "Agent / 大模型应用实习简历的项目事实",
+        "面试工程案例"
+      ],
+      "interview_details": {
+        "decisions": [
+          "完整round后暂停与新进程恢复；同分保留baseline；final一次性且不反馈"
+        ],
+        "difficulties": [
+          "每轮2个budget_exhausted无效attempt，完整optimizer trace unavailable"
+        ],
+        "verification": [
+          "journal与calls逐请求token相同；2checkpoint/result/hash匹配；final预测hash匹配；预算12/48915恢复后不清零至24/106826"
+        ],
+        "result": "final valid=true RMSE0.7554124334834056，最终代码仍为原均值baseline；无算法提升"
+      },
+      "boundary": "仅red工程流程；不是初始三数据集计划完成、效果消融或个人独立手写。dev/final分属不同样本，RMSE差异不代表提升。",
+      "risk_notes": [
+        "v1失败必须保留：另1API1252tokens/1dev；总25API108078tokens/10评分；USD unavailable",
+        "airfoil/white及正式三组未启动；optimize无合法train+holdout而blocked/promotedfalse，证据为operator转录"
+      ],
+      "last_verified": "2026-11-14"
+    },
+    {
+      "id": "research-personal-role-007",
+      "source_fact": "用户个人负责模块、关键决策、代码掌握程度尚未确认；实现由主代理设计验收、两位Sol执行助手协作。",
+      "candidate_wording": "【待补：本人真实负责的模块、动作及可讲解调用链；未经确认不写主导或独立手写】",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/plans/2026-11-14-research-agent-runtime.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        },
+        {
+          "type": "project_document",
+          "location": "docs/interview/13-代码实验Agent的可信评分与恢复.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "待确认",
+      "allowed_uses": [],
+      "interview_details": {
+        "decisions": [],
+        "difficulties": [
+          "项目客观事实不能自动变成个人主导成果"
+        ],
+        "verification": [
+          "请本人用源码和复现说明个人实际动作"
+        ],
+        "result": null
+      },
+      "boundary": "responsibility_level参与仅作最保守结构占位，不代表已确认参与范围。",
+      "risk_notes": [
+        "个人主导、Owner、从零独立实现、精通等表述均暂不授权"
+      ],
+      "last_verified": null
+    },
+    {
+      "id": "research-excluded-metrics-008",
+      "source_fact": "历史HumanEval47/48属于旧短题实验，不属于当前代码实验Agent、长程能力或个人独立实现证据；尚无Mem0/RSI收益。",
+      "candidate_wording": "不采用：以HumanEval47/48证明长程能力、当前场景成绩或个人独立手写；不采用无对照的Mem0/RSI提升数字。",
+      "sources": [
+        {
+          "type": "project_document",
+          "location": "docs/plans/2026-11-14-research-agent-runtime.md",
+          "public": false,
+          "note": "项目证据；不自动证明个人贡献"
+        }
+      ],
+      "responsibility_level": "参与",
+      "verification_status": "不采用",
+      "allowed_uses": [],
+      "interview_details": {
+        "decisions": [
+          "不跨场景借用指标"
+        ],
+        "difficulties": [
+          "短题信号饱和不能识别独立RSI贡献"
+        ],
+        "verification": [
+          "保留历史归档及负结果，不重跑旧题冒充当前成绩"
+        ],
+        "result": null
+      },
+      "boundary": "仅保留审计，不进入对外简历。",
+      "risk_notes": [],
+      "last_verified": null
+    }
+  ]
+}

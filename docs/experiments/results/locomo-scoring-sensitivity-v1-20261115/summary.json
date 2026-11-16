@@ -1,0 +1,350 @@
+{
+  "first_two_readback": {
+    "attempts_per_trace": {
+      "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_lexical": 1,
+      "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_mem0": 3
+    },
+    "backoff": {
+      "initial_seconds": 1.0,
+      "kind": "exponential",
+      "max_seconds": 30.0,
+      "waits_seconds": [
+        1.0,
+        2.0
+      ]
+    },
+    "campaign": "memory-locomo-judge-sensitivity-20261115-v1",
+    "distinct_traces": true,
+    "elapsed_seconds": 9.880564799997956,
+    "extra_model_requests": 0,
+    "model": "deepseek-v4.1-flash",
+    "one_observation_per_trace": true,
+    "project": "cmwg5sagt00ksad0j6au0463n",
+    "protocol": "locomo-judge-sensitivity-v1",
+    "query_errors_per_trace": {},
+    "rows": [
+      {
+        "arm": "facts_lexical",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "e8e62a9eedf3648c",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_lexical",
+        "session_id": "memory-locomo-judge-sensitivity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_1f86a8f6603e40ecabe5bd22",
+        "trace_id": "49ee7a28e18f738c9ee028136d62009e",
+        "usage_details": {
+          "input": 151,
+          "output": 578,
+          "total": 729
+        }
+      },
+      {
+        "arm": "facts_mem0",
+        "metadata_only": true,
+        "model": "deepseek-v4.1-flash",
+        "observation_id": "42a7170dcf8a9373",
+        "project_id": "cmwg5sagt00ksad0j6au0463n",
+        "root_id": "sensitivity.v1.judge.q_1f86a8f6603e40ecabe5bd22.facts_mem0",
+        "session_id": "memory-locomo-judge-sensitivity-20261115-v1",
+        "stage": "judge",
+        "task_id": "q_1f86a8f6603e40ecabe5bd22",
+        "trace_id": "68e9973e08daafd087ff2f9a259939ba",
+        "usage_details": {
+          "input": 151,
+          "output": 1855,
+          "total": 2006
+        }
+      }
+    ],
+    "same_campaign_session": true,
+    "sample_count": 2,
+    "schema_version": 1,
+    "status": "verified",
+    "window_seconds": 180.0
+  },
+  "main": {
+    "facts_lexical": {
+      "accuracy": 0.4,
+      "correct": 12,
+      "denominator": 30,
+      "length_judges": 5,
+      "mean_session_mrr": 0.7677777777777778,
+      "mean_session_recall_at_8": 0.8913492063492063,
+      "valid_judges": 25
+    },
+    "facts_mem0": {
+      "accuracy": 0.5,
+      "correct": 15,
+      "denominator": 30,
+      "length_judges": 5,
+      "mean_session_mrr": 0.8688888888888889,
+      "mean_session_recall_at_8": 0.914047619047619,
+      "valid_judges": 25
+    },
+    "raw_lexical": {
+      "accuracy": 0.5333333333333333,
+      "correct": 16,
+      "denominator": 30,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7836507936507936,
+      "mean_session_recall_at_8": 0.829920634920635,
+      "valid_judges": 30
+    },
+    "raw_mem0": {
+      "accuracy": 0.5666666666666667,
+      "correct": 17,
+      "denominator": 30,
+      "length_judges": 2,
+      "mean_session_mrr": 0.7722222222222223,
+      "mean_session_recall_at_8": 0.8124603174603174,
+      "valid_judges": 28
+    }
+  },
+  "main_conclusion_rewritten": false,
+  "main_paired": {
+    "facts_lexical__vs__facts_mem0": {
+      "both_correct": 11,
+      "both_incorrect": 14,
+      "compared_pairs": 30,
+      "discordant": 5,
+      "left_only_correct": 1,
+      "mcnemar_exact_p_two_sided": 0.375,
+      "paired_delta_left_minus_right": -3,
+      "right_only_correct": 4
+    },
+    "raw_lexical__vs__facts_lexical": {
+      "both_correct": 11,
+      "both_incorrect": 13,
+      "compared_pairs": 30,
+      "discordant": 6,
+      "left_only_correct": 5,
+      "mcnemar_exact_p_two_sided": 0.21875,
+      "paired_delta_left_minus_right": 4,
+      "right_only_correct": 1
+    },
+    "raw_lexical__vs__facts_mem0": {
+      "both_correct": 13,
+      "both_incorrect": 12,
+      "compared_pairs": 30,
+      "discordant": 5,
+      "left_only_correct": 3,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": 1,
+      "right_only_correct": 2
+    },
+    "raw_lexical__vs__raw_mem0": {
+      "both_correct": 14,
+      "both_incorrect": 11,
+      "compared_pairs": 30,
+      "discordant": 5,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": -1,
+      "right_only_correct": 3
+    },
+    "raw_mem0__vs__facts_lexical": {
+      "both_correct": 10,
+      "both_incorrect": 11,
+      "compared_pairs": 30,
+      "discordant": 9,
+      "left_only_correct": 7,
+      "mcnemar_exact_p_two_sided": 0.1796875,
+      "paired_delta_left_minus_right": 5,
+      "right_only_correct": 2
+    },
+    "raw_mem0__vs__facts_mem0": {
+      "both_correct": 13,
+      "both_incorrect": 11,
+      "compared_pairs": 30,
+      "discordant": 6,
+      "left_only_correct": 4,
+      "mcnemar_exact_p_two_sided": 0.6875,
+      "paired_delta_left_minus_right": 2,
+      "right_only_correct": 2
+    }
+  },
+  "main_result_definition": "original 120 rows; twelve length judges remain incorrect",
+  "original_report_rewritten": false,
+  "owner_close": {
+    "close_errors": 0,
+    "dropped": 0,
+    "export_errors": 0,
+    "llm_clients_closed": true,
+    "runtime_alive_after_close": false,
+    "runtime_close_complete": true
+  },
+  "protocol": "locomo-judge-sensitivity-v1",
+  "rechecked": {
+    "by_arm": {
+      "facts_lexical": 5,
+      "facts_mem0": 5,
+      "raw_mem0": 2
+    },
+    "count": 12,
+    "invalid": 0,
+    "still_length": 0,
+    "valid": 12
+  },
+  "requests": {
+    "completion_tokens": 9264,
+    "latency": 136.79512071609497,
+    "prompt_tokens": 1902,
+    "requests": 12,
+    "total_tokens": 11166
+  },
+  "schema_version": 1,
+  "sensitivity": {
+    "facts_lexical": {
+      "accuracy": 0.43333333333333335,
+      "correct": 13,
+      "denominator": 30,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7677777777777778,
+      "mean_session_recall_at_8": 0.8913492063492063,
+      "rescore_usage": {
+        "completion_tokens": 2525,
+        "covered_requests": 5,
+        "expected_requests": 5,
+        "prompt_tokens": 785,
+        "total_tokens": 3310
+      },
+      "rescored": 5,
+      "rescored_incorrect_or_failed": 4,
+      "rescored_still_length": 0,
+      "rescored_valid": 5,
+      "valid_judges": 30
+    },
+    "facts_mem0": {
+      "accuracy": 0.5666666666666667,
+      "correct": 17,
+      "denominator": 30,
+      "length_judges": 0,
+      "mean_session_mrr": 0.8688888888888889,
+      "mean_session_recall_at_8": 0.914047619047619,
+      "rescore_usage": {
+        "completion_tokens": 5685,
+        "covered_requests": 5,
+        "expected_requests": 5,
+        "prompt_tokens": 781,
+        "total_tokens": 6466
+      },
+      "rescored": 5,
+      "rescored_incorrect_or_failed": 3,
+      "rescored_still_length": 0,
+      "rescored_valid": 5,
+      "valid_judges": 30
+    },
+    "raw_lexical": {
+      "accuracy": 0.5333333333333333,
+      "correct": 16,
+      "denominator": 30,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7836507936507936,
+      "mean_session_recall_at_8": 0.829920634920635,
+      "rescore_usage": {
+        "completion_tokens": 0,
+        "covered_requests": 0,
+        "expected_requests": 0,
+        "prompt_tokens": 0,
+        "total_tokens": 0
+      },
+      "rescored": 0,
+      "rescored_incorrect_or_failed": 0,
+      "rescored_still_length": 0,
+      "rescored_valid": 0,
+      "valid_judges": 30
+    },
+    "raw_mem0": {
+      "accuracy": 0.6,
+      "correct": 18,
+      "denominator": 30,
+      "length_judges": 0,
+      "mean_session_mrr": 0.7722222222222223,
+      "mean_session_recall_at_8": 0.8124603174603174,
+      "rescore_usage": {
+        "completion_tokens": 1054,
+        "covered_requests": 2,
+        "expected_requests": 2,
+        "prompt_tokens": 336,
+        "total_tokens": 1390
+      },
+      "rescored": 2,
+      "rescored_incorrect_or_failed": 1,
+      "rescored_still_length": 0,
+      "rescored_valid": 2,
+      "valid_judges": 30
+    }
+  },
+  "sensitivity_paired": {
+    "facts_lexical__vs__facts_mem0": {
+      "both_correct": 13,
+      "both_incorrect": 13,
+      "compared_pairs": 30,
+      "discordant": 4,
+      "left_only_correct": 0,
+      "mcnemar_exact_p_two_sided": 0.125,
+      "paired_delta_left_minus_right": -4,
+      "right_only_correct": 4
+    },
+    "raw_lexical__vs__facts_lexical": {
+      "both_correct": 11,
+      "both_incorrect": 12,
+      "compared_pairs": 30,
+      "discordant": 7,
+      "left_only_correct": 5,
+      "mcnemar_exact_p_two_sided": 0.453125,
+      "paired_delta_left_minus_right": 3,
+      "right_only_correct": 2
+    },
+    "raw_lexical__vs__facts_mem0": {
+      "both_correct": 14,
+      "both_incorrect": 11,
+      "compared_pairs": 30,
+      "discordant": 5,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": -1,
+      "right_only_correct": 3
+    },
+    "raw_lexical__vs__raw_mem0": {
+      "both_correct": 14,
+      "both_incorrect": 10,
+      "compared_pairs": 30,
+      "discordant": 6,
+      "left_only_correct": 2,
+      "mcnemar_exact_p_two_sided": 0.6875,
+      "paired_delta_left_minus_right": -2,
+      "right_only_correct": 4
+    },
+    "raw_mem0__vs__facts_lexical": {
+      "both_correct": 10,
+      "both_incorrect": 9,
+      "compared_pairs": 30,
+      "discordant": 11,
+      "left_only_correct": 8,
+      "mcnemar_exact_p_two_sided": 0.2265625,
+      "paired_delta_left_minus_right": 5,
+      "right_only_correct": 3
+    },
+    "raw_mem0__vs__facts_mem0": {
+      "both_correct": 14,
+      "both_incorrect": 9,
+      "compared_pairs": 30,
+      "discordant": 7,
+      "left_only_correct": 4,
+      "mcnemar_exact_p_two_sided": 1.0,
+      "paired_delta_left_minus_right": 1,
+      "right_only_correct": 3
+    }
+  },
+  "sensitivity_result_definition": "all twelve length judges replaced once at cap 4096; failures remain incorrect",
+  "status": "complete",
+  "token_state": {
+    "held_tokens": 0,
+    "requests": 12,
+    "unknown_or_inflight": false,
+    "used_tokens": 11166
+  }
+}

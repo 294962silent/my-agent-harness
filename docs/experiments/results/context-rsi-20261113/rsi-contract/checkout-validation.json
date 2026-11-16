@@ -1,0 +1,21 @@
+{
+  "kind": "synthetic",
+  "quality": "unmeasured",
+  "actual_provider_calls": 0,
+  "raw_summary_sha256": "dce0dc11c761a44fbff11165588b6bcfcd9134c54f146936d9ce8837fd413965",
+  "source_sha256": {
+    "src/my_coding_agent/rsi_runtime.py": "47859346e36f6a2252b043de772d44ab01636cc9211e4fffcfec1f7ad0c0c004",
+    "src/my_coding_agent/rsi_branch.py": "6faabf3beeac772cb81f7cb860b684629a8529540cdd95c28793a29f243d8c08",
+    "src/my_coding_agent/agent.py": "e5acbc521e772f0eb18d3140b6504a31cca5a2c0e6b6013da4ec96bf1930b4f9",
+    "src/my_coding_agent/settings.py": "c456e51fd92494093f9c63e679734fd12efcd53e632646a0c786acdeccb31efb",
+    "src/my_coding_agent/rpc/session_handlers.py": "c78465f59e5acfb08ef622a17715872d813c5544612ae2470e6e83fb848cca03",
+    "src/my_agent_core/agent.py": "c32c8f12858ddc9956f5d000ce8b5f057fb516ac4ab0800931e65fa48c7063df",
+    "src/my_agent_core/context.py": "71bfedd9daf7beff4995e0561eccc2345a8f6c9b8054903ee0d91e8c6ce6ba2f",
+    "src/my_agent_core/context_compaction.py": "8aca5dc9002e06b9a40630c0165978a87cd0a7a01372f4a68b08bf4849f87a64"
+  },
+  "line_ending_map": "source-line-ending-map.json",
+  "matches_published_counts_and_limits": true,
+  "all_four_final_checks_passed": true,
+  "promoted": false,
+  "command": "uv run --frozen --all-extras python experiments/context_rsi/run_contract.py --output experiments/context_rsi/results/contract-20261113-checkout-final"
+}
