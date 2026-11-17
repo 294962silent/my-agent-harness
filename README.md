@@ -15,6 +15,7 @@
 | 长期记忆 | 权威事实与可重建语义候选索引分离，支持版本、作用域校验和词法降级 |
 | 沙箱评分 | 固定 Docker 镜像、受限候选工作区、宿主私有标签重算指标 |
 | 恢复与观测 | JSONL journal、checkpoint、预算预留/结算、Langfuse 元数据 tracing |
+| 长程执行层 | Manager → Executor → Auditor、verified state、fresh context、checkpoint/recover |
 
 ## 架构
 
@@ -38,6 +39,10 @@ flowchart LR
     D --> H[Host scoring<br/>private labels · RMSE]
     H --> P[Controlled policy experiments]
     P --> G[Registry<br/>active · previous · rollback]
+
+    LHM[LongHorizon MEA<br/>Manager · Executor · Auditor] --> J
+    LHM --> S
+    LHM --> C
 ```
 
 依赖方向保持为“产品入口 → Runtime / Agent → Model、Tools、Session、Context、Memory”。实验代码调用产品接口，生产模块不反向依赖实验脚本。
@@ -118,6 +123,39 @@ npm run build
 
 uv run my-pi-agent --help
 ```
+
+## 可恢复的 CLI 长程任务
+
+`lh-longhorizon` 在现有 Agent 之外增加一层 MEA 调度：
+
+1. 无工具 Manager 把原始任务拆成一个有界子任务。
+2. Executor 使用独立 Session 执行子任务。
+3. 只读 Auditor 独立检查真实文件、测试和证据。
+4. 只有 clean audit 才更新 verified state。
+5. 每轮写入 hash-chain journal 和 content-addressed checkpoint。
+
+如果进程在轮次中途中断，`resume` 会 fail closed，而不是自动重放可能已经产生副作用或费用的调用。
+
+```sh
+uv sync --extra langfuse
+
+uv run lh-longhorizon run \
+  --task @task.md \
+  --workspace . \
+  --provider openai \
+  --model deepseek-v4.1-flash \
+  --auth-provider openai \
+  --auth-profile default \
+  --max-rounds 8 \
+  --langfuse
+
+uv run lh-longhorizon status RUN_ID
+uv run lh-longhorizon resume RUN_ID
+uv run lh-longhorizon follow-up RUN_ID --message @followup.md
+uv run lh-longhorizon restore RUN_ID --round 1
+```
+
+`status`、`follow-up` 和 `restore` 不加载模型凭据。真实 smoke 证据见 [Long-horizon MEA v1 报告](docs/experiments/reports/longhorizon-mea-v1.md)。
 
 启动终端界面：
 

@@ -1284,6 +1284,17 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - 该结果只证明机制和宿主验证链，不证明真实模型一定遵循提醒；下一步需在 Harbor 公开任务上做同模型、同预算的 guard on/off 实验。
 - 报告：[long-horizon-progress-guard-v1.md](reports/long-horizon-progress-guard-v1.md)。
 
+### E-LONGHORIZON-MEA-V1：2026-11-17 / 可恢复 Manager-Executor-Auditor CLI 层
+
+- **实现**：新增独立 `my_coding_agent.longhorizon` 包和 `lh-longhorizon` CLI。用户任务作为稳定契约；Manager 无工具，只输出严格 JSON 路由；Executor/Auditor 每轮新建 Session；Auditor 只注册 read/grep/find/ls/bash，Bash 由 review gate 限制为无管道、重定向、分号或 `&&` 的安全命令。
+- **持久化**：manifest 固化模型与预算；journal 使用 hash chain；每轮关闭后写 workspace snapshot 和 checkpoint；完成状态额外写独立 final checkpoint。`status`/`resume` 校验 journal、历史 round checkpoint、Session 存在性和当前 workspace digest。dangling round 一律 blocked，不自动重放。
+- **借鉴边界**：借鉴 LongHorizon-Harness 的外部任务状态、fresh-context Executor、独立 Auditor、verified checkpoint 与 resume；使用自研严格 JSON、hash-chain、content-addressed snapshot、Langfuse 关联和本框架 Session/tool/settings，没有复制其 GUI、dashboard 或 supervisor。
+- **离线验证**：`tests/longhorizon` **99 passed**；CLI、roles、store 与 Ruff 通过。纵切测试覆盖 CLI → Controller → RoleBackend、同 trace root、blocked exit code 和 secret scrubbing。
+- **真实 smoke**：`smoke-mea-20261117-8`，`deepseek-v4.1-flash`，两轮完成。Executor 修改生产代码；Auditor 在 workspace 快照副本中只运行四条精确 pytest 命令之一，返回 clean complete；Manager 基于 verified state 返回 done。最终状态 `complete`，round checkpoints `1/2` 与 final checkpoint 均通过完整性检查，独立 pytest 为 1 passed。
+- **真实用量**：15 个 generation，15/15 `ok`，40,507 provider tokens（28,672 cache-read）。Langfuse 回读同一 trace `d337f693f1e091ea1efa13f9e5f6289b` 的 15 个 GENERATION，usage 与本地 ledger 完全一致。
+- **失败保留**：前七次 smoke 分别为可选依赖缺失、ContextVar 跨 yield、Auditor 安全命令/轮次预算、`complete` 与 `remaining` 契约冲突、最终门禁前的成功快照、内部 iterable 错误；均 fail-closed，未重放。全部 smoke attempts 合计 235,599 settled provider tokens；历史 run 不改写。
+- **报告**：[longhorizon-mea-v1.md](reports/longhorizon-mea-v1.md)；机器汇总：[summary.json](results/longhorizon-mea-v1-20261117/summary.json)。
+
 ### E-LONGHORIZON-CUSTOM-MEMORY-V4：2026-11-15 / 上下文预算失败与 verifier 负结果
 
 - **独立 campaign**：新建 `lhpp-20261115-v4`、独立 `$30` 账本和九个新 run ID，plan SHA-256 为 `90971e8b39c8b9660de2249bae8fd03d6ad285a8c1d0ef126e4b2ed030ebc288`。只补跑 v3 中被 sidecar 配置错误阻塞的 custom-memory 三臂；v3 的 61 个请求、奖励、费用和失败记录未修改、未重试。

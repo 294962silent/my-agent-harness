@@ -1,0 +1,112 @@
+{
+  "experiment": "longhorizon-mea-v1",
+  "date": "2026-11-17",
+  "base_commit": "4edbb2810ad762ac33fb79d1d499c3b8767a9831",
+  "implementation": {
+    "offline_tests": 99,
+    "offline_tests_status": "passed",
+    "ruff_status": "passed"
+  },
+  "successful_smoke": {
+    "run_id": "smoke-mea-20261117-8",
+    "provider": "openai",
+    "model": "deepseek-v4.1-flash",
+    "temperature": 0.2,
+    "provider_retries": 0,
+    "status": "complete",
+    "completed_rounds": [
+      1,
+      2
+    ],
+    "task_result": {
+      "workspace_pytest": "1 passed",
+      "production_change": "implemented calc.add(a, b)",
+      "test_file_modified": false
+    },
+    "local_observation": {
+      "generation_calls": 15,
+      "ok_calls": 15,
+      "error_calls": 0,
+      "cancelled_calls": 0,
+      "total_tokens": 40507,
+      "cache_read_tokens": 28672,
+      "purposes": [
+        "longhorizon_auditor_r1",
+        "longhorizon_executor_r1",
+        "longhorizon_manager_r1",
+        "longhorizon_manager_r2"
+      ]
+    },
+    "langfuse_readback": {
+      "trace_id": "d337f693f1e091ea1efa13f9e5f6289b",
+      "generations": 15,
+      "models": [
+        "deepseek-v4.1-flash"
+      ],
+      "total_tokens": 40507,
+      "matches_local_ledger": true
+    },
+    "evidence_hashes": {
+      "manifest_sha256": "74766ef780e0e75424d186251053fb6601fa6b612f813feea94de5bfc250b5ee",
+      "journal_file_sha256": "b5fc03adfac1c1d5ba28fa1820fd002e6a173a4795f0f2bea72e77e03fe54e0c",
+      "calls_file_sha256": "f3ce785f74b0088b971701e0d92edd68c7a93e6f2b7ab30015ea7c31b9e55654",
+      "final_checkpoint_sha256": "be72a7278b082e305405c5a5170ac0819f67e5b49e59d337d923ca99caa15af3"
+    }
+  },
+  "superseded_or_failed_smokes": [
+    {
+      "run_id": "smoke-mea-20261117-1",
+      "reason": "optional Langfuse dependency unavailable",
+      "model_calls": 0,
+      "known_tokens": 0
+    },
+    {
+      "run_id": "smoke-mea-20261117-2",
+      "reason": "ContextVar token crossed async yield boundary",
+      "model_calls": 2,
+      "known_tokens": 2998
+    },
+    {
+      "run_id": "smoke-mea-20261117-3",
+      "reason": "ContextVar token crossed async yield boundary",
+      "model_calls": 2,
+      "known_tokens": 2882
+    },
+    {
+      "run_id": "smoke-mea-20261117-4",
+      "reason": "Auditor exceeded turn budget after safe-shell denials",
+      "model_calls": 22,
+      "known_tokens": 71466
+    },
+    {
+      "run_id": "smoke-mea-20261117-5",
+      "reason": "Auditor contract ambiguity: complete audit with nonempty remaining",
+      "model_calls": 16,
+      "known_tokens": 43948
+    },
+    {
+      "run_id": "smoke-mea-20261117-6",
+      "reason": "successful pre-final smoke; superseded because manifest predates initial workspace pin",
+      "model_calls": 24,
+      "known_tokens": 72972
+    },
+    {
+      "run_id": "smoke-mea-20261117-7",
+      "reason": "internal iterable error before checkpoint; diagnostic evidence hardening",
+      "model_calls": 1,
+      "known_tokens": 826
+    }
+  ],
+  "all_smoke_attempts": {
+    "settled_model_calls": 82,
+    "known_provider_tokens": 235599,
+    "unknown_usage_runs": 0
+  },
+  "claim_boundaries": [
+    "The smoke test proves the MEA mechanism and recovery evidence on one tiny CLI coding task.",
+    "It does not prove long-horizon quality or benchmark improvement.",
+    "Provider totals are ledger snapshots, not a vendor invoice.",
+    "The framework does not provide exactly-once semantics for an interrupted model/tool round.",
+    "RSI remained paused and contributed no result to this experiment."
+  ]
+}
