@@ -137,6 +137,21 @@ Langfuse cloud read-back:
 The CLI also verified that a completed run cannot be resumed and exits with a
 non-zero status.
 
+## Delivery validation
+
+Pull request: [PR #3](https://github.com/294962silent/my-agent-harness/pull/3),
+stacked on `codex/interview-harness-redesign` and not merged automatically.
+
+Windows matrix at head `dd842b5d63951ce728436c32f714909d125a6046`:
+
+- Python 3.11 job: success;
+- Python 3.13 job: success;
+- both included dependency sync, Ruff, pytest, TUI build/tests and wheel entry
+  verification.
+
+CI run:
+https://github.com/294962silent/my-agent-harness/actions/runs/44119193048
+
 ## Failed iterations retained
 
 Seven earlier smoke attempts failed closed or were superseded and were not retried:

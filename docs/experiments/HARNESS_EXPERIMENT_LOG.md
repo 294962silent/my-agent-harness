@@ -1293,6 +1293,7 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **真实 smoke**：`smoke-mea-20261117-8`，`deepseek-v4.1-flash`，两轮完成。Executor 修改生产代码；Auditor 在 workspace 快照副本中只运行四条精确 pytest 命令之一，返回 clean complete；Manager 基于 verified state 返回 done。最终状态 `complete`，round checkpoints `1/2` 与 final checkpoint 均通过完整性检查，独立 pytest 为 1 passed。
 - **真实用量**：15 个 generation，15/15 `ok`，40,507 provider tokens（28,672 cache-read）。Langfuse 回读同一 trace `d337f693f1e091ea1efa13f9e5f6289b` 的 15 个 GENERATION，usage 与本地 ledger 完全一致。
 - **失败保留**：前七次 smoke 分别为可选依赖缺失、ContextVar 跨 yield、Auditor 安全命令/轮次预算、`complete` 与 `remaining` 契约冲突、最终门禁前的成功快照、内部 iterable 错误；均 fail-closed，未重放。全部 smoke attempts 合计 235,599 settled provider tokens；历史 run 不改写。
+- **Windows CI**：stacked [PR #3](https://github.com/294962silent/my-agent-harness/pull/3) 的 Windows-latest / Python 3.11 与 3.13 均 `completed/success`，覆盖 Ruff、pytest、TUI 构建/测试及 wheel 入口检查；run 为 [44119193048](https://github.com/294962silent/my-agent-harness/actions/runs/44119193048)。未合并 PR。
 - **报告**：[longhorizon-mea-v1.md](reports/longhorizon-mea-v1.md)；机器汇总：[summary.json](results/longhorizon-mea-v1-20261117/summary.json)。
 
 ### E-LONGHORIZON-CUSTOM-MEMORY-V4：2026-11-15 / 上下文预算失败与 verifier 负结果

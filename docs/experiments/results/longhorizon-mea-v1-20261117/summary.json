@@ -53,6 +53,13 @@
       "final_checkpoint_sha256": "be72a7278b082e305405c5a5170ac0819f67e5b49e59d337d923ca99caa15af3"
     }
   },
+  "delivery": {
+    "pull_request": "https://github.com/294962silent/my-agent-harness/pull/3",
+    "head_sha": "dd842b5d63951ce728436c32f714909d125a6046",
+    "ci_run": "https://github.com/294962silent/my-agent-harness/actions/runs/44119193048",
+    "windows_python_3_11": "success",
+    "windows_python_3_13": "success"
+  },
   "superseded_or_failed_smokes": [
     {
       "run_id": "smoke-mea-20261117-1",
