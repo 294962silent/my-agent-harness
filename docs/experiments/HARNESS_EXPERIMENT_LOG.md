@@ -1320,3 +1320,15 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **v4 成本**：60 requests，input 68,436，output 142,739，客户端保守计费 `$0.369101`。v2+v3+v4 合计 122 requests、`$0.513626`；provider 实际账单仍未核验。
 - **收尾前代码修正**：custom-memory sidecar 将合法的 `ContextBudgetExceeded` 视为终态但不阻断后续 arm；每个新 trial 前重新执行 oracle/transport/Langfuse/credential gate，未知终态仍 fail-closed。WSL 定向组合实际 **21 passed**，Ruff 通过；尚未提交到远端，不能提前写 CI 已通过。
 - **报告**：[六小时证据包](reports/long-horizon-code-6h-results.md)、[公开 pilot](reports/long-horizon-public-pilot-v1.md)、[机器汇总](results/long-horizon-code-6h-20261115/summary.json)。
+
+### E-LONGHORIZON-QUALITY-PREREG-V1：2026-11-18 / 单代理与 MEA 的质量对照契约
+
+- **目的**：把“质量提升”从机制 smoke 中分离。冻结 `react` 单代理与 `mea` Manager/Executor/Auditor 两臂，要求同一 Terminal-Bench 2.1 revision、模型、工具、预算和官方 verifier。
+- **任务分层**：现有三题 `fix-git`、`large-scale-text-editing`、`custom-memory-heap-crash` 只作 18-trial 描述性 pilot；确认性实验必须在首个付费 trial 前冻结全部 89 题，共 534 个 task-arm-trial slots。恢复和 immutable-path 使用独立 cohort，不并入主质量分数。
+- **统计契约**：先在 task 内聚合三次 trial，再做 task-paired bootstrap；同时报告 exact sign test、requests/tokens/cost ratio。只有完整 89 题、全部 official scored、usage 完整、均值差为正、95% cluster-bootstrap 下界大于 0 且 sign-test `p < 0.05`，才允许写 benchmark quality improvement。
+- **缓存稳定性**：每个角色使用固定 system prompt；工具名、描述、schema 和序列化顺序冻结；时间戳、run/task id、分数与运行态变化放当前 user turn 或状态尾部；session 历史只追加。receipt 必须同时记录 `system_prompt_sha256`、`tool_schema_sha256`、provider cache usage 和前缀变化原因。
+- **实现**：新增 `experiments/long_horizon_quality`，提供冻结 campaign、确定性 slot/run ID、plan SHA、严格 outcome schema、task-cluster bootstrap、exact sign test、缓存命中率与 claim gate；现有 pilot manifest 单独冻结在 `docs/experiments/plans/terminal-bench-21-quality-pilot-v1.json`。
+- **零成本验证**：3 题 × 2 臂 × 3 trials 的 freeze 生成 18 个 slots，plan SHA 与 sidecar 一致，claim ceiling 为 `descriptive_only`。配对分析 CLI 对 synthetic rows 跑通，pilot 即使均值差为正值也不产生质量 claim。
+- **测试**：`tests/experiments/test_long_horizon_quality.py` **7 passed**；定向 Ruff 与 `git diff --check` 通过。没有新增模型请求。
+- **当前边界**：目前完成的是预注册、缓存稳定性契约和离线分析层；Harbor/MEA 执行适配与三题真实 pilot 尚未运行，不能据此声明任何质量或 benchmark 提升。
+- **协议**：[long-horizon-quality-preregistration-v1.md](reports/long-horizon-quality-preregistration-v1.md)。
