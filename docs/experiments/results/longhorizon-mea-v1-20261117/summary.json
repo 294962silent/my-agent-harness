@@ -115,5 +115,184 @@
     "Provider totals are ledger snapshots, not a vendor invoice.",
     "The framework does not provide exactly-once semantics for an interrupted model/tool round.",
     "RSI remained paused and contributed no result to this experiment."
-  ]
+  ],
+  "v1_1": {
+    "version": "v1.1",
+    "date": "2026-11-18",
+    "base_head_sha": "9b1a7c499f13b014cc6f3d0bd5f677092ce1cac6",
+    "validated_before_commit": true,
+    "evidence_root": "E:\\my-agent-harness\\.git\\codex-delivery\\longhorizon-mea",
+    "final_fixes": [
+      "TOCTOU checks use the same captured workspace snapshot.",
+      "A blocked run can be loaded after workspace drift while resume remains blocked.",
+      "Python 3.11 reparse-point and junction handling is covered.",
+      "CLI immutable paths use lexical validation and do not resolve candidate paths.",
+      "Resume rejects a stale pause value before auth, model, backend, or controller construction.",
+      "Role parsing accepts exactly one fenced JSON object and rejects invalid or ambiguous framing."
+    ],
+    "offline_validation": {
+      "tests": 135,
+      "tests_status": "passed",
+      "tests_exit_code": 0,
+      "duration_seconds": 18.37,
+      "command": "uv run --no-sync python -m pytest tests\\longhorizon -o addopts=''",
+      "ruff_status": "passed",
+      "git_diff_check_status": "passed",
+      "lockfile_modified": false
+    },
+    "compatibility_validation": {
+      "run_id": "smoke-mea-20261117-8",
+      "load_and_integrity_status": "complete",
+      "completed_rounds": [
+        1,
+        2
+      ]
+    },
+    "failed_iterations": [
+      {
+        "run_id": "smoke-mea-v11-20261118-1",
+        "failure_phase": "before_model_calls",
+        "reason": "rebuilt virtual environment lacked the langfuse package",
+        "model_calls": 0,
+        "run_retained": true,
+        "recovery": {
+          "command": "uv sync --extra langfuse",
+          "langfuse_version": "5.2.0",
+          "import_status": "passed",
+          "lockfile_modified": false
+        }
+      },
+      {
+        "run_id": "smoke-mea-v11-20261118-4",
+        "phase": "after_p1_before_fenced_json_compatibility",
+        "reason": "Auditor returned explanatory text plus exactly one JSON block and the then-current parser rejected the framed output as invalid JSON",
+        "model_calls": 14,
+        "ok_calls": 14,
+        "total_tokens": 38893,
+        "journal_terminal_events": [
+          "round_unknown",
+          "run_blocked"
+        ],
+        "checkpoints": [],
+        "run_retained": true,
+        "retried": false
+      }
+    ],
+    "earlier_successful_candidate": {
+      "run_id": "smoke-mea-v11-20261118-2",
+      "status": "successful_before_p1_changes",
+      "is_final_head_evidence": false,
+      "workspace": "E:\\my-agent-harness\\.git\\codex-delivery\\longhorizon-mea\\smoke-v11-20261118-workspace-1",
+      "immutable_paths": [
+        "test_calc.py"
+      ],
+      "model_calls": 15,
+      "ok_calls": 15,
+      "total_tokens": 34510,
+      "cache_read_tokens": 24704,
+      "trace_id": "38e1f70eabc1af680fd09db128c9998c",
+      "cloud_readback": {
+        "date": "2026-11-18",
+        "generation_observations": 15,
+        "total_usage": 34510,
+        "matches_local_ledger": true
+      }
+    },
+    "final_successful_smoke": {
+      "run_id": "smoke-mea-v11-20261118-5",
+      "workspace": "E:\\my-agent-harness\\.git\\codex-delivery\\longhorizon-mea\\smoke-v11-20261118-workspace-3",
+      "immutable_paths": [
+        "test_calc.py"
+      ],
+      "model_config": {
+        "provider": "openai",
+        "model": "deepseek-v4.1-flash",
+        "temperature": 0.2,
+        "provider_retries": 0
+      },
+      "pause_boundary": {
+        "process": "independent run command",
+        "command_option": "--pause-after-round 1",
+        "returned_status": "ready",
+        "completed_rounds": [
+          1
+        ],
+        "next_round": 2,
+        "checkpoints": [
+          "0001"
+        ]
+      },
+      "resume_boundary": {
+        "process": "independent resume command",
+        "final_status": "complete",
+        "completed_rounds": [
+          1,
+          2
+        ],
+        "checkpoints": [
+          "0001",
+          "0002",
+          "final"
+        ],
+        "second_resume_exit_code": 2
+      },
+      "host_pytest_exit_code": 0,
+      "local_observation": {
+        "generation_starts": 16,
+        "generation_ends": 16,
+        "ok_calls": 16,
+        "total_tokens": 42271,
+        "cache_read_tokens": 31104,
+        "purpose_counts": {
+          "longhorizon_manager_r1": 1,
+          "longhorizon_executor_r1": 9,
+          "longhorizon_auditor_r1": 5,
+          "longhorizon_manager_r2": 1
+        }
+      },
+      "langfuse": {
+        "upload_attempt_status": "completed",
+        "observer_close_status": "ok",
+        "dropped": 0,
+        "export_errors": 0,
+        "trace_id": "da8624e24bf352085623f9510fe868ea",
+        "node_fetch_dns_status": "failed",
+        "curl_dns_status": "failed",
+        "fallback": {
+          "transport": "PowerShell/.NET public REST GET",
+          "endpoint": "/api/public/v2/observations",
+          "status": "verified"
+        },
+        "readback_file": "E:\\my-agent-harness\\.git\\codex-delivery\\longhorizon-mea\\v11-final-langfuse-readback.json",
+        "observation_count": 16,
+        "generation_count": 16,
+        "status_ok": 16,
+        "distinct_observation_ids": 16,
+        "total_usage": 42271,
+        "models": [
+          "deepseek-v4.1-flash"
+        ],
+        "purpose_counts": {
+          "longhorizon_auditor_r1": 5,
+          "longhorizon_executor_r1": 9,
+          "longhorizon_manager_r1": 1,
+          "longhorizon_manager_r2": 1
+        },
+        "matches_local_ledger": true
+      }
+    },
+    "immutable_path_integrity": {
+      "path": "test_calc.py",
+      "sha256_before": "fa3379b77a73726a9db77c0f79c3ee954aadac6944c4daf8b69a20ee59e07d1c",
+      "sha256_after": "fa3379b77a73726a9db77c0f79c3ee954aadac6944c4daf8b69a20ee59e07d1c",
+      "unchanged": true
+    },
+    "claim_boundaries": [
+      "The final run proves pause after a closed round, resume from a separate CLI process, checkpoint persistence, immutable-path preservation, clean local observation shutdown, and an independent Langfuse cloud read-back.",
+      "The failed run4 remains part of the evidence history and is not treated as a successful run.",
+      "Run2 remains an earlier successful candidate and its cloud trace is not evidence for run5 or the final worktree.",
+      "The final run does not prove a quality improvement or generalized long-horizon capability.",
+      "The evidence covers one tiny CLI coding task and is not a benchmark or capability-generalization result."
+    ]
+  }
 }

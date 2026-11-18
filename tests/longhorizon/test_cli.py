@@ -6,6 +6,8 @@ import json
 import os
 from types import SimpleNamespace
 
+import pytest
+
 from my_agent_core.events import AgentEnd, MessageEnd, ToolExecutionStart
 from my_agent_llm import Message
 from my_agent_llm.auth.schema import ApiKeyCredential
@@ -52,12 +54,12 @@ class FakeController:
         self.calls = []
         self.__class__.last = self
 
-    async def run_until_terminal(self):
-        self.calls.append(("run",))
+    async def run_until_terminal(self, *, pause_after_round=None):
+        self.calls.append(("run", pause_after_round))
         return {"status": "ready"}
 
-    async def resume(self):
-        self.calls.append(("resume",))
+    async def resume(self, *, pause_after_round=None):
+        self.calls.append(("resume", pause_after_round))
         return {"status": "ready"}
 
     async def follow_up(self, *, message):
@@ -243,7 +245,12 @@ def _limits(**overrides):
     return values
 
 
-def _prepared_run(tmp_path, *, base_url="https://frozen.example/v1"):
+def _prepared_run(
+    tmp_path,
+    *,
+    base_url="https://frozen.example/v1",
+    immutable_paths=(),
+):
     workspace = tmp_path / "workspace"
     workspace.mkdir(exist_ok=True)
     runs = tmp_path / "runs"
@@ -263,6 +270,7 @@ def _prepared_run(tmp_path, *, base_url="https://frozen.example/v1"):
         workspace=workspace,
         model=model,
         limits=_limits(),
+        immutable_paths=immutable_paths,
     )
     return store, runs
 
@@ -326,8 +334,11 @@ def test_run_hashes_task_file_and_never_persists_credentials(tmp_path, capsys):
     manifest = json.loads((runs / "task-hash" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["task_sha256"] == hashlib.sha256(task_file.read_bytes()).hexdigest()
     assert manifest["model"]["max_retries"] == 0
-    assert secret not in json.dumps(manifest)
-    assert secret not in (runs / "task-hash" / "journal.jsonl").read_text(encoding="utf-8")
+    run_root = runs / "task-hash"
+    persisted = b"".join(
+        path.read_bytes() for path in run_root.rglob("*") if path.is_file()
+    )
+    assert secret.encode() not in persisted
     assert secret not in json.dumps(output)
     assert auth.calls == [("openai", "work")]
     assert len(llms) == 1 and llms[0].config.api_key == secret
@@ -446,6 +457,70 @@ def test_resume_integrity_precedes_auth_and_credentials(
     assert output["status"] == "blocked"
 
 
+def test_resume_rejects_stale_pause_before_auth_or_llm(tmp_path, capsys):
+    store, runs = _prepared_run(tmp_path)
+    manager = ScriptedDecisionLLM(
+        None,
+        [
+            ManagerDecision(
+                next="execute",
+                reason="create the requested file",
+                subtask="create answer.txt",
+                acceptance_criteria=("answer.txt exists",),
+            )
+        ],
+    )
+    backend = LLMRoleBackend(
+        llm=manager,
+        workspace=store.workspace,
+        run_dir=store.root,
+        agent_factory=lambda **kwargs: ScriptedRoleAgent(
+            store.workspace,
+            **kwargs,
+        ),
+    )
+    paused = asyncio.run(
+        LongHorizonController(store, backend).run(pause_after_round=1)
+    )
+    assert paused.status == "ready"
+    assert paused.completed_rounds == (1,)
+
+    calls = []
+
+    def forbidden_auth(*args, **kwargs):
+        calls.append("auth")
+        raise AssertionError("stale pause must not load a credential")
+
+    def forbidden_llm(*args, **kwargs):
+        calls.append("llm")
+        raise AssertionError("stale pause must not construct an LLM")
+
+    def forbidden_controller(*args, **kwargs):
+        calls.append("controller")
+        raise AssertionError("stale pause must not construct a controller")
+
+    code = cli.main(
+        [
+            "resume",
+            "run-1",
+            "--runs-root",
+            str(runs),
+            "--pause-after-round",
+            "1",
+            "--json",
+        ],
+        auth_manager_factory=forbidden_auth,
+        llm_factory=forbidden_llm,
+        controller_factory=forbidden_controller,
+    )
+    assert code == 2
+    assert calls == []
+    output = json.loads(capsys.readouterr().out)
+    assert output["status"] == "blocked"
+    assert "pause_after_round" in output["error"]
+    assert "later" in output["error"]
+
+
 def test_follow_up_integrity_precedes_controller(
     tmp_path,
     capsys,
@@ -540,6 +615,12 @@ def test_repeatable_flags_use_last_value_and_resume_builds_controller(tmp_path, 
     task.write_text("task", encoding="utf-8")
     workspace = tmp_path / "workspace"
     workspace.mkdir()
+    relative_immutable = workspace / "contracts" / "api.md"
+    relative_immutable.parent.mkdir()
+    relative_immutable.write_text("public API\n", encoding="utf-8")
+    absolute_immutable = workspace / "data" / "fixture.json"
+    absolute_immutable.parent.mkdir()
+    absolute_immutable.write_text("{}\n", encoding="utf-8")
     runs = tmp_path / "runs"
     secret = "sk-repeat-test"
     auth = FakeAuthManager(key=secret)
@@ -556,6 +637,10 @@ def test_repeatable_flags_use_last_value_and_resume_builds_controller(tmp_path, 
             f"@{task}",
             "--workspace",
             str(workspace),
+            "--immutable-path",
+            "contracts/api.md",
+            "--immutable-path",
+            str(absolute_immutable),
             "--runs-root",
             str(runs),
             "--run-id",
@@ -570,6 +655,8 @@ def test_repeatable_flags_use_last_value_and_resume_builds_controller(tmp_path, 
             "3",
             "--base-url",
             "https://frozen.example/v1",
+            "--pause-after-round",
+            "2",
             "--json",
         ],
         controller_factory=controller_factory,
@@ -580,6 +667,8 @@ def test_repeatable_flags_use_last_value_and_resume_builds_controller(tmp_path, 
     manifest = json.loads((runs / "repeat" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["model"]["model"] == "final-model"
     assert manifest["limits"]["max_rounds"] == 3
+    assert manifest["immutable_paths"] == ["contracts/api.md", "data/fixture.json"]
+    assert FakeController.last.calls == [("run", 2)]
 
     assert cli.main(
         [
@@ -591,6 +680,8 @@ def test_repeatable_flags_use_last_value_and_resume_builds_controller(tmp_path, 
             "final-model",
             "--base-url",
             "https://frozen.example/v1",
+            "--pause-after-round",
+            "3",
             "--json",
         ],
         controller_factory=controller_factory,
@@ -600,7 +691,92 @@ def test_repeatable_flags_use_last_value_and_resume_builds_controller(tmp_path, 
     resume_output = json.loads(capsys.readouterr().out)
     assert resume_output["status"] == "ready"
     assert FakeController.last.store.manifest["run_id"] == "repeat"
-    assert FakeController.last.calls == [("resume",)]
+    assert FakeController.last.calls == [("resume", 3)]
+
+
+def test_immutable_paths_reject_relative_and_absolute_escapes(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("private\n", encoding="utf-8")
+
+    for value in ("../outside.txt", str(outside)):
+        with pytest.raises(cli.CLIError, match="escapes workspace"):
+            cli._workspace_relative_paths([value], workspace=workspace)
+
+
+@pytest.mark.skipif(
+    os.name != "nt",
+    reason="drive-relative paths are a Windows path contract",
+)
+def test_immutable_paths_reject_drive_relative_paths(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    with pytest.raises(cli.CLIError, match="drive-relative"):
+        cli._workspace_relative_paths(
+            ["E:protected.txt"],
+            workspace=workspace,
+        )
+
+
+def test_immutable_paths_reject_internal_parent_components(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    with pytest.raises(cli.CLIError, match=r"must not contain '\.\.'"):
+        cli._workspace_relative_paths(
+            ["safe/../protected.txt"],
+            workspace=workspace,
+        )
+
+
+def test_immutable_absolute_path_is_lexically_normalized(tmp_path):
+    workspace = tmp_path / "workspace"
+    protected = workspace / "contracts" / "api.md"
+    protected.parent.mkdir(parents=True)
+    protected.write_text("public API\n", encoding="utf-8")
+
+    assert cli._workspace_relative_paths(
+        [protected],
+        workspace=workspace,
+    ) == ["contracts/api.md"]
+
+
+def test_immutable_internal_symlink_is_preserved_for_store_rejection(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "secret.txt").write_text("secret\n", encoding="utf-8")
+    link = workspace / "linked"
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except (OSError, NotImplementedError) as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
+
+    relative_paths = cli._workspace_relative_paths(
+        ["linked/secret.txt"],
+        workspace=workspace,
+    )
+    assert relative_paths == ["linked/secret.txt"]
+    with pytest.raises(StoreIntegrityError, match="immutable path is invalid"):
+        _prepared_run(tmp_path, immutable_paths=relative_paths)
+
+
+@pytest.mark.parametrize(
+    "command_args",
+    (
+        ("run", "--task", "task"),
+        ("resume", "run-1"),
+    ),
+)
+@pytest.mark.parametrize("value", ("0", "-1"))
+def test_pause_after_round_rejects_non_positive_values(command_args, value):
+    with pytest.raises(SystemExit) as caught:
+        cli.parser().parse_args([*command_args, "--pause-after-round", value])
+
+    assert caught.value.code == 2
 
 
 def test_cli_real_controller_scripted_roles_share_trace_and_scrub_secrets(

@@ -150,9 +150,20 @@ uv run lh-longhorizon run \
   --langfuse
 
 uv run lh-longhorizon status RUN_ID
-uv run lh-longhorizon resume RUN_ID
+uv run lh-longhorizon resume RUN_ID --langfuse
 uv run lh-longhorizon follow-up RUN_ID --message @followup.md
 uv run lh-longhorizon restore RUN_ID --round 1
+```
+
+`--immutable-path PATH` 接受 workspace 内相对路径或绝对路径，Executor 改动受保护文件或目录后会在 Auditor 前 fail closed。`--pause-after-round N` 只在第 N 轮完成审计、journal、checkpoint 后返回 `ready`；新的 CLI 进程可用 `resume` 从第 N+1 轮继续。例如：
+
+```sh
+uv run lh-longhorizon run \
+  --task @task.md --workspace . \
+  --immutable-path test_calc.py \
+  --pause-after-round 1
+
+uv run lh-longhorizon resume RUN_ID
 ```
 
 `status`、`follow-up` 和 `restore` 不加载模型凭据。真实 smoke 证据见 [Long-horizon MEA v1 报告](docs/experiments/reports/longhorizon-mea-v1.md)。

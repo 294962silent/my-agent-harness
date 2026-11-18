@@ -121,11 +121,15 @@ Return exactly one JSON object matching:
 Use execute only with a bounded subtask and nonempty acceptance criteria.
 Use done only from verified state, blocked when no safe action remains, and ask
 only for a required human decision.
+ state.immutable_paths is a hard constraint. Never request or propose any change
+ to a listed path or anything beneath it.
 """
 
 EXECUTOR_SYSTEM_PROMPT = """\
 You are the Executor for one bounded long-horizon MEA subtask.
 Use only the registered file and shell tools. Stay inside the workspace.
+ state.immutable_paths is a hard constraint. Never write, edit, delete, rename,
+ or otherwise modify a listed path or anything beneath it.
 Perform the requested change and run relevant checks. Never claim an action you
 did not perform. Finish with a concise factual summary of changes, checks, and
 remaining problems.
@@ -191,6 +195,14 @@ def _safe_auditor_bash_tool(
 
 def _json_mapping(value: Mapping[str, Any]) -> str:
     return json.dumps(dict(value), ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _immutable_paths_prompt(state: Mapping[str, Any]) -> str:
+    immutable_paths = state.get("immutable_paths", [])
+    return (
+        "Immutable paths (hard constraint from state.immutable_paths): "
+        f"{json.dumps(immutable_paths, ensure_ascii=False, sort_keys=True, default=str)}\n\n"
+    )
 
 
 def _decision_mapping(decision: ManagerDecision) -> dict[str, Any]:
@@ -405,6 +417,7 @@ class LLMRoleBackend:
                 f"{MANAGER_SYSTEM_PROMPT.strip()}\n\n"
                 f"Original task:\n{task.rstrip()}\n\n"
                 f"Current verified state:\n{_json_mapping(state)}\n\n"
+                f"{_immutable_paths_prompt(state)}"
                 f"Round: {round_index}\n"
             )
             prompt_path = self.prompt_dir / f"round_{round_index:04d}_manager.txt"
@@ -590,6 +603,7 @@ class LLMRoleBackend:
             f"Original task:\n{task.rstrip()}\n\n"
             f"Manager decision:\n{_json_mapping(_decision_mapping(decision))}\n\n"
             f"Verified state:\n{_json_mapping(state)}\n\n"
+            f"{_immutable_paths_prompt(state)}"
             f"Round: {round_index}\n"
         )
 

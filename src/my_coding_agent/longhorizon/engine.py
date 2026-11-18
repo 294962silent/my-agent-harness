@@ -84,27 +84,53 @@ class LongHorizonController:
         with self.store.controller_lock():
             self.store.restore_checkpoint(round_index)
 
-    async def run(self) -> RunState:
+    async def run(self, *, pause_after_round: int | None = None) -> RunState:
         with self.store.controller_lock():
             state = self._state()
             if state.status != "ready":
                 raise ControllerError(f"run cannot start from status {state.status}")
-            return await self._drive(state)
+            self._validate_pause_after_round(state, pause_after_round)
+            return await self._drive(state, pause_after_round=pause_after_round)
 
-    async def run_until_terminal(self) -> RunState:
-        return await self.run()
+    async def run_until_terminal(
+        self,
+        *,
+        pause_after_round: int | None = None,
+    ) -> RunState:
+        return await self.run(pause_after_round=pause_after_round)
 
-    async def resume(self) -> RunState:
+    async def resume(self, *, pause_after_round: int | None = None) -> RunState:
         with self.store.controller_lock():
             try:
                 state = self.store.resume_state()
             except StoreIntegrityError as exc:
                 raise ControllerError(f"resume blocked: {exc}") from exc
+            self._validate_pause_after_round(state, pause_after_round)
             pending = pending_follow_ups(self.store.manifest, self.store.events())
             if state.status == "waiting_input" and not pending:
                 return state
             self._sync_inbox()
-            return await self._drive(state)
+            return await self._drive(state, pause_after_round=pause_after_round)
+
+    def _validate_pause_after_round(
+        self,
+        state: RunState,
+        pause_after_round: int | None,
+    ) -> None:
+        if pause_after_round is None:
+            return
+        if type(pause_after_round) is not int or pause_after_round < 1:
+            raise ControllerError("pause_after_round must be a positive integer or None")
+        if state.completed_rounds and pause_after_round <= state.completed_rounds[-1]:
+            raise ControllerError(
+                "pause_after_round must be later than the last completed round"
+            )
+
+    def _role_state(self, state: RunState) -> dict[str, Any]:
+        return {
+            **asdict(state),
+            "immutable_paths": list(self.store.manifest.get("immutable_paths", [])),
+        }
 
     def _state(self) -> RunState:
         return reduce_events(self.store.manifest, self.store.events())
@@ -197,7 +223,12 @@ class LongHorizonController:
             self.store.append("follow_up_consumed", {"follow_up_id": item["follow_up_id"]})
         self._sync_inbox()
 
-    async def _drive(self, state: RunState) -> RunState:
+    async def _drive(
+        self,
+        state: RunState,
+        *,
+        pause_after_round: int | None,
+    ) -> RunState:
         while state.status == "ready" or (
             state.status == "waiting_input"
             and pending_follow_ups(self.store.manifest, self.store.events())
@@ -213,7 +244,10 @@ class LongHorizonController:
             try:
                 self.store.set_status({"status": "running", "round": round_index})
                 pending = pending_follow_ups(self.store.manifest, self.store.events())
-                manager_state = {**asdict(state), "pending_follow_ups": list(pending)}
+                manager_state = {
+                    **self._role_state(state),
+                    "pending_follow_ups": list(pending),
+                }
                 manager_episode = self._validate_episode(
                     await self.backend.manager(
                         task=self._task(),
@@ -238,31 +272,37 @@ class LongHorizonController:
                 self._consume_followups()
 
                 if decision.next == "execute":
+                    immutable_before = self.store.capture_immutable_state()
+                    executor_episode = await self.backend.executor(
+                        task=self._task(),
+                        decision=decision,
+                        state=self._role_state(state),
+                        round_index=round_index,
+                    )
+                    post_snapshot = self.store.capture_workspace()
                     executor_episode = self._validate_episode(
-                        await self.backend.executor(
-                            task=self._task(),
-                            decision=decision,
-                            state=asdict(state),
-                            round_index=round_index,
-                        ),
+                        executor_episode,
                         role="executor",
                         round_index=round_index,
+                    )
+                    self.store.assert_immutable_unchanged(
+                        immutable_before,
+                        snapshot=post_snapshot,
                     )
                     self.store.append(
                         "executor_completed",
                         {"round": round_index, "episode": executor_episode.to_dict()},
                     )
-                    before = self.store.capture_workspace()
                     audit_workspace = self.store.create_audit_workspace(
                         round_index,
-                        before,
+                        post_snapshot,
                     )
                     auditor_episode = self._validate_episode(
                         await self.backend.auditor(
                             task=self._task(),
                             decision=decision,
                             executor_output=executor_episode.output,
-                            state=asdict(state),
+                            state=self._role_state(state),
                             round_index=round_index,
                             workspace=audit_workspace,
                         ),
@@ -270,7 +310,7 @@ class LongHorizonController:
                         round_index=round_index,
                     )
                     after = self.store.capture_workspace()
-                    if before.sha256 != after.sha256:
+                    if post_snapshot.sha256 != after.sha256:
                         raise ControllerError("auditor mutated the workspace")
                     try:
                         audit = parse_audit_report(auditor_episode.output)
@@ -298,6 +338,9 @@ class LongHorizonController:
                     self._checkpoint(round_index, closed)
                     state = closed
                     if audit.status == "blocked":
+                        self._set_terminal_status(state)
+                        return state
+                    if pause_after_round == round_index:
                         self._set_terminal_status(state)
                         return state
                     continue

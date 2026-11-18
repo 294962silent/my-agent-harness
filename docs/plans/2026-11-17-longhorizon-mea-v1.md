@@ -236,3 +236,24 @@ it, Manager completes, a second process reads the committed checkpoint.
 
 Only after offline validation should a small real-provider smoke be attempted.
 Rsi-related work is not part of this validation.
+
+## v1.1 recovery and protected-input extension
+
+- `--pause-after-round N` stops only after round N is fully audited and
+  checkpointed; a new process can resume at round N+1.
+- `resume --pause-after-round N` validates `N` against the last completed
+  round immediately after the store integrity read and before credential, LLM,
+  backend, or controller construction. A stale or non-positive pause value is
+  rejected without loading auth.
+- `--immutable-path PATH` accepts a workspace-relative path or an absolute path
+  lexically inside the workspace. Absolute paths are converted to relative
+  paths, and the manifest stores only workspace-relative strings.
+- The CLI rejects drive-relative paths and any `..` component before calling the
+  store. It does not resolve or canonicalize candidate paths, so internal
+  symlink or junction components are preserved for the store to reject.
+- The store treats immutable-path input as untrusted and rejects drive-relative
+  paths, `..`, symlinks, and junctions fail-closed. Executor changes to a
+  protected path block the round before audit.
+- Protected-path existence and hashes are compared against the pre-Executor
+  snapshot; the initial workspace digest remains frozen in the manifest.
+- Real validation must use separate `run` and `resume` processes.

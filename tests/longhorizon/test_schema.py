@@ -53,6 +53,71 @@ def test_parse_audit_report_accepts_fenced_json_and_freezes_tuple_fields() -> No
     )
 
 
+@pytest.mark.parametrize(
+    ("prefix", "suffix"),
+    [
+        ("Auditor explanation:\n", ""),
+        ("", "\nAuditor explanation after the block."),
+        (
+            "Short summary before.\n\n",
+            "\n\nShort summary after.",
+        ),
+    ],
+)
+def test_parse_manager_decision_accepts_one_fenced_json_with_prose(
+    prefix: str,
+    suffix: str,
+) -> None:
+    payload = {
+        "next": "execute",
+        "reason": "one bounded change remains",
+        "subtask": "update answer.py",
+        "acceptance_criteria": ["python answer.py prints 42"],
+    }
+    fenced = "```json\n" + json.dumps(payload) + "\n```"
+
+    decision = parse_manager_decision(prefix + fenced + suffix)
+
+    assert decision.next == "execute"
+    assert decision.subtask == "update answer.py"
+
+
+def test_parse_manager_decision_rejects_multiple_json_fences_as_ambiguous() -> None:
+    first = '```json\n{"next":"done","reason":"first"}\n```'
+    second = '```json\n{"next":"done","reason":"second"}\n```'
+    text = f"Before.\n{first}\nBetween.\n{second}\nAfter."
+
+    with pytest.raises(SchemaError, match="ambiguous JSON code blocks"):
+        parse_manager_decision(text)
+
+
+@pytest.mark.parametrize(
+    ("body", "message"),
+    [
+        (
+            '{"next":"done","reason":"x","reason":"y"}',
+            "duplicate JSON key",
+        ),
+        (
+            '{"next":"done","reason":"x","related_rounds":[NaN]}',
+            "non-finite JSON number",
+        ),
+        (
+            '{"next":"done","reason":"x","unexpected":true}',
+            "forbidden fields",
+        ),
+    ],
+)
+def test_single_json_fence_preserves_json_and_schema_strictness(
+    body: str,
+    message: str,
+) -> None:
+    text = f"Explanation.\n```json\n{body}\n```\nDone."
+
+    with pytest.raises(SchemaError, match=message):
+        parse_manager_decision(text)
+
+
 def test_complete_audit_rejects_nonempty_remaining() -> None:
     payload = {
         "status": "complete",
@@ -106,7 +171,7 @@ def test_noncomplete_audit_allows_nonempty_remaining(status: str) -> None:
         '{"next":"execute","reason":"x","subtask":"s","acceptance_criteria":["a"],"related_rounds":[0]}',
         '{"next":"execute","reason":"x","subtask":"s","acceptance_criteria":["a"],"next":"done"}',
         '```text\n{"next":"done","reason":"x"}\n```',
-        'prefix ```json\n{"next":"done","reason":"x"}\n``` suffix',
+        'prefix {"next":"done","reason":"x"} suffix',
     ],
 )
 def test_parse_manager_decision_rejects_non_strict_output(text: str) -> None:

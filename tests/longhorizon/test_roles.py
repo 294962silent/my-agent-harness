@@ -18,7 +18,9 @@ from my_coding_agent.longhorizon.roles import (
     AUDITOR_BASH_COMMANDS,
     AUDITOR_SYSTEM_PROMPT,
     AUDITOR_TOOL_NAMES,
+    EXECUTOR_SYSTEM_PROMPT,
     EXECUTOR_TOOL_NAMES,
+    MANAGER_SYSTEM_PROMPT,
     _ContextualLLM,
     _safe_auditor_bash_tool,
     LLMRoleBackend,
@@ -157,12 +159,23 @@ def reset_fake_agents():
     FakeAgent.instances = []
 
 
+def test_manager_and_executor_mark_immutable_paths_as_a_hard_constraint():
+    for prompt in (MANAGER_SYSTEM_PROMPT, EXECUTOR_SYSTEM_PROMPT):
+        normalized = " ".join(prompt.split())
+
+        assert "state.immutable_paths is a hard constraint" in normalized
+
+
 def test_manager_uses_direct_llm_with_no_tools_and_records_prompt(tmp_path):
     llm = FakeLLM()
     backend = LLMRoleBackend(llm=llm, workspace=tmp_path, run_dir=tmp_path / "run")
 
     episode = asyncio.run(
-        backend.manager(task="fix files", state={"verified": ["a"]}, round_index=1)
+        backend.manager(
+            task="fix files",
+            state={"verified": ["a"], "immutable_paths": ["docs/api.md"]},
+            round_index=1,
+        )
     )
 
     assert len(llm.calls) == 1
@@ -179,6 +192,8 @@ def test_manager_uses_direct_llm_with_no_tools_and_records_prompt(tmp_path):
     prompt = (tmp_path / "run" / "prompts" / "round_0001_manager.txt").read_text(encoding="utf-8")
     assert "fix files" in prompt
     assert '"verified"' in prompt
+    assert "Immutable paths (hard constraint from state.immutable_paths)" in prompt
+    assert "docs/api.md" in prompt
 
 
 def test_manager_rejects_tool_calls(tmp_path):
@@ -219,7 +234,7 @@ def test_executor_and_auditor_use_fresh_isolated_agents_and_sessions(tmp_path):
         backend.executor(
             task="fix files",
             decision=decision,
-            state={"verified": ["baseline"]},
+            state={"verified": ["baseline"], "immutable_paths": ["docs/api.md"]},
             round_index=2,
         )
     )
@@ -228,7 +243,7 @@ def test_executor_and_auditor_use_fresh_isolated_agents_and_sessions(tmp_path):
             task="fix files",
             decision=decision,
             executor_output=executor.output,
-            state={"verified": ["baseline"]},
+            state={"verified": ["baseline"], "immutable_paths": ["docs/api.md"]},
             round_index=2,
             workspace=auditor_workspace,
         )
@@ -280,6 +295,11 @@ def test_executor_and_auditor_use_fresh_isolated_agents_and_sessions(tmp_path):
     assert executor.cleanup_ok is True and auditor.cleanup_ok is True
     assert (tmp_path / "run" / "prompts" / "round_0002_executor.txt").is_file()
     assert (tmp_path / "run" / "prompts" / "round_0002_auditor.txt").is_file()
+    executor_prompt = (
+        tmp_path / "run" / "prompts" / "round_0002_executor.txt"
+    ).read_text(encoding="utf-8")
+    assert "Immutable paths (hard constraint from state.immutable_paths)" in executor_prompt
+    assert "docs/api.md" in executor_prompt
     assert (tmp_path / "run" / "cleanup" / "round_0002_executor.json").is_file()
     assert (tmp_path / "run" / "cleanup" / "round_0002_auditor.json").is_file()
     assert json.loads(

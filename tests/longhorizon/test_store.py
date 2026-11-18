@@ -5,11 +5,19 @@ import json
 import os
 from dataclasses import asdict
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
-from my_coding_agent.longhorizon.schema import AuditReport, ManagerDecision, RoleEpisode, digest_value
+from my_coding_agent.longhorizon.schema import (
+    AuditReport,
+    ManagerDecision,
+    RoleEpisode,
+    canonical_json,
+    digest_value,
+)
 from my_coding_agent.longhorizon.state import reduce_events
+from my_coding_agent.longhorizon import store as store_module
 from my_coding_agent.longhorizon.store import LongHorizonStore, StoreIntegrityError
 
 
@@ -90,7 +98,12 @@ def _complete_round(store: LongHorizonStore, round_index: int) -> None:
     store.append("round_completed", {"round": round_index})
 
 
-def _store(tmp_path: Path, *, limits: dict | None = None) -> tuple[LongHorizonStore, Path]:
+def _store(
+    tmp_path: Path,
+    *,
+    limits: dict | None = None,
+    immutable_paths: tuple[str, ...] = (),
+) -> tuple[LongHorizonStore, Path]:
     workspace = tmp_path / "workspace"
     workspace.mkdir(parents=True)
     store = LongHorizonStore.prepare(
@@ -100,8 +113,36 @@ def _store(tmp_path: Path, *, limits: dict | None = None) -> tuple[LongHorizonSt
         workspace=workspace,
         model={"provider": "fake", "model": "fake-model", "max_retries": 0},
         limits=limits or {"max_rounds": 4, "snapshot_max_files": 20, "snapshot_max_bytes": 4096},
+        immutable_paths=immutable_paths,
     )
     return store, workspace
+
+
+def _rewrite_legacy_manifest_and_journal(
+    store: LongHorizonStore,
+) -> tuple[LongHorizonStore, dict]:
+    manifest = store.manifest
+    manifest.pop("immutable_paths")
+    previous: str | None = None
+    rows: list[dict] = []
+    for index, original in enumerate(store.events()):
+        row = {
+            "schema_version": 1,
+            "sequence": index,
+            "previous": previous,
+            "manifest_sha256": digest_value(manifest),
+            "kind": original["kind"],
+            "payload": original["payload"],
+            "time_unix": original["time_unix"],
+        }
+        row["sha256"] = digest_value(row)
+        rows.append(row)
+        previous = row["sha256"]
+    (store.root / "manifest.json").write_bytes(canonical_json(manifest) + b"\n")
+    (store.root / "journal.jsonl").write_bytes(
+        b"".join(canonical_json(row) + b"\n" for row in rows)
+    )
+    return LongHorizonStore.load(store.root), manifest
 
 
 def test_prepare_manifest_task_and_hash_chain(tmp_path: Path) -> None:
@@ -109,6 +150,7 @@ def test_prepare_manifest_task_and_hash_chain(tmp_path: Path) -> None:
     assert store.manifest["run_id"] == "run-1"
     assert store.manifest["task_sha256"] == hashlib.sha256(TASK.encode()).hexdigest()
     assert store.manifest["initial_workspace_sha256"] == store.workspace_digest()
+    assert store.manifest["immutable_paths"] == []
     assert (store.root / "task.txt").read_text(encoding="utf-8") == TASK
     events = store.events()
     assert [event["kind"] for event in events] == ["prepared"]
@@ -142,6 +184,192 @@ def test_prepare_rejects_credentials_in_model_manifest(tmp_path: Path) -> None:
             model={"provider": "openai", "api_key": "secret"},
             limits={"max_rounds": 1},
         )
+
+
+def test_load_and_integrity_accept_legacy_checkpoint_without_immutable_paths(
+    tmp_path: Path,
+) -> None:
+    current, workspace = _store(tmp_path)
+    workspace.joinpath("answer.py").write_text("42\n", encoding="utf-8")
+    _complete_round(current, 1)
+    legacy, _manifest = _rewrite_legacy_manifest_and_journal(current)
+    snapshot = legacy.capture_workspace()
+    state = reduce_events(legacy.manifest, legacy.events())
+    legacy.write_checkpoint(1, asdict(state), snapshot)
+
+    checkpoint_state = legacy.load_checkpoint(1)["state"]
+    inspected = legacy.inspect_integrity()
+    resumed = legacy.resume_state()
+
+    assert "immutable_paths" not in legacy.manifest
+    assert "immutable_paths" not in checkpoint_state
+    assert inspected["state"]["status"] == "ready"
+    assert "immutable_paths" not in inspected["state"]
+    assert inspected["completed_rounds"] == [1]
+    assert resumed.status == "ready"
+    assert resumed.next_round == 2
+
+
+def test_prepare_freezes_normalized_immutable_paths(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    protected = workspace / "protected"
+    protected.mkdir(parents=True)
+    protected.joinpath("keep.txt").write_text("keep\n", encoding="utf-8")
+    store = LongHorizonStore.prepare(
+        tmp_path / "run",
+        run_id="run",
+        task="task",
+        workspace=workspace,
+        model={"provider": "fake", "model": "fake", "max_retries": 0},
+        limits={"max_rounds": 2},
+        immutable_paths=(
+            "./protected/keep.txt",
+            r"protected\keep.txt",
+            "protected",
+        ),
+    )
+    assert store.manifest["immutable_paths"] == [
+        "protected",
+        "protected/keep.txt",
+    ]
+    reloaded = LongHorizonStore.load(store.root)
+    assert reloaded.manifest["immutable_paths"] == [
+        "protected",
+        "protected/keep.txt",
+    ]
+
+
+def test_prepare_rejects_invalid_immutable_paths(tmp_path: Path) -> None:
+    for index, value in enumerate(("../outside", "missing")):
+        workspace = tmp_path / f"workspace-{index}"
+        workspace.mkdir()
+        with pytest.raises(StoreIntegrityError, match="immutable path"):
+            LongHorizonStore.prepare(
+                tmp_path / f"run-{index}",
+                run_id="run",
+                task="task",
+                workspace=workspace,
+                model={"provider": "fake", "model": "fake", "max_retries": 0},
+                limits={"max_rounds": 2},
+                immutable_paths=(value,),
+            )
+
+    workspace = tmp_path / "workspace-absolute"
+    workspace.mkdir()
+    target = workspace / "file.txt"
+    target.write_text("x\n", encoding="utf-8")
+    with pytest.raises(StoreIntegrityError, match="immutable path"):
+        LongHorizonStore.prepare(
+            tmp_path / "run-absolute",
+            run_id="run",
+            task="task",
+            workspace=workspace,
+            model={"provider": "fake", "model": "fake", "max_retries": 0},
+            limits={"max_rounds": 2},
+            immutable_paths=(str(target),),
+        )
+
+
+def test_prepare_rejects_immutable_path_with_symlink_component(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    outside.joinpath("file.txt").write_text("x\n", encoding="utf-8")
+    workspace.mkdir()
+    link = workspace / "linked"
+    try:
+        link.symlink_to(outside, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks unavailable")
+    with pytest.raises(StoreIntegrityError, match="immutable path"):
+        LongHorizonStore.prepare(
+            tmp_path / "run",
+            run_id="run",
+            task="task",
+            workspace=workspace,
+            model={"provider": "fake", "model": "fake", "max_retries": 0},
+            limits={"max_rounds": 2},
+            immutable_paths=("linked/file.txt",),
+        )
+
+
+def test_windows_reparse_attribute_detects_link_without_py312_api(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "junction-like"
+    target.mkdir()
+    monkeypatch.setattr(store_module.os, "name", "nt")
+    monkeypatch.setattr(Path, "is_symlink", lambda self: False)
+    monkeypatch.setattr(Path, "is_junction", lambda self: False, raising=False)
+    monkeypatch.setattr(
+        store_module.os,
+        "lstat",
+        lambda path: SimpleNamespace(st_file_attributes=0x400),
+    )
+
+    assert store_module._is_link(target)
+
+
+def test_immutable_state_detects_directory_add_modify_and_delete(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    protected = workspace / "protected"
+    protected.mkdir(parents=True)
+    protected.joinpath("keep.txt").write_text("keep\n", encoding="utf-8")
+    store = LongHorizonStore.prepare(
+        tmp_path / "run",
+        run_id="run",
+        task="task",
+        workspace=workspace,
+        model={"provider": "fake", "model": "fake", "max_retries": 0},
+        limits={"max_rounds": 2},
+        immutable_paths=("protected",),
+    )
+
+    before = store.capture_immutable_state()
+    protected.joinpath("new.txt").write_text("new\n", encoding="utf-8")
+    with pytest.raises(StoreIntegrityError, match="immutable path changed"):
+        store.assert_immutable_unchanged(before)
+    protected.joinpath("new.txt").unlink()
+
+    before = store.capture_immutable_state()
+    protected.joinpath("keep.txt").write_text("changed\n", encoding="utf-8")
+    with pytest.raises(StoreIntegrityError, match="immutable path changed"):
+        store.assert_immutable_unchanged(before)
+    protected.joinpath("keep.txt").write_text("keep\n", encoding="utf-8")
+
+    before = store.capture_immutable_state()
+    protected.joinpath("keep.txt").unlink()
+    with pytest.raises(StoreIntegrityError, match="immutable path changed"):
+        store.assert_immutable_unchanged(before)
+
+
+def test_immutable_snapshot_ignores_runtime_components(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    protected = workspace / "protected"
+    protected.mkdir(parents=True)
+    protected.joinpath("keep.txt").write_text("keep\n", encoding="utf-8")
+    store = LongHorizonStore.prepare(
+        tmp_path / "run",
+        run_id="run",
+        task="task",
+        workspace=workspace,
+        model={"provider": "fake", "model": "fake", "max_retries": 0},
+        limits={"max_rounds": 2},
+        immutable_paths=("protected",),
+    )
+
+    before = store.capture_immutable_state()
+    cache = protected / "__pycache__"
+    cache.mkdir()
+    cache.joinpath("keep.cpython-311.pyc").write_bytes(b"runtime")
+    snapshot = store.capture_workspace()
+
+    store.assert_immutable_unchanged(before, snapshot=snapshot)
 
 
 def test_journal_tamper_torn_and_duplicate_sequence_fail_closed(tmp_path: Path) -> None:

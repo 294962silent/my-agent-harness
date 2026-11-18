@@ -10,6 +10,12 @@ from dataclasses import dataclass
 from typing import Any, Literal, Protocol
 
 
+_JSON_FENCE_RE = re.compile(
+    r"```json[ \t]*\r?\n(?P<body>.*?)\r?\n```",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+
+
 class SchemaError(ValueError):
     """A role or persisted value does not satisfy the shared contract."""
 
@@ -42,17 +48,19 @@ def _reject_constant(value: str) -> None:
 
 
 def parse_json_object(text: str) -> dict[str, Any]:
-    """Parse one plain or fenced JSON object without accepting extra prose."""
+    """Parse plain JSON or exactly one fenced JSON object."""
 
     if not isinstance(text, str):
         raise SchemaError("role output must be text")
     stripped = text.strip()
-    fenced = re.fullmatch(
-        r"```json[ \t]*\r?\n(?P<body>.*?)\r?\n```",
-        stripped,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    source = fenced.group("body") if fenced else stripped
+    pure_fence = _JSON_FENCE_RE.fullmatch(stripped)
+    if pure_fence is not None:
+        source = pure_fence.group("body")
+    else:
+        fences = list(_JSON_FENCE_RE.finditer(stripped))
+        if len(fences) > 1:
+            raise SchemaError("ambiguous JSON code blocks")
+        source = fences[0].group("body") if fences else stripped
     if not source:
         raise SchemaError("empty JSON output")
     try:

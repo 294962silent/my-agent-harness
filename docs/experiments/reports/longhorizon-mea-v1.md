@@ -1,8 +1,12 @@
 # Long-horizon MEA v1
 
-Date: 2026-11-17
+Date: 2026-11-17; v1.1 validation: 2026-11-18
 
-Status: implemented and validated on a real two-round CLI coding task.
+Status: v1 implemented and validated on a real two-round CLI coding task; v1.1
+final evidence is based on the current worktree at HEAD
+`9b1a7c499f13b014cc6f3d0bd5f677092ce1cac6` plus the uncommitted v1.1 changes,
+including cross-process pause/resume, immutable-path protection, protected
+snapshot checks, and verified local and Langfuse observations.
 
 ## Goal
 
@@ -136,6 +140,108 @@ Langfuse cloud read-back:
 
 The CLI also verified that a completed run cannot be resumed and exits with a
 non-zero status.
+
+## v1.1 final pause/resume, immutable-path, and observation validation
+
+Date: 2026-11-18.
+
+The evaluated state is the current worktree at HEAD
+`9b1a7c499f13b014cc6f3d0bd5f677092ce1cac6` plus uncommitted v1.1 changes. This
+section supersedes the earlier v1.1 candidate status while retaining every
+iteration below as history.
+
+### Final fixes
+
+- TOCTOU checks compare the protected path and workspace against the same
+  captured snapshot.
+- A blocked run may still load despite later workspace drift, while resume
+  remains blocked.
+- Python 3.11 reparse-point and junction handling is covered.
+- CLI immutable paths are processed lexically; drive-relative paths, `..`, and
+  link components fail closed without candidate-path resolution.
+- Resume rejects a stale pause value immediately after store integrity checks,
+  before auth, model, backend, or controller construction.
+- Role parsing accepts exactly one fenced JSON object and rejects ambiguous or
+  invalid framing.
+
+### Offline and compatibility validation
+
+- The main agent reran
+  `uv run --no-sync python -m pytest tests\longhorizon -o addopts=''`:
+  **135 passed in 18.37s**, exit 0.
+- Ruff passed; `uv.lock` was unchanged; `git diff --check` was clean.
+- The earlier real run `smoke-mea-20261117-8` still loaded under the new code
+  and its integrity check returned `complete` with completed rounds `[1, 2]`.
+
+### Retained real iterations
+
+`smoke-mea-v11-20261118-1` failed before the first model call because the
+rebuilt virtual environment lacked the `langfuse` package. It made **0 model
+calls** and was retained.
+
+`smoke-mea-v11-20261118-2` succeeded before the P1 fixes. It is retained as an
+earlier successful candidate, not final-head evidence:
+
+- 15 model calls, all 15 `ok`;
+- 34,510 total tokens and 24,704 cache-read tokens;
+- Langfuse trace `38e1f70eabc1af680fd09db128c9998c`;
+- a 2026-11-18 cloud read-back once showed 15 GENERATION observations whose
+  usage matched this run's local ledger.
+
+`smoke-mea-v11-20261118-4` ran after P1 but before compatibility with exactly
+one fenced JSON block. The Auditor returned explanatory text plus one fenced
+JSON block, which the then-current parser treated as invalid JSON. The run
+made 14 calls, all 14 were `ok`, and consumed 38,893 tokens. It recorded
+`round_unknown` and `run_blocked`, produced no checkpoint, and was retained
+without retry.
+
+### Final run and cross-process recovery
+
+`smoke-mea-v11-20261118-5` is the final evidence run. It used
+`deepseek-v4.1-flash`, temperature `0.2`, and provider retries `0`.
+
+The first independent process ran with `--pause-after-round 1` and returned:
+
+- status `ready`;
+- completed rounds `[1]`;
+- next round `2`;
+- only checkpoint `0001`.
+
+An independent second process resumed and reached status `complete` with
+completed rounds `[1, 2]` and checkpoints `0001`, `0002`, and `final`. A further
+resume exited with code 2, so the completed run was not replayed. A host pytest
+rerun in the final workspace exited 0.
+
+The final local ledger contains:
+
+- 16 generation starts, 16 ends, and 16 `ok` outcomes;
+- **42,271** total tokens and **31,104** cache-read tokens;
+- purpose counts: `manager_r1=1`, `executor_r1=9`, `auditor_r1=5`,
+  `manager_r2=1`.
+
+The Langfuse upload attempt completed and local observation remained normal:
+the observer closed successfully with 0 dropped records and 0 export errors.
+Node `langfuse-cli/fetch` and `curl` both failed at the host DNS resolver, so
+the final proof uses a read-only PowerShell/.NET request to the public
+`/api/public/v2/observations` REST endpoint as a resolver fallback.
+That read-back returned trace `da8624e24bf352085623f9510fe868ea` with 16
+observations, all 16 GENERATION, all status `ok`, 16 distinct observation IDs,
+model `deepseek-v4.1-flash`, and totalUsage 42,271. Its purpose counts were
+manager round 1 = 1, executor round 1 = 9, auditor round 1 = 5, and manager
+round 2 = 1, exactly matching the local ledger.
+
+### Immutable-path integrity
+
+The SHA256 of `test_calc.py` was
+`fa3379b77a73726a9db77c0f79c3ee954aadac6944c4daf8b69a20ee59e07d1c`
+both before and after the final run. The current workspace file and the
+persisted round-1 snapshot contain the same hash.
+
+The final evidence proves pause/resume across separate CLI processes,
+closed-round checkpointing, immutable-path preservation, clean local observation
+shutdown, and a verified Langfuse read-back for one tiny task. It does not
+establish a quality improvement, benchmark gain, or generalized long-horizon
+capability.
 
 ## Delivery validation
 

@@ -37,6 +37,64 @@ def _path_arg(value: str | Path) -> Path:
     return Path(value).expanduser().resolve()
 
 
+def _positive_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def _validate_resume_pause_after_round(
+    state: Mapping[str, Any],
+    pause_after_round: int | None,
+) -> None:
+    if pause_after_round is None:
+        return
+    if type(pause_after_round) is not int or pause_after_round < 1:
+        raise CLIError("pause_after_round must be a positive integer or None")
+    completed_rounds = state.get("completed_rounds", [])
+    if not isinstance(completed_rounds, list) or any(
+        type(round_index) is not int for round_index in completed_rounds
+    ):
+        raise CLIError("store integrity completed_rounds are invalid")
+    if completed_rounds and pause_after_round <= max(completed_rounds):
+        raise CLIError(
+            "pause_after_round must be later than the last completed round"
+        )
+
+
+def _workspace_relative_paths(
+    values: Sequence[str | Path],
+    *,
+    workspace: Path,
+) -> list[str]:
+    workspace = workspace.expanduser()
+    relative_paths: list[str] = []
+    for value in values:
+        text = str(value).strip()
+        if not text:
+            raise CLIError("immutable path must not be empty")
+        path = Path(text).expanduser()
+        if path.drive and not path.is_absolute():
+            raise CLIError("immutable path must not be drive-relative")
+        if ".." in path.parts:
+            if not path.is_absolute() and path.parts[0] == "..":
+                raise CLIError("immutable path escapes workspace")
+            raise CLIError("immutable path must not contain '..'")
+        if path.is_absolute():
+            try:
+                relative = path.relative_to(workspace)
+            except ValueError as exc:
+                raise CLIError("immutable path escapes workspace") from exc
+        else:
+            relative = path
+        relative_paths.append(relative.as_posix())
+    return relative_paths
+
+
 def _read_text_value(value: str, *, label: str) -> str:
     if not value:
         raise CLIError(f"{label} must not be empty")
@@ -439,6 +497,10 @@ async def _run_command(
     run_id = args.run_id or uuid4().hex[:16]
     run_root = Path(args.runs_root).expanduser().resolve() / run_id
     workspace = Path(args.workspace).expanduser().resolve()
+    immutable_paths = _workspace_relative_paths(
+        args.immutable_paths,
+        workspace=workspace,
+    )
     limits = {
         "max_rounds": args.max_rounds,
         "max_turns": args.max_turns,
@@ -458,6 +520,7 @@ async def _run_command(
         workspace=workspace,
         model=model,
         limits=limits,
+        immutable_paths=immutable_paths,
     )
     llm = None
     local = None
@@ -498,7 +561,11 @@ async def _run_command(
                 limits=store.manifest["limits"],
             ),
         )
-        action = await _maybe_await(controller.run_until_terminal())
+        action = await _maybe_await(
+            controller.run_until_terminal(
+                pause_after_round=args.pause_after_round,
+            )
+        )
         result = _structured_result(_state_payload(store), action)
         result.update(
             {
@@ -537,6 +604,10 @@ async def _resume_command(
     run_root = _run_root(args, args.run_id)
     store = LongHorizonStore.load(run_root)
     _integrity, state = _integrity_snapshot(store)
+    _validate_resume_pause_after_round(
+        state,
+        getattr(args, "pause_after_round", None),
+    )
     pending = pending_follow_ups(store.manifest, store.events())
     if state["status"] == "complete":
         raise CLIError("completed run cannot be resumed")
@@ -581,7 +652,11 @@ async def _resume_command(
             auth_manager_factory=auth_manager_factory,
         )
         controller = controller_factory(store=store, backend=backend)
-        action = await _maybe_await(controller.resume())
+        action = await _maybe_await(
+            controller.resume(
+                pause_after_round=args.pause_after_round,
+            )
+        )
         _integrity, final_state = _integrity_snapshot(store)
         result = _structured_result(final_state, action)
         result.update(
@@ -717,6 +792,15 @@ def _add_auth_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--credential-env")
 
 
+def _add_pause_after_round(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--pause-after-round",
+        type=_positive_int,
+        metavar="N",
+        help="stop after N completed rounds and exit in a resumable state",
+    )
+
+
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(prog="lh-longhorizon")
     commands = result.add_subparsers(dest="command", required=True)
@@ -724,6 +808,14 @@ def parser() -> argparse.ArgumentParser:
     run = commands.add_parser("run", help="start a new durable Long-horizon MEA run")
     run.add_argument("--task", required=True, help="text or @UTF-8-task-file")
     run.add_argument("--workspace", type=Path, default=Path("."))
+    run.add_argument(
+        "--immutable-path",
+        dest="immutable_paths",
+        action="append",
+        default=[],
+        metavar="PATH",
+        help="workspace-relative path or an absolute path inside the workspace",
+    )
     run.add_argument("--run-id")
     _add_local_args(run)
     _add_auth_args(run)
@@ -738,6 +830,7 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--max-seconds", type=float, default=1800)
     run.add_argument("--context-budget", type=int, default=64000)
     run.add_argument("--langfuse", action="store_true")
+    _add_pause_after_round(run)
 
     status = commands.add_parser("status", help="read durable run state without credentials")
     status.add_argument("run_id")
@@ -754,6 +847,7 @@ def parser() -> argparse.ArgumentParser:
     resume.add_argument("--timeout", type=int)
     resume.add_argument("--max-tokens", type=int)
     resume.add_argument("--langfuse", action="store_true")
+    _add_pause_after_round(resume)
 
     follow = commands.add_parser("follow-up", help="queue durable operator input")
     follow.add_argument("run_id")

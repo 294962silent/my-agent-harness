@@ -11,7 +11,7 @@ import stat
 import threading
 import time
 import uuid
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import asdict, dataclass
@@ -33,6 +33,11 @@ from .state import (
 _DEFAULT_SNAPSHOT_MAX_FILES = 5000
 _DEFAULT_SNAPSHOT_MAX_BYTES = 64 * 1024 * 1024
 _IGNORED_COMPONENTS = frozenset({".git", ".venv", "__pycache__", ".pytest_cache"})
+_FILE_ATTRIBUTE_REPARSE_POINT = getattr(
+    stat,
+    "FILE_ATTRIBUTE_REPARSE_POINT",
+    0x400,
+)
 _SESSION_NAME_RE = re.compile(
     r"^round_(?P<round>[0-9]{4})_(?P<role>manager|executor|auditor)"
     r"(?:_[0-9a-f]{12})?\.jsonl$"
@@ -99,7 +104,16 @@ class WorkspaceSnapshot:
 
 def _is_link(path: Path) -> bool:
     try:
-        return path.is_symlink() or bool(getattr(path, "is_junction", lambda: False)())
+        if path.is_symlink():
+            return True
+        if bool(getattr(path, "is_junction", lambda: False)()):
+            return True
+        if os.name == "nt":
+            metadata = os.lstat(path)
+            attributes = int(getattr(metadata, "st_file_attributes", 0))
+            if attributes & _FILE_ATTRIBUTE_REPARSE_POINT:
+                return True
+        return False
     except OSError:
         return True
 
@@ -285,6 +299,49 @@ def _safe_component(value: object, name: str) -> str:
     return text
 
 
+def _normalize_immutable_paths(
+    workspace: Path | None,
+    values: Sequence[str],
+) -> list[str]:
+    """Return sorted, workspace-relative paths in their canonical text form."""
+
+    if isinstance(values, (str, bytes, bytearray)):
+        raise StoreIntegrityError("immutable paths must be an iterable of path strings")
+    try:
+        raw_values = list(values)
+    except TypeError as exc:
+        raise StoreIntegrityError("immutable paths must be an iterable of path strings") from exc
+    normalized: set[str] = set()
+    for value in raw_values:
+        if not isinstance(value, str):
+            raise StoreIntegrityError("immutable path must be text")
+        text = value
+        if not text.strip():
+            raise StoreIntegrityError("immutable path must not be empty")
+        candidate = Path(text)
+        if candidate.is_absolute() or getattr(candidate, "drive", ""):
+            raise StoreIntegrityError("immutable path must be workspace-relative")
+        parts = tuple(part for part in candidate.parts if part not in {"", "."})
+        if not parts or any(part == ".." for part in parts):
+            raise StoreIntegrityError("immutable path escapes the workspace")
+        relative = Path(*parts)
+        if workspace is None:
+            normalized.add(relative.as_posix())
+            continue
+        try:
+            target = _assert_safe_under(
+                workspace,
+                workspace / relative,
+                allow_missing=False,
+            )
+        except (OSError, ValueError, StoreIntegrityError) as exc:
+            raise StoreIntegrityError(f"immutable path is invalid: {text}") from exc
+        if not (target.is_file() or target.is_dir()):
+            raise StoreIntegrityError(f"immutable path is not a file or directory: {text}")
+        normalized.add(target.relative_to(workspace).as_posix())
+    return sorted(normalized)
+
+
 def _file_sha_nofollow(path: Path, *, max_bytes: int) -> tuple[str, int, int]:
     if _is_link(path):
         raise StoreIntegrityError(f"workspace contains a link: {path}")
@@ -372,6 +429,7 @@ class LongHorizonStore:
         workspace: Path,
         model: Mapping[str, Any],
         limits: Mapping[str, Any],
+        immutable_paths: Sequence[str] = (),
     ) -> LongHorizonStore:
         root = Path(root).expanduser().resolve()
         workspace = Path(workspace).expanduser().resolve()
@@ -379,6 +437,7 @@ class LongHorizonStore:
             raise StoreIntegrityError("task must be text")
         if not workspace.is_dir() or workspace.is_symlink():
             raise StoreIntegrityError("workspace must be an existing real directory")
+        immutable_paths_copy = _normalize_immutable_paths(workspace, immutable_paths)
         if root == workspace or _inside(workspace, root):
             raise StoreIntegrityError("run root must be outside every snapshotted workspace subtree")
         safe_run_id = _safe_component(run_id, "run_id")
@@ -408,6 +467,7 @@ class LongHorizonStore:
             "model": model_copy,
             "limits": limits_copy,
             "initial_workspace_sha256": "0" * 64,
+            "immutable_paths": immutable_paths_copy,
         }
         probe = cls(root, provisional)
         _entries, initial_digest, _bytes = probe._workspace_inventory()
@@ -419,6 +479,7 @@ class LongHorizonStore:
             "model": model_copy,
             "limits": limits_copy,
             "initial_workspace_sha256": initial_digest,
+            "immutable_paths": immutable_paths_copy,
         }
         _atomic_write(root / "manifest.json", canonical_json(manifest) + b"\n")
         _atomic_write(root / "task.txt", task.encode("utf-8"))
@@ -451,13 +512,23 @@ class LongHorizonStore:
             "limits",
             "initial_workspace_sha256",
         }
-        if set(value) != required:
+        fields = set(value)
+        if fields != required and fields != required | {"immutable_paths"}:
             raise StoreIntegrityError("manifest fields differ from the contract")
+        store = cls(root, value)
+        if "immutable_paths" in value:
+            if not isinstance(value["immutable_paths"], list):
+                raise StoreIntegrityError("manifest immutable_paths must be a list")
+            expected_immutable_paths = _normalize_immutable_paths(
+                None,
+                value["immutable_paths"],
+            )
+            if value["immutable_paths"] != expected_immutable_paths:
+                raise StoreIntegrityError("manifest immutable_paths are not normalized")
         task_path = _assert_safe_under(root, root / "task.txt", allow_missing=False)
         task = _read_bytes_nofollow(task_path)
         if hashlib.sha256(task).hexdigest() != value["task_sha256"]:
             raise StoreIntegrityError("task.txt hash drifted")
-        store = cls(root, value)
         store.events()
         return store
 
@@ -585,6 +656,183 @@ class LongHorizonStore:
         with self._lock():
             _entries, digest, _bytes = self._workspace_inventory()
             return digest
+
+    def _immutable_roots(self) -> tuple[str, ...]:
+        paths = sorted(
+            set(self._manifest.get("immutable_paths", [])),
+            key=lambda value: (len(value.split("/")), value),
+        )
+        roots: list[str] = []
+        for path in paths:
+            if any(path == root or path.startswith(f"{root}/") for root in roots):
+                continue
+            roots.append(path)
+        return tuple(roots)
+
+    def _capture_immutable_state_unlocked(self) -> dict[str, Any]:
+        records: list[dict[str, Any]] = []
+        max_bytes = int(self._manifest["limits"]["snapshot_max_bytes"])
+        for root_name in self._immutable_roots():
+            try:
+                root = _assert_safe_under(
+                    self.workspace,
+                    self.workspace / root_name,
+                    allow_missing=False,
+                )
+            except StoreIntegrityError as exc:
+                raise StoreIntegrityError(
+                    f"immutable path changed or disappeared: {root_name}"
+                ) from exc
+            if _is_link(root):
+                raise StoreIntegrityError(f"immutable path contains a link: {root_name}")
+            root_mode = stat.S_IMODE(os.lstat(root).st_mode)
+            root_relative = root.relative_to(self.workspace).as_posix()
+            if root.is_file():
+                sha256, size, mode = _file_sha_nofollow(root, max_bytes=max_bytes)
+                records.append(
+                    {
+                        "root": root_name,
+                        "path": root_relative,
+                        "kind": "file",
+                        "sha256": sha256,
+                        "size": size,
+                        "mode": mode,
+                    }
+                )
+                continue
+            if not root.is_dir():
+                raise StoreIntegrityError(
+                    f"immutable path is not a file or directory: {root_name}"
+                )
+            records.append(
+                {
+                    "root": root_name,
+                    "path": root_relative,
+                    "kind": "directory",
+                    "mode": root_mode,
+                }
+            )
+            for current, dirs, files in os.walk(root, topdown=True, followlinks=False):
+                current_path = Path(current)
+                dirs.sort()
+                files.sort()
+                kept_dirs: list[str] = []
+                for name in dirs:
+                    if name in _IGNORED_COMPONENTS:
+                        continue
+                    directory = current_path / name
+                    if _is_link(directory):
+                        raise StoreIntegrityError(
+                            f"immutable path contains a link: {root_name}"
+                        )
+                    metadata = os.lstat(directory)
+                    if not stat.S_ISDIR(metadata.st_mode):
+                        raise StoreIntegrityError(
+                            f"immutable directory entry changed: {root_name}"
+                        )
+                    records.append(
+                        {
+                            "root": root_name,
+                            "path": directory.relative_to(self.workspace).as_posix(),
+                            "kind": "directory",
+                            "mode": stat.S_IMODE(metadata.st_mode),
+                        }
+                    )
+                    kept_dirs.append(name)
+                dirs[:] = kept_dirs
+                for name in files:
+                    if name in _IGNORED_COMPONENTS:
+                        continue
+                    file_path = current_path / name
+                    sha256, size, mode = _file_sha_nofollow(
+                        file_path,
+                        max_bytes=max_bytes,
+                    )
+                    records.append(
+                        {
+                            "root": root_name,
+                            "path": file_path.relative_to(self.workspace).as_posix(),
+                            "kind": "file",
+                            "sha256": sha256,
+                            "size": size,
+                            "mode": mode,
+                        }
+                    )
+        records.sort(key=lambda item: item["path"])
+        return {"records": records}
+
+    def _snapshot_immutable_records(
+        self,
+        snapshot: WorkspaceSnapshot,
+    ) -> list[dict[str, Any]]:
+        roots = self._immutable_roots()
+        return [
+            {
+                "path": entry.path,
+                "sha256": entry.sha256,
+                "size": entry.size,
+                "mode": entry.mode,
+            }
+            for entry in snapshot.files
+            if any(entry.path == root or entry.path.startswith(f"{root}/") for root in roots)
+        ]
+
+    def capture_immutable_state(self) -> dict[str, Any]:
+        """Capture protected subtrees immediately before Executor work."""
+
+        with self._lock():
+            return self._capture_immutable_state_unlocked()
+
+    def assert_immutable_unchanged(
+        self,
+        before: Mapping[str, Any],
+        *,
+        snapshot: WorkspaceSnapshot | None = None,
+    ) -> None:
+        """Fail closed when Executor changed an immutable path's bytes or type."""
+
+        with self._lock():
+            expected = _json_copy(before, "immutable state")
+            actual = self._capture_immutable_state_unlocked()
+            if canonical_json(expected) != canonical_json(actual):
+                changed = sorted(
+                    {
+                        record["root"]
+                        for record in [
+                            *expected.get("records", []),
+                            *actual.get("records", []),
+                        ]
+                        if isinstance(record, Mapping) and isinstance(record.get("root"), str)
+                    }
+                )
+                detail = ", ".join(changed) if changed else "unknown"
+                raise StoreIntegrityError(f"immutable path changed: {detail}")
+            if snapshot is None:
+                return
+            if not isinstance(snapshot, WorkspaceSnapshot):
+                raise StoreIntegrityError("immutable snapshot must be WorkspaceSnapshot")
+            snapshot_entries = [entry.to_dict() for entry in snapshot.files]
+            if (
+                digest_value(snapshot_entries) != snapshot.sha256
+                or len(snapshot.files) != snapshot.file_count
+                or sum(entry.size for entry in snapshot.files) != snapshot.byte_count
+            ):
+                raise StoreIntegrityError("immutable snapshot metadata is inconsistent")
+            expected_files = [
+                {
+                    "path": record["path"],
+                    "sha256": record["sha256"],
+                    "size": record["size"],
+                    "mode": record["mode"],
+                }
+                for record in expected.get("records", [])
+                if isinstance(record, Mapping) and record.get("kind") == "file"
+            ]
+            snapshot_files = self._snapshot_immutable_records(snapshot)
+            if canonical_json(expected_files) != canonical_json(snapshot_files):
+                raise StoreIntegrityError(
+                    "immutable path changed in Executor snapshot"
+                )
 
     def _read_session_rows(self, path: Path) -> list[dict[str, Any]]:
         payload = _read_bytes_nofollow(path)
@@ -1373,17 +1621,24 @@ class LongHorizonStore:
                 }
             )
 
-        _entries, workspace_digest, _bytes = self._workspace_inventory()
-        if (
-            latest_snapshot is None
-            and workspace_digest
-            != self._manifest["initial_workspace_sha256"]
-        ):
-            raise StoreIntegrityError(
-                "workspace drifted from the initial workspace digest"
-            )
-        if latest_snapshot is not None and workspace_digest != latest_snapshot:
-            raise StoreIntegrityError("workspace drifted from the latest checkpoint")
+        workspace_digest: str | None
+        try:
+            _entries, workspace_digest, _bytes = self._workspace_inventory()
+        except StoreIntegrityError:
+            if state.status != "blocked":
+                raise
+            workspace_digest = None
+        if state.status != "blocked" and workspace_digest is not None:
+            if (
+                latest_snapshot is None
+                and workspace_digest
+                != self._manifest["initial_workspace_sha256"]
+            ):
+                raise StoreIntegrityError(
+                    "workspace drifted from the initial workspace digest"
+                )
+            if latest_snapshot is not None and workspace_digest != latest_snapshot:
+                raise StoreIntegrityError("workspace drifted from the latest checkpoint")
 
         final_checkpoint: dict[str, Any] | None = None
         if state.status == "complete":
