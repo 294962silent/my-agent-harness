@@ -5,7 +5,7 @@
 ## 1. 实验范围与当前状态
 
 - 实验开始：2026-11-11。
-- 最近复核：2026-11-12（北京时间；框架重设计见 E-REDESIGN，真实小样本见 E-REDESIGN-LIVE；旧DSH/缓存对照保持取消）。
+- 最近复核：2026-11-18（北京时间；本次追加 E-LONGHORIZON-MEA-V11 的跨进程暂停/恢复与观测闭环证据；更早的框架重设计和真实小样本记录原样保留）。
 - 项目基线：`a04e940`。
 - 当前重设计分支：`codex/interview-harness-redesign`（独立 worktree，基于已交付 `1f150e1`）；原 `codex/scheduler-reliability` 脏工作区保留，前一交付分支为 `codex/context-memory-reliability`。
 - 最初目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
@@ -1283,6 +1283,32 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - 脚本化消融 repeat 20：baseline 持续 7 次局部验证后 timeout，0/20；guarded 在约 76% 时间比例注入一次，先写 final artifact，再通过宿主 py_compile 和 unittest，20/20，签名唯一。
 - 该结果只证明机制和宿主验证链，不证明真实模型一定遵循提醒；下一步需在 Harbor 公开任务上做同模型、同预算的 guard on/off 实验。
 - 报告：[long-horizon-progress-guard-v1.md](reports/long-horizon-progress-guard-v1.md)。
+
+### E-LONGHORIZON-MEA-V1：2026-11-17 / 可恢复 Manager-Executor-Auditor CLI 层
+
+- **实现**：新增独立 `my_coding_agent.longhorizon` 包和 `lh-longhorizon` CLI。用户任务作为稳定契约；Manager 无工具，只输出严格 JSON 路由；Executor/Auditor 每轮新建 Session；Auditor 只注册 read/grep/find/ls/bash，Bash 由 review gate 限制为无管道、重定向、分号或 `&&` 的安全命令。
+- **持久化**：manifest 固化模型与预算；journal 使用 hash chain；每轮关闭后写 workspace snapshot 和 checkpoint；完成状态额外写独立 final checkpoint。`status`/`resume` 校验 journal、历史 round checkpoint、Session 存在性和当前 workspace digest。dangling round 一律 blocked，不自动重放。
+- **借鉴边界**：借鉴 LongHorizon-Harness 的外部任务状态、fresh-context Executor、独立 Auditor、verified checkpoint 与 resume；使用自研严格 JSON、hash-chain、content-addressed snapshot、Langfuse 关联和本框架 Session/tool/settings，没有复制其 GUI、dashboard 或 supervisor。
+- **离线验证**：`tests/longhorizon` **99 passed**；CLI、roles、store 与 Ruff 通过。纵切测试覆盖 CLI → Controller → RoleBackend、同 trace root、blocked exit code 和 secret scrubbing。
+- **真实 smoke**：`smoke-mea-20261117-8`，`deepseek-v4.1-flash`，两轮完成。Executor 修改生产代码；Auditor 在 workspace 快照副本中只运行四条精确 pytest 命令之一，返回 clean complete；Manager 基于 verified state 返回 done。最终状态 `complete`，round checkpoints `1/2` 与 final checkpoint 均通过完整性检查，独立 pytest 为 1 passed。
+- **真实用量**：15 个 generation，15/15 `ok`，40,507 provider tokens（28,672 cache-read）。Langfuse 回读同一 trace `d337f693f1e091ea1efa13f9e5f6289b` 的 15 个 GENERATION，usage 与本地 ledger 完全一致。
+- **失败保留**：前七次 smoke 分别为可选依赖缺失、ContextVar 跨 yield、Auditor 安全命令/轮次预算、`complete` 与 `remaining` 契约冲突、最终门禁前的成功快照、内部 iterable 错误；均 fail-closed，未重放。全部 smoke attempts 合计 235,599 settled provider tokens；历史 run 不改写。
+- **Windows CI**：stacked [PR #3](https://github.com/294962silent/my-agent-harness/pull/3) 的 Windows-latest / Python 3.11 与 3.13 均 `completed/success`，覆盖 Ruff、pytest、TUI 构建/测试及 wheel 入口检查；run 为 [44119193048](https://github.com/294962silent/my-agent-harness/actions/runs/44119193048)。未合并 PR。
+- **报告**：[longhorizon-mea-v1.md](reports/longhorizon-mea-v1.md)；机器汇总：[summary.json](results/longhorizon-mea-v1-20261117/summary.json)。
+
+### E-LONGHORIZON-MEA-V11：2026-11-18 / 当前工作树跨进程 pause/resume、immutable path 与观测闭环
+
+- **评估状态**：最终证据对应当前工作树，HEAD 为 `9b1a7c499f13b014cc6f3d0bd5f677092ce1cac6`，并包含尚未提交的 v1.1 修复。最终 run 为 `smoke-mea-v11-20261118-5`，不再把早先 run2 当作最终 head 证据。
+- **最终修复**：TOCTOU 检查绑定同一 workspace snapshot；blocked run 在 workspace drift 后仍可 load/status 但 resume 保持 blocked；覆盖 Python 3.11 reparse/junction；CLI 对 immutable path 只做词法校验；resume 在 auth/model 前拒绝 stale pause；角色解析接受恰好一个 fenced JSON object。
+- **离线验证**：主代理以 `uv run --no-sync python -m pytest tests\longhorizon -o addopts=''` 复跑，**135 passed in 18.37s**、exit 0。Ruff 通过，`uv.lock` 未改，`git diff --check` clean。
+- **旧 run 兼容**：`smoke-mea-20261117-8` 在新代码下 load/integrity 仍为 `complete`，completed rounds `[1, 2]`。
+- **失败与候选保留**：`smoke-mea-v11-20261118-1` 因 venv 缺 `langfuse`，0 model calls，保留。`smoke-mea-v11-20261118-2` 是 P1 修复前成功候选，15 calls/15 `ok`/34,510 tokens/24,704 cache-read，trace `38e1f70eabc1af680fd09db128c9998c` 曾读回 15 GENERATION 且 usage 一致；明确不能当作最终 head。`smoke-mea-v11-20261118-4` 在 JSON fence 兼容前失败：Auditor 输出“说明 + 恰一个 JSON block”触发 invalid JSON，14 calls/14 `ok`/38,893 tokens，记录 `round_unknown` + `run_blocked`，无 checkpoint，保留不重试。
+- **最终跨进程恢复**：run5 第一独立进程以 `--pause-after-round 1` 返回 `ready`、completed rounds `[1]`、next round `2`，只有 `0001` checkpoint。独立 resume 后 `complete`、completed rounds `[1, 2]`，存在 `0001/0002/final`；再次 resume exit 2。最终 workspace 的 host pytest exit 0。
+- **最终真实用量**：run5 使用 `deepseek-v4.1-flash`，temperature `0.2`，retry `0`；本地 ledger 为 16 starts / 16 ends / 16 `ok`，total tokens **42,271**，cache-read **31,104**；purpose counts 为 `manager_r1=1`、`executor_r1=9`、`auditor_r1=5`、`manager_r2=1`。
+- **Langfuse 最终回读**：observer close ok、dropped 0、export_errors 0。Node `langfuse-cli/fetch` 与 `curl` 在本机 DNS resolver 失败，随后通过 PowerShell/.NET 对公开 `/api/public/v2/observations` 只读 REST fallback 验证 trace `da8624e24bf352085623f9510fe868ea`：16 observations/GENERATION、16 `ok`、16 distinct IDs、totalUsage **42,271**、model `deepseek-v4.1-flash`，purpose counts 与本地完全一致。未输出密钥。
+- **不可变路径**：`test_calc.py` 的 SHA256 before=after，为 `fa3379b77a73726a9db77c0f79c3ee954aadac6944c4daf8b69a20ee59e07d1c`。
+- **证据边界**：只证明跨独立 CLI 进程暂停/恢复、closed-round checkpoint、保护路径及本地与 Langfuse 观测闭环；单题 tiny task 不证明质量提升、benchmark 收益或长程能力泛化。
+- **报告**：[longhorizon-mea-v1.md](reports/longhorizon-mea-v1.md)；机器汇总：[summary.json](results/longhorizon-mea-v1-20261117/summary.json)。
 
 ### E-LONGHORIZON-CUSTOM-MEMORY-V4：2026-11-15 / 上下文预算失败与 verifier 负结果
 

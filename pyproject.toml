@@ -24,6 +24,7 @@ dependencies = [
 [project.scripts]
 my-pi-agent = "my_coding_agent.cli:main"
 my-agent-dream = "my_coding_agent.dream_rsi_replay:main"
+lh-longhorizon = "my_coding_agent.longhorizon.cli:main"
 
 [project.optional-dependencies]
 mem0 = [
