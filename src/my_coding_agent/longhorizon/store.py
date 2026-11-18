@@ -15,7 +15,7 @@ from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import asdict, dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, BinaryIO
 
 from .schema import canonical_json, digest_value, parse_json_object, parse_role_episode
@@ -318,8 +318,11 @@ def _normalize_immutable_paths(
         text = value
         if not text.strip():
             raise StoreIntegrityError("immutable path must not be empty")
-        candidate = Path(text)
-        if candidate.is_absolute() or getattr(candidate, "drive", ""):
+        windows_candidate = PureWindowsPath(text)
+        if windows_candidate.is_absolute() or windows_candidate.drive:
+            raise StoreIntegrityError("immutable path must be workspace-relative")
+        candidate = PurePosixPath(text.replace("\\", "/"))
+        if candidate.is_absolute():
             raise StoreIntegrityError("immutable path must be workspace-relative")
         parts = tuple(part for part in candidate.parts if part not in {"", "."})
         if not parts or any(part == ".." for part in parts):
