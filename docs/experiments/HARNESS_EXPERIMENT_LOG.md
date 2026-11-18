@@ -1329,6 +1329,7 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **缓存稳定性**：每个角色使用固定 system prompt；工具名、描述、schema 和序列化顺序冻结；时间戳、run/task id、分数与运行态变化放当前 user turn 或状态尾部；session 历史只追加。receipt 必须同时记录 `system_prompt_sha256`、`tool_schema_sha256`、provider cache usage 和前缀变化原因。
 - **实现**：新增 `experiments/long_horizon_quality`，提供冻结 campaign、确定性 slot/run ID、plan SHA、严格 outcome schema、task-cluster bootstrap、exact sign test、缓存命中率与 claim gate；现有 pilot manifest 单独冻结在 `docs/experiments/plans/terminal-bench-21-quality-pilot-v1.json`。
 - **零成本验证**：3 题 × 2 臂 × 3 trials 的 freeze 生成 18 个 slots，plan SHA 与 sidecar 一致，claim ceiling 为 `descriptive_only`。配对分析 CLI 对 synthetic rows 跑通，pilot 即使均值差为正值也不产生质量 claim。
-- **测试**：`tests/experiments/test_long_horizon_quality.py` **7 passed**；定向 Ruff 与 `git diff --check` 通过。没有新增模型请求。
+- **编排核心**：新增容器无关的 Manager → Executor → Auditor 核心；Manager 使用 append-only 对话历史提高跨轮缓存复用，Executor/Auditor 使用固定 system prompt 和独立轮次消息，所有角色继续遵守严格 JSON 与 verified-audit 完成门禁。
+- **测试**：`tests/experiments/test_long_horizon_quality.py` 与 `test_long_horizon_quality_orchestrator.py` 合计 **11 passed**；定向 Ruff 与 `git diff --check` 通过。没有新增模型请求。
 - **当前边界**：目前完成的是预注册、缓存稳定性契约和离线分析层；Harbor/MEA 执行适配与三题真实 pilot 尚未运行，不能据此声明任何质量或 benchmark 提升。
 - **协议**：[long-horizon-quality-preregistration-v1.md](reports/long-horizon-quality-preregistration-v1.md)。

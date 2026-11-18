@@ -187,8 +187,11 @@ uv run python -m experiments.long_horizon_quality analyze `
   --json <summary.json>
 ```
 
-The current implementation freezes slots and performs strict offline paired
-analysis. Harbor/MEA execution is wired in the next implementation increment.
+The current implementation freezes slots, performs strict offline paired
+analysis and includes a container-neutral Manager -> Executor -> Auditor
+orchestration core. The manager history is append-only for cache reuse; the
+executor and auditor use fixed system prompts and fresh per-round messages.
+Harbor execution is wired in the next implementation increment.
 
 ## Claim boundaries
 
