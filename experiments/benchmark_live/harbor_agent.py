@@ -10,6 +10,7 @@ import math
 import os
 import re
 from pathlib import Path
+import shlex
 import traceback
 from uuid import uuid4
 
@@ -17,7 +18,7 @@ from harbor.agents.base import BaseAgent
 from harbor.models.task.task import Task
 
 from my_agent_core.agent import Agent
-from my_agent_core.events import AgentEnd
+from my_agent_core.events import AgentEnd, MessageEnd
 from my_agent_core.artifacts import ArtifactStore
 from my_agent_core.context_compaction import CompactionPolicy
 from my_agent_core.run_lifecycle import RunLimits
@@ -25,10 +26,141 @@ from my_agent_core.retry import AutoRetryPolicy
 from my_agent_core.session import Session
 from my_agent_core.tools import tool
 from my_coding_agent.tools.artifact import make_artifact_tools
+from my_agent_llm import Message, TurnOutcome
+from my_agent_llm.observation import observation_context
 
 from .budget import BudgetLedger, BudgetStop, GuardedLLM, create_live_llm, LIVE_MODEL
 from .observation import ExperimentLLMOwner, ObservationRequiredError
 from .tasks import oracle_gate, agent_instruction, runtime_constraints
+from experiments.long_horizon_quality.orchestrator import (
+    AUDITOR_SYSTEM_PROMPT,
+    EXECUTOR_SYSTEM_PROMPT,
+    MANAGER_SYSTEM_PROMPT,
+    RoleRequest,
+    run_mea,
+)
+
+SINGLE_AGENT_SYSTEM_PROMPT = (
+    "Complete the user task in the container using shell. Do not access benchmark "
+    "solutions, hidden verifier tests, or scoring files. Finish with a concise "
+    "description of your changes."
+)
+_SHELL_META_RE = re.compile(r"(?:\r|\n|;|&&|\|\||[|<>`]|\$\()")
+_AUDIT_FIRST_COMMANDS = frozenset(
+    {"cat", "find", "git", "grep", "head", "ls", "pwd", "sed", "tail", "wc"}
+)
+_MEA_EXECUTOR_RESERVED_REQUESTS = 24
+_MEA_AUDITOR_MAX_REQUESTS = 20
+
+
+def _message_text(message) -> str:
+    content = getattr(message, "content", "")
+    if isinstance(content, str):
+        return content
+    text = getattr(message, "text_content", "")
+    return text if isinstance(text, str) else ""
+
+
+async def _run_agent_and_capture(agent, instruction: str, timeout: float) -> tuple[str, dict]:
+    assistant_text: list[str] = []
+    terminal: dict = {}
+
+    def observe(event) -> None:
+        if isinstance(event, MessageEnd) and getattr(event.message, "role", None) == "assistant":
+            text = _message_text(event.message)
+            if text.strip():
+                assistant_text.append(text)
+        if isinstance(event, AgentEnd):
+            terminal.update(
+                stop_reason=event.stop_reason,
+                limit_details=event.limit_details,
+            )
+
+    agent.subscribe(observe)
+    await asyncio.wait_for(agent.run(instruction), timeout=timeout)
+    if not assistant_text:
+        raise RuntimeError("agent ended without assistant text")
+    return assistant_text[-1], terminal
+
+
+def _safe_auditor_command(command: object) -> tuple[bool, str]:
+    if not isinstance(command, str):
+        return False, "command must be text"
+    text = command.strip()
+    if not text or len(text) > 1000:
+        return False, "command is empty or too long"
+    if _SHELL_META_RE.search(text):
+        return False, "shell metacharacters are forbidden"
+    try:
+        tokens = shlex.split(text, posix=True)
+    except ValueError:
+        return False, "command quoting is invalid"
+    if not tokens:
+        return False, "command is empty"
+    if any(token == ".." or "/../" in f"/{token}/" or token.startswith("/") for token in tokens):
+        return False, "absolute or parent paths are forbidden"
+    first = tokens[0]
+    if first in {"python", "python3"}:
+        if len(tokens) < 3 or tokens[1:3] != ["-m", "pytest"]:
+            return False, "python is restricted to -m pytest"
+        return True, text
+    if first == "uv":
+        if len(tokens) < 3 or tokens[1:3] != ["run", "pytest"]:
+            return False, "uv is restricted to run pytest"
+        return True, text
+    if first not in _AUDIT_FIRST_COMMANDS:
+        return False, "command is not allowlisted"
+    if first == "find" and any(
+        token in {"-delete", "-exec", "-execdir", "-ok", "-okdir", "-fprint", "-fls"}
+        for token in tokens[1:]
+    ):
+        return False, "find mutation flags are forbidden"
+    if first == "sed":
+        if "-n" not in tokens[1:] or any(
+            token.startswith("-i") or token == "--in-place" for token in tokens[1:]
+        ):
+            return False, "sed is restricted to non-mutating -n mode"
+    if first == "git":
+        if len(tokens) < 2 or tokens[1] not in {
+            "branch",
+            "cat-file",
+            "diff",
+            "log",
+            "ls-files",
+            "reflog",
+            "rev-parse",
+            "show",
+            "status",
+        }:
+            return False, "git is restricted to read-only subcommands"
+        if tokens[1] == "branch" and any(
+            token in {
+                "-c",
+                "-C",
+                "-d",
+                "-D",
+                "-m",
+                "-M",
+                "--copy",
+                "--delete",
+                "--move",
+            }
+            for token in tokens[2:]
+        ):
+            return False, "git branch mutation flags are forbidden"
+        if tokens[1] == "reflog" and any(
+            token in {"delete", "drop", "expire"} for token in tokens[2:]
+        ):
+            return False, "git reflog mutation is forbidden"
+    return True, text
+
+
+def _append_jsonl(path: Path, value: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def _bounded(text: str, limit: int) -> str:
@@ -116,7 +248,7 @@ class ObservedLLM:
 
 
 class BudgetedHarborAgent(BaseAgent):
-    """Context projection and compaction arms with otherwise shared limits."""
+    """Harbor adapter for single-ReAct and Manager/Executor/Auditor arms."""
 
     @staticmethod
     def name():
@@ -127,6 +259,7 @@ class BudgetedHarborAgent(BaseAgent):
 
     def __init__(self, *, task_dir, logs_dir, oracle_result, ledger_path, artifact_projection="on",
                  compaction_mode="baseline",
+                 orchestration_mode="react", experiment_arm=None, max_rounds=3,
                  observation_mode="off", observation_required=False,
                  observation_base_url="https://cloud.langfuse.com",
                  observation_public_key_env="LANGFUSE_PUBLIC_KEY",
@@ -140,6 +273,10 @@ class BudgetedHarborAgent(BaseAgent):
             raise ValueError("artifact_projection must be on/off")
         if compaction_mode not in ("baseline", "layered"):
             raise ValueError("compaction_mode must be baseline/layered")
+        if orchestration_mode not in ("react", "mea"):
+            raise ValueError("orchestration_mode must be react/mea")
+        if type(max_rounds) is not int or not 1 <= max_rounds <= 4:
+            raise ValueError("max_rounds must be an integer in 1..4")
         if observation_mode not in ("off", "langfuse"):
             raise ValueError("observation_mode must be off/langfuse")
         if observation_required and observation_mode != "langfuse":
@@ -175,17 +312,30 @@ class BudgetedHarborAgent(BaseAgent):
         self.context_budget, self.output_tokens, self.shell_timeout = context_budget, output_tokens, shell_timeout
         self.arm = artifact_projection
         self.compaction_mode = compaction_mode
+        self.orchestration_mode = orchestration_mode
+        self.max_rounds = max_rounds
         self.observation_mode = observation_mode
         self.observation_required = bool(observation_required)
         self.observation_base_url = observation_base_url
         self.observation_public_key_env = observation_public_key_env
         self.observation_secret_key_env = observation_secret_key_env
         self.observation_close_timeout = observation_close_timeout
-        self.experiment_arm = {
+        default_arm = {
             ("baseline", "off"): "baseline",
             ("layered", "on"): "enhanced",
             ("layered", "off"): "loo_artifact",
         }.get((self.compaction_mode, self.arm), f"{self.compaction_mode}-{self.arm}")
+        if experiment_arm is None:
+            self.experiment_arm = default_arm
+        elif (
+            not isinstance(experiment_arm, str)
+            or not experiment_arm
+            or len(experiment_arm) > 64
+            or any(char in experiment_arm for char in "/\\\r\n\t")
+        ):
+            raise ValueError("experiment_arm is invalid")
+        else:
+            self.experiment_arm = experiment_arm
         self.task_id = self.task_dir.name
 
     async def setup(self, environment):
@@ -202,6 +352,7 @@ class BudgetedHarborAgent(BaseAgent):
         run_id = self.run_id
         status = "started"
         terminal = {}
+        mea_payload = None
         failure = None
         owner = None
         agent = None
@@ -218,6 +369,7 @@ class BudgetedHarborAgent(BaseAgent):
             "error_type": None,
         }
         exception_metadata = None
+        schema_entries: list[dict] = []
 
         try:
             raw = create_live_llm(max_output_tokens=self.output_tokens, timeout=120)
@@ -243,11 +395,26 @@ class BudgetedHarborAgent(BaseAgent):
             else:
                 llm = guarded
             deadline = asyncio.get_running_loop().time() + self.max_seconds
+            role_log = root / "quality_roles.jsonl"
+
+            def remaining_seconds() -> float:
+                return min(
+                    self.ledger.remaining_time(run_id),
+                    deadline - asyncio.get_running_loop().time(),
+                )
+
+            def remaining_requests() -> int:
+                used = sum(
+                    1
+                    for row in self.ledger.snapshot()["requests"]
+                    if row["run_id"] == run_id
+                )
+                return self.max_requests - used
 
             @tool(is_parallel_safe=False)
             async def shell(command: str) -> str:
                 """Execute a shell command in the official container, bounded by remaining run and shell deadlines."""
-                remaining = min(self.ledger.remaining_time(run_id), deadline - asyncio.get_running_loop().time())
+                remaining = remaining_seconds()
                 if remaining <= 0:
                     raise BudgetStop("agent total time cap reached")
                 result = await environment.exec(command=command, timeout_sec=min(self.shell_timeout, remaining))
@@ -256,32 +423,244 @@ class BudgetedHarborAgent(BaseAgent):
                     ensure_ascii=False,
                 )
 
+            @tool(is_parallel_safe=False)
+            async def audit_shell(command: str) -> str:
+                """Run one read-only audit command from the frozen allowlist."""
+                allowed, detail = _safe_auditor_command(command)
+                if not allowed:
+                    return json.dumps(
+                        {
+                            "exit_code": 126,
+                            "stdout": "",
+                            "stderr": detail,
+                            "allowed_examples": [
+                                "pwd",
+                                "ls -la",
+                                "cat FILE",
+                                "grep PATTERN FILE",
+                                "find . -maxdepth 2 -type f",
+                                "git status --short",
+                                "git diff",
+                                "git log --oneline -5",
+                                "git branch -a",
+                                "git reflog",
+                                "git show HEAD",
+                                "git rev-parse HEAD",
+                                "python -m pytest -q",
+                                "uv run pytest -q",
+                            ],
+                        },
+                        ensure_ascii=False,
+                    )
+                remaining = remaining_seconds()
+                if remaining <= 0:
+                    raise BudgetStop("agent total time cap reached")
+                executable = detail
+                try:
+                    tokens = shlex.split(detail, posix=True)
+                except ValueError:
+                    tokens = []
+                if tokens and (
+                    tokens[0] in {"python", "python3"}
+                    or tokens[:2] == ["uv", "run"]
+                ):
+                    executable = "PYTHONDONTWRITEBYTECODE=1 " + detail
+                result = await environment.exec(
+                    command=executable,
+                    timeout_sec=min(self.shell_timeout, remaining),
+                )
+                return json.dumps(
+                    {
+                        "exit_code": result.return_code,
+                        "stdout": result.stdout,
+                        "stderr": result.stderr,
+                    },
+                    ensure_ascii=False,
+                )
+
             store = ArtifactStore(root / "artifacts")
-            agent = Agent(
-                llm=llm,
-                tools=[shell, *make_artifact_tools(store)],
-                session=Session(path=root / "session.jsonl"),
-                system_prompt="Complete the user task in the container using shell. Do not access benchmark solutions, hidden verifier tests, or scoring files. Finish with a concise description of your changes.",
-                context_budget=self.context_budget,
-                artifact_store=store if self.arm == "on" else None,
-                compaction_policy=CompactionPolicy(mode=self.compaction_mode),
-                memory_dir=False,
-                task_store=False,
-                skill_dirs=[],
-                subagent_dirs=[],
-                extension_dirs=[],
-                plugin_dirs=[],
-                retry_policy=AutoRetryPolicy(max_retries=0),
-                run_limits=RunLimits(max_turns=self.max_requests, max_seconds=self.max_seconds),
-            )
+            artifact_tools = make_artifact_tools(store)
 
-            def record_end(event):
-                if isinstance(event, AgentEnd):
-                    terminal.update(stop_reason=event.stop_reason, limit_details=event.limit_details)
+            def build_agent(
+                *,
+                system_prompt: str,
+                tools: list,
+                session_name: str,
+                schema_role: str,
+                include_artifacts: bool,
+                max_turns: int | None = None,
+            ) -> Agent:
+                session_path = root / "quality-sessions" / session_name
+                session_path.parent.mkdir(parents=True, exist_ok=True)
+                remaining = max(1.0, remaining_seconds())
+                built = Agent(
+                    llm=llm,
+                    tools=tools,
+                    session=Session(path=session_path),
+                    system_prompt=system_prompt,
+                    context_budget=self.context_budget,
+                    artifact_store=store
+                    if include_artifacts and self.arm == "on"
+                    else None,
+                    compaction_policy=CompactionPolicy(mode=self.compaction_mode),
+                    memory_dir=False,
+                    task_store=False,
+                    skill_dirs=[],
+                    subagent_dirs=[],
+                    extension_dirs=[],
+                    plugin_dirs=[],
+                    retry_policy=AutoRetryPolicy(max_retries=0),
+                    run_limits=RunLimits(
+                        max_turns=max_turns or self.max_requests,
+                        max_seconds=remaining,
+                    ),
+                )
+                schema_entries.append(
+                    {
+                        "role": schema_role,
+                        "tools": built.registry.get_schemas(),
+                    }
+                )
+                return built
 
-            agent.subscribe(record_end)
-            await asyncio.wait_for(agent.run(instruction), timeout=self.max_seconds)
-            status = terminal.get("stop_reason") or "missing_terminal_event"
+            if self.orchestration_mode == "react":
+                agent = build_agent(
+                    system_prompt=SINGLE_AGENT_SYSTEM_PROMPT,
+                    tools=[shell, *artifact_tools],
+                    session_name="session.jsonl",
+                    schema_role="react",
+                    include_artifacts=True,
+                )
+                final_text, terminal = await _run_agent_and_capture(
+                    agent,
+                    instruction,
+                    max(1.0, remaining_seconds()),
+                )
+                _append_jsonl(
+                    role_log,
+                    {
+                        "purpose": "react_final",
+                        "output": final_text,
+                        "terminal": terminal,
+                    },
+                )
+                status = terminal.get("stop_reason") or "missing_terminal_event"
+            else:
+                class Callbacks:
+                    async def manager(self, request: RoleRequest) -> str:
+                        messages = [
+                            Message(role=message.role, content=message.content)
+                            for message in request.messages
+                        ]
+                        with observation_context(purpose=request.purpose):
+                            response = await asyncio.wait_for(
+                                llm.achat(messages, tools=[]),
+                                timeout=max(1.0, remaining_seconds()),
+                            )
+                        tool_calls = getattr(response, "tool_calls", None)
+                        if tool_calls:
+                            raise RuntimeError("manager returned tool calls")
+                        outcome = getattr(response, "outcome", None)
+                        if outcome is not None and outcome is not TurnOutcome.COMPLETED:
+                            raise RuntimeError("manager response did not complete")
+                        content = getattr(response, "content", None)
+                        if not isinstance(content, str) or not content.strip():
+                            raise RuntimeError("manager response content is empty")
+                        _append_jsonl(
+                            role_log,
+                            {
+                                "purpose": request.purpose,
+                                "messages": [
+                                    {
+                                        "role": message.role,
+                                        "content": message.content,
+                                    }
+                                    for message in request.messages
+                                ],
+                                "output": content,
+                            },
+                        )
+                        return content
+
+                    async def executor(self, request: RoleRequest) -> str:
+                        system, user = request.messages
+                        available = remaining_requests()
+                        executor_turns = min(
+                            48,
+                            available - _MEA_EXECUTOR_RESERVED_REQUESTS,
+                        )
+                        if executor_turns < 1:
+                            raise RuntimeError(
+                                "executor has no budget after reserving manager/auditor"
+                            )
+                        local = build_agent(
+                            system_prompt=system.content,
+                            tools=[shell, *artifact_tools],
+                            session_name=request.purpose + ".jsonl",
+                            schema_role="executor",
+                            include_artifacts=True,
+                            max_turns=executor_turns,
+                        )
+                        try:
+                            output, role_terminal = await _run_agent_and_capture(
+                                local,
+                                user.content,
+                                max(1.0, remaining_seconds()),
+                            )
+                        finally:
+                            await local.aclose()
+                        _append_jsonl(
+                            role_log,
+                            {
+                                "purpose": request.purpose,
+                                "output": output,
+                                "terminal": role_terminal,
+                            },
+                        )
+                        return output
+
+                    async def auditor(self, request: RoleRequest) -> str:
+                        system, user = request.messages
+                        available = remaining_requests()
+                        auditor_turns = min(
+                            _MEA_AUDITOR_MAX_REQUESTS,
+                            available - 1,
+                        )
+                        if auditor_turns < 1:
+                            raise RuntimeError("auditor has no request budget")
+                        local = build_agent(
+                            system_prompt=system.content,
+                            tools=[audit_shell],
+                            session_name=request.purpose + ".jsonl",
+                            schema_role="auditor",
+                            include_artifacts=False,
+                            max_turns=auditor_turns,
+                        )
+                        try:
+                            output, role_terminal = await _run_agent_and_capture(
+                                local,
+                                user.content,
+                                max(1.0, remaining_seconds()),
+                            )
+                        finally:
+                            await local.aclose()
+                        _append_jsonl(
+                            role_log,
+                            {
+                                "purpose": request.purpose,
+                                "output": output,
+                                "terminal": role_terminal,
+                            },
+                        )
+                        return output
+
+                outcome = await run_mea(
+                    task=instruction,
+                    callbacks=Callbacks(),
+                    max_rounds=self.max_rounds,
+                )
+                mea_payload = outcome.to_dict()
+                status = outcome.status
         except asyncio.CancelledError as exc:
             status = "cancelled"
             exception_metadata = _safe_exception(exc)
@@ -325,8 +704,65 @@ class BudgetedHarborAgent(BaseAgent):
             context.n_output_tokens = sum(r["usage"]["completion_tokens"] for r in rows) if known else None
             cache_complete = known and all("cache_read_tokens" in r["usage"] for r in rows)
             context.n_cache_tokens = sum(r["usage"]["cache_read_tokens"] for r in rows) if cache_complete else None
-            schemas = agent.registry.get_schemas() if agent is not None else []
-            tool_schema_sha256 = hashlib.sha256(json.dumps(schemas, sort_keys=True).encode()).hexdigest()
+            tool_schema_sha256 = hashlib.sha256(
+                json.dumps(schema_entries, sort_keys=True).encode()
+            ).hexdigest()
+            cache_available = (
+                known
+                and all(
+                    "prompt_tokens" in r["usage"]
+                    and "cache_read_tokens" in r["usage"]
+                    for r in rows
+                )
+            )
+            cache_write_available = cache_available and all(
+                "cache_write_tokens" in r["usage"] for r in rows
+            )
+            prompt_tokens = (
+                sum(r["usage"]["prompt_tokens"] for r in rows)
+                if cache_available
+                else None
+            )
+            cache_read_tokens = (
+                sum(r["usage"]["cache_read_tokens"] for r in rows)
+                if cache_available
+                else None
+            )
+            cache_write_tokens = (
+                sum(r["usage"]["cache_write_tokens"] for r in rows)
+                if cache_write_available
+                else None
+            )
+            cache_denominator = (
+                (prompt_tokens or 0)
+                + (cache_read_tokens or 0)
+                + (cache_write_tokens or 0)
+                if cache_available
+                else None
+            )
+            cache_usage = {
+                "prompt_tokens": prompt_tokens,
+                "cache_read_tokens": cache_read_tokens,
+                "cache_write_tokens": cache_write_tokens,
+                "cache_write_available": cache_write_available,
+                "cache_hit_rate": (
+                    (cache_read_tokens or 0) / cache_denominator
+                    if cache_denominator
+                    else None
+                ),
+            }
+            if self.orchestration_mode == "mea":
+                role_prompt_hashes = {
+                    "manager": hashlib.sha256(MANAGER_SYSTEM_PROMPT.encode()).hexdigest(),
+                    "executor": hashlib.sha256(EXECUTOR_SYSTEM_PROMPT.encode()).hexdigest(),
+                    "auditor": hashlib.sha256(AUDITOR_SYSTEM_PROMPT.encode()).hexdigest(),
+                }
+            else:
+                role_prompt_hashes = {
+                    "react": hashlib.sha256(
+                        SINGLE_AGENT_SYSTEM_PROMPT.encode()
+                    ).hexdigest()
+                }
             limits = {
                 "max_requests": self.max_requests,
                 "max_seconds": self.max_seconds,
@@ -334,12 +770,18 @@ class BudgetedHarborAgent(BaseAgent):
                 "output_tokens": self.output_tokens,
                 "shell_timeout": self.shell_timeout,
                 "compaction_mode": self.compaction_mode,
+                "orchestration_mode": self.orchestration_mode,
+                "max_rounds": self.max_rounds,
+                "mea_executor_reserved_requests": _MEA_EXECUTOR_RESERVED_REQUESTS,
+                "mea_auditor_max_requests": _MEA_AUDITOR_MAX_REQUESTS,
                 "observation_mode": self.observation_mode,
                 "observation_required": self.observation_required,
             }
             identity = {
                 "artifact_projection": self.arm,
                 "compaction_mode": self.compaction_mode,
+                "orchestration_mode": self.orchestration_mode,
+                "role_prompt_hashes": role_prompt_hashes,
                 "observation_mode": self.observation_mode,
                 "observation_required": self.observation_required,
                 "limits": limits,
@@ -373,9 +815,13 @@ class BudgetedHarborAgent(BaseAgent):
                 "arm": self.experiment_arm,
                 "artifact_projection": self.arm,
                 "compaction_mode": self.compaction_mode,
+                "orchestration_mode": self.orchestration_mode,
+                "role_prompt_hashes": role_prompt_hashes,
                 "status": status,
                 "requests": len(rows),
                 "usage_available": known,
+                "cache_usage": cache_usage,
+                "mea": mea_payload,
                 **terminal,
                 "oracle_gate": self.gate,
                 "model": LIVE_MODEL,

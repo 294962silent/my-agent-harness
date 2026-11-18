@@ -13,6 +13,8 @@ from experiments.long_horizon_quality.analysis import (
     cluster_bootstrap_ci,
     exact_sign_test,
 )
+from experiments.long_horizon_quality import harbor_pilot
+from experiments.long_horizon_quality.harbor_pilot import MAX_ROUNDS
 from experiments.long_horizon_quality.protocol import (
     CONFIRMATORY_TASK_COUNT,
     DEFAULT_ARMS,
@@ -22,6 +24,57 @@ from experiments.long_horizon_quality.protocol import (
     freeze_campaign,
     load_plan,
 )
+
+
+def test_mea_pilot_reserves_a_manager_terminal_round() -> None:
+    assert MAX_ROUNDS >= 3
+
+
+def test_quality_pilot_requires_unique_campaign_identity(monkeypatch) -> None:
+    monkeypatch.delenv("LHQ_CAMPAIGN_ID", raising=False)
+    with pytest.raises(harbor_pilot.PilotError, match="unique campaign id"):
+        harbor_pilot._resolve_campaign_id(None)
+    monkeypatch.setenv("LHQ_CAMPAIGN_ID", "pilot-explicit")
+    assert harbor_pilot._resolve_campaign_id(None) == "pilot-explicit"
+    assert harbor_pilot._resolve_campaign_id("pilot-cli") == "pilot-cli"
+
+
+def test_finished_resume_state_is_enriched_before_journal_write(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    slot = {
+        "task": "fix-git",
+        "arm": "mea",
+        "trial": 1,
+        "run_id": "run-1",
+    }
+    monkeypatch.setattr(
+        harbor_pilot,
+        "_live_metadata",
+        lambda directory, value: {"contract": directory.name, "run_id": value["run_id"]},
+    )
+    monkeypatch.setattr(
+        harbor_pilot,
+        "_usage",
+        lambda ledger, run_id: {"requests": 12, "run_id": run_id},
+    )
+
+    state = harbor_pilot._enrich_finished_state(
+        {"status": "finished"},
+        directory=tmp_path,
+        slot=slot,
+        ledger=object(),
+    )
+
+    assert state == {
+        "status": "finished",
+        "live_metadata": {"contract": tmp_path.name, "run_id": "run-1"},
+        "usage": {"requests": 12, "run_id": "run-1"},
+        "task": "fix-git",
+        "arm": "mea",
+        "trial": 1,
+    }
 
 
 def _manifest(path: Path, count: int) -> Path:
@@ -87,6 +140,17 @@ def test_build_slots_is_deterministic_and_complete() -> None:
         for arm in DEFAULT_ARMS
         for trial in range(3)
     }
+    for task in ("fix-git", "large-scale-text-editing"):
+        rows = [slot for slot in first if slot.task_id == task]
+        assert [slot.arm for slot in rows] == [
+            rows[0].arm,
+            rows[0].arm,
+            rows[0].arm,
+            rows[3].arm,
+            rows[3].arm,
+            rows[3].arm,
+        ]
+        assert [slot.trial for slot in rows] == [0, 1, 2, 0, 1, 2]
 
 
 def test_freeze_pilot_and_confirmatory_task_gate(tmp_path: Path) -> None:

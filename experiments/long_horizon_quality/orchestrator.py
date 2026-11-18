@@ -95,6 +95,10 @@ approved read-only checks. Return exactly one JSON object with:
  "evidence":["..."],"verified_facts":["..."],"remaining":["..."]}
 status=complete requires remaining=[] and direct evidence for each fact.
 Never modify the workspace and never accept a claim without checking it.
+Run relevant allowlisted checks directly. Do not spend turns probing the
+allowlist or inventing shell pipelines; if a command is denied, choose a
+different single read-only command and finish with the required JSON. Use at
+most eight useful audit commands; do not enumerate capabilities.
 """
 
 ROLE_PROMPT_HASHES = {

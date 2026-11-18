@@ -98,9 +98,11 @@ claims. The primary quality score never includes scripted fault injection.
 
 ## Factorial schedule
 
-Each task and arm receives at least three trials. The task-arm-trial slots are
-shuffled once with a frozen seed. The same task must appear in every arm and
-trial.
+Each task and arm receives at least three trials. Task order and each task's
+react/MEA order are shuffled with a frozen seed, then the three trials for one
+task and arm run contiguously. This preserves seeded comparison order while
+reusing stable role/tool prefixes across adjacent trials. The same task must
+appear in every arm and trial.
 
 Initial pilot:
 
@@ -191,7 +193,36 @@ The current implementation freezes slots, performs strict offline paired
 analysis and includes a container-neutral Manager -> Executor -> Auditor
 orchestration core. The manager history is append-only for cache reuse; the
 executor and auditor use fixed system prompts and fresh per-round messages.
-Harbor execution is wired in the next implementation increment.
+Harbor execution is wired to official Task verifiers. The pilot allows at most
+three MEA rounds because a verified execution round needs a following Manager
+turn to issue the explicit `done` decision. The v9 two-round trials remain as
+protocol-failure evidence and are excluded from the final pilot.
+
+## Harbor pilot commands
+
+The pilot requires an explicit campaign identity so an interrupted or
+quota-blocked run cannot be silently reused. From the repository root on WSL:
+
+```bash
+export LHQ_CAMPAIGN_ID="lhq-tb21-pilot-<unique>"
+export LHQ_DELIVERY_ROOT="/absolute/private/pilot/directory"
+export LHQ_RUNTIME_PROXY="http://<host>:<port>"
+export PYTHONPATH="$PWD/src:$PWD"
+
+/home/mll/.cache/my-agent-bench/venv/bin/python \
+  -m experiments.long_horizon_quality.harbor_pilot freeze
+/home/mll/.cache/my-agent-bench/venv/bin/python \
+  -m experiments.long_horizon_quality.harbor_pilot preflight
+/home/mll/.cache/my-agent-bench/venv/bin/python \
+  -m experiments.long_horizon_quality.harbor_pilot run \
+  --execute --max-new-trials 18
+/home/mll/.cache/my-agent-bench/venv/bin/python \
+  -m experiments.long_horizon_quality.harbor_pilot summary
+```
+
+`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and the matching cloud base URL
+must be present in the WSL process. A started or unknown run is never retried;
+resume only collects a completed official result for that same frozen run ID.
 
 ## Claim boundaries
 

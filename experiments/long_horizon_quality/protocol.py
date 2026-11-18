@@ -200,20 +200,25 @@ def build_slots(
     normalized_tasks = [_safe_text(task, "task_id") for task in task_ids]
     if not normalized_tasks or len(set(normalized_tasks)) != len(normalized_tasks):
         raise ProtocolError("task ids must be nonempty and unique")
-    slots = [
-        TrialSlot(
-            task_id=task_id,
-            arm=arm,
-            trial=trial,
-            run_id=run_id_for(campaign, task_id, arm, trial),
-        )
-        for task_id in normalized_tasks
-        for trial in range(trials)
-        for arm in arm_names
-    ]
+    rng = random.Random(seed)
+    task_order = list(normalized_tasks)
+    rng.shuffle(task_order)
+    slots: list[TrialSlot] = []
+    for task_id in task_order:
+        arm_order = list(arm_names)
+        rng.shuffle(arm_order)
+        for arm in arm_order:
+            for trial in range(trials):
+                slots.append(
+                    TrialSlot(
+                        task_id=task_id,
+                        arm=arm,
+                        trial=trial,
+                        run_id=run_id_for(campaign, task_id, arm, trial),
+                    )
+                )
     if len({slot.run_id for slot in slots}) != len(slots):
         raise ProtocolError("run id collision")
-    random.Random(seed).shuffle(slots)
     return slots
 
 

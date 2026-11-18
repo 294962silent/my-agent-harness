@@ -1333,3 +1333,16 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **测试**：`tests/experiments/test_long_horizon_quality.py` 与 `test_long_horizon_quality_orchestrator.py` 合计 **11 passed**；定向 Ruff 与 `git diff --check` 通过。没有新增模型请求。
 - **当前边界**：目前完成的是预注册、缓存稳定性契约和离线分析层；Harbor/MEA 执行适配与三题真实 pilot 尚未运行，不能据此声明任何质量或 benchmark 提升。
 - **协议**：[long-horizon-quality-preregistration-v1.md](reports/long-horizon-quality-preregistration-v1.md)。
+
+### E-LONGHORIZON-QUALITY-HARBOR-V1：2026-11-18 / Harbor 接入、18-trial 预检与供应商配额阻塞
+
+- **接入实现**：`experiments/benchmark_live/harbor_agent.py` 现支持 `react` 与 `mea`。MEA 使用无工具 Manager、每轮 fresh Session 的同工具 Executor、以及只允许单条白名单只读命令的 Auditor；审计拒绝结果直接返回允许示例，避免把轮次浪费在探测管线上。
+- **缓存稳定顺序**：冻结 seed 先打乱任务和 task 内臂顺序，再按 `task → arm → trial0/1/2` 连续执行。Manager 历史 append-only；Executor/Auditor 使用固定 system prompt 和独立 Session。`live_run.json` 记录 role prompt SHA、tool schema SHA、request 数及 cache receipt；首请求冷启动不伪装为命中。
+- **终态修复**：v9 使用 `max_rounds=2` 时，MEA 第 2 轮 Auditor 已返回 `complete/remaining=[]`，仍没有 Manager 第 3 轮合法发出 `done`，因此官方 reward 虽为 1，编排状态却是 `blocked`。最终配置改为 3 轮；v9 作为协议失败证据保留。
+- **v9 部分真实结果**：`fix-git/react` 三 trial 官方 reward 均为 1，分别 22/22/21 requests，cache hit **76.3168% / 82.4113% / 80.4329%**；`fix-git/mea/t0` reward 1、51 requests、cache hit **70.3281%**，但编排状态为上述 `blocked`。三题 pilot 未完成，不能比较两臂质量。
+- **v9 中断记录**：继后启动的 `fix-git/mea/t1` 在人工停止协议时已有 **18 ok + 1 cancelled**，19 requests，cache hit **73.6714%**，无官方 reward，不重试。四个完成 slot 合计 116 requests / **784,124** provider tokens；Langfuse 回读 4 trace 的 22/22/21/51 个 GENERATION 与 ledger 完全一致，第 5 个 trace 的 19 个 GENERATION 也与中断 slot 一致。
+- **启动失败保留**：v10 使用错误的项目 venv，Harbor config schema import 失败，尚未发出模型请求；目录保留且没有伪造 run 结果。v11 改用 Harbor venv 与 `PYTHONPATH` 后预检通过：3 个官方任务镜像 transport、代理、凭据和 Langfuse 均 ready。
+- **v11 外部阻塞**：四个首次模型请求全部在 provider 边界返回 HTTP 429 `GoUsageLimitError`，月度额度已耗尽；四份 ledger 均为 `error`、usage/cost unavailable，官方 verifier 未运行。直接诊断复现同一 429，并非 Harbor、Docker、Langfuse 或 MEA parser 故障。
+- **v11 观测对账**：Langfuse 只读 API 返回恰好 4 traces / 4 GENERATION，一 trace 一失败请求，usage 字段为空，与 ledger 的 4 个无 usage error 一致。失败 run ID 不复用；配额恢复后需以新 campaign ID 重新冻结。
+- **验收**：Windows 定向 **14 passed / 1 skipped**（Windows 无 Harbor），WSL combined **17 passed**；Ruff、wheel/sdist 构建与 `git diff --check` 通过。这里证明离线契约、真实 Harbor 适配与观测接缝；真实 18-trial 质量结果仍为未完成。
+- **报告**：[long-horizon-quality-harbor-pilot-attempt-20261118.md](reports/long-horizon-quality-harbor-pilot-attempt-20261118.md)。
