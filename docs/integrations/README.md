@@ -11,11 +11,11 @@ uv run --all-extras python -c "from my_coding_agent.paths import AgentPaths; pri
 
 可只安装需要的extra。`mem0`只安装SDK，`mem0-local`另安装FastEmbed0.9.1及CPU ONNX Runtime；SDK已安装与运行时索引开关是两件事。Mem0固定2.2.1/git `f1791daa86d469249c9b002f62644d58a1eb96a0`；Langfuse固定5.2.0；Dream固定0.1.0/git `8ec35bd2538220517ce1bfca4282db21b8c518db`，均由uv.lock绑定。
 
-把[配置示例](settings.example.json)中需要的块合并到上述命令输出的**全局settings.json**，保留已有其他配置。新用户通常为`~/.my-agent-harness/settings.json`；MY_AGENT_HOME优先，也兼容已有`~/.my-pi-agent`。本机兼容路径为`C:/Users/MLL/.my-pi-agent/settings.json`，现有进程需重启以读新配置。
+把[配置示例](settings.example.json)中需要的块合并到上述命令输出的**全局 settings.json**，保留已有其他配置。新用户默认使用 `~/.longarc/settings.json`；`LONGARC_HOME` 优先，旧 `MY_AGENT_HOME` 与既有目录继续兼容。
 
 memory_index、observation、dream_optimization、context_compaction 属于全局专属配置，项目 settings 不能启用或覆盖它们；普通 theme 等项目覆盖保持。Python 显式参数仍可注入，适合受信任调用方和测试。
 
-分发示例默认 enabled=false。本机本轮改为 local_qwen_gpu 与 layered 压缩，原 CPU profile 和配置备份保留。新配置需要本分支代码，请从 `interview-redesign` 工作区启动；旧 checkout 尚不识别 GPU profile，切回旧版本应恢复 CPU 配置。Dream 全局入口原值保留，不自动启用 RSI；首版 RSI 是显式批任务 API，TUI 流式入口暂不支持。其他用户配置后可用 `uv run --all-extras my-pi-agent` 启动；缺 SDK、模型或无效配置会报错。
+分发示例默认 enabled=false。本机本轮改为 local_qwen_gpu 与 layered 压缩，原 CPU profile 和配置备份保留。其他用户配置后可用 `uv run --all-extras longarc` 启动；缺 SDK、模型或无效配置会报错。
 
 ## Mem0：语义候选索引
 
@@ -80,7 +80,7 @@ uv run --extra mem0-local python -c "from pathlib import Path; from my_agent_cor
 uv run --extra dream-rsi my-agent-dream status
 uv run --extra dream-rsi my-agent-dream optimize \
   --dataset-manifest docs/integrations/dream-demo/dataset.json \
-  --output .my-agent-harness/dream-demo-new \
+--output .longarc/dream-demo-new \
   --dry-run --budgets 2 --max-candidates 2 --max-seconds 60
 ```
 
@@ -99,7 +99,7 @@ uv run --extra dream-rsi my-agent-dream optimize \
 ```sh
 uv run --extra dream-rsi my-agent-dream replay \
   --trace docs/integrations/dream-trace.example.json \
-  --output .my-agent-harness/dream-replay-new \
+--output .longarc/dream-replay-new \
   --budget 2 --max-workers 2 --timeout-seconds 30
 ```
 

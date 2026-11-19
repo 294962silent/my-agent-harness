@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "my-pi-agent"
+name = "longarc"
 version = "0.2.0"
-description = "Long-horizon coding-agent harness with local memory, observable execution and controlled strategy optimization"
+description = "LongArc: a recoverable and observable coding-agent runtime for long-horizon tasks"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -22,9 +22,12 @@ dependencies = [
 ]
 
 [project.scripts]
+longarc = "my_coding_agent.cli:main"
+longarc-runtime = "my_coding_agent.cli:main"
+longarc-dream = "my_coding_agent.dream_rsi_replay:main"
+lh-longhorizon = "my_coding_agent.longhorizon.cli:main"
 my-pi-agent = "my_coding_agent.cli:main"
 my-agent-dream = "my_coding_agent.dream_rsi_replay:main"
-lh-longhorizon = "my_coding_agent.longhorizon.cli:main"
 
 [project.optional-dependencies]
 mem0 = [

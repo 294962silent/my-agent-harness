@@ -45,7 +45,7 @@ export class LogoutSelectorComponent extends Container {
       new Text(
         theme.fg(
           "muted",
-          "Select a provider to remove its credentials from ~/.my-agent-harness/auth.json:",
+          "Select a provider to remove its credentials from LongArc:",
         ),
         0,
         0,

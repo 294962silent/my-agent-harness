@@ -245,7 +245,7 @@ capability.
 
 ## Delivery validation
 
-Pull request: [PR #3](https://github.com/294962silent/my-agent-harness/pull/3),
+Pull request: [PR #3](https://github.com/294962silent/LongArc/pull/3),
 stacked on `codex/interview-harness-redesign` and not merged automatically.
 
 Windows matrix at head `dd842b5d63951ce728436c32f714909d125a6046`:
@@ -256,7 +256,7 @@ Windows matrix at head `dd842b5d63951ce728436c32f714909d125a6046`:
   verification.
 
 CI run:
-https://github.com/294962silent/my-agent-harness/actions/runs/44119193048
+https://github.com/294962silent/LongArc/actions/runs/44119193048
 
 ## Failed iterations retained
 

@@ -11,12 +11,19 @@ const repoRoot = path.resolve(__dirname, "../..");
 
 // 该用例会真实拉起 Python 内核，initialize 阶段需要解析模型凭据。
 // CI 上没有 auth.json / API key，跳过而不是伪造凭据。
+const explicitHome = process.env.LONGARC_HOME || process.env.MY_AGENT_HOME;
+const authCandidates = explicitHome
+  ? [path.join(explicitHome, "auth.json")]
+  : [
+      path.join(os.homedir(), ".longarc", "auth.json"),
+      path.join(os.homedir(), ".my-agent-harness", "auth.json"),
+    ];
 const hasCredential =
   Boolean(
     process.env.OPENAI_API_KEY ||
       process.env.DEEPSEEK_API_KEY ||
       process.env.ANTHROPIC_API_KEY,
-  ) || fs.existsSync(path.join(os.homedir(), ".my-agent-harness", "auth.json"));
+  ) || authCandidates.some((candidate) => fs.existsSync(candidate));
 
 const skipReason = hasCredential
   ? false

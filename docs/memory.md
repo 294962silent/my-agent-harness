@@ -6,7 +6,7 @@
 
 - `memory_dir` 决定作用域：共享目录即共享记忆；不同目录才相互隔离，不按模型、会话或工作区名称自动隔离。
 - `Agent(memory_dir=False)` 禁用；传入路径明确启用；`None` 仅在当前目录的 `.my_agent_core/memory` 已存在时启用。
-- `CodingAgent` 未显式传参时，优先使用工作区已有的 `.my-agent-harness/memory`，否则使用 `AgentPaths().memory_dir`（通常为用户目录下的 `.my-agent-harness/memory`，受 `MY_AGENT_HOME` 与旧目录兼容规则影响）。
+- `CodingAgent` 未显式传参时，优先使用工作区已有的 `.longarc/memory`，否则使用 `AgentPaths().memory_dir`（通常为用户目录下的 `.longarc/memory`；`LONGARC_HOME` 优先，旧 `MY_AGENT_HOME` 与旧目录继续兼容）。
 - 自由条目存于 `MEMORY.md`、`USER.md`；结构化事实存于 `facts/` Markdown 文件。索引是可重建的内存缓存，Markdown 是事实来源。
 - 修改目录下的文件后，应重新加载 `MemoryStore` 或重建 Agent；不保证其他进程或已有实例自动看到修改，也不提供跨进程写锁。
 
@@ -43,7 +43,7 @@ import json
 from pathlib import Path
 from my_agent_core.memory import MemoryStore
 
-store = MemoryStore(Path(".my-agent-harness/memory"))
+store = MemoryStore(Path(".longarc/memory"))
 store.load_from_disk()
 store.remember("preferred_port", "8080", subject="user")
 fact = json.loads(store.read_full("preferred_port", subject="user"))

@@ -1,4 +1,4 @@
-"""AuthManager: 管理 ~/.my-agent-harness/auth.json 的线程与进程安全凭据中心。"""
+"""AuthManager: manages LongArc's thread- and process-safe credential store."""
 
 from __future__ import annotations
 
@@ -28,13 +28,30 @@ __all__ = [
 
 DEFAULT_ANTIGRAVITY_CLIENT_ID = os.environ.get(
     "ANTIGRAVITY_CLIENT_ID",
-    "my-agent-harness-desktop-client-id",
+    "longarc-desktop-client-id",
 )
 DEFAULT_ANTIGRAVITY_CLIENT_SECRET = os.environ.get(
     "ANTIGRAVITY_CLIENT_SECRET",
-    "my-agent-harness-desktop-client-secret",
+    "longarc-desktop-client-secret",
 )
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+
+
+def _default_auth_home() -> Path:
+    explicit = os.environ.get("LONGARC_HOME") or os.environ.get("MY_AGENT_HOME")
+    if explicit:
+        return Path(explicit).resolve()
+    home_root = Path(
+        os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~"
+    ).expanduser()
+    primary = home_root / ".longarc"
+    if primary.exists():
+        return primary.resolve()
+    for name in (".my-agent-harness", ".my-pi-agent"):
+        legacy = home_root / name
+        if legacy.exists():
+            return legacy.resolve()
+    return primary.resolve()
 
 
 class AuthManager:
@@ -52,11 +69,7 @@ class AuthManager:
         if auth_path:
             self.auth_path = Path(auth_path).resolve()
         else:
-            home = Path(
-                os.environ.get("MY_AGENT_HOME")
-                or Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~").expanduser() / ".my-agent-harness"
-            ).resolve()
-            self.auth_path = home / "auth.json"
+            self.auth_path = _default_auth_home() / "auth.json"
 
         if lock_path:
             self.lock_path = Path(lock_path).resolve()

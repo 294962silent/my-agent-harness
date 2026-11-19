@@ -1,8 +1,8 @@
-# my-agent-harness
+# LongArc
 
-**面向长程代码任务的可审计 Agent 执行框架**
+**面向长程代码任务的可恢复、可观测 Agent 运行时**
 
-`my-agent-harness` 在常规“模型调用 + 工具循环”之外，补齐长任务最容易失控的执行状态：上下文证据、跨会话记忆、进程恢复、请求预算、评分权限和策略晋升。
+LongArc 在常规“模型调用 + 工具循环”之外，补齐长任务最容易失控的执行状态：上下文证据、跨会话记忆、进程恢复、请求预算、评分权限和策略晋升。
 
 项目提供 Python Agent Runtime、CodingAgent、RPC、终端 TUI、容器化代码实验入口，以及区分离线回归、真实模型和公开任务的实验体系。
 
@@ -114,15 +114,17 @@ MemoryStore 采用“本地权威事实 + 可重建候选索引”的结构：
 需要 Python 3.11+、uv、Node.js 和 npm。
 
 ```sh
-git clone https://github.com/294962silent/my-agent-harness.git
-cd my-agent-harness
+git clone https://github.com/294962silent/LongArc.git
+cd LongArc
 
 uv sync --frozen
 npm ci
 npm run build
 
-uv run my-pi-agent --help
+uv run longarc --help
 ```
+
+安装后可直接使用 `longarc` 启动交互式运行时。`longarc-runtime`、`my-pi-agent` 和 `my-agent` 作为兼容别名保留。
 
 ## 可恢复的 CLI 长程任务
 

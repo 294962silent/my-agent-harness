@@ -1,4 +1,4 @@
-# my-agent-harness：面向代码实验的可审计长程 Agent Harness
+# LongArc：面向长程代码任务的可审计 Agent Runtime
 
 更新日期：2026-11-15（Asia/Shanghai）。本文件是可用于简历、项目介绍和面试追问的最终事实版。检索实验与上下文多样性结果以代码/结果提交 `30515f92d2371aa8bcb7d32ba778e1ce51f2d3c5` 为准；策略探索历史基线为 `9d87bce6f7177850576516448d560bfd3853b57c`。
 
@@ -10,7 +10,7 @@
 
 ## 可直接写简历的项目名
 
-**my-agent-harness｜面向代码实验的可审计长程 Agent Harness**
+**LongArc｜面向长程代码任务的可审计 Agent Runtime**
 
 技术栈可直接写：Python、asyncio、ReAct Agent Runtime、事件与生命周期钩子、工具并发与文件锁、BM25/向量检索、版本化事实存储、五层上下文压缩、Docker 沙箱、JSONL journal/checkpoint、Langfuse SDK、pytest/Ruff。
 

@@ -50,10 +50,10 @@ function parseArgs() {
       options.newSession = true;
     } else if (arg === "-h" || arg === "--help") {
       console.log(`
-my-agent: High-fidelity Pi-TUI terminal shell for my-agent-harness
+LongArc: long-horizon coding-agent runtime
 
 Usage:
-  my-agent [options] [prompt]
+  longarc [options] [prompt]
 
 Options:
   -c, --continue          一键续接当前项目最近一次历史会话

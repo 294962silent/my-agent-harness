@@ -1,6 +1,6 @@
 # Layered local context projection
 
-The my-agent-harness product configuration enables the five-layer `layered`
+The LongArc product configuration enables the five-layer `layered`
 policy by default. `CompactionPolicy()` retains `baseline` as the low-level
 library compatibility default, while `Settings().context_compaction.to_policy()`
 resolves to `layered`. This is a local, deterministic context pipeline; it does
