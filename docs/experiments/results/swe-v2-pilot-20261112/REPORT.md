@@ -14,7 +14,7 @@
 
 - 任务来源：官方[SWE-bench/swe-bench-tasks](https://github.com/SWE-bench/swe-bench-tasks/tree/3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d)，固定revision `3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`。52个原文件在下载、复制和gold后核Git blob SHA1/SHA256，不改官方测试或镜像。
 - 选择：[SELECTION.md](SELECTION.md)。两个CPU项目、一个已跑过v1的已知回归题，其余按数字编号与Lite标签选择；不是随机代表性样本，不因本批模型成绩换题。
-- 模型生成源码：[7652168](https://github.com/294962silent/my-agent-harness/commit/765216830b1972ba3b3c0d20171315343c63d288)。该版本的四组跨平台[CI](https://github.com/294962silent/my-agent-harness/actions/runs/43218293170)通过。生成后发现的统计修复单独交付，不将新源码冒充实际生成版本。
+- 模型生成源码：[7652168](https://github.com/294962silent/LongArc/commit/765216830b1972ba3b3c0d20171315343c63d288)。该版本的四组跨平台[CI](https://github.com/294962silent/LongArc/actions/runs/43218293170)通过。生成后发现的统计修复单独交付，不将新源码冒充实际生成版本。
 - 协议v2：两组注册相同生产shell/artifact_read/artifact_search schema，只有Context产物投影开关不同。每次新建禁网容器，无宿主/金标挂载，先reset固定base并核clean；评分使用独立原官方容器。
 - 请求模型：`deepseek-v4.1-flash`，现有OpenCode Go兼容端点。温度0.7、16请求/4096输出/600秒、无隐式SDK重试；所有辅助模型调用也计数。seed23只排任务和eligible首发臂（3 on/2 off），不控制供应商采样或服务器缓存。
 - 环境：本机Windows下WSL Ubuntu-20.04、Python3.12.14、Docker26.1.3、SWE-bench5.0.2；CPU单模型并行，无GPU、无L20、无DSH。

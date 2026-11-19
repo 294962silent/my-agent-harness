@@ -10,6 +10,7 @@ Use the following forms consistently:
 - GitHub repository: `LongArc`
 - Primary Python command: `longarc`
 - Runtime descriptor: `long-horizon coding-agent runtime`
+- Canonical repository URL: https://github.com/294962silent/LongArc
 
 Do not use `LongArc Runtime` as the primary brand. “Agent runtime” may appear as
 a descriptive subtitle.
@@ -25,6 +26,8 @@ The rename does not remove existing local installations or data:
 - New local state defaults to `~/.longarc`.
 - `~/.my-agent-harness` and `~/.my-pi-agent` remain supported fallback
   locations so existing auth, settings and sessions are not lost.
+- `LONGARC_HOME` is the preferred explicit home override; `MY_AGENT_HOME`
+  remains supported for existing installations.
 
 ## Historical evidence
 

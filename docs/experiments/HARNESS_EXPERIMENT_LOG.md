@@ -481,7 +481,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 交付方法：保留本轮改造前源码副本；以 `a04e940` 为基底，只投影完整上下文 / 产物 / 请求诊断增量与相应测试。Agent 使用冻结版到增强版的差量，排除 `_prompt_active`、abort 清理等调度专用片段。其余调度、用户文档重排、取消的实验脚本 / 数据 / 源码归档未进入提交。
 - 实际范围：24 个明确路径，含 14 个产品源码文件、8 个测试文件、README 产品说明和本实验记录。没有使用 `git add .`；临时 index 与独立交付目录不改变当前 index 或工作区。
 - 验证：确认 Agent、ContextManager、CodingAgent 的实际导入路径来自独立交付树；上轮集成批次排除调度专属 `test_agent_ownership.py` 后 **269 passed, 1 deselected in 10.57s**。唯一 deselect 为已在冻结基线复现的本机 cmd / Git Bash pipefail 环境差异。主代理在该树执行 `python -m ruff check src tests` 通过；独立 index 的 `git diff --cached --check` 通过。
-- GitHub：提交 [`7531dadd64aa3f4e5a88e0a382eaafc8b505e4f0`](https://github.com/294962silent/my-agent-harness/commit/7531dadd64aa3f4e5a88e0a382eaafc8b505e4f0)，推送到自己的 `origin/codex/context-memory-reliability`。未推 upstream、未合并、未覆盖当前脏工作区。功能分支 push 本身不触发当前 CI，尚不能宣称 CI 通过。
+- GitHub：提交 [`7531dadd64aa3f4e5a88e0a382eaafc8b505e4f0`](https://github.com/294962silent/LongArc/commit/7531dadd64aa3f4e5a88e0a382eaafc8b505e4f0)，推送到自己的 `origin/codex/context-memory-reliability`。未推 upstream、未合并、未覆盖当前脏工作区。功能分支 push 本身不触发当前 CI，尚不能宣称 CI 通过。
 - 与前一版本的区别：E-CODE-SOL 的“未提交”是历史时点；本节把已完成源码单独交付，不把该提交当作调度账本、预算、跨会话后台服务或缓存性能实验的完成证据。
 
 
@@ -524,10 +524,10 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 ### E-GIT-MEMORY：2026-11-12 / 记忆提交与 GitHub PR
 
-- 记忆代码已提交并推送：[`c7cd65e60974a305320ccae79007e417f69b70e6`](https://github.com/294962silent/my-agent-harness/commit/c7cd65e60974a305320ccae79007e417f69b70e6)，父提交为上下文增强 `7531dadd`。只更新交付分支 `codex/context-memory-reliability`，当前本地工作分支与未暂存内容保持原状。
-- PR：[#1 完善长期记忆安全与生命周期，补齐上下文来源与产物回读](https://github.com/294962silent/my-agent-harness/pull/1)，目标为用户自己仓库的 main；未自动合并、未推 upstream。
+- 记忆代码已提交并推送：[`c7cd65e60974a305320ccae79007e417f69b70e6`](https://github.com/294962silent/LongArc/commit/c7cd65e60974a305320ccae79007e417f69b70e6)，父提交为上下文增强 `7531dadd`。只更新交付分支 `codex/context-memory-reliability`，当前本地工作分支与未暂存内容保持原状。
+- PR：[#1 完善长期记忆安全与生命周期，补齐上下文来源与产物回读](https://github.com/294962silent/LongArc/pull/1)，目标为用户自己仓库的 main；未自动合并、未推 upstream。
 - 创建过程：GitHub 连接器返回无创建 PR 权限，本机 gh 登录也未通过验证；使用已经能够推送该仓库的本机 Git 授权身份完成创建。没有打印或保存凭据，也没有更改全局认证配置。
-- 创建后实际观察：CI [run 43135488211](https://github.com/294962silent/my-agent-harness/actions/runs/43135488211) 已启动；Ubuntu / Python 3.11、3.13 完成成功，Windows 两组仍在运行。此处为过程快照，最终结果继续追加。
+- 创建后实际观察：CI [run 43135488211](https://github.com/294962silent/LongArc/actions/runs/43135488211) 已启动；Ubuntu / Python 3.11、3.13 完成成功，Windows 两组仍在运行。此处为过程快照，最终结果继续追加。
 
 - 最终复核：上述源码提交的 CI run `43135488211` 四个 job 均为 **completed / success**：Ubuntu-latest / Python 3.11、3.13，Windows-latest / Python 3.11、3.13。每组均完成依赖同步、Ruff、TUI 构建、完整 pytest、wheel 构建 / 入口检查及 TUI 测试。
 - 本批最后的实验记录更新只补交付与 CI 证据，不改变已通过检查的源码。后续检查状态以 PR 实际结果为准。
@@ -585,10 +585,10 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 ### E-GIT-REDESIGN：2026-11-12 / 框架重设计与实验材料交付
 
-- 已推送自己仓库的 `origin/codex/interview-harness-redesign`：运行 / 观测源码 [`9509262`](https://github.com/294962silent/my-agent-harness/commit/9509262)，实验框架 / 真实任务入口 / 原始证据 / 面试材料 [`e2181f6`](https://github.com/294962silent/my-agent-harness/commit/e2181f6)。原 checkout 的调度中间实现与用户文档修改保留，没有推 upstream。
-- PR [#2 Unify Agent runtime, model observation and reproducible evaluation](https://github.com/294962silent/my-agent-harness/pull/2)，base 为尚未合并的 #1 分支 `codex/context-memory-reliability`，只展示本批增量。两份 PR 均未自动合并。
+- 已推送自己仓库的 `origin/codex/interview-harness-redesign`：运行 / 观测源码 [`9509262`](https://github.com/294962silent/LongArc/commit/9509262)，实验框架 / 真实任务入口 / 原始证据 / 面试材料 [`e2181f6`](https://github.com/294962silent/LongArc/commit/e2181f6)。原 checkout 的调度中间实现与用户文档修改保留，没有推 upstream。
+- PR [#2 Unify Agent runtime, model observation and reproducible evaluation](https://github.com/294962silent/LongArc/pull/2)，base 为尚未合并的 #1 分支 `codex/context-memory-reliability`，只展示本批增量。两份 PR 均未自动合并。
 - GitHub 连接器创建 PR 返回403、无集成写权限；使用已能推送自己仓库的本机 Git 授权身份创建。凭据只在进程内存中使用，不输出、不落盘、不改全局认证。
-- `e2181f6` 的 [CI run 43208908713](https://github.com/294962silent/my-agent-harness/actions/runs/43208908713) 过程快照：Ubuntu / Python3.11与3.13均 completed/success，完成依赖、Ruff、TUI构建、pytest、wheel与TUI测试；Windows3.11/3.13当时仍queued，不能预填四组通过。后续文档补交会产生新head，最终状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
+- `e2181f6` 的 [CI run 43208908713](https://github.com/294962silent/LongArc/actions/runs/43208908713) 过程快照：Ubuntu / Python3.11与3.13均 completed/success，完成依赖、Ruff、TUI构建、pytest、wheel与TUI测试；Windows3.11/3.13当时仍queued，不能预填四组通过。后续文档补交会产生新head，最终状态以[PR checks](https://github.com/294962silent/LongArc/pull/2/checks)为准。
 - 收尾清理：确认没有运行中的Docker CLI或容器后，只删除本轮三份已经导入的官方镜像tar下载副本（逐个核绝对父目录与文件大小），共2261497856字节；Docker镜像缓存和原始实验材料保留。未同步L20，未运行GPU，未追加模型请求。
 - 本批已完成架构设计、关键接缝实现、八模块离线证据和SWE单例真实链路验证。尚未完成v2真实模型因果实验、Terminal-Bench模型评测、真实Langfuse上传、Mem0或Dream-RSI集成；这些不构成本次已交付效果。
 
@@ -634,7 +634,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 ### E-SWE-CI：2026-11-12 / 跨平台deadline测试稳定性修复
 
 - `3e2d345`交付catalog/campaign，`7652168`交付分段执行并作为本次实际生成版本；统计修复、121文件证据与面试材料已提交推送 `2857b9c`。PR #2标题/说明已按最终范围更新，未合并。
-- `2857b9c`的CI [run43227265253](https://github.com/294962silent/my-agent-harness/actions/runs/43227265253)暴露Ubuntu/Python3.11的 `test_deadline_interrupts_each_awaited_runtime_stage[prepare]`：总0.08秒deadline在前置阶段已过，started=False。先读取原失败日志定位，未只通过重跑掩盖失败。
+- `2857b9c`的CI [run43227265253](https://github.com/294962silent/LongArc/actions/runs/43227265253)暴露Ubuntu/Python3.11的 `test_deadline_interrupts_each_awaited_runtime_stage[prepare]`：总0.08秒deadline在前置阶段已过，started=False。先读取原失败日志定位，未只通过重跑掩盖失败。
 - 仅改 `tests/core/test_run_lifecycle.py`：120ms前置hook确定性复现旧断言；注入已有RunBudget的虚拟clock及模块局部wait代理，在选定await开始后触发原0.08deadline，保持真实取消/gather/finally、预算终态与owner释放断言。独立复核后补5秒外层测试watchdog+finally a.aclose，不改变产品预算或全局asyncio。
 - 主代理实际命令 `pytest tests/core/test_run_lifecycle.py -q -o addopts= --import-mode=importlib`，**15 passed in1.08s**；作者Linux/Python3.12同版15 passed in1.43s，Ruff/diffcheck与另一助手只读review通过。本地不宣称运行过3.11；后续新head矩阵以实际CI记录为准。
 - 这一修复只改测试和记录，生成源码765、已归档81文件、原评分、消费$0.503462均保持。没有新模型请求、评分重跑或上游推送。
@@ -643,8 +643,8 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 ### E-SWE-DELIVERY：2026-11-12 / v2小样本最终交付
 
 - 运行入口与分段执行已推送 `3e2d345` / `7652168`，统计修复和121文件证据提交 `2857b9c`，CI测试稳定性修复提交 `47a89aa8538b2d5d061555e0a5c4048bc0b67ce7`，均在自己的 `origin/codex/interview-harness-redesign`。原checkout修改保留，无upstream推送或自动合并。
-- PR [#2 Unify Agent runtime, observation and reproducible SWE campaigns](https://github.com/294962silent/my-agent-harness/pull/2) 已更新标题、最终实现、真实结果与限制；仍以#1的 `codex/context-memory-reliability` 为base。实际模型生成版本为765，后续统计和测试修复均未重新调用模型。
-- 测试修复后的[CI run43228948231](https://github.com/294962silent/my-agent-harness/actions/runs/43228948231)四组 **completed/success**：Ubuntu/Python3.11、3.13，Windows/Python3.11、3.13。此前失败平台已实际重验成功，不将本地3.12/3.13替代3.11证据。后续本节仅文档补交，最新head状态以[PR checks](https://github.com/294962silent/my-agent-harness/pull/2/checks)为准。
+- PR [#2 Unify Agent runtime, observation and reproducible SWE campaigns](https://github.com/294962silent/LongArc/pull/2) 已更新标题、最终实现、真实结果与限制；仍以#1的 `codex/context-memory-reliability` 为base。实际模型生成版本为765，后续统计和测试修复均未重新调用模型。
+- 测试修复后的[CI run43228948231](https://github.com/294962silent/LongArc/actions/runs/43228948231)四组 **completed/success**：Ubuntu/Python3.11、3.13，Windows/Python3.11、3.13。此前失败平台已实际重验成功，不将本地3.12/3.13替代3.11证据。后续本节仅文档补交，最新head状态以[PR checks](https://github.com/294962silent/LongArc/pull/2/checks)为准。
 - 提交前复核：121个明确路径通过实际现有API凭据精确匹配扫描（无匹配）、86个JSON解析、本批新增本地链接检查无缺失；两条交付前已存在的历史档案链接保留。108份本批证据的index blob与原文件逐字节相同，staged diff check通过；没有 `git add .`、金标patch/认证缓存/大镜像入库。
 - 已完成用户授权的通用SWE入口与v2小样本。最终selected6/eligible5、10模型trial、160真实请求；on2/5/off1/5、7empty；本批保守账本$0.503462，累计$0.572059。未运行完整300题，未恢复DSH、未接Mem0/Dream-RSI或Langfuse远端，未依据五题与缺失cache字段宣称稳定提升。
 - 最终head复核补充：文档提交f0d12c1的CI run43229586859在Ubuntu3.11暴露同文件另一项30ms模型启动假设（llm.closed=False，模型可以在前置deadline前根本未启动）。此前47的四组通过是历史事实，不能替代这个新head的检查。因此没有直接重跑CI取绿，而是审计整份15项测试并统一阶段同步fixture。
@@ -672,7 +672,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 ### E-READBACK-PROBE：2026-11-12 / 真实回读与最终交付分开计数
 
-- 源码提交 `c69ff37ed148f53d526b458b9b36233860b85f26` 在模型前通过[CI run43241787757](https://github.com/294962silent/my-agent-harness/actions/runs/43241787757)四组矩阵。Windows主机运维脚本最初在WSL调用git rev-parse，Windows worktree的gitdir `C:/...` 被Linux按相对路径解释而失败；当时尚未启动收费。改为Windows侧核完整HEAD/源码无脏改，Linux侧保留实际导入路径和冻结hash校验，不改共享.git指针或已提交源码。
+- 源码提交 `c69ff37ed148f53d526b458b9b36233860b85f26` 在模型前通过[CI run43241787757](https://github.com/294962silent/LongArc/actions/runs/43241787757)四组矩阵。Windows主机运维脚本最初在WSL调用git rev-parse，Windows worktree的gitdir `C:/...` 被Linux按相对路径解释而失败；当时尚未启动收费。改为Windows侧核完整HEAD/源码无脏改，Linux侧保留实际导入路径和冻结hash校验，不改共享.git指针或已提交源码。
 - 实验输入保持首次冻结的两份日志；probe plan SHA `b0f50a8e40bfd33c65edda3800e3020ce0b2879e6a7528e763bf21aeec03f366`。顺序fixture-a on/off、fixture-b off/on，四trial共12请求全部结算，新增$0.009106，累计204请求/$0.581165。没有未知用量、提前目标泄漏或schema漂移，临时Session/产物正文已由所有者清理。
 - on两次均观察到隐藏预览与handle、实际read/search、后续Provider输入目标可见；能力链路2/2。但第4次响应仍为工具调用，随后4请求上限耗尽，最终答案正确0/2。off两次均2请求正常end_turn并答对，2/2。读到和完成分开统计，不把回读能力冒充端到端质量，不提高上限补成功。
 - SOL-1独立核四份audit/result及Agent.run终态：budget_exhausted映射为预算终态文本，probe按最终准确值判定；当前元数据不含响应正文/推理/finish reason，不能解释模型为何继续读。方法入口审计仍为pre-SDK而非wire。结果详见独立probe README，后续只归档元数据。
@@ -703,9 +703,9 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 ### E-THREE-CI：2026-11-13 / Linux退出确认与后台E2E时序
 
-- 适配ec0fcdc240a1cb2cfe9760f9bdb113db95ef181f已推送，PR2范围/说明已更新。实际[run43257245212](https://github.com/294962silent/my-agent-harness/actions/runs/43257245212)的Windows3.11/3.13均success，Linux3.11/3.13失败；不以本地1254或Windows绿灯代替Linux验收，也不简单重跑取绿。
+- 适配ec0fcdc240a1cb2cfe9760f9bdb113db95ef181f已推送，PR2范围/说明已更新。实际[run43257245212](https://github.com/294962silent/LongArc/actions/runs/43257245212)的Windows3.11/3.13均success，Linux3.11/3.13失败；不以本地1254或Windows绿灯代替Linux验收，也不简单重跑取绿。
 - Dream normal-exit后代/proc状态仍R：两Linux均失败。SOL-2原样复现并读取pending signal，证实SIGKILL已排队但约1.25ms后才退出，原代码只wait根。仅dream_rsi_replay.py补Unix整组有界退出确认（非Z/X成员），无法确认5秒报错，不引入全局subreaper/新依赖，不用sleep改测试窗口。测试覆盖受控存活序列、永不确认失败、comm/Z/R解析与真实清理；作者Linux3.12和Windows3.13各20项通过，SOL-1只读复核无阻断。
-- 另一失败仅Linux3.11：[background E2E job](https://github.com/294962silent/my-agent-harness/actions/runs/43257245212/job/131318683497)首答Completed而非Waiting。SOL-1用真实job完成事件门控第2次假模型响应，稳定复现原断言；后台完成即add_followup，loop阶段末继续同run是合法语义，没有产品逻辑缺陷证据。仅改test_coding_agent_tasks_e2e.py，用release文件控制真实子进程、await真实job、第二轮全调用范围查通知/状态，finally回收；移除小sleep阶段假定。Linux3.12和Windows3.13各1项通过，SOL-2只读复核无阻断。
+- 另一失败仅Linux3.11：[background E2E job](https://github.com/294962silent/LongArc/actions/runs/43257245212/job/131318683497)首答Completed而非Waiting。SOL-1用真实job完成事件门控第2次假模型响应，稳定复现原断言；后台完成即add_followup，loop阶段末继续同run是合法语义，没有产品逻辑缺陷证据。仅改test_coding_agent_tasks_e2e.py，用release文件控制真实子进程、await真实job、第二轮全调用范围查通知/状态，finally回收；移除小sleep阶段假定。Linux3.12和Windows3.13各1项通过，SOL-2只读复核无阻断。
 - 主代理修订后实际 `uv run --frozen --all-extras python -m pytest tests/coding/test_coding_agent_tasks_e2e.py tests/coding/test_dream_rsi_replay.py tests/integrations -q -o addopts= --import-mode=importlib --tb=short`：**24 passed in6.30s**，含三个真实SDK离线契约；Ruff与diffcheck通过。该批与旧1254/作者20有重叠，不累加。新的完整矩阵仍须由最新head实际验证，最终终态写PR/checks，不为记录绿灯再触发docs-only矩阵。
 - 这批没有模型、embedding、云上传、SWE或效果benchmark；账本仍300请求/$0.888355。WindowsJob路径、三项适配范围及默认关闭不变，旧CI失败和全部原始实验保留。
 
@@ -793,7 +793,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 ### E-LONG-CODE-START：2026-11-13 / 源码CI与本机正式首配对
 
-- 实现/档案已推自己的origin，源码head455915743ee687006698eaeefe3a98d43b55609e；PR2正文按最终实现与真实Memory负结果重写，base仍codex/context-memory-reliability，未合并。该head的[run43422249290](https://github.com/294962silent/my-agent-harness/actions/runs/43422249290)已completed/success，四组Ubuntu/Windows × Py3.11/3.13实际全部成功，Ubuntu3.13 SDK专项实际运行成功；主代理核run/head与四个jobs，不用旧绿灯外推。
+- 实现/档案已推自己的origin，源码head455915743ee687006698eaeefe3a98d43b55609e；PR2正文按最终实现与真实Memory负结果重写，base仍codex/context-memory-reliability，未合并。该head的[run43422249290](https://github.com/294962silent/LongArc/actions/runs/43422249290)已completed/success，四组Ubuntu/Windows × Py3.11/3.13实际全部成功，Ubuntu3.13 SDK专项实际运行成功；主代理核run/head与四个jobs，不用旧绿灯外推。
 - Terminal新调度器terminal-queued-v2已在本机启动，实际计划8cb76c1479c97638eed024e627e13397a1fe63078b4209105886ac4442e16216，首cancel-async-tasks off/on。七题通过oracle可候选配对、一题双槽blocked；首个完整/同schema/无suspected配对后续跑其余槽位。此刻尚无完整结果，不预填质量/费用收益。
 - [启动快照](results/long-horizon-20261113/terminal-start/REPORT.md)保留源码、任务、约束和预算，不公开运行时凭据或代理。后续SWE-EVO仅Dask可运行，须前阶段完成、账本无unknown及源码CI已核；Conan不因失败换题，继续blocked。所有执行留本机，L20未运行任务。
 
@@ -909,7 +909,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 
 ### E-LIVE-TEST-INTERRUPTION：2026-11-14 / 权限失败与误导性退出信息
 
-- 最新已推head `5cd6e75ec532ff59e6e98469f912c1ab7820d7f8` 的 [CI 43487624350](https://github.com/294962silent/my-agent-harness/actions/runs/43487624350) 四组 Windows/Ubuntu × Python3.11/3.13 均 completed/success，Ubuntu3.13 可选SDK专项实际成功；不是用前一head绿灯代替。
+- 最新已推head `5cd6e75ec532ff59e6e98469f912c1ab7820d7f8` 的 [CI 43487624350](https://github.com/294962silent/LongArc/actions/runs/43487624350) 四组 Windows/Ubuntu × Python3.11/3.13 均 completed/success，Ubuntu3.13 可选SDK专项实际成功；不是用前一head绿灯代替。
 - 正式v2在test `HumanEval/6`、seed23、C条件出现 `PermissionError`，host将该槽记录failed后停止。原run_batch把所有blocked状态统称为“new unknown usage stops the campaign”；主代理起初照退出信息报告未知用量，核journal后更正：实际298次请求全部settled、870205已知tokens，pending/unknown/held均0。错误文字不作为费用缺失证据。
 - 停止时test共11/48个终态：A完成2/12、B完成3/12、C完成2/12加失败1/12、random完成3/12，余37槽未启动。失败C槽10次请求22670tokens，两个attempt正常end_turn，后续attempt在新请求前失败；独立final未执行，保持unavailable，不补为0、不删除分母或用另ID重跑。
 - collection为84请求237239tokens，test为214请求632966tokens；再计v1四请求8496tokens及独立连通一请求55tokens，本轮303请求878756已知tokens。币价未核，currency/cost继续null；旧533请求账本与未知预留不改。本轮完整cache字段覆盖另见报告，不凭缺失补零。
@@ -924,13 +924,13 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 新`continue_live.py`与专项测试独立于原117源，incident侧证据在campaign外独占封印：精确唯一旧failed、旧journal前缀、result/final/plan/source/task/policy、原未started37槽及controller bytes。原`_state/summary`不改、original blocked仍真；只在锁内CAS开始门控允许旧例外共存，原failed永不重跑/换ID/补final。
 - 不调用旧run_batch，只按原顺序逐槽调用原run_prepared_trial；每请求/评分前保留原守卫并校新增封印。首批强制只1新槽，新异常/未知/漂移再停。异常只输出安全type/数值错误码/可证实在trial内的相对文件名；底层只给type时路径继续None，不伪称已获得原权限路径。具体协议见[续跑设计](../rsi-live-continuation.md)。
 - 作者17离线测试通过；主代理实际执行continuation+analysis+原runner组合 **91 passed in35.30s**，Ruff通过。包含CAS竞争、逐付款/评分前漂移、旧槽/错元组拒绝、额外failed/unknown/pending停止、注册0API和安全诊断。此时只验证代码，真实incident尚未注册/运行，独立审查和实际首新槽另行追加。
-- 上批e213ac02b9fe5310a914687c8661c81df4d306e5的[CI43490480318](https://github.com/294962silent/my-agent-harness/actions/runs/43490480318)四矩阵及3.13 SDK专项已核成功。新controller的CI状态不据此外推；所有历史停止态与成本不覆盖。
+- 上批e213ac02b9fe5310a914687c8661c81df4d306e5的[CI43490480318](https://github.com/294962silent/LongArc/actions/runs/43490480318)四矩阵及3.13 SDK专项已核成功。新controller的CI状态不据此外推；所有历史停止态与成本不覆盖。
 
 续跑前审查追加：SOL-2只读复核新controller关键gate通过，最终bytes SHA256 `cdff95b80c168dd23a679636d711138aaba35535896afe287800e260a12bda34`。确认register不构造模型、锁内CAS、原付款/评分验证链、独立run锁、首批1槽和安全诊断。主代理组合91通过与独立审查为不同证据，未重复计数；真实运行另记。
 
 ### E-LIVE-CONTINUATION-FIRST：2026-11-14 / 实际封印与首新槽核验
 
-- controller已推origin `5a737ca6980f39f9c3672c3108e39bf531a9adbe`；[CI43492669264](https://github.com/294962silent/my-agent-harness/actions/runs/43492669264)四矩阵及Ubuntu3.13 SDK专项全部success，主代理核了本head/jobs。
+- controller已推origin `5a737ca6980f39f9c3672c3108e39bf531a9adbe`；[CI43492669264](https://github.com/294962silent/LongArc/actions/runs/43492669264)四矩阵及Ubuntu3.13 SDK专项全部success，主代理核了本head/jobs。
 - 真实register为0模型请求，独占sidecar绑定原634行journal、16已started/37未started、原298请求870205tokens与唯一旧failed。原journal前缀、源码117、任务与策略不变，新的操作事件只追加。根因未知的修订身份单列，不把旧failed解除或改完成。
 - 主代理实际先运行首未started `test-HumanEval-6-s23-A`：18请求52611tokens全settled，4个attempt均end_turn（6/5/3/4轮），valid4、cleanup0、独立final valid/score1/exit0。SOL-1只读复核terminal→final→result封印、逐请求账与source/wrapper/incident/task/policy全部通过。
 - 此检查点全局316请求922816tokens，pending/unknown/held0，original summary仍blocked且failed1；独立operational gate ready、剩36。包括v1/连通后的准备总量另计，不把316当完整总任务成本。[安全首检查点](results/rsi-live-20261114/continuation-r1.json)。
@@ -948,7 +948,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 实际触发：v2全部969请求purpose=agent，summary请求0；artifact_read/search recorded starts0。B/C/random的phase-fold snapshot-derived views为24/22/24，micro snapshot groups为0/2/1，A均0；这不是操作次数或成功回读次数。只支持短题中视图出现的机制证据，不证明长程收益。
 - SOL-1独立[26项运行审计](results/rsi-live-20261114/runtime-audit-final.json)通过：source117/wrapper/sidecar/task/policy、全部result/final封印、usage与严格一次续槽；owned runner/worker进程匹配0、cleanup_errors全空。SOL-2独立指标核验另见metrics-detail-final.json；主代理统一文档，不混用假模型测试与真实结果。
 - 本批同时更新README、集成说明、闭环协议、交接、CLAIMS和面试P56–P58，纠正“无真实评分树/benchmark暂停”的过时入口。代价与限制包含追加的审计/续接复杂度、串行执行、协议事后修订、短题饱和、完整验证与schema证据缺失。下一批应先登记有区分度train与质量/效率目标、完整holdout和configured/actual schema分离，当前test不重选策略。
-- 源码/辅助工具head64884425d06e8fcbc3a9e9a317795d6e52c149d6的[CI43494451220](https://github.com/294962silent/my-agent-harness/actions/runs/43494451220)四矩阵与SDK专项已核成功；最终报告提交的CI另核，不外推旧绿灯。
+- 源码/辅助工具head64884425d06e8fcbc3a9e9a317795d6e52c149d6的[CI43494451220](https://github.com/294962silent/LongArc/actions/runs/43494451220)四矩阵与SDK专项已核成功；最终报告提交的CI另核，不外推旧绿灯。
 
 独立指标终态追加：SOL-2已保存metrics-detail-final.json并核实四臂、全部准备成本、缓存字段和实际触发；已记录190个attempt schema指纹完全相同、另1个原失败指纹缺失。SDK口径进一步拆分为48个回放评估叶与82次离线tree action，旧记录里的“48次评估”不是48个动作或API请求。原始评分、策略与历史快照均不改。
 
@@ -1011,7 +1011,7 @@ node --test test/bridge/kernel-bridge.test.js test/bridge/event-translator.test.
 - 原v1失败保留1请求1252tokens/1dev评分，全部red共25请求108078tokens/10评分（9dev+1final），价格未核保持null。v2扣减原总ceiling的事后运维修订单列；未修订首计划没有被宣称完整完成。两轮各3个attempt，2个轮次上限无效/1个正常结束，trace均None；无完整train+holdout，CLIoptimize返回blocked/promoted=false，没有训练或发布新策略。Airfoil/white和正式三组未启动，不做效果排名。
 - 第二轮Mem0真实CPU检索1个有效语义候选、3次embedding调用、fallback=false/closed=true；首轮空库无命中。仅证明单经验功能，不证明优于词法。v1/v2本地调用start/end各1/24一一覆盖并逐请求tokens对账，v2两次export closed、0drop/0error，provider clients均关闭；Langfuse云上传仍unverified。
 - SOL-2独立校验两journal链、调用结算、checkpoint/result/最终预测hash、恢复前后预算、11研究源码pins和经验key；两条经验精确由dev commit重建，未含final值，final后无新事件。公开交付仅聚合/hash，完整labels、候选/session、模型响应保留本机私有目录。[报告](results/research-agent-20261114/LIVE_REPORT.md)与[live-summary.json](results/research-agent-20261114/live-summary.json)给出来源与局限；optimize证据明确为工具输出转录，非journal封印实验。
-- 修后代码head47eee1bc48c9e6b242d3b5bc0e849cfec7f4da63的[CI43563738685](https://github.com/294962silent/my-agent-harness/actions/runs/43563738685)四矩阵pytest/Ruff/TUI/wheel及ZIP模块检查全success，Ubuntu3.13可选SDK专项成功；仅跳过真实权重smoke和Linux不适用Windowsjunction。功能版160118f失败不覆盖；后续文档提交状态另核，不借旧绿灯冒称新head。
+- 修后代码head47eee1bc48c9e6b242d3b5bc0e849cfec7f4da63的[CI43563738685](https://github.com/294962silent/LongArc/actions/runs/43563738685)四矩阵pytest/Ruff/TUI/wheel及ZIP模块检查全success，Ubuntu3.13可选SDK专项成功；仅跳过真实权重smoke和Linux不适用Windowsjunction。功能版160118f失败不覆盖；后续文档提交状态另核，不借旧绿灯冒称新head。
 - 新[简历交付稿](../interview/RESUME_READY.md)含3条客观工程表述、60秒口述、HR短文和5个追问；[8项事实账本](../interview/research-career-claims.json)结构校验通过。个人参与时间、负责模块和源码掌握程度仍由本人确认。新增面试P66深挖正常交付/可评分/完整策略训练树的区别，下一批需校准轮次再冻结对照，不仅给RSI额外机会。
 - 相对改前：原退出码评分→固定私有标签数值评分；原单运行快照→完成round事务式提交与预算续接；原网格前缀→训练执行签名去重；原候选专属选优→baseline也参与；原三SDK接线→场景级经验/观测/策略角色。优势是可复查、失败可定位、预算不随恢复清零；代价是容器依赖、更多落盘、保守阻断和SDK本地资源成本。借鉴AIDE实验树、autoresearch固定边界，沿用既有Session/Artifact与Dream固定SDK，没有声称新的AutoML算法或长程胜率提升。
 
@@ -1293,7 +1293,7 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **真实 smoke**：`smoke-mea-20261117-8`，`deepseek-v4.1-flash`，两轮完成。Executor 修改生产代码；Auditor 在 workspace 快照副本中只运行四条精确 pytest 命令之一，返回 clean complete；Manager 基于 verified state 返回 done。最终状态 `complete`，round checkpoints `1/2` 与 final checkpoint 均通过完整性检查，独立 pytest 为 1 passed。
 - **真实用量**：15 个 generation，15/15 `ok`，40,507 provider tokens（28,672 cache-read）。Langfuse 回读同一 trace `d337f693f1e091ea1efa13f9e5f6289b` 的 15 个 GENERATION，usage 与本地 ledger 完全一致。
 - **失败保留**：前七次 smoke 分别为可选依赖缺失、ContextVar 跨 yield、Auditor 安全命令/轮次预算、`complete` 与 `remaining` 契约冲突、最终门禁前的成功快照、内部 iterable 错误；均 fail-closed，未重放。全部 smoke attempts 合计 235,599 settled provider tokens；历史 run 不改写。
-- **Windows CI**：stacked [PR #3](https://github.com/294962silent/my-agent-harness/pull/3) 的 Windows-latest / Python 3.11 与 3.13 均 `completed/success`，覆盖 Ruff、pytest、TUI 构建/测试及 wheel 入口检查；run 为 [44119193048](https://github.com/294962silent/my-agent-harness/actions/runs/44119193048)。未合并 PR。
+- **Windows CI**：stacked [PR #3](https://github.com/294962silent/LongArc/pull/3) 的 Windows-latest / Python 3.11 与 3.13 均 `completed/success`，覆盖 Ruff、pytest、TUI 构建/测试及 wheel 入口检查；run 为 [44119193048](https://github.com/294962silent/LongArc/actions/runs/44119193048)。未合并 PR。
 - **报告**：[longhorizon-mea-v1.md](reports/longhorizon-mea-v1.md)；机器汇总：[summary.json](results/longhorizon-mea-v1-20261117/summary.json)。
 
 ### E-LONGHORIZON-MEA-V11：2026-11-18 / 当前工作树跨进程 pause/resume、immutable path 与观测闭环
@@ -1346,3 +1346,12 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **v11 观测对账**：Langfuse 只读 API 返回恰好 4 traces / 4 GENERATION，一 trace 一失败请求，usage 字段为空，与 ledger 的 4 个无 usage error 一致。失败 run ID 不复用；配额恢复后需以新 campaign ID 重新冻结。
 - **验收**：Windows 定向 **14 passed / 1 skipped**（Windows 无 Harbor），WSL combined **17 passed**；Ruff、wheel/sdist 构建与 `git diff --check` 通过。这里证明离线契约、真实 Harbor 适配与观测接缝；真实 18-trial 质量结果仍为未完成。
 - **报告**：[long-horizon-quality-harbor-pilot-attempt-20261118.md](reports/long-horizon-quality-harbor-pilot-attempt-20261118.md)。
+
+### E-BRAND-LONGARC：2026-11-19 / 项目更名为 LongArc
+
+- **官方名称**：项目、Python 包、npm 包、TUI、Harbor 适配器和 GitHub 仓库统一使用 `LongArc`；主启动命令为 `longarc`，另有 `longarc-runtime`。
+- **兼容边界**：内部 Python import 路径保持不变；`my-pi-agent`、`my-agent`、`MyAgentHarness` 和旧数据目录继续作为兼容入口，避免破坏已有脚本、凭据、设置和历史 Session。
+- **本地状态目录**：新安装默认使用 `~/.longarc`，优先读取 `LONGARC_HOME`；既有 `.my-agent-harness`、`.my-pi-agent` 与 `MY_AGENT_HOME` 仍按 fallback 规则生效。
+- **GitHub**：仓库由 `294962silent/my-agent-harness` 更名为 `294962silent/LongArc`，GitHub 保留旧 URL 跳转；本地 `origin` 已切换到新 URL。
+- **本批验证**：品牌相关 Python 定向测试 **65 passed**；TUI 隔离运行 **97 passed / 1 credential-dependent e2e skipped / 0 failed**；Ruff 与 `git diff --check` 通过；Wheel 包含 `longarc`、`longarc-runtime`、`longarc-dream` 和 TUI assets；从仓库外目录执行全局 `longarc --help` exit 0。
+- **命名规范**：见 [NAMING.md](../NAMING.md)。历史实验日志、run ID 和归档结果保留产生时的名称，以便证据可追溯。

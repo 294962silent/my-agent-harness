@@ -8,7 +8,7 @@
 
 本报告的 **on/off表示预算提示**，两组artifact_projection都为on。旧v2的on/off表示产物投影，两个实验不能合并排名。三题按已知症状选择，详见[模型前选择记录](SELECTION.md)，不是未见题或代表性抽样；每题每条件仅一次，seed23只固定顺序，不控制服务端采样。
 
-生成源码：`c69ff37ed148f53d526b458b9b36233860b85f26`。模型前[CI run43241787757](https://github.com/294962silent/my-agent-harness/actions/runs/43241787757)四组成功。任务源仍为SWE-bench/swe-bench-tasks@`3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`，复用原catalog、镜像及成功gold绑定；模型只见安全metadata，不见gold/test patch、hints或完整evaluator dataset。原许可证和预检证据保留在[上批档案](../swe-v2-pilot-20261112/)。
+生成源码：`c69ff37ed148f53d526b458b9b36233860b85f26`。模型前[CI run43241787757](https://github.com/294962silent/LongArc/actions/runs/43241787757)四组成功。任务源仍为SWE-bench/swe-bench-tasks@`3d07b464b7b311a0cbfb5ed5b2d8a3b96f84a33d`，复用原catalog、镜像及成功gold绑定；模型只见安全metadata，不见gold/test patch、hints或完整evaluator dataset。原许可证和预检证据保留在[上批档案](../swe-v2-pilot-20261112/)。
 
 端点为OpenCode Go兼容接口，实际请求模型deepseek-v4.1-flash；温度0.7、每trial 16请求（含辅助）、4096输出上限、600秒。两组工具及宿主观察相同，唯一提示差异为初始system的一句真实请求上限信息，运行中不改前缀。全部CPU/WSL Docker执行，没有使用L20/GPU或DSH。
 
