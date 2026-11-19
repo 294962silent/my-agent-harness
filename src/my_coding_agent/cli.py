@@ -43,6 +43,45 @@ def find_tui_entry() -> Path | None:
     return None
 
 
+def ensure_tui_dependencies(tui_entry: Path) -> None:
+    """Install pinned TUI runtime packages when a wheel lacks node_modules."""
+    package_dir = tui_entry.parent.parent
+    marker = (
+        package_dir
+        / "node_modules"
+        / "@earendil-works"
+        / "pi-tui"
+        / "package.json"
+    )
+    if marker.is_file():
+        return
+    package_json = package_dir / "package.json"
+    if not package_json.is_file():
+        return
+    npm_bin = shutil.which("npm")
+    if not npm_bin:
+        raise RuntimeError(
+            "LongArc TUI dependencies are missing and npm is unavailable. "
+            f"Run `npm install --omit=dev --ignore-scripts` in {package_dir}."
+        )
+    print(
+        "[LongArc] Installing TUI runtime dependencies (first run only)...",
+        file=sys.stderr,
+    )
+    result = subprocess.run(
+        [npm_bin, "install", "--omit=dev", "--ignore-scripts"],
+        cwd=package_dir,
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()[-500:]
+        raise RuntimeError(
+            f"LongArc TUI dependency installation failed: {detail}"
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     """Main CLI entrypoint bridging to the Pi-TUI frontend."""
     if argv is None:
@@ -74,6 +113,7 @@ def main(argv: list[str] | None = None) -> int:
         cmd.extend(["--python-executable", sys.executable])
 
     try:
+        ensure_tui_dependencies(tui_entry)
         proc = subprocess.run(cmd)
         return proc.returncode
     except KeyboardInterrupt:
