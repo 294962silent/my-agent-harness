@@ -1,0 +1,9 @@
+This non-campaign diagnostic used the same production AuthManager, endpoint,
+model, and native provider client as the frozen campaign.
+
+credential_source=production_auth_manager
+error_type=APITimeoutError
+error_message=Request timed out.
+
+Observed after the frozen 90-second client timeout. This diagnostic did not
+consume or replace either campaign run ID.

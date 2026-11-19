@@ -1381,3 +1381,24 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **预算**：Auditor 为下一次 Manager 和最终 JSON 投影各预留 1 个 request；投影计 `mea_auditor_rN_projection` 并进入同一 ledger、Langfuse 与 usage 账本。
 - **安全边界**：投影无权调用工具；证据不足必须返回 blocked；fallback 不声称 complete，也不把自然语言输出转写为已验证事实。
 - **验证**：WSL/Harbor 定向组合 **66 passed / 15 skipped**，Ruff 通过。测试覆盖最新工具证据保留、超预算旧内容裁剪、JSON-only 投影和可解析 blocked fallback。
+
+### E-LONGHORIZON-QUALITY-V22：2026-11-19 / 混合 verifier bootstrap 与中止
+
+- **状态**：`lhq-tb21-pilot-20261119-v22` 在 10/18 slots 后封存；7 个进入官方评分（4 个 reward=1、3 个 reward=0），2 个 execution/verifier error，1 个 started 后中止，8 个未启动。
+- **直接结果**：fix-git React 为 `1/0/1`，MEA 为 `1/error/1`；custom-memory MEA 的两个可评分槽均为 reward=0，另一槽 provider error；custom-memory React 在 31 requests 后 pending 停止。
+- **基础设施链**：首个 custom-memory verifier 卡在不可达 Ubuntu HTTP archive；临时 APT 修复后，下一槽的 uv GitHub release 下载 TLS 失败；再下一槽完成 preinstall 后，Auditor 投影 provider 请求失败。该链证明不能在同一 cohort 内继续替换 bootstrap。
+- **资源记录**：342 requests；8 个 usage 完整 slot 合计 prompt 421,167、completion 247,683、cache-read 1,086,080，观察 cache hit **72.0572%**、保守客户端费用 **$0.749525**；2 个已尝试 slot 的 usage/cost 保持 unknown。
+- **Langfuse 对账**：10 个已尝试 session 全部匹配，远端 342 个 metadata-only observation 对应本地 342 个请求；未回读 prompt、回答正文或密钥，缺失 usage 仍为 unavailable。
+- **结论边界**：前半段使用原始 verifier 网络、后半段使用临时 overlay，cohort 不可比；不得计算成功率、React/MEA 差异、质量或显著性。
+- **证据**：[v22 REPORT](results/long-horizon-quality-v22-20261119/REPORT.md)、[summary](results/long-horizon-quality-v22-20261119/summary.json)、[journal](results/long-horizon-quality-v22-20261119/journal.json)、[SHA256SUMS](results/long-horizon-quality-v22-20261119/SHA256SUMS)。
+
+### E-LONGHORIZON-QUALITY-V23：2026-11-19 / 统一 bootstrap、provider canary 与预注册停止
+
+- **准备**：新建 18 个与 v20/v21/v22 均不重叠的 run ID；把 APT mirror、APT 专用 proxy、uv `0.9.5`、Python `3.13.9`、pytest `8.4.1`、pytest-json-ctrf `0.3.5` 和 90 秒 provider 超时固化为内容寻址 bootstrap。
+- **预检**：三个 Terminal-Bench 镜像均实际运行 bootstrap 成功，Langfuse、proxy 和 credential manager 通过；plan SHA 为 `adb1ef8c855d032aa550543126be9f453d821cb3a774ebcdc30bd2c230b7d987`，bootstrap manifest SHA 为 `f5848e3d48568859e9f2762d849d0ee0825815f2ee85be3053f0aa614a667418`。
+- **真实 canary**：`fix-git/React/t0` 与 `t1` 都在首个 provider 请求返回 `BudgetStop`，各 1 个 error request，usage/cost unknown，官方 verifier 未运行。两个已消费 run ID 不重试。
+- **第三次诊断**：不计入 cohort 的 native provider smoke 使用相同 AuthManager、endpoint、model 与 90 秒客户端限制，返回 `APITimeoutError: Request timed out.`。没有把 timeout 解释成模型答错。
+- **Langfuse 对账**：2 个已尝试 session 全部匹配，远端 2 个 metadata-only observation 对应本地 2 个失败请求。
+- **停止**：按预注册规则在 2/18 后封存 cohort，其余 16 槽不启动。v24 必须先连续三次通过 native provider 请求，并让 React/MEA 各完成一次非计分端到端 canary，再冻结新 ID。
+- **离线验证**：长任务质量与 Harbor 相关组合 **56 passed / 15 skipped**（skip 为 Windows/Harbor 运行条件不满足），Ruff 与 `git diff --check` 通过；bootstrap manifest、archive 的 `SHA256SUMS` 均校验通过。
+- **证据**：[v23 REPORT](results/long-horizon-quality-v23-20261119/REPORT.md)、[preflight](results/long-horizon-quality-v23-20261119/preflight.json)、[summary](results/long-horizon-quality-v23-20261119/summary.json)、[journal](results/long-horizon-quality-v23-20261119/journal.json)、[SHA256SUMS](results/long-horizon-quality-v23-20261119/SHA256SUMS)。
