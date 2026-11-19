@@ -8,9 +8,11 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import time
+from uuid import uuid4
 
 from filelock import FileLock
 
@@ -192,6 +194,95 @@ def _bootstrap_bundle(manifest_path: str | Path) -> tuple[dict, str, dict[str, s
         )
     }
     return selected, live.sha_file(path), actual
+
+
+def _docker_bootstrap_probe(image: str, manifest_path: str | Path) -> dict:
+    root = Path(manifest_path).resolve().parent
+    name = f"lhq-bootstrap-probe-{uuid4().hex[:12]}"
+    try:
+        started = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--detach",
+                "--name",
+                name,
+                "--pull=never",
+                "--network",
+                "bridge",
+                "--entrypoint",
+                "sh",
+                image,
+                "-c",
+                "sleep infinity",
+            ],
+            text=True,
+            capture_output=True,
+            timeout=90,
+            check=False,
+        )
+        if started.returncode != 0:
+            return {
+                "status": "blocked",
+                "stage": "start",
+                "stderr_tail": started.stderr[-1000:],
+            }
+        copied = subprocess.run(
+            ["docker", "cp", str(root / "repair-apt.sh"), f"{name}:/tmp/repair-apt.sh"],
+            text=True,
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
+        if copied.returncode != 0:
+            return {
+                "status": "blocked",
+                "stage": "copy",
+                "stderr_tail": copied.stderr[-1000:],
+            }
+        repaired = subprocess.run(
+            ["docker", "exec", name, "sh", "/tmp/repair-apt.sh"],
+            text=True,
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
+        if repaired.returncode != 0:
+            return {
+                "status": "blocked",
+                "stage": "apt",
+                "stderr_tail": repaired.stderr[-1000:],
+            }
+        installed = subprocess.run(
+            ["sh", str(root / "install-prebaked-uv.sh"), name],
+            text=True,
+            capture_output=True,
+            timeout=180,
+            check=False,
+        )
+        return {
+            "status": "pass" if installed.returncode == 0 else "blocked",
+            "stage": "complete",
+            "uv_version": "0.9.5",
+            "python_version": "3.13.9",
+            "pytest_version": "8.4.1",
+            "return_code": installed.returncode,
+            "stderr_tail": installed.stderr[-1000:],
+        }
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {
+            "status": "blocked",
+            "stage": "exception",
+            "error_type": type(exc).__name__,
+        }
+    finally:
+        subprocess.run(
+            ["docker", "rm", "-f", name],
+            text=True,
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
 
 
 def _official_hashes(task_ids: list[str]) -> dict[str, str]:
@@ -440,6 +531,7 @@ def _validate_current(plan: dict) -> list[tuple[dict, BudgetLedger, dict]]:
         or bootstrap_files != frozen_bootstrap.get("files")
         or bootstrap["tree_sha256"] != frozen_bootstrap.get("tree_sha256")
         or plan.get("provider_timeout_seconds") != PROVIDER_TIMEOUT_SECONDS
+        or plan.get("runtime_proxy") != bootstrap.get("apt_proxy")
     ):
         raise PilotError("runtime bootstrap changed after freeze")
     if _official_hashes(task_ids) != plan["official_hashes"]:
@@ -483,14 +575,12 @@ def preflight(output: str | Path = DEFAULT_OUTPUT) -> dict:
         raise PilotError("Langfuse environment is not ready")
     images = sorted({slot["constraints"]["docker_image"] for slot in plan["slots"]})
     transport = {}
+    bootstrap_manifest = plan["runtime_bootstrap"]["manifest_path"]
     for image in images:
         attempts = []
         selected = None
         for attempt in range(2):
-            result = public_pilot.docker_transport_probe(
-                image,
-                plan["runtime_proxy"],
-            )
+            result = _docker_bootstrap_probe(image, bootstrap_manifest)
             attempts.append(result)
             selected = result
             if result.get("status") == "pass":
