@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from my_coding_agent.cli import find_tui_entry, main
+from my_coding_agent.cli import ensure_tui_dependencies, find_tui_entry, main
 
 
 def test_find_tui_entry_in_dev_workspace():
@@ -55,3 +55,26 @@ def test_cli_launches_node_with_python_executable():
         assert "deepseek-chat" in call_args
         assert "--python-executable" in call_args
         assert sys.executable in call_args
+
+
+def test_ensure_tui_dependencies_installs_missing_packages(tmp_path: Path):
+    tui_root = tmp_path / "my-tui"
+    entry = tui_root / "bin" / "my-agent.js"
+    entry.parent.mkdir(parents=True)
+    entry.write_text("", encoding="utf-8")
+    (tui_root / "package.json").write_text("{}", encoding="utf-8")
+
+    completed = MagicMock(returncode=0, stdout="", stderr="")
+    with (
+        patch("my_coding_agent.cli.shutil.which", return_value="C:/npm.cmd"),
+        patch("my_coding_agent.cli.subprocess.run", return_value=completed) as mock_run,
+    ):
+        ensure_tui_dependencies(entry)
+
+    mock_run.assert_called_once_with(
+        ["C:/npm.cmd", "install", "--omit=dev", "--ignore-scripts"],
+        cwd=tui_root,
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
