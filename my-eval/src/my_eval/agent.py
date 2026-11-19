@@ -1,4 +1,4 @@
-"""My-Agent-Harness adapter conforming to Harbor's BaseAgent interface."""
+"""LongArc adapter conforming to Harbor's BaseAgent interface."""
 
 from __future__ import annotations
 
@@ -84,7 +84,7 @@ else:
 
 
 def resolve_eval_llm(model_str: str) -> LLM:
-    """从 my-eval/.env 或系统环境变量解析评测 API Key，严禁读取本地 ~/.my-agent-harness/auth.json。"""
+    """从 my-eval/.env 或环境变量解析评测 API Key，严禁读取本地用户凭据文件。"""
     provider = "openai"
     model_name = model_str
     if "/" in model_str:
@@ -115,7 +115,7 @@ def resolve_eval_llm(model_str: str) -> LLM:
         env_var = f"{provider.upper()}_API_KEY"
         raise ValueError(
             f"评测环境未检测到 {env_var}！\n"
-            f"评测模块严禁读取本地 ~/.my-agent-harness/auth.json，必须在 'my-eval/.env' 中配置 API Key。\n"
+            f"评测模块严禁读取本地 LongArc 凭据库，必须在 'my-eval/.env' 中配置 API Key。\n"
             f"请在 my-eval/.env 中添加: {env_var}=sk-xxxx。"
         )
 
@@ -128,8 +128,8 @@ def resolve_eval_llm(model_str: str) -> LLM:
     return LLM(config=config)
 
 
-class MyAgentHarness(BaseAgent):
-    """Adapter bridging my-agent-harness to the Harbor benchmark evaluation harness."""
+class LongArc(BaseAgent):
+    """Adapter bridging LongArc to the Harbor benchmark evaluation harness."""
 
     def __init__(
         self,
@@ -139,13 +139,13 @@ class MyAgentHarness(BaseAgent):
         **kwargs: Any,
     ) -> None:
         if logs_dir is None:
-            logs_dir = Path(tempfile.gettempdir()) / f"my_agent_harness_{uuid4().hex[:8]}"
+            logs_dir = Path(tempfile.gettempdir()) / f"longarc_{uuid4().hex[:8]}"
             logs_dir.mkdir(parents=True, exist_ok=True)
         super().__init__(logs_dir=logs_dir, model_name=model_name, *args, **kwargs)
 
     @staticmethod
     def name() -> str:
-        return "my-agent-harness"
+        return "longarc"
 
     def version(self) -> str | None:
         return "0.2.0"
@@ -170,7 +170,7 @@ class MyAgentHarness(BaseAgent):
         session = Session(path=session_path)
 
         system_prompt = (
-            "You are an expert coding assistant operating inside pi, a coding agent harness. "
+            "You are an expert coding assistant operating inside LongArc, a long-horizon coding agent runtime. "
             "You help users by reading files, executing commands, editing code, and writing new files.\n\n"
             "<tools>\n"
             "- read: Read file contents\n"
@@ -302,3 +302,7 @@ class MyAgentHarness(BaseAgent):
                 context.n_output_tokens = self._last_metrics.get("completion_tokens")
             if hasattr(context, "n_cache_tokens"):
                 context.n_cache_tokens = self._last_metrics.get("cache_read_tokens")
+
+
+# Import compatibility for existing scripts and historical benchmark manifests.
+MyAgentHarness = LongArc

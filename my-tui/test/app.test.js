@@ -668,7 +668,7 @@ test("AgentApp renders session history messages (user, assistant, tool execution
           },
           {
             role: "tool",
-            content: '{"name": "my-agent-tui", "version": "0.1.0"}',
+            content: '{"name": "longarc-tui", "version": "0.2.0"}',
             metadata: {
               tool_call_id: "call-1",
               tool_name: "read",

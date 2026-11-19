@@ -1,8 +1,8 @@
-# my-agent-harness 多端分发与发布全指南 (Distribution & Publishing Guide)
+# LongArc 多端分发与发布全指南 (Distribution & Publishing Guide)
 
-本文档面向 **终端用户（如何下载与使用）** 与 **开发者/维护者（如何发布至各大生态）**，详细介绍 `my-agent-harness` 的多端分发机制（npm 包名沿用历史名 `my-pi-agent`）。
+本文档面向 **终端用户（如何下载与使用）** 与 **开发者/维护者（如何发布至各大生态）**，介绍 LongArc 的多端分发机制。
 
-> **命名说明**：PyPI/npm 包名为历史名 `my-pi-agent`（已发布，改名会破坏既有安装）；全局命令为 `my-agent`；数据目录 `~/.my-agent-harness/`（自动兼容旧 `~/.my-pi-agent/`）。
+> **命名说明**：项目、包和全局主命令统一使用 `LongArc` / `longarc`。数据目录默认使用 `~/.longarc/`；旧 `.my-agent-harness` 与 `.my-pi-agent` 路径继续兼容。
 
 ---
 
@@ -28,15 +28,16 @@
 如果你的电脑已经安装了 Node.js (>=18)，无需手动克隆代码仓库，直接在任何终端执行：
 
 ```bash
-# 免安装秒级拉起
-npx my-pi-agent
+# 在仓库中构建并运行
+npm install
+npm run build
+npm start
 
-# 或者全局安装，随时随地直接使用
-npm install -g my-pi-agent
-my-agent-harness
+# 或通过 Python 环境启动
+uv run longarc
 ```
 
-- **参数支持**：支持所有 CLI 选项，例如续接会话 `my-agent-harness -c`，指定模型 `my-agent-harness -m deepseek-chat`。
+- **参数支持**：支持所有 CLI 选项，例如续接会话 `longarc -c`，指定模型 `longarc -m deepseek-chat`。
 
 ---
 
@@ -45,13 +46,11 @@ my-agent-harness
 如果你的主力开发环境是 Python，推荐使用 Astral `uv` 极速运行：
 
 ```bash
-# 免安装秒级运行
-uvx my-pi-agent
+# 同步项目环境
+uv sync
 
-# 或者通过 uv tool / pipx 全局持久安装
-uv tool install my-pi-agent
-# 安装后直接敲命令
-my-agent-harness
+# 启动主命令
+longarc
 ```
 
 > **注意**：呈现层依赖 `@earendil-works/pi-tui` 渲染引擎，需要系统预先安装 Node.js 运行时（>= 18）。
@@ -74,15 +73,15 @@ my-agent-harness
   irm https://raw.githubusercontent.com/.../install.ps1 | iex
   ```
 
-脚本会自动将 CLI 注入用户全局 PATH（命令名 `my-agent`，历史别名 `my-pi-agent`），重启终端后即可直接启动。
+脚本会自动将 CLI 注入用户全局 PATH（命令名 `longarc`），重启终端后即可直接启动。
 
 ---
 
 ### 途径 D: 便携免安装绿色包 (GitHub Releases)
 
-1. 在 GitHub Releases 下载对应版本的 `my-agent-harness-vX.Y.Z-portable.zip` 或 `.tar.gz`；
+1. 在 GitHub Releases 下载对应版本的 `LongArc-vX.Y.Z-portable.zip` 或 `.tar.gz`；
 2. 解压到任意目录；
-3. 双击 `my-agent-harness.cmd` (Windows) 或在终端执行 `./my-agent-harness` (Linux/macOS) 即可直接启动！
+3. 双击 `longarc.cmd` (Windows) 或在终端执行 `./longarc` (Linux/macOS) 即可直接启动。
 
 ---
 
@@ -139,19 +138,19 @@ uv run python scripts/build_dist.py
 - 收集 Python 核心与前端 JS 产物；
 - 注入跨平台 `.cmd` 与 `.sh` 启动脚本；
 - 在 `dist/` 目录下生成：
-  - `dist/my-agent-harness-v0.2.0-portable.zip`
-  - `dist/my-agent-harness-v0.2.0-portable.tar.gz`
+  - `dist/LongArc-v0.2.0-portable.zip`
+  - `dist/LongArc-v0.2.0-portable.tar.gz`
 将这两个文件直接上传到 GitHub Releases 附件即可。
 
 ---
 
 ## 3. 环境自适应与内部桥接机制说明
 
-`my-agent-harness` 采用独特的**双核分发桥接机制**：
+LongArc 采用**双核分发桥接机制**：
 
 ```text
                ┌───────────────────────┐
-               │    my-agent-harness CLI    │
+               │        longarc CLI         │
                └───────────┬───────────┘
                            │
        ┌───────────────────┴───────────────────┐

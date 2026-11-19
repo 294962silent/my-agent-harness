@@ -1,9 +1,11 @@
 {
-  "name": "my-pi-agent",
+  "name": "longarc",
   "version": "0.2.0",
-  "description": "Minimalist Pi-style coding-agent framework and CLI with Pi-TUI",
+  "description": "LongArc long-horizon coding-agent runtime with a Pi-TUI interface",
   "type": "module",
   "bin": {
+    "longarc": "my-tui/bin/my-agent.js",
+    "longarc-runtime": "my-tui/bin/my-agent.js",
     "my-pi-agent": "my-tui/bin/my-agent.js",
     "my-agent": "my-tui/bin/my-agent.js"
   },
@@ -27,6 +29,8 @@
   "keywords": [
     "ai",
     "agent",
+    "longarc",
+    "long-horizon",
     "coding-agent",
     "tui",
     "terminal",

@@ -12,39 +12,41 @@ __all__ = ["AgentPaths", "resolve_home"]
 
 
 # 新目录名（推荐）；旧目录名（兼容既有登录态）
-HOME_DIR_NAME = ".my-agent-harness"
-LEGACY_HOME_DIR_NAME = ".my-pi-agent"
+HOME_DIR_NAME = ".longarc"
+LEGACY_HOME_DIR_NAMES = (".my-agent-harness", ".my-pi-agent")
 
 
 def resolve_home() -> Path:
     """解析全局用户目录。
 
     优先级：
-      1. 环境变量 MY_AGENT_HOME（显式指定，最高优先级）
-      2. ~/.my-agent-harness（新目录，若已存在）
-      3. ~/.my-pi-agent（旧目录，向后兼容：既有 auth/settings/sessions 不丢）
-      4. ~/.my-agent-harness（全新安装时的默认值）
+      1. 环境变量 LONGARC_HOME（显式指定，最高优先级）
+      2. 环境变量 MY_AGENT_HOME（兼容旧配置）
+      3. ~/.longarc（新目录，若已存在）
+      4. ~/.my-agent-harness 或 ~/.my-pi-agent（向后兼容）
+      5. ~/.longarc（全新安装时的默认值）
 
     这样新用户拿到干净的目录名，老用户升级后仍能用原有登录态。
     """
-    explicit = os.environ.get("MY_AGENT_HOME")
+    explicit = os.environ.get("LONGARC_HOME") or os.environ.get("MY_AGENT_HOME")
     if explicit:
         return Path(explicit).resolve()
 
     home_root = Path.home()
     new_dir = home_root / HOME_DIR_NAME
-    legacy_dir = home_root / LEGACY_HOME_DIR_NAME
 
     if new_dir.exists():
         return new_dir.resolve()
-    if legacy_dir.exists():
-        return legacy_dir.resolve()
+    for name in LEGACY_HOME_DIR_NAMES:
+        legacy_dir = home_root / name
+        if legacy_dir.exists():
+            return legacy_dir.resolve()
     return new_dir.resolve()
 
 
 @dataclass(frozen=True, slots=True)
 class AgentPaths:
-    """集中解析与管理 my-agent-harness 的全局与项目级路径。"""
+    """集中解析与管理 LongArc 的全局与项目级路径。"""
 
     home: Path = field(default_factory=resolve_home)
     agents_home: Path = field(default_factory=lambda: (Path.home() / ".agents").resolve())
@@ -94,15 +96,16 @@ class AgentPaths:
     def project_agent_dir(self, cwd: Path) -> Path:
         """项目级配置目录。
 
-        新目录 `.my-agent-harness` 优先；若项目中只存在旧的 `.my-agent-harness`，
-        则沿用旧目录，避免既有项目配置失效。
+        新目录 `.longarc` 优先；若项目中只存在旧目录，则沿用旧目录，
+        避免既有项目配置失效。
         """
-        new_dir = cwd / ".my-agent-harness"
-        legacy_dir = cwd / ".my-pi-agent"
+        new_dir = cwd / HOME_DIR_NAME
         if new_dir.is_dir():
             return new_dir
-        if legacy_dir.is_dir():
-            return legacy_dir
+        for name in LEGACY_HOME_DIR_NAMES:
+            legacy_dir = cwd / name
+            if legacy_dir.is_dir():
+                return legacy_dir
         return new_dir
 
     def project_settings_path(self, cwd: Path) -> Path:

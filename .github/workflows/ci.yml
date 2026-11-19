@@ -68,6 +68,11 @@ jobs:
           wheel = sorted(glob.glob('dist/*.whl'))[-1];
           names = zipfile.ZipFile(wheel).namelist();
           assert 'my_coding_agent/my-tui/bin/my-agent.js' in names, 'TUI entry missing from ' + wheel;
+          entry = next(name for name in names if name.endswith('.dist-info/entry_points.txt'));
+          entry_map = zipfile.ZipFile(wheel).read(entry);
+          assert b'longarc = ' in entry_map, 'LongArc CLI entry missing';
+          assert b'longarc-runtime = ' in entry_map, 'LongArc runtime alias missing';
+          assert b'my-pi-agent = ' in entry_map, 'Legacy CLI alias missing';
           print(wheel, len(names), 'entries, TUI assets OK')"
 
       - name: TUI tests

@@ -865,6 +865,54 @@ wheels = [
 ]
 
 [[package]]
+name = "longarc"
+version = "0.2.0"
+source = { editable = "." }
+dependencies = [
+    { name = "anthropic" },
+    { name = "filelock" },
+    { name = "httpx" },
+    { name = "mcp" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "pytest" },
+    { name = "python-dotenv" },
+    { name = "pyyaml" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "anyio" },
+    { name = "matplotlib" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "anthropic", specifier = ">=0.40.0" },
+    { name = "filelock", specifier = ">=3.32.6" },
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "mcp", specifier = ">=2.0.0,<2.1" },
+    { name = "openai", specifier = ">=2.50.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "python-dotenv", specifier = ">=1.0,<2.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "anyio", specifier = ">=4.0" },
+    { name = "matplotlib", specifier = ">=3.11.2" },
+    { name = "numpy", specifier = ">=2.4.6" },
+    { name = "pytest", specifier = ">=8.0,<10.0" },
+    { name = "ruff", specifier = ">=0.16.7" },
+]
+
+[[package]]
 name = "matplotlib"
 version = "3.11.2"
 source = { registry = "https://pypi.org/simple" }
@@ -973,54 +1021,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b0/83/96ac3d891af54eab9ccee35485fbb162dccde38ba807639286eaef343013/mcp_types-2.0.1.tar.gz", hash = "sha256:ed30cb67e7a5cf6979c4befa451f363fe2d8a72b17ad405a5b95e777ad206646", size = 66632, upload-time = "2026-08-26T10:48:40.03Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/49/37a1f580d94ee0f16c1f3d1c6e32bbb264e607f1739a4c0cb9232619dfd9/mcp_types-2.0.1-py3-none-any.whl", hash = "sha256:d009ecb80e074f66fd5d4b8ca1e72169a974732733b9ce01978aafb70d2dd27a", size = 69649, upload-time = "2026-08-26T10:48:37.063Z" },
-]
-
-[[package]]
-name = "my-pi-agent"
-version = "0.2.0"
-source = { editable = "." }
-dependencies = [
-    { name = "anthropic" },
-    { name = "filelock" },
-    { name = "httpx" },
-    { name = "mcp" },
-    { name = "openai" },
-    { name = "pydantic" },
-    { name = "pytest" },
-    { name = "python-dotenv" },
-    { name = "pyyaml" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "anyio" },
-    { name = "matplotlib" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "pytest" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "anthropic", specifier = ">=0.40.0" },
-    { name = "filelock", specifier = ">=3.32.6" },
-    { name = "httpx", specifier = ">=0.27.0" },
-    { name = "mcp", specifier = ">=2.0.0,<2.1" },
-    { name = "openai", specifier = ">=2.50.0" },
-    { name = "pydantic", specifier = ">=2.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "python-dotenv", specifier = ">=1.0,<2.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "anyio", specifier = ">=4.0" },
-    { name = "matplotlib", specifier = ">=3.11.2" },
-    { name = "numpy", specifier = ">=2.4.6" },
-    { name = "pytest", specifier = ">=8.0,<10.0" },
-    { name = "ruff", specifier = ">=0.16.7" },
 ]
 
 [[package]]

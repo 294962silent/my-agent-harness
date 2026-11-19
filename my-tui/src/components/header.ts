@@ -2,13 +2,13 @@ import { Container, Spacer, Text } from "@earendil-works/pi-tui";
 import { theme } from "../theme/theme.js";
 
 export class HeaderComponent extends Container {
-  constructor(version = "0.1.0") {
+  constructor(version = "0.2.0") {
     super();
 
     this.addChild(new Spacer(1));
 
     const logo =
-      theme.bold(theme.fg("accent", "my-agent-harness")) +
+      theme.bold(theme.fg("accent", "LongArc")) +
       theme.fg("dim", ` v${version}`);
 
     const hints = [
@@ -21,7 +21,7 @@ export class HeaderComponent extends Container {
 
     const startupHelp = theme.fg(
       "dim",
-      "Press Ctrl+O to show full startup help and loaded resources.\n\nmy-agent-harness can explain its own features and look up its docs. Ask it how to use or extend it.",
+      "Press Ctrl+O to show full startup help and loaded resources.\n\nLongArc can explain its own features and look up its docs. Ask it how to use or extend it.",
     );
 
     const content = `${logo}\n${hints}\n\n${startupHelp}`;

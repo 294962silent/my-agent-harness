@@ -13,23 +13,24 @@ from my_coding_agent.paths import AgentPaths
 def test_agent_paths_default_home(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     resolved_tmp = tmp_path.resolve()
     monkeypatch.delenv("MY_AGENT_HOME", raising=False)
+    monkeypatch.delenv("LONGARC_HOME", raising=False)
     monkeypatch.setenv("USERPROFILE", str(resolved_tmp))
     monkeypatch.setenv("HOME", str(resolved_tmp))
     monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
 
     paths = AgentPaths()
     # 全新安装（新目录与旧目录都不存在时）：默认落到新目录名
-    assert paths.home == resolved_tmp / ".my-agent-harness"
+    assert paths.home == resolved_tmp / ".longarc"
     assert paths.agents_home == resolved_tmp / ".agents"
-    assert paths.auth_path == resolved_tmp / ".my-agent-harness" / "auth.json"
-    assert paths.auth_lock_path == resolved_tmp / ".my-agent-harness" / "auth.json.lock"
-    assert paths.settings_path == resolved_tmp / ".my-agent-harness" / "settings.json"
-    assert paths.sessions_dir == resolved_tmp / ".my-agent-harness" / "sessions"
-    assert paths.skills_dir == resolved_tmp / ".my-agent-harness" / "skills"
-    assert paths.prompts_dir == resolved_tmp / ".my-agent-harness" / "prompts"
-    assert paths.themes_dir == resolved_tmp / ".my-agent-harness" / "themes"
-    assert paths.extensions_dir == resolved_tmp / ".my-agent-harness" / "extensions"
-    assert paths.logs_dir == resolved_tmp / ".my-agent-harness" / "logs"
+    assert paths.auth_path == resolved_tmp / ".longarc" / "auth.json"
+    assert paths.auth_lock_path == resolved_tmp / ".longarc" / "auth.json.lock"
+    assert paths.settings_path == resolved_tmp / ".longarc" / "settings.json"
+    assert paths.sessions_dir == resolved_tmp / ".longarc" / "sessions"
+    assert paths.skills_dir == resolved_tmp / ".longarc" / "skills"
+    assert paths.prompts_dir == resolved_tmp / ".longarc" / "prompts"
+    assert paths.themes_dir == resolved_tmp / ".longarc" / "themes"
+    assert paths.extensions_dir == resolved_tmp / ".longarc" / "extensions"
+    assert paths.logs_dir == resolved_tmp / ".longarc" / "logs"
 
 
 def test_agent_paths_legacy_home_compat(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -37,6 +38,7 @@ def test_agent_paths_legacy_home_compat(monkeypatch: pytest.MonkeyPatch, tmp_pat
     resolved_tmp = tmp_path.resolve()
     (resolved_tmp / ".my-pi-agent").mkdir(exist_ok=True)
     monkeypatch.delenv("MY_AGENT_HOME", raising=False)
+    monkeypatch.delenv("LONGARC_HOME", raising=False)
     monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
 
     paths = AgentPaths()
@@ -50,15 +52,16 @@ def test_agent_paths_new_beats_legacy(monkeypatch: pytest.MonkeyPatch, tmp_path:
     (resolved_tmp / ".my-pi-agent").mkdir(exist_ok=True)
     (resolved_tmp / ".my-agent-harness").mkdir(exist_ok=True)
     monkeypatch.delenv("MY_AGENT_HOME", raising=False)
+    monkeypatch.delenv("LONGARC_HOME", raising=False)
     monkeypatch.setattr(Path, "home", lambda: resolved_tmp)
 
-    assert AgentPaths().home == resolved_tmp / ".my-agent-harness"
-    assert AgentPaths().home == resolved_tmp / ".my-agent-harness"
+    (resolved_tmp / ".longarc").mkdir(exist_ok=True)
+    assert AgentPaths().home == resolved_tmp / ".longarc"
 
 
 def test_agent_paths_custom_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     custom_home = tmp_path / "custom_agent"
-    monkeypatch.setenv("MY_AGENT_HOME", str(custom_home))
+    monkeypatch.setenv("LONGARC_HOME", str(custom_home))
     paths = AgentPaths()
     assert paths.home == custom_home.resolve()
 
@@ -141,9 +144,9 @@ def test_project_local_paths(tmp_path: Path) -> None:
     paths = AgentPaths(home=tmp_path / "agent_home")
     cwd = tmp_path / "workspace"
     # 项目目录不存在时，默认返回新目录名
-    assert paths.project_agent_dir(cwd) == cwd / ".my-agent-harness"
-    assert paths.project_settings_path(cwd) == cwd / ".my-agent-harness" / "settings.json"
-    assert paths.project_skills_dir(cwd) == cwd / ".my-agent-harness" / "skills"
+    assert paths.project_agent_dir(cwd) == cwd / ".longarc"
+    assert paths.project_settings_path(cwd) == cwd / ".longarc" / "settings.json"
+    assert paths.project_skills_dir(cwd) == cwd / ".longarc" / "skills"
     assert paths.project_agents_skills_dir(cwd) == cwd / ".agents" / "skills"
 
 
@@ -160,8 +163,8 @@ def test_project_agent_dir_new_wins(tmp_path: Path) -> None:
     paths = AgentPaths(home=tmp_path / "agent_home")
     cwd = tmp_path / "workspace"
     (cwd / ".my-pi-agent").mkdir(parents=True, exist_ok=True)
-    (cwd / ".my-agent-harness").mkdir(parents=True, exist_ok=True)
-    assert paths.project_agent_dir(cwd) == cwd / ".my-agent-harness"
+    (cwd / ".longarc").mkdir(parents=True, exist_ok=True)
+    assert paths.project_agent_dir(cwd) == cwd / ".longarc"
 
 
 

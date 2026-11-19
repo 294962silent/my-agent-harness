@@ -1,6 +1,6 @@
 # Tau (`tau-ai`) 架构深度调研与学习借鉴报告
 
-> 本报告对开源项目 `Tau`（位于 `D:\code\python\agent-program\tau`，发布于 PyPI `tau-ai`）进行了全方位的源码级解构与架构调研，并与当前自研的 `my-agent-harness` 框架进行深度横向对比，提炼出关键架构亮点与演进路线图。
+> 本报告对开源项目 `Tau`（位于 `D:\code\python\agent-program\tau`，发布于 PyPI `tau-ai`）进行了全方位的源码级解构与架构调研，并与当前自研的 LongArc 框架进行深度横向对比，提炼出关键架构亮点与演进路线图。
 
 ---
 
@@ -41,9 +41,9 @@
 
 ---
 
-## 二、Tau 与 my-agent-harness 全景对比矩阵
+## 二、Tau 与 LongArc 全景对比矩阵
 
-| 架构维度 | Tau (`tau-ai`) | my-agent-harness | 差异分析与评述 |
+| 架构维度 | Tau (`tau-ai`) | LongArc | 差异分析与评述 |
 | :--- | :--- | :--- | :--- |
 | **包结构与分层** | 单一项目内划分为 `tau_ai` / `tau_agent` / `tau_coding` 三大子模块 | 严格的 `uv` Monorepo 三包结构（`my-agent-llm`, `my-agent-core`, `my-coding-agent`） | 两者三层分层思想高度一致。`my-agent-harness` 的多 Package 物理隔离性更彻底；Tau 的单一 Repo 发布更集中。 |
 | **LLM 适配层** | 统一异步生成器流式协议（`AssistantMessageEvent`），内置 `openai-codex`、`google`、`mistral`、`anthropic` 等 | 统一 `LLM` 门面（`chat` / `stream` / `achat` / `achat_stream`），内置 OpenAI / DeepSeek / Anthropic | Tau 的流式事件颗粒度更细（包含 `ThinkingDelta`、`ToolCallDelta`、`ProviderRetryEvent`）；`my-agent-harness` 具备双向同步/异步门面。 |
@@ -124,9 +124,9 @@
 
 ---
 
-## 四、对 my-agent-harness 的演进借鉴建议与路线图
+## 四、对 LongArc 的演进借鉴建议与路线图
 
-结合 Tau 的优秀实践与 `my-agent-harness` 当前的架构现状，我们提炼出以下分阶段演进路线：
+结合 Tau 的优秀实践与 LongArc 当前的架构现状，我们提炼出以下分阶段演进路线：
 
 ### 阶段一：高价值核心机制吸收 (P0 - 快速落地)
 
@@ -159,4 +159,4 @@
 
 Tau 是一个设计极其考究、代码风格高度优雅的现代化 Python Agent 实现范本。它在 **TUI 界面交互、OAuth 生态集成、动态模型元数据注册、RPC 进程解耦与历史自愈容错** 方面的设计堪称典范。
 
-`my-agent-harness` 在核心层（异步架构、离散 Epoch 块级上下文压缩、Claude Code 插件分发、双层循环动态干预、长期记忆系统）已经建立了极其稳固坚实的底层基石。未来通过逐步借鉴并吸收 Tau 在产品交互层与工程化层面的闪光点，`my-agent-harness` 将演进为一个在**内核深度与终端体验上均达到行业顶尖水平**的全功能 AI 编码智能体！
+LongArc 在核心层（异步架构、离散 Epoch 块级上下文压缩、Claude Code 插件分发、双层循环动态干预、长期记忆系统）已经建立了极其稳固坚实的底层基石。未来通过逐步借鉴并吸收 Tau 在产品交互层与工程化层面的闪光点，LongArc 将演进为一个在**内核深度与终端体验上均达到行业顶尖水平**的全功能 AI 编码智能体。

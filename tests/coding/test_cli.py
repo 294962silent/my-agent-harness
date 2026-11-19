@@ -17,12 +17,12 @@ def test_find_tui_entry_in_dev_workspace():
 
 
 def test_cli_help_flag_displays_usage(capsys):
-    with patch.object(sys, "argv", ["my-agent-harness", "--help"]):
+    with patch.object(sys, "argv", ["longarc", "--help"]):
         code = main(["--help"])
         # If node exists, it delegates to node --help or prints local help
         # Either way code is 0 or delegated
         out = capsys.readouterr().out
-        assert code == 0 or "Usage" in out or "my-agent" in out or "my-agent-harness" in out
+        assert code == 0 or "Usage" in out or "longarc" in out or "LongArc" in out
 
 
 def test_cli_missing_node_outputs_friendly_guide(capsys):

@@ -1,7 +1,7 @@
-# my-agent-harness
+# LongArc
 
 <p align="center">
-  <img src="docs/assets/banner.png" alt="my-agent-harness" width="100%" />
+  <img src="docs/assets/banner.png" alt="LongArc" width="100%" />
 </p>
 
 <p align="center">
@@ -11,16 +11,20 @@
   <a href="#"><img src="https://img.shields.io/badge/coverage-85%25-brightgreen.svg?style=flat-square" alt="coverage" /></a>
 </p>
 
-用 Python 从零手写的 Agent 框架：内核（ReAct 循环、会话树、上下文压缩、工具并发）+ 基于 [Pi-TUI](https://github.com/badlogic/pi-mono) 的终端界面。
+LongArc 是一个面向长程代码任务的 Agent Runtime：内核覆盖 ReAct 循环、会话树、上下文压缩和工具并发，并通过 [Pi-TUI](https://github.com/badlogic/pi-mono) 提供终端界面。
 
 不依赖 LangChain / LangGraph。目标是把 Agent 各环节亲手实现一遍，并保持每一层都能单独阅读和测试。
 
 ```bash
-npm install -g my-pi-agent    # npm 包名为历史名
-my-agent                      # 启动终端
+uv sync
+npm install
+npm run build
+
+uv run longarc --help          # 查看命令
+uv run longarc                 # 启动终端
 ```
 
-> 数据目录：默认 `~/.my-agent-harness/`；若已存在旧的 `~/.my-pi-agent/` 会自动沿用，避免丢失登录态。也可用 `MY_AGENT_HOME` 指定。
+> 数据目录：新安装默认使用 `~/.longarc/`；旧 `.my-agent-harness` 与 `.my-pi-agent` 目录继续兼容，避免丢失登录态。也可用 `LONGARC_HOME` 指定。
 
 <p align="center">
   <img src="docs/assets/demo.png" alt="terminal demo" width="100%" />
@@ -71,7 +75,7 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 
 Terminal-Bench 2.1，89 题，统一底座 DeepSeek-V4.1-Flash：
 
-| 指标 | my-agent-harness | 官方 Pi |
+| 指标 | LongArc | 官方 Pi |
 | --- | ---: | ---: |
 | 通过 | 71 / 89 (79.8%) | 72 / 89 (80.9%) |
 | 交叉胜负 | 独胜 6 | 独胜 7 |

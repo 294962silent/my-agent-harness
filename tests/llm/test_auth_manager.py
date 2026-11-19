@@ -341,9 +341,10 @@ def test_auth_manager_corrupted_file(tmp_path: Path) -> None:
 
 
 def test_auth_manager_default_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """验证默认构造函数使用 MY_AGENT_HOME 环境变量解析 auth.json 路径。"""
+    """验证默认构造函数使用 LONGARC_HOME 环境变量解析 auth.json 路径。"""
     custom_home = tmp_path / "my_custom_agent_home"
-    monkeypatch.setenv("MY_AGENT_HOME", str(custom_home))
+    monkeypatch.setenv("LONGARC_HOME", str(custom_home))
+    monkeypatch.delenv("MY_AGENT_HOME", raising=False)
 
     mgr = AuthManager()
     assert mgr.auth_path == (custom_home / "auth.json").resolve()
