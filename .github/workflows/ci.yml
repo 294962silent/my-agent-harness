@@ -55,6 +55,9 @@ jobs:
       - name: Build TUI
         run: npm run build
 
+      - name: TUI tests
+        run: npm test
+
       - name: Python tests (pytest)
         run: uv run python -m pytest -q
 
@@ -74,6 +77,3 @@ jobs:
           assert b'longarc-runtime = ' in entry_map, 'LongArc runtime alias missing';
           assert b'my-pi-agent = ' in entry_map, 'Legacy CLI alias missing';
           print(wheel, len(names), 'entries, TUI assets OK')"
-
-      - name: TUI tests
-        run: npm test
