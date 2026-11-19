@@ -4,7 +4,7 @@ Updated: 2026-11-19
 
 ## Current gate
 
-Status: **blocked at provider connectivity**
+Status: **sealed as `blocked` at provider connectivity**
 
 - Provider recovery requests passed: **0 / 3**
 - First request result: `APITimeoutError`
@@ -19,6 +19,10 @@ Status: **blocked at provider connectivity**
 The partial gate was stopped after the first failure. It must restart from
 attempt 1 after the provider path is fixed; attempts 2 and 3 must not be treated
 as continuations of this failed run.
+
+A single `wsl --shutdown` recovery attempt was made after confirming that no
+benchmark container was active. It did not restore the scoped proxy path or
+default WSL interop. No further provider requests were sent.
 
 Transport isolation:
 

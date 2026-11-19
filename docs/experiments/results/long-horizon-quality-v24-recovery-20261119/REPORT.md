@@ -62,6 +62,12 @@ This points to the WSL-to-host data path or proxy relay, not to evidence that th
 model made an incorrect answer. The exact provider-side HTTP status remains
 unavailable because the production WSL client never received a response.
 
+A bounded environment recovery was attempted with `wsl --shutdown` after
+confirming that no benchmark container was active. Ubuntu restarted, but the
+scoped proxy request still timed out and WSL interop was still unavailable by
+default. No network configuration file, credential, model, endpoint, or
+experiment run was changed.
+
 ## Evidence
 
 - `provider-connectivity.json`: bounded, metadata-only request record with no
@@ -70,8 +76,10 @@ unavailable because the production WSL client never received a response.
 
 ## Next recovery action
 
-Repair or restart the WSL networking path, confirm the same scoped HTTPS proxy
-from inside WSL, and verify that the Windows proxy can carry the provider
-endpoint without changing the endpoint, model, credential manager, or native
-client. Then restart the complete three-request gate from attempt 1. A failed or
-partially completed gate must not be continued into the Agent canaries.
+**v24 is sealed as `blocked`.** Do not send attempts 2 or 3, run React/MEA
+canaries, or allocate campaign run IDs under the current environment.
+
+Recovery may start in a new dated evidence directory only after the WSL
+networking path is restored and the same scoped HTTPS proxy carries the
+provider endpoint without changing the endpoint, model, credential manager, or
+native client. The complete three-request gate must then restart from attempt 1.

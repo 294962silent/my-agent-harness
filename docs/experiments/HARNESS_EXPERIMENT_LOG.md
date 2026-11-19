@@ -1408,7 +1408,7 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **门禁要求**：同一 production AuthManager、OpenCode endpoint、`deepseek-v4.1-flash` 和 native client 连续完成 3 次非计分请求；客户端 90 秒超时、外层 300 秒上限、retry 0。全部通过后才允许 React 与 MEA 端到端 canary。
 - **真实验证**：第 1 次请求在 **90.505619 秒**返回 `APITimeoutError: Request timed out.`，无有效响应、无 usage。后续第 2、3 次请求没有发送。
 - **传输隔离**：后续无凭据对照显示 Windows 经 local proxy 访问 `https://opencode.ai/` 返回 HTTP 200；WSL 直连 HTTPS 超时；WSL 经 Windows relay 和容器发布 relay 的 TCP 可连接，但 HTTP/HTTPS 数据传输超时。当前阻塞层定位为 WSL 到宿主代理/网络的数据面，provider 实际 HTTP 状态仍 unavailable。
-- **停止边界**：按照门禁规则，React/MEA Agent canary、官方 verifier、Langfuse campaign 对账和 v24 cohort 均未启动；没有分配或消费任何 v24 campaign run ID。
+- **停止边界**：确认无 benchmark 容器运行后执行过一次 `wsl --shutdown`，但 WSL scoped proxy 仍超时、默认 interop 仍不可用；随后将 v24 封存为 `blocked`。React/MEA Agent canary、官方 verifier、Langfuse campaign 对账和 v24 cohort 均未启动；没有分配或消费任何 v24 campaign run ID。
 - **记录约束**：本次诊断不计分、不计质量分母，未知 usage 保持 unavailable，也没有把 provider timeout 解释为模型能力失败。
 - **下一步**：先解除或定位上游 provider timeout；恢复后从三连请求的第一项重新开始完整门禁。
 - **离线验证**：扩展后的长任务质量与 Harbor 组合共收集 **72** 项，**56 passed / 16 skipped**，跳过项均依赖当前不可用的 Harbor/Docker 运行条件；Ruff、JSON 解析、secret scan 与 v24 `SHA256SUMS` 校验通过。
