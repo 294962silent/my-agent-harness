@@ -1,0 +1,231 @@
+{
+  "attempted_sessions": 10,
+  "campaign_id": "lhq-tb21-pilot-20261119-v22",
+  "credentials_persisted": false,
+  "expected_requests": 342,
+  "matched_sessions": 10,
+  "observations": 342,
+  "rows": [
+    {
+      "arm": "react",
+      "expected_requests": 14,
+      "observation_count": 14,
+      "run_id": "lhq-35c5e89738d66915d7a82a0506cc59aa",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-35c5e89738d66915d7a82a0506cc59aa",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "daf80aa46b87ddc15bd2928a7c220ca5"
+      ],
+      "trial": 0,
+      "types": {
+        "GENERATION": 14
+      },
+      "usage": {
+        "input": 61946,
+        "output": 3788,
+        "total": 65734
+      }
+    },
+    {
+      "arm": "react",
+      "expected_requests": 17,
+      "observation_count": 17,
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-b0729b71d0690bef3e4d680142843322",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "3fdc33804c4727d9d50fbbf2f566dc94"
+      ],
+      "trial": 1,
+      "types": {
+        "GENERATION": 17
+      },
+      "usage": {
+        "input": 86755,
+        "output": 4939,
+        "total": 91694
+      }
+    },
+    {
+      "arm": "react",
+      "expected_requests": 17,
+      "observation_count": 17,
+      "run_id": "lhq-3b6e1fe678a3b5ba6a3c5eecd1cb7acd",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-3b6e1fe678a3b5ba6a3c5eecd1cb7acd",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "0d3d491d042b37b914024fd2df37b3a7"
+      ],
+      "trial": 2,
+      "types": {
+        "GENERATION": 17
+      },
+      "usage": {
+        "input": 92837,
+        "output": 5930,
+        "total": 98767
+      }
+    },
+    {
+      "arm": "mea",
+      "expected_requests": 63,
+      "observation_count": 63,
+      "run_id": "lhq-588f27ffd2c01add434efa9cb56fb054",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-588f27ffd2c01add434efa9cb56fb054",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "d92982b87d6bc70876a5f61844e93404"
+      ],
+      "trial": 0,
+      "types": {
+        "GENERATION": 63
+      },
+      "usage": {
+        "input": 324620,
+        "output": 40858,
+        "total": 365478
+      }
+    },
+    {
+      "arm": "mea",
+      "expected_requests": 6,
+      "observation_count": 6,
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "d54e4527512c1c72d3e8869d580ef5ba"
+      ],
+      "trial": 1,
+      "types": {
+        "GENERATION": 6
+      },
+      "usage": {
+        "input": 11145,
+        "output": 2171,
+        "total": 13316
+      }
+    },
+    {
+      "arm": "mea",
+      "expected_requests": 50,
+      "observation_count": 50,
+      "run_id": "lhq-2ac9033e65e378c6697de9e2e3112173",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-2ac9033e65e378c6697de9e2e3112173",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "8c3fe499de43ada0a46eb6ba62474629"
+      ],
+      "trial": 2,
+      "types": {
+        "GENERATION": 50
+      },
+      "usage": {
+        "input": 235105,
+        "output": 20735,
+        "total": 255840
+      }
+    },
+    {
+      "arm": "mea",
+      "expected_requests": 63,
+      "observation_count": 63,
+      "run_id": "lhq-9f4911cf4a8d16e766b924d8be8b91e4",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-9f4911cf4a8d16e766b924d8be8b91e4",
+      "status": "matched",
+      "task_id": "custom-memory-heap-crash",
+      "trace_count": 1,
+      "trace_ids": [
+        "4c121b3ce8d0a13f16d6ace458fbed38"
+      ],
+      "trial": 0,
+      "types": {
+        "GENERATION": 63
+      },
+      "usage": {
+        "input": 321571,
+        "output": 80682,
+        "total": 402253
+      }
+    },
+    {
+      "arm": "mea",
+      "expected_requests": 63,
+      "observation_count": 63,
+      "run_id": "lhq-a3ab5850917483683d7c1ad0860aabaf",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-a3ab5850917483683d7c1ad0860aabaf",
+      "status": "matched",
+      "task_id": "custom-memory-heap-crash",
+      "trace_count": 1,
+      "trace_ids": [
+        "d553367c54c883a753ef17098b9ffda5"
+      ],
+      "trial": 1,
+      "types": {
+        "GENERATION": 63
+      },
+      "usage": {
+        "input": 373268,
+        "output": 88580,
+        "total": 461848
+      }
+    },
+    {
+      "arm": "mea",
+      "expected_requests": 18,
+      "observation_count": 18,
+      "run_id": "lhq-571be884ce364231429b9fa32270e5fb",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-571be884ce364231429b9fa32270e5fb",
+      "status": "matched",
+      "task_id": "custom-memory-heap-crash",
+      "trace_count": 1,
+      "trace_ids": [
+        "5930c01bfa8c74ddbf72b5186f779cea"
+      ],
+      "trial": 2,
+      "types": {
+        "GENERATION": 18
+      },
+      "usage": {
+        "input": 114674,
+        "output": 17748,
+        "total": 132422
+      }
+    },
+    {
+      "arm": "react",
+      "expected_requests": 31,
+      "observation_count": 31,
+      "run_id": "lhq-bea96933ff47b7548b862ad5e033dbbb",
+      "session_id": "lhq-tb21-pilot-20261119-v22-lhq-bea96933ff47b7548b862ad5e033dbbb",
+      "status": "matched",
+      "task_id": "custom-memory-heap-crash",
+      "trace_count": 1,
+      "trace_ids": [
+        "3ef8192ba4b7e7a627cfec754db53003"
+      ],
+      "trial": 0,
+      "types": {
+        "GENERATION": 31
+      },
+      "usage": {
+        "input": 271525,
+        "output": 79420,
+        "total": 350945
+      }
+    }
+  ],
+  "status": "complete"
+}

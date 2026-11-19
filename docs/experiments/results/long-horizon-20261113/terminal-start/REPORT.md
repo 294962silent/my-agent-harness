@@ -12,4 +12,4 @@ Memory结束时账本为480请求/$0.937546。代码阶段仍使用原账本，�
 
 [plan-projection.json](plan-projection.json)列安全任务身份、顺序、约束、run_id和计划哈希；原完整计划、journal、日志和账本留本机私有运行目录。未公开凭据、代理地址或完整模型消息。
 
-该源码提交的[CI run43422249290](https://github.com/294962silent/my-agent-harness/actions/runs/43422249290)已completed/success，四组Ubuntu/Windows × Python3.11/3.13逐组通过，包含Ubuntu3.13 SDK专项。CI通过不替代真实官方任务评分。
+该源码提交的[CI run43422249290](https://github.com/294962silent/LongArc/actions/runs/43422249290)已completed/success，四组Ubuntu/Windows × Python3.11/3.13逐组通过，包含Ubuntu3.13 SDK专项。CI通过不替代真实官方任务评分。

@@ -1,8 +1,8 @@
-# my-tui
+# LongArc TUI
 
-`my-agent-harness` 的交互终端表现层（基于 `@earendil-works/pi-tui` 的 Node.js / TypeScript 前端）。
+LongArc 的交互终端表现层（基于 `@earendil-works/pi-tui` 的 Node.js / TypeScript 前端）。
 
-已发布至 npm：[`my-pi-agent`](https://www.npmjs.com/package/my-pi-agent)（历史包名，安装后可用 `my-agent` 启动）。
+主启动命令为 `longarc`；历史命令仅作为兼容别名保留。
 
 ---
 
@@ -11,26 +11,27 @@
 ### 1. 全局安装使用（推荐）
 
 ```bash
-# 全局安装 CLI
-npm install -g my-pi-agent
+# 在仓库中安装并构建
+npm install
+npm run build
 
-# 在任意目录下启动交互式终端
-my-agent-harness
-# 或使用快捷别名
-my-agent
+# 启动交互式终端
+npm start
+# 或使用 Python 入口
+uv run longarc
 ```
 
 ### 2. 免安装秒级拉起 (npx)
 
 ```bash
-npx my-pi-agent
+uv run longarc
 ```
 
 ### 3. 命令行参数 (CLI Options)
 
 ```text
 Usage:
-  my-agent [options] [prompt]
+  longarc [options] [prompt]
 
 Options:
   -c, --continue          一键续接当前项目最近一次历史会话

@@ -1,0 +1,1156 @@
+{
+  "arms": [
+    {
+      "auditor": false,
+      "checkpoint_resume": false,
+      "execution": "single_react",
+      "fresh_sessions": false,
+      "immutable_paths": false,
+      "manager": false,
+      "name": "react"
+    },
+    {
+      "auditor": true,
+      "checkpoint_resume": true,
+      "execution": "manager_executor_auditor",
+      "fresh_sessions": true,
+      "immutable_paths": true,
+      "manager": true,
+      "name": "mea"
+    }
+  ],
+  "benchmark": "terminal-bench-2.1",
+  "cache_policy": {
+    "append_only_session_history": true,
+    "first_request_per_session_expected_cold": true,
+    "prefix_change_reason_required": true,
+    "stable_system_prompt": true,
+    "stable_tool_schema": true,
+    "system_prompt_sha256_required": true,
+    "tool_schema_sha256_required": true
+  },
+  "campaign_id": "lhq-tb21-pilot-20261119-v23",
+  "claim_ceiling": "descriptive_only",
+  "claim_gates": {
+    "quality_requires_complete_task_set": false,
+    "quality_requires_exact_sign_test_p_below_0_05": true,
+    "quality_requires_official_verifier": true,
+    "quality_requires_positive_cluster_bootstrap_ci": true,
+    "quality_requires_three_trials": true,
+    "same_model_tools_and_budget": true
+  },
+  "endpoint": "https://opencode.ai/inference/go/openai/v1",
+  "input_hashes": {
+    "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+    "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+    "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+    "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-map.json": "534320b51aaf4b63b520536849a9dc53c102a8397cb5ea9f3fc5a010e7151548",
+    "/home/mll/.cache/my-agent-bench/long-horizon-20261113/tb21-manifest.json": "d95a8008f30eabc8509de7787644caafbace5e98a260fcea1d938d983469de5e",
+    "/mnt/e/my-agent-harness/.worktrees/longhorizon-quality-v1/docs/experiments/plans/terminal-bench-21-quality-pilot-v1.json": "79315eb6c68f49be0ecfb1449c878220597ce5c82e2d4ecc8c965a9f78b6c42b"
+  },
+  "job_protocol": "lhq-harbor-pilot-v1",
+  "langfuse": {
+    "base_url": "https://cloud.langfuse.com",
+    "close_timeout": 15,
+    "enabled": true,
+    "env_names": [
+      "LANGFUSE_PUBLIC_KEY",
+      "LANGFUSE_SECRET_KEY",
+      "LANGFUSE_BASE_URL",
+      "LANGFUSE_HOST"
+    ],
+    "env_presence": {
+      "LANGFUSE_BASE_URL": true,
+      "LANGFUSE_HOST": true,
+      "LANGFUSE_PUBLIC_KEY": true,
+      "LANGFUSE_SECRET_KEY": true
+    },
+    "public_key_env": "LANGFUSE_PUBLIC_KEY",
+    "required": true,
+    "secret_key_env": "LANGFUSE_SECRET_KEY",
+    "stage": "final"
+  },
+  "ledger_root": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers",
+  "manifest": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/tb21-manifest.json",
+  "model": "deepseek-v4.1-flash",
+  "official_hashes": {
+    "custom-memory-heap-crash/.gitignore": "9a8dd8d9b6c3adb8e9e56328df27deef859a3e98fffc9b8133c8b22207c25953",
+    "custom-memory-heap-crash/README.md": "a06ed23a2c467aa36d0d4a88e5c020b1076cc25b8d483517239658e9c596dde9",
+    "custom-memory-heap-crash/environment/Dockerfile": "6ee81e5a4fa2540443d7f27d577ba840728fc6aab9f301ab7919103673c78080",
+    "custom-memory-heap-crash/environment/patches/locale_classes.tcc.patch": "16951f4a4df6bf253886ac75f5a39fdbc328e415194493f63cb7589a364aa817",
+    "custom-memory-heap-crash/environment/patches/locale_init.cc.patch": "e97f133ceebd86f8881f972e0e45b0ec0a13a9bfa428d8032008707683d54292",
+    "custom-memory-heap-crash/environment/program/main.cpp": "b94538c76887cc2b2ab739b5ac4731cddd0faa8f4a9892a6265c062bbbeede14",
+    "custom-memory-heap-crash/environment/program/user.cpp": "92b203786fed1bf0b3aa1675c9cd2d82b2651170675064da8ffee73b98ef14f9",
+    "custom-memory-heap-crash/environment/program/user.h": "f43d155995a56c22b9cd1417daef7c3b5a976cdc662a98eef0feb438ae1eee77",
+    "custom-memory-heap-crash/instruction.md": "53c68ae14a3c3af9a97c40bfd9bdc30a5d98b37eaa2f69f763475745f70f108d",
+    "custom-memory-heap-crash/solution/solve.sh": "b0b1d10bea1cd5be14a82b35d522df616df1e67028f90d2a6bef90aaa98511a1",
+    "custom-memory-heap-crash/task.toml": "ed474be1983e212913aa8866ebb66216acbe36aef2339ac375d232aa46617481",
+    "custom-memory-heap-crash/tests/test.sh": "70a2b55f0c5757f6b123a216dfd202be4a646680bced28dddcd31fd8959a058f",
+    "custom-memory-heap-crash/tests/test_outputs.py": "4e1cb33f777fa7fb5e1536f9bea9eace6deccd515c67d4f87570adbe692914ba",
+    "fix-git/.gitignore": "9a8dd8d9b6c3adb8e9e56328df27deef859a3e98fffc9b8133c8b22207c25953",
+    "fix-git/README.md": "818af93ec53de56cffbd33da3377f5bd013786e1232cc7fa47f7dff6cca9a93f",
+    "fix-git/environment/Dockerfile": "7ac844613e00e29cfa5644e6257a12bd79177b26932d085f6624644f81cbb474",
+    "fix-git/environment/resources/patch_files/about.md": "2e09260b011012f9f7f491cd02809903449924cf8f825acd369fb8990b04e768",
+    "fix-git/environment/resources/patch_files/default.html": "fb3fad17b83338002f5fd6a99ea1ec3a662cea570f9fff9240b8abc1861be655",
+    "fix-git/environment/setup.sh": "99125cf2e362f2f4a864ba2f55c2f0e9f0aa0641fed588cef588184fcc192de2",
+    "fix-git/instruction.md": "f98174e47ba5ce040f6fad22ef3cbca4dd27b3192868ea5d082077222c3ec4e8",
+    "fix-git/solution/solve.sh": "4789fa74e92e5b7b893c4b8637c26db2b6458b2136edfc3e686cc278dfc23630",
+    "fix-git/task.toml": "f59d711003b974e4ef8ed63556614e2ea9ea7d0e394af13b2071225e3fda7805",
+    "fix-git/tests/test.sh": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "fix-git/tests/test_outputs.py": "6ae4dd70595cf7d1eb81bc342be319de338dc0e7fd67aab8645700047e31fb37",
+    "large-scale-text-editing/.gitignore": "9a8dd8d9b6c3adb8e9e56328df27deef859a3e98fffc9b8133c8b22207c25953",
+    "large-scale-text-editing/README.md": "6eff0990be57c2c2e9a1739152a188e3da911c6b7687ed595b08f3898fbde900",
+    "large-scale-text-editing/environment/Dockerfile": "609759efe5a6bca4c0f4d0011dd1dda814896ca6873ead803af68d92b92d8aa2",
+    "large-scale-text-editing/environment/gen_large_csv.py": "167daab578dc75ba1385c40492037f11708b06ea4cda836cd05f12017ae54654",
+    "large-scale-text-editing/environment/tests/gen_large_csv.py": "167daab578dc75ba1385c40492037f11708b06ea4cda836cd05f12017ae54654",
+    "large-scale-text-editing/environment/tests/test_outputs.py": "f5e69f4fedeefa23197745888a5847161529f454e6b5c32a4057363d9ae4cd43",
+    "large-scale-text-editing/instruction.md": "2746a16369b28b2e368ca168bc85222811cbe570f3b315f1b1c432afad07ddc8",
+    "large-scale-text-editing/solution/solve.sh": "a4fb27c7fa4cd4da26f7fbccbaaca24c290dc41ab9dbbb6e1dc916e72743c55d",
+    "large-scale-text-editing/task.toml": "5c9488e80c1186f72efb8193e6be13c74eadf334b3846db2e794d24513a88f5f",
+    "large-scale-text-editing/tests/gen_large_csv.py": "167daab578dc75ba1385c40492037f11708b06ea4cda836cd05f12017ae54654",
+    "large-scale-text-editing/tests/test.sh": "e5edb6fcd43d7e638ffcf64522c11185a8355afb5daf6ad805cdfedd47e9ceb3",
+    "large-scale-text-editing/tests/test_outputs.py": "f5e69f4fedeefa23197745888a5847161529f454e6b5c32a4057363d9ae4cd43"
+  },
+  "oracle_map": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-map.json",
+  "pilot_spend_ceiling_usd": 18.0,
+  "protocol": "long-horizon-quality-v1",
+  "provider_timeout_seconds": 90,
+  "revision": "12b7565679ce5006230b820666353673a133db93",
+  "runtime_bootstrap": {
+    "apt_mirror": "http://mirrors.tuna.tsinghua.edu.cn/ubuntu",
+    "apt_proxy": "http://172.19.80.1:17897",
+    "files": {
+      "bin/uv": "d3dc3ca8e29337dd602a9a4df9e6edb15ebc52aed91461debeedb96939dc4ce0",
+      "bin/uvx": "421b1bb58429180a04ade98da066b5a5b6763e8ed74edef97359701c4cb42db8",
+      "install-prebaked-uv.sh": "1a0885abef2ec5bbf5eddf301b5ed3b4a707f89eefb317e6fff0f32c1f27d5fe",
+      "python3.13.9.tar.gz": "f726a2cf890c0ba4cd025810d271762838eeb4da55deb265074dd915b5c24b3c",
+      "repair-apt.sh": "2a295b25432c834749c5edeedaa65cd2b79ef2c704e828440091890e9c5e5ef6",
+      "uv-env": "706b33a098853f3e3d596c8060044d2aeb78b26c1b65821d77a5a0bebf3aaef8",
+      "watch-bootstrap-v3.sh": "3478c09e7411394f136886e7f72d489e6f9e6b320841a8eff5e16ddac5a3d8d7"
+    },
+    "manifest_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/bootstrap-v3/manifest.json",
+    "manifest_sha256": "f5848e3d48568859e9f2762d849d0ee0825815f2ee85be3053f0aa614a667418",
+    "name": "terminal-bench-verifier-network-bootstrap-v3",
+    "provider_request_timeout_seconds": 90,
+    "pytest_ctrf_version": "0.3.5",
+    "pytest_version": "8.4.1",
+    "python_version": "3.13.9",
+    "tree_sha256": "b416ca1c07c8b07602dc830887c0f824bac7eae9e657c29d4c6608c11423daff",
+    "uv_version": "0.9.5"
+  },
+  "runtime_proxy": "http://172.19.80.1:17897",
+  "schema_version": 1,
+  "seed": 20261120,
+  "slot_spend_ceiling_usd": 1.0,
+  "slots": [
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-e251eaba30a0a802af17870fcfbcb596",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-e251eaba30a0a802af17870fcfbcb596.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "e89f54f2fc73ac576f976c1cd09758e4c9ccf152e53c2dcd91da0c178b89abc7",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+        "oracle_result_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+        "status": "oracle_passed",
+        "task_fingerprint": "4ac001909a2ce1bc68843c2fedc36ba785304d439919b8ddd91dcb8452a6e327",
+        "task_name": "terminal-bench/fix-git"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json"
+      ],
+      "run_id": "lhq-e251eaba30a0a802af17870fcfbcb596",
+      "task": "fix-git",
+      "task_id": "fix-git",
+      "trial": 0
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-0b56a13ba72328b2887711462ba48d62",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-0b56a13ba72328b2887711462ba48d62.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "e89f54f2fc73ac576f976c1cd09758e4c9ccf152e53c2dcd91da0c178b89abc7",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+        "oracle_result_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+        "status": "oracle_passed",
+        "task_fingerprint": "4ac001909a2ce1bc68843c2fedc36ba785304d439919b8ddd91dcb8452a6e327",
+        "task_name": "terminal-bench/fix-git"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json"
+      ],
+      "run_id": "lhq-0b56a13ba72328b2887711462ba48d62",
+      "task": "fix-git",
+      "task_id": "fix-git",
+      "trial": 1
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-496b4640a88592677a491ba4eefd2d0a",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-496b4640a88592677a491ba4eefd2d0a.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "e89f54f2fc73ac576f976c1cd09758e4c9ccf152e53c2dcd91da0c178b89abc7",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+        "oracle_result_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+        "status": "oracle_passed",
+        "task_fingerprint": "4ac001909a2ce1bc68843c2fedc36ba785304d439919b8ddd91dcb8452a6e327",
+        "task_name": "terminal-bench/fix-git"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json"
+      ],
+      "run_id": "lhq-496b4640a88592677a491ba4eefd2d0a",
+      "task": "fix-git",
+      "task_id": "fix-git",
+      "trial": 2
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-5cafd7d9cf510a8ff80ba60200685765",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-5cafd7d9cf510a8ff80ba60200685765.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "e89f54f2fc73ac576f976c1cd09758e4c9ccf152e53c2dcd91da0c178b89abc7",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+        "oracle_result_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+        "status": "oracle_passed",
+        "task_fingerprint": "4ac001909a2ce1bc68843c2fedc36ba785304d439919b8ddd91dcb8452a6e327",
+        "task_name": "terminal-bench/fix-git"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json"
+      ],
+      "run_id": "lhq-5cafd7d9cf510a8ff80ba60200685765",
+      "task": "fix-git",
+      "task_id": "fix-git",
+      "trial": 0
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-1f54012a902b9e5399345561d48d17d2",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-1f54012a902b9e5399345561d48d17d2.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "e89f54f2fc73ac576f976c1cd09758e4c9ccf152e53c2dcd91da0c178b89abc7",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+        "oracle_result_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+        "status": "oracle_passed",
+        "task_fingerprint": "4ac001909a2ce1bc68843c2fedc36ba785304d439919b8ddd91dcb8452a6e327",
+        "task_name": "terminal-bench/fix-git"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json"
+      ],
+      "run_id": "lhq-1f54012a902b9e5399345561d48d17d2",
+      "task": "fix-git",
+      "task_id": "fix-git",
+      "trial": 1
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/fix-git:20260403",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 900.0,
+        "time_cap": 900.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-68a4b99c49997732502366c304d2a408",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-68a4b99c49997732502366c304d2a408.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 900.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "e89f54f2fc73ac576f976c1cd09758e4c9ccf152e53c2dcd91da0c178b89abc7",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json",
+        "oracle_result_sha256": "da7de737f1598091ade718bc0cf2001f510ca4163288dac9efd92c22cb2e7bb6",
+        "status": "oracle_passed",
+        "task_fingerprint": "4ac001909a2ce1bc68843c2fedc36ba785304d439919b8ddd91dcb8452a6e327",
+        "task_name": "terminal-bench/fix-git"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git/fix-git__rZxzu4Y/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-network2/fix-git__4zQACza/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-fix-git-https4/fix-git__N6izDmD/result.json"
+      ],
+      "run_id": "lhq-68a4b99c49997732502366c304d2a408",
+      "task": "fix-git",
+      "task_id": "fix-git",
+      "trial": 2
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-a033763acde1a23b682a6e30aa99ed38",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-a033763acde1a23b682a6e30aa99ed38.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "949f44d01f9411e5858fdfd0861e2c35e9622cbfe91542b761039a7a16286381",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+        "oracle_result_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+        "status": "oracle_passed",
+        "task_fingerprint": "64c253c4fd847caf57692747ff7db8e804f84e302af6b4c613b9812dcf088d50",
+        "task_name": "terminal-bench/custom-memory-heap-crash"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json"
+      ],
+      "run_id": "lhq-a033763acde1a23b682a6e30aa99ed38",
+      "task": "custom-memory-heap-crash",
+      "task_id": "custom-memory-heap-crash",
+      "trial": 0
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-848909e6773689eb009a1010beadc293",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-848909e6773689eb009a1010beadc293.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "949f44d01f9411e5858fdfd0861e2c35e9622cbfe91542b761039a7a16286381",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+        "oracle_result_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+        "status": "oracle_passed",
+        "task_fingerprint": "64c253c4fd847caf57692747ff7db8e804f84e302af6b4c613b9812dcf088d50",
+        "task_name": "terminal-bench/custom-memory-heap-crash"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json"
+      ],
+      "run_id": "lhq-848909e6773689eb009a1010beadc293",
+      "task": "custom-memory-heap-crash",
+      "task_id": "custom-memory-heap-crash",
+      "trial": 1
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-e9848c5a2a61060239e430d4799fa574",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-e9848c5a2a61060239e430d4799fa574.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "949f44d01f9411e5858fdfd0861e2c35e9622cbfe91542b761039a7a16286381",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+        "oracle_result_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+        "status": "oracle_passed",
+        "task_fingerprint": "64c253c4fd847caf57692747ff7db8e804f84e302af6b4c613b9812dcf088d50",
+        "task_name": "terminal-bench/custom-memory-heap-crash"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json"
+      ],
+      "run_id": "lhq-e9848c5a2a61060239e430d4799fa574",
+      "task": "custom-memory-heap-crash",
+      "task_id": "custom-memory-heap-crash",
+      "trial": 2
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-8fadb122285974caf753a98f94463a12",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-8fadb122285974caf753a98f94463a12.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "949f44d01f9411e5858fdfd0861e2c35e9622cbfe91542b761039a7a16286381",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+        "oracle_result_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+        "status": "oracle_passed",
+        "task_fingerprint": "64c253c4fd847caf57692747ff7db8e804f84e302af6b4c613b9812dcf088d50",
+        "task_name": "terminal-bench/custom-memory-heap-crash"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json"
+      ],
+      "run_id": "lhq-8fadb122285974caf753a98f94463a12",
+      "task": "custom-memory-heap-crash",
+      "task_id": "custom-memory-heap-crash",
+      "trial": 0
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-99715924f8a9ce556351e091096b1a27",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-99715924f8a9ce556351e091096b1a27.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "949f44d01f9411e5858fdfd0861e2c35e9622cbfe91542b761039a7a16286381",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+        "oracle_result_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+        "status": "oracle_passed",
+        "task_fingerprint": "64c253c4fd847caf57692747ff7db8e804f84e302af6b4c613b9812dcf088d50",
+        "task_name": "terminal-bench/custom-memory-heap-crash"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json"
+      ],
+      "run_id": "lhq-99715924f8a9ce556351e091096b1a27",
+      "task": "custom-memory-heap-crash",
+      "task_id": "custom-memory-heap-crash",
+      "trial": 1
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1800.0,
+        "time_cap": 1800
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-73465bd13a19f4f8ed2ec21858bfc943",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-73465bd13a19f4f8ed2ec21858bfc943.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1800,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "949f44d01f9411e5858fdfd0861e2c35e9622cbfe91542b761039a7a16286381",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json",
+        "oracle_result_sha256": "4303d6e5fd093199093d8b48eee0ee87e68672aafb96d34d2e28fcfa5e736b6d",
+        "status": "oracle_passed",
+        "task_fingerprint": "64c253c4fd847caf57692747ff7db8e804f84e302af6b4c613b9812dcf088d50",
+        "task_name": "terminal-bench/custom-memory-heap-crash"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash/custom-memory-heap-crash__fcCrCdP/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-custom-memory-heap-crash-https4/custom-memory-heap-crash__emZmnqj/result.json"
+      ],
+      "run_id": "lhq-73465bd13a19f4f8ed2ec21858bfc943",
+      "task": "custom-memory-heap-crash",
+      "task_id": "custom-memory-heap-crash",
+      "trial": 2
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-d188dc49afd48f81479add8e6271bb31",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-d188dc49afd48f81479add8e6271bb31.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "c02f82f532c630aeddd73cf9fd663ab77b07fb31517cbbca248450131e63ad71",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+        "oracle_result_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+        "status": "oracle_passed",
+        "task_fingerprint": "d8d246e63adf566989ec9060007e38a00e009c10eac004b0786f5597480cdcf1",
+        "task_name": "terminal-bench/large-scale-text-editing"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json"
+      ],
+      "run_id": "lhq-d188dc49afd48f81479add8e6271bb31",
+      "task": "large-scale-text-editing",
+      "task_id": "large-scale-text-editing",
+      "trial": 0
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-4aa9da7faaad24cbf9112a09cab6988d",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-4aa9da7faaad24cbf9112a09cab6988d.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "c02f82f532c630aeddd73cf9fd663ab77b07fb31517cbbca248450131e63ad71",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+        "oracle_result_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+        "status": "oracle_passed",
+        "task_fingerprint": "d8d246e63adf566989ec9060007e38a00e009c10eac004b0786f5597480cdcf1",
+        "task_name": "terminal-bench/large-scale-text-editing"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json"
+      ],
+      "run_id": "lhq-4aa9da7faaad24cbf9112a09cab6988d",
+      "task": "large-scale-text-editing",
+      "task_id": "large-scale-text-editing",
+      "trial": 1
+    },
+    {
+      "arm": "mea",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-88f076f0b064bd2751bcc2df649b644a",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-88f076f0b064bd2751bcc2df649b644a.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "c02f82f532c630aeddd73cf9fd663ab77b07fb31517cbbca248450131e63ad71",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+        "oracle_result_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+        "status": "oracle_passed",
+        "task_fingerprint": "d8d246e63adf566989ec9060007e38a00e009c10eac004b0786f5597480cdcf1",
+        "task_name": "terminal-bench/large-scale-text-editing"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json"
+      ],
+      "run_id": "lhq-88f076f0b064bd2751bcc2df649b644a",
+      "task": "large-scale-text-editing",
+      "task_id": "large-scale-text-editing",
+      "trial": 2
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-6f9e36ebb1cca6baeb4c8dc6c8ea6472",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-6f9e36ebb1cca6baeb4c8dc6c8ea6472.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "c02f82f532c630aeddd73cf9fd663ab77b07fb31517cbbca248450131e63ad71",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+        "oracle_result_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+        "status": "oracle_passed",
+        "task_fingerprint": "d8d246e63adf566989ec9060007e38a00e009c10eac004b0786f5597480cdcf1",
+        "task_name": "terminal-bench/large-scale-text-editing"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json"
+      ],
+      "run_id": "lhq-6f9e36ebb1cca6baeb4c8dc6c8ea6472",
+      "task": "large-scale-text-editing",
+      "task_id": "large-scale-text-editing",
+      "trial": 0
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-5c7a9d7a06e12c3245e7d7ddd3246df9",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-5c7a9d7a06e12c3245e7d7ddd3246df9.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "c02f82f532c630aeddd73cf9fd663ab77b07fb31517cbbca248450131e63ad71",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+        "oracle_result_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+        "status": "oracle_passed",
+        "task_fingerprint": "d8d246e63adf566989ec9060007e38a00e009c10eac004b0786f5597480cdcf1",
+        "task_name": "terminal-bench/large-scale-text-editing"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json"
+      ],
+      "run_id": "lhq-5c7a9d7a06e12c3245e7d7ddd3246df9",
+      "task": "large-scale-text-editing",
+      "task_id": "large-scale-text-editing",
+      "trial": 1
+    },
+    {
+      "arm": "react",
+      "artifact_projection": "on",
+      "compaction_mode": "layered",
+      "constraints": {
+        "cpus": 1,
+        "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+        "gpus": 0,
+        "memory_mb": 2048,
+        "official_agent_timeout": 1200.0,
+        "time_cap": 1200.0
+      },
+      "ledger_campaign_id": "lhq-tb21-pilot-20261119-v23-lhq-4bd0e9e900a040b52e61eda6a3c16a90",
+      "ledger_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/pilot-v23/ledgers/lhq-4bd0e9e900a040b52e61eda6a3c16a90.json",
+      "ledger_policy": {
+        "limit_micro_usd": 30000000,
+        "max_requests": 16,
+        "pricing": {
+          "input_per_million": "0.30",
+          "output_per_million": "1.20"
+        },
+        "time_cap": 600
+      },
+      "ledger_spend_ceiling_usd": 1.0,
+      "limits": {
+        "context_budget": 32000,
+        "max_requests": 64,
+        "max_rounds": 3,
+        "max_seconds": 1200.0,
+        "output_tokens": 4096,
+        "shell_timeout": 120
+      },
+      "oracle_gate": {
+        "harbor_task_checksum": "c02f82f532c630aeddd73cf9fd663ab77b07fb31517cbbca248450131e63ad71",
+        "oracle_result": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json",
+        "oracle_result_sha256": "05252a982dc8bfa7c51dc742eac3e600b3d4035ebdbdf3e7faebd51319b8cbb7",
+        "status": "oracle_passed",
+        "task_fingerprint": "d8d246e63adf566989ec9060007e38a00e009c10eac004b0786f5597480cdcf1",
+        "task_name": "terminal-bench/large-scale-text-editing"
+      },
+      "oracle_history": [
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing/large-scale-text-editing__NKhZb76/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-network2/large-scale-text-editing__i7zaiQW/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-proxy3/large-scale-text-editing__asEQDif/result.json",
+        "/home/mll/.cache/my-agent-bench/long-horizon-20261113/oracle-jobs/oracle-tb21-large-scale-text-editing-https4/large-scale-text-editing__8dVyivx/result.json"
+      ],
+      "run_id": "lhq-4bd0e9e900a040b52e61eda6a3c16a90",
+      "task": "large-scale-text-editing",
+      "task_id": "large-scale-text-editing",
+      "trial": 2
+    }
+  ],
+  "source_hashes": {
+    "experiments/benchmark_live/budget.py": "cc5e5ada9d7c0747eaa282dd3d4cc9b5466e9e046720e3e298cf22356c34461d",
+    "experiments/benchmark_live/harbor_agent.py": "0afec4eaa0df22ce0270597ff5bc24bbf13fe3467a0303b059c281f7b8f1d211",
+    "experiments/benchmark_live/observation.py": "259d389e5243171d2ceb11c58611c08afc08a90bd0a7825d68c3d799afbf8519",
+    "experiments/benchmark_live/tasks.py": "3bbf195d747dad7b79f61ee189e929460dd09b4527ceba567b7e808a8379eca0",
+    "experiments/long_horizon_quality/analysis.py": "ec47e3bf9f11b301119e663cd674380123fe6a800e393fd81ffca9689f831105",
+    "experiments/long_horizon_quality/harbor_pilot.py": "8a83518e1667a2c646b102658eec138f0d44285412370f8cf903715b41d5e24b",
+    "experiments/long_horizon_quality/orchestrator.py": "b8eb14a9ccc5af38d54740e6e7e2e91135ce9ed781982a81d280b239db186c1c",
+    "experiments/long_horizon_quality/protocol.py": "b0b4e1091b83897e5e3ae8151b03d806d73479dbbb3bf7e0b8d4712e7b14904e",
+    "src/my_agent_core/__init__.py": "1077dbeac23eb36ae1f34e7155f4894e55eb9daeaa4ae47032b92c3e9bc2614b",
+    "src/my_agent_core/_memory_qwen_worker.py": "db02b64871affc0fda2d6349be22e8f53e197b473f4f7d60903423c744ad7601",
+    "src/my_agent_core/agent.py": "c32c8f12858ddc9956f5d000ce8b5f057fb516ac4ab0800931e65fa48c7063df",
+    "src/my_agent_core/artifacts.py": "aa2276d650bd3ad80c62a8ff142d46e22e5379639d60696fe1bc9ab97da0cd09",
+    "src/my_agent_core/background.py": "409d225f7806047ced8c2085a4dfb924629f92dc9e82b916145e1a9f881d0d24",
+    "src/my_agent_core/context.py": "71bfedd9daf7beff4995e0561eccc2345a8f6c9b8054903ee0d91e8c6ce6ba2f",
+    "src/my_agent_core/context_compaction.py": "8aca5dc9002e06b9a40630c0165978a87cd0a7a01372f4a68b08bf4849f87a64",
+    "src/my_agent_core/env_filter.py": "247a3c1051cea131dabf85356c71786eb1ac0116bc1389302c4fa1d3885c68cf",
+    "src/my_agent_core/events.py": "a9ae45d2d6d364233722ce5d31e41388169d7519a35716028be672c841b2bb84",
+    "src/my_agent_core/extensions/__init__.py": "e91506617951ddf7ee2fbb47de05cde38f6f70a11b847c6e32772ab22e164baa",
+    "src/my_agent_core/extensions/core.py": "ad903d3f1afea3504276ccb40ecf457b3b144c24faebb863bc1c63dabab5eb53",
+    "src/my_agent_core/hooks.py": "157648249ca13e3062470471cd440fccdde58c6637e8c1a504b57589052f769b",
+    "src/my_agent_core/loop.py": "24298332b6df26352db292b086bd034d120d4fe20c0b5163fefbe67e93ad7973",
+    "src/my_agent_core/main.py": "41c8a53e94dc597112373cebb57052e03595a3b1e14a09e2b617fb19a18d5b2f",
+    "src/my_agent_core/memory.py": "b02ffe326e3d955c208f19ddaae76917271c547277a25cf49b08109ce4ab1d31",
+    "src/my_agent_core/memory_distillation.py": "495b4a0dc553a36b1821608cf0e69f1a50cdf49c5b4934b3108ad0a03cdc4b54",
+    "src/my_agent_core/memory_index.py": "4cb338c5e008f0ab0f771b54b34a85004fee271c7a08db921cf19ebe69815d41",
+    "src/my_agent_core/memory_local.py": "9ebc8b89212d057363ee824eef61797046bdd1554ba45600e522f5d3ce5c01a6",
+    "src/my_agent_core/memory_mem0.py": "d6f0141514c50a2e2485dff59477d173cdeb2a6790f52626fda26cd1dd393e2c",
+    "src/my_agent_core/memory_qwen.py": "ae27a0192a7b0fedc8a23d4f47e6584eb6bd103481168f7fc3a2b6e8a9f7b320",
+    "src/my_agent_core/memory_safety.py": "00abbe66b85bcc83b487067ac6bf1939cd4052d796d60775c11a3ddee8485c31",
+    "src/my_agent_core/memory_semantic.py": "017fe55971d58391cf0d102be3863a188a40bbc0f6c83a1275a01a36aebd7c6e",
+    "src/my_agent_core/message_queue.py": "52fddaba4c752ab1502152e9c45d3ed2c676fe2f83ffaa988a50f3e21b5a1e87",
+    "src/my_agent_core/plugins.py": "c5f7aefff42d2d7539ab1ade5546e3fe0007b4658735ada91ee9fc7a7ef596e4",
+    "src/my_agent_core/registry.py": "99701eac678285773734bea8765d620364a51e6c39658b5834d0ffeeb47b6ac7",
+    "src/my_agent_core/retry.py": "0fb5f0ce018f64252891d5761c1d8297681bc7428646659279fad2864061eaa7",
+    "src/my_agent_core/run_lifecycle.py": "a1366837a7f3685ce5d99c44dd26b06d4b760e0b4f01374682f100e33930888c",
+    "src/my_agent_core/runtime_context.py": "2327d092d206ba82629181c3ceec94a754bdc4bda5c51c39501bc9a427e18c66",
+    "src/my_agent_core/session/__init__.py": "00835bb8b5c08ccde0b56aae0a818d939c99e6cdc8806109adf351ecc5822132",
+    "src/my_agent_core/session/assets.py": "c070fa236c63a0c1478acd04ace924c263d181515e1917274c60417ca5ee0744",
+    "src/my_agent_core/session/entries.py": "c745b43ce2a6907f0e7238d02d1b5c7adf0cdd0bc6591db0e1917086ff18ec69",
+    "src/my_agent_core/session/jsonl.py": "f4bd32182fa14682652f8f0fc6e152f0d364efeaecf0db8584edf060c9bfe9ac",
+    "src/my_agent_core/session/memory.py": "3f960477a6cbe40a5f1146a7bea2c9352d67a5aeb8e39307357856790f5f4ee5",
+    "src/my_agent_core/session/session.py": "50375c3deb196475c428e93b92290812935af4358f2d90312922cb0a55ace739",
+    "src/my_agent_core/session/storage.py": "0eef4455a5bb564e32ad0a489189acdbb2ffec2429ef51ae84f12062fd0a9237",
+    "src/my_agent_core/session/store.py": "73afce7edc3b1a6380ef240577dca4c03805ad75bf689db98a12cd3e2bcafc56",
+    "src/my_agent_core/session/tree.py": "56ab8f7ef606b3ba8fc9492ecb6050e5bd7945b640464682feaa220449e0355c",
+    "src/my_agent_core/skills.py": "61f43451bc276a5a8056f45768b5e26534fe15cc435e26c24c420dc1f9d96974",
+    "src/my_agent_core/subagent_tasks.py": "bdb1b09edb75014042dedc9e40d1b0f099b0687e1df5b5d93b8a6e43e94ba3fc",
+    "src/my_agent_core/subagents.py": "1a5613063afa40b6f99b18e9889f5b6b5ef75d2cc1ec407c46219c39a6e8021d",
+    "src/my_agent_core/task_store.py": "4b43b9e982e2b78c0e25e887bff0ed108add2894553a52c288ebd81cf7ed00fc",
+    "src/my_agent_core/tool_history.py": "2872cd681cf923a644ead1c9ac12de2604d2867bd5b779041379bdf0bba2f437",
+    "src/my_agent_core/tools/__init__.py": "06c11702b35f9aa2450f7ffa1cad02310dc9e2af99e0f43c0a8d13fe8c570b09",
+    "src/my_agent_core/tools/builtin/__init__.py": "736b0a9c66f4907b181a915feefd2b5e1de5d6af59ab0d33758cb2d4877ca34b",
+    "src/my_agent_core/tools/builtin/task.py": "d5652af2b6f9a5576400639ca2ef630a31686a2425f4404a1b099f94d3eb7ba8",
+    "src/my_agent_core/tools/builtin/task_tools.py": "91c6ea77cbe91f0ed8b22a6ee48e2f162a6f8bd30ce08f48e67f177a7925c04e",
+    "src/my_agent_core/tools/core.py": "9916983f7beb55055706f4d14824c188ce8d21db210bd4eda21a871ce6a28ba8",
+    "src/my_agent_core/tools/prompt.py": "2434e636001a07574b63927e51bc90ce1fa4376954ea0bd9338c01548050fc43",
+    "src/my_agent_core/types.py": "6560c873d9ec72048102eb891094f72a2576ec2a720b427e569c2f98f94a254b",
+    "src/my_agent_llm/__init__.py": "338bcca3024de4cacb3aed0660a9f50b56cc30098e36be151713d69e9ad92684",
+    "src/my_agent_llm/auth/__init__.py": "32de0210158454319a15662b209d60eba1d9563684db508f0a0c28339bcfeddd",
+    "src/my_agent_llm/auth/antigravity.py": "e67c529afb7f551f9f8e5e2f1178acbd8cda56734c9282c89ab30009023ff728",
+    "src/my_agent_llm/auth/manager.py": "c19ef1c5248d42af8c9703aca5c9aba8df70816cb827a390e3ba424963d214b2",
+    "src/my_agent_llm/auth/quota.py": "5470c85934c689bcfea6ed705cc25e581bd0d60f3f9ba1dd0790892b099b127b",
+    "src/my_agent_llm/auth/schema.py": "71dcc3a8f58ba690132d619bf1af11c22179a9cb80c3a52826328b3b1da01780",
+    "src/my_agent_llm/client.py": "6ecacddcdb4c29e1e289210b9ea67f0c8649dc0daa30e19f60039753d49cbba7",
+    "src/my_agent_llm/config.py": "6aa4a4e965325e69eaeb5beb0b222b4806c4868f0ed6591b944c2ed89c0fda56",
+    "src/my_agent_llm/events.py": "80f01f8983729bd6db4835f12d6928b2583a906c48858118092d900f365afad3",
+    "src/my_agent_llm/langfuse_export.py": "f6c239cc3eecf120a862a07144e15d01d92b352addcf9d87859d36d0418dad83",
+    "src/my_agent_llm/models.py": "a570a337c9c2f25c1457575954d54dce32671af7ebafa6c335d2816d03e0a992",
+    "src/my_agent_llm/observation.py": "a2d6e8bc60a1acf539955cd66d8bc735ef8f7dff6a320e44d00f211b1060684d",
+    "src/my_agent_llm/observation_export.py": "a3655028948c96cf832d5468423b70f29c86716d4d0a1e432d48cc84aceddaf8",
+    "src/my_agent_llm/observation_runtime.py": "a5fb63cfd38fb344038440f9dc356cde39bee5b466657201bbd47a97a8e8bf1f",
+    "src/my_agent_llm/providers/__init__.py": "f0687fb9a98bb722396d8adb669418d0af8f80d397af2e0c2f684f5a62ae44d2",
+    "src/my_agent_llm/providers/_base.py": "782030d2b11092c5871d21e6d5246bbf55f1ae2505ce260a4ddcc7938514044c",
+    "src/my_agent_llm/providers/anthropic.py": "1a8f236cdf282f723651343db9d2b9478d16d48bc2d299476ad82ec6ff5efd50",
+    "src/my_agent_llm/providers/antigravity.py": "ce6a6afc5a4313650f4327eb94b09f7ef7c21c5b42ae3e4bbbefcb2a2a90fe2f",
+    "src/my_agent_llm/providers/deepseek.py": "83db430157da0480cc5ddee89fc513000d522fccd25029a1717724f6be51110b",
+    "src/my_agent_llm/providers/openai.py": "c9d72a50047a8b00e80fe86f97860cbe5c205eb808dcd279bfe3e007f1ae15c7",
+    "src/my_agent_llm/providers/registry.py": "586aea684431bab3c8c2932615d55c4d91e748f87cdc293fa1db95ce88528f28",
+    "src/my_agent_llm/request_projection.py": "292d0c670ef55a9946c998da5af5969c0cbd5bfc665f52fd9a2fdfb9fb20e2b2",
+    "src/my_agent_llm/stream.py": "2de52c214a0ffce052819126e158ff03d62d8af806225a5cd44abadacca3f1e1",
+    "src/my_coding_agent/longhorizon/__init__.py": "ab26afc6d49bd7ced26ed995b0b1da35fa7ef64a23e6284ca719b5cf8748efea",
+    "src/my_coding_agent/longhorizon/cli.py": "66238b952c4bc5a441aae569f39b1965ef581587fefe46b542fcacd46da28e0c",
+    "src/my_coding_agent/longhorizon/engine.py": "938109c148ecf8efa2e919f9ddbf69907f5eb43d605980a00c6b14b6701cb80d",
+    "src/my_coding_agent/longhorizon/roles.py": "2d27f9be4a74c4133dc113470fe7a149b093ab2ccece01bd134bb13d2a2fc9db",
+    "src/my_coding_agent/longhorizon/schema.py": "6e3382071bd2ad862888a0542d8bc8ecf3ee4896eb2c80776e3b1742a23f4269",
+    "src/my_coding_agent/longhorizon/state.py": "df8dfa5cc58037ec5f420f3de2582ef71559290e07f2efc625663862aaf28117",
+    "src/my_coding_agent/longhorizon/store.py": "77044abcd7b48b12f537f127da01ac4f8796654f76ee3c33519d8f8b39c855d5"
+  },
+  "stage": "pilot",
+  "task_count": 3,
+  "task_manifest": "/mnt/e/my-agent-harness/.worktrees/longhorizon-quality-v1/docs/experiments/plans/terminal-bench-21-quality-pilot-v1.json",
+  "task_manifest_sha256": "79315eb6c68f49be0ecfb1449c878220597ce5c82e2d4ecc8c965a9f78b6c42b",
+  "tasks": [
+    {
+      "cohort": "version-control",
+      "id": "fix-git"
+    },
+    {
+      "cohort": "long-output",
+      "id": "large-scale-text-editing"
+    },
+    {
+      "cohort": "debugging",
+      "id": "custom-memory-heap-crash"
+    }
+  ],
+  "tasks_root": "/home/mll/.cache/my-agent-bench/long-horizon-20261113/tb21-source/tasks",
+  "trials": 3
+}

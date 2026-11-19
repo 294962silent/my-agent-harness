@@ -2,7 +2,7 @@
   "memory_index": {
     "enabled": false,
     "provider": "mem0",
-    "config_file": "~/.my-agent-harness/mem0-local.json",
+    "config_file": "~/.longarc/mem0-local.json",
     "timeout": 10.0,
     "close_timeout": 1.0
   },

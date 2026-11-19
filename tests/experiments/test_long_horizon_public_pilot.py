@@ -287,20 +287,43 @@ def test_failed_oracle_is_sealed_and_keeps_zero_model_request(tmp_path, monkeypa
 
 
 def test_transport_probe_requires_both_github_and_release_asset_tls(monkeypatch):
-    monkeypatch.setattr(
-        pilot.subprocess,
-        "run",
-        lambda *_args, **_kwargs: SimpleNamespace(
+    captured = {}
+
+    def run(command, **_kwargs):
+        captured["command"] = command
+        return SimpleNamespace(
             returncode=0,
             stdout='{"github_tls":0,"release_assets_tls":1}\n',
             stderr="",
-        ),
+        )
+
+    monkeypatch.setattr(
+        pilot.subprocess,
+        "run",
+        run,
     )
     result = pilot.docker_transport_probe(
         "fixture/image:latest", "http://172.19.80.1:17897"
     )
     assert result["status"] == "blocked"
     assert result["github_tls"] == 0 and result["release_assets_tls"] == 1
+    command = captured["command"]
+    assert "NO_PROXY=github.com,release-assets.githubusercontent.com" in command
+    probe_code = command[-3]
+    assert "openssl s_client -connect github.com:443" in probe_code
+    assert (
+        "openssl s_client -connect release-assets.githubusercontent.com:443"
+        in probe_code
+    )
+
+
+def test_proxy_env_bypasses_github_release_hosts_only():
+    proxy = "http://172.19.80.1:17897"
+    env = pilot.proxy_env(proxy)
+    assert env["HTTPS_PROXY"] == proxy
+    assert env["HTTP_PROXY"] == ""
+    assert env["NO_PROXY"] == "github.com,release-assets.githubusercontent.com"
+    assert env["no_proxy"] == "github.com,release-assets.githubusercontent.com"
 
 
 def test_langfuse_preflight_requires_all_env_names_and_matching_urls(monkeypatch):
@@ -426,6 +449,11 @@ async def test_harbor_adapter_constructs_real_compaction_policy(tmp_path, monkey
 
     monkeypatch.setattr(harbor_agent, "Agent", FakeAgent)
     monkeypatch.setattr(harbor_agent, "create_live_llm", lambda **_kwargs: RawLLM())
+
+    async def capture(_agent, _instruction, _timeout):
+        return "done", {"stop_reason": "end_turn"}
+
+    monkeypatch.setattr(harbor_agent, "_run_agent_and_capture", capture)
     adapter = harbor_agent.BudgetedHarborAgent(
         task_dir=task,
         logs_dir=tmp_path / "logs",
@@ -437,9 +465,12 @@ async def test_harbor_adapter_constructs_real_compaction_policy(tmp_path, monkey
     context = AgentContext()
     await adapter.run("Do work", SimpleNamespace(), context)
     assert captured["compaction_policy"].mode == mode
+    assert captured["compaction_policy"].micro_min_chars == 256
+    assert captured["compaction_policy"].recent_tool_groups == 1
     assert captured["artifact_store"] is not None
     assert context.metadata["compaction_mode"] == mode
     assert context.metadata["limits"]["compaction_mode"] == mode
+    assert context.metadata["limits"]["compaction_profile"]["micro_min_chars"] == 256
     assert context.metadata["schema_sha256"] == context.metadata["tool_schema_sha256"]
     assert context.metadata["observation_mode"] == "off"
     assert context.metadata["observation_required"] is False

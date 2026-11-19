@@ -1,0 +1,111 @@
+{
+  "credential_source": "production_auth_manager",
+  "langfuse": {
+    "base_url": "https://cloud.langfuse.com",
+    "base_url_matches": true,
+    "env_presence": {
+      "LANGFUSE_BASE_URL": true,
+      "LANGFUSE_HOST": true,
+      "LANGFUSE_PUBLIC_KEY": true,
+      "LANGFUSE_SECRET_KEY": true
+    },
+    "host_matches": true,
+    "ready": true
+  },
+  "ledger_requests": 0,
+  "ledger_shards": 18,
+  "model_requests_started": 0,
+  "plan_sha256": "adb1ef8c855d032aa550543126be9f453d821cb3a774ebcdc30bd2c230b7d987",
+  "proxy_reachable": true,
+  "runtime_bootstrap": {
+    "apt_mirror": "http://mirrors.tuna.tsinghua.edu.cn/ubuntu",
+    "apt_proxy": "http://172.19.80.1:17897",
+    "files": {
+      "bin/uv": "d3dc3ca8e29337dd602a9a4df9e6edb15ebc52aed91461debeedb96939dc4ce0",
+      "bin/uvx": "421b1bb58429180a04ade98da066b5a5b6763e8ed74edef97359701c4cb42db8",
+      "install-prebaked-uv.sh": "1a0885abef2ec5bbf5eddf301b5ed3b4a707f89eefb317e6fff0f32c1f27d5fe",
+      "python3.13.9.tar.gz": "f726a2cf890c0ba4cd025810d271762838eeb4da55deb265074dd915b5c24b3c",
+      "repair-apt.sh": "2a295b25432c834749c5edeedaa65cd2b79ef2c704e828440091890e9c5e5ef6",
+      "uv-env": "706b33a098853f3e3d596c8060044d2aeb78b26c1b65821d77a5a0bebf3aaef8",
+      "watch-bootstrap-v3.sh": "3478c09e7411394f136886e7f72d489e6f9e6b320841a8eff5e16ddac5a3d8d7"
+    },
+    "manifest_path": "/mnt/e/my-agent-harness/.git/codex-delivery/long-horizon-quality/bootstrap-v3/manifest.json",
+    "manifest_sha256": "f5848e3d48568859e9f2762d849d0ee0825815f2ee85be3053f0aa614a667418",
+    "name": "terminal-bench-verifier-network-bootstrap-v3",
+    "provider_request_timeout_seconds": 90,
+    "pytest_ctrf_version": "0.3.5",
+    "pytest_version": "8.4.1",
+    "python_version": "3.13.9",
+    "tree_sha256": "b416ca1c07c8b07602dc830887c0f824bac7eae9e657c29d4c6608c11423daff",
+    "uv_version": "0.9.5"
+  },
+  "slots": 18,
+  "status": "ready",
+  "tasks": [
+    "fix-git",
+    "large-scale-text-editing",
+    "custom-memory-heap-crash"
+  ],
+  "transport": {
+    "alexgshaw/custom-memory-heap-crash:20251031": {
+      "attempts": [
+        {
+          "pytest_version": "8.4.1",
+          "python_version": "3.13.9",
+          "return_code": 0,
+          "stage": "complete",
+          "status": "pass",
+          "stderr_tail": "Downloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 22ms\n",
+          "uv_version": "0.9.5"
+        }
+      ],
+      "pytest_version": "8.4.1",
+      "python_version": "3.13.9",
+      "return_code": 0,
+      "stage": "complete",
+      "status": "pass",
+      "stderr_tail": "Downloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 22ms\n",
+      "uv_version": "0.9.5"
+    },
+    "alexgshaw/fix-git:20260403": {
+      "attempts": [
+        {
+          "pytest_version": "8.4.1",
+          "python_version": "3.13.9",
+          "return_code": 0,
+          "stage": "complete",
+          "status": "pass",
+          "stderr_tail": "Downloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 24ms\n",
+          "uv_version": "0.9.5"
+        }
+      ],
+      "pytest_version": "8.4.1",
+      "python_version": "3.13.9",
+      "return_code": 0,
+      "stage": "complete",
+      "status": "pass",
+      "stderr_tail": "Downloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 24ms\n",
+      "uv_version": "0.9.5"
+    },
+    "alexgshaw/large-scale-text-editing:20251031": {
+      "attempts": [
+        {
+          "pytest_version": "8.4.1",
+          "python_version": "3.13.9",
+          "return_code": 0,
+          "stage": "complete",
+          "status": "pass",
+          "stderr_tail": "Downloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 21ms\n",
+          "uv_version": "0.9.5"
+        }
+      ],
+      "pytest_version": "8.4.1",
+      "python_version": "3.13.9",
+      "return_code": 0,
+      "stage": "complete",
+      "status": "pass",
+      "stderr_tail": "Downloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 21ms\n",
+      "uv_version": "0.9.5"
+    }
+  }
+}

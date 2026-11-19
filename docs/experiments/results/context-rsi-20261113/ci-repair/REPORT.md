@@ -1,6 +1,6 @@
 # 默认依赖与Linux清理修复：保留首次CI失败
 
-源码24aeca1推送后的[CI43444322518](https://github.com/294962silent/my-agent-harness/actions/runs/43444322518)四矩阵失败，不把之前Windows all-extras1424通过称为跨平台通过。
+源码24aeca1推送后的[CI43444322518](https://github.com/294962silent/LongArc/actions/runs/43444322518)四矩阵失败，不把之前Windows all-extras1424通过称为跨平台通过。
 
 三项真实Mem0 SDK用例无条件import可选包，在默认安装报ModuleNotFoundError。主代理独立干净Windows/Py3.13复现3失败/6通过；仅这三项改局部importorskip，七项profile/IPC等协议测试继续默认执行。all-extras CI专项仍实际执行全部SDK用例。
 

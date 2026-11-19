@@ -11,7 +11,7 @@ fig = plt.figure(figsize=(18, 9), dpi=300)
 fig.patch.set_facecolor("#0B0F19")  # Ultra-clean Dark Palette (OpenAI/Anthropic style)
 
 # Colors
-C_MYPI = "#0EA5E9"  # Electric Sky Blue for My-Agent-Harness
+C_MYPI = "#0EA5E9"  # Electric Sky Blue for LongArc
 C_PI = "#64748B"  # Steel Slate for Official Pi
 C_TEXT = "#F8FAFC"  # Crisp white text
 C_SUBTEXT = "#94A3B8"  # Slate grey text
@@ -47,7 +47,7 @@ rects1 = ax1.bar(
     x - width / 2 - 0.02,
     mypi_acc,
     width,
-    label="My-Agent-Harness (Ours)",
+    label="LongArc (Ours)",
     color=C_MYPI,
     edgecolor="none",
     zorder=3,
@@ -131,7 +131,7 @@ diff_pi = [100.0, 83.6, 73.3]
 x_diff = np.arange(len(diff_categories))
 w_diff = 0.30
 
-r1_d = ax2.bar(x_diff - w_diff / 2 - 0.02, diff_mypi, w_diff, label="My-Agent-Harness", color=C_MYPI, zorder=3, alpha=0.95)
+r1_d = ax2.bar(x_diff - w_diff / 2 - 0.02, diff_mypi, w_diff, label="LongArc", color=C_MYPI, zorder=3, alpha=0.95)
 r2_d = ax2.bar(x_diff + w_diff / 2 + 0.02, diff_pi, w_diff, label="Official Pi", color=C_PI, zorder=3, alpha=0.75)
 
 ax2.set_ylabel("Pass Rate (%)", fontsize=11, fontweight="bold", color=C_TEXT)
@@ -221,7 +221,7 @@ ax3.tick_params(colors=C_SUBTEXT)
 
 # Global Figure Title
 fig.suptitle(
-    "Terminal-Bench 2.1: My-Agent-Harness vs Official Pi Coding Agent", fontsize=18, fontweight="bold", color=C_TEXT, y=0.975
+    "Terminal-Bench 2.1: LongArc vs Official Pi Coding Agent", fontsize=18, fontweight="bold", color=C_TEXT, y=0.975
 )
 
 plt.figtext(
@@ -233,11 +233,11 @@ plt.figtext(
     color=C_SUBTEXT,
 )
 
-# Audited engineering footnote highlighting My-Agent-Harness's verified stats without unverified claims on Pi
+# Audited engineering footnote highlighting LongArc's verified stats without unverified claims on Pi
 plt.figtext(
     0.5,
     0.022,
-    "My-Agent-Harness: 41.7M billed tokens / USD 4.62 vs Pi 122.3M / USD 18.84  |  Cache hit rate measured separately (53.5% vs 17.9%)",
+    "LongArc: 41.7M billed tokens / USD 4.62 vs Pi 122.3M / USD 18.84  |  Cache hit rate measured separately (53.5% vs 17.9%)",
     ha="center",
     fontsize=9.8,
     color=C_GOLD,
@@ -251,7 +251,7 @@ out_paths = [
     "my-eval/results/terminal_bench_comparison.png",
 ]
 
-blog_asset_dir = "D:/blog/source/_posts/学习/agent实战/my-agent-harness/my-agent-harness--agent评估"
+blog_asset_dir = "D:/blog/source/_posts/学习/agent实战/LongArc/LongArc--agent评估"
 try:
     if os.path.exists(os.path.dirname(blog_asset_dir)):
         os.makedirs(blog_asset_dir, exist_ok=True)

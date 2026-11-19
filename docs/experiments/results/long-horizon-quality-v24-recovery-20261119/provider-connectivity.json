@@ -1,0 +1,32 @@
+{
+  "absolute_timeout_seconds": 300,
+  "attempts_completed": 1,
+  "attempts_requested": 3,
+  "campaign_run_id": null,
+  "client_timeout_seconds": 90,
+  "client_versions": {
+    "httpx": "0.28.1",
+    "openai": "3.13.0"
+  },
+  "credential_source": "production_auth_manager",
+  "credentials_persisted": false,
+  "endpoint": "https://opencode.ai/inference/go/openai/v1",
+  "model": "deepseek-v4.1-flash",
+  "protocol": "long-horizon-provider-recovery-v1",
+  "rows": [
+    {
+      "attempt": 1,
+      "error": {
+        "message": "Request timed out.",
+        "type": "APITimeoutError"
+      },
+      "finished_at": "2026-11-19T14:28:25.278834+00:00",
+      "latency_seconds": 90.505619,
+      "started_at": "2026-11-19T14:26:54.773248+00:00",
+      "status": "failed"
+    }
+  ],
+  "schema_version": 1,
+  "scoring": false,
+  "status": "failed"
+}

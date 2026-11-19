@@ -71,6 +71,44 @@ def test_guarded_call_accepts_bounded_8192_output(tmp_path):
 
 
 @pytest.mark.anyio
+async def test_guard_accepts_only_json_object_response_format(tmp_path):
+    class Provider:
+        def __init__(self):
+            self.calls = 0
+
+        async def achat(self, _messages, **kwargs):
+            self.calls += 1
+            assert kwargs["response_format"] == {"type": "json_object"}
+            return Response(
+                content='{"next":"done","reason":"ok"}',
+                model="fake",
+                usage={"prompt_tokens": 2, "completion_tokens": 4},
+            )
+
+    llm = LLM(
+        Config(
+            provider="openai",
+            api_key="offline",
+            model="deepseek-v4.1-flash",
+            max_retries=0,
+        )
+    )
+    provider = Provider()
+    llm._provider = provider
+    ledger = BudgetLedger(tmp_path / "ledger.json")
+    guarded = GuardedLLM(llm, ledger, "run")
+
+    response = await guarded.achat(
+        [],
+        response_format={"type": "json_object"},
+    )
+    assert response.content == '{"next":"done","reason":"ok"}'
+    with pytest.raises(BudgetStop, match="unsupported response format"):
+        await guarded.achat([], response_format={"type": "json_schema"})
+    assert provider.calls == 1
+
+
+@pytest.mark.anyio
 async def test_guard_covers_auxiliary_calls_and_stops_after_missing_usage(tmp_path):
     from my_agent_llm.observation import observation_context
 

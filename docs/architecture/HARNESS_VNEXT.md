@@ -1,10 +1,10 @@
-# my-agent-harness：面向长程任务的 Coding Agent Harness
+# LongArc：面向长程代码任务的 Agent Runtime
 
 初版：2026-11-12；定位与受控自优化更新：2026-11-13。初始基线：`1f150e1a433c2b31ee83c8a2d11300e4a1fc3548`。目标岗位：Agent / 大模型应用开发。
 
 ## 定位与成功条件
 
-面向长程代码任务的轻量 Python Agent Harness。围绕任务执行控制、上下文与长期记忆、全过程观测提供可替换且可验证的模块；CodingAgent / RPC / TUI 是产品入口。
+LongArc 是面向长程代码任务的 Python Agent Runtime。围绕任务执行控制、上下文与长期记忆、全过程观测提供可替换且可验证的模块；CodingAgent / RPC / TUI 是产品入口。
 
 主标题强调任务场景，副线是“长期记忆、可观测执行、受控策略自优化”。自优化限定Dream参考搜索策略的参数候选、训练选择、独立验证和版本回滚；它不表示Agent执行循环已具有在线任意代码进化、权重训练或跨任务持续提升。长程任务是设计目标，不代表已实现跨进程持久恢复和外部副作用exactly-once。
 

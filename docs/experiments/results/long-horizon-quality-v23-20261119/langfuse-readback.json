@@ -1,0 +1,47 @@
+{
+  "attempted_sessions": 2,
+  "campaign_id": "lhq-tb21-pilot-20261119-v23",
+  "credentials_persisted": false,
+  "expected_requests": 2,
+  "matched_sessions": 2,
+  "observations": 2,
+  "rows": [
+    {
+      "arm": "react",
+      "expected_requests": 1,
+      "observation_count": 1,
+      "run_id": "lhq-e251eaba30a0a802af17870fcfbcb596",
+      "session_id": "lhq-tb21-pilot-20261119-v23-lhq-e251eaba30a0a802af17870fcfbcb596",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "63a370c343e20d1bcc6457b97993e50d"
+      ],
+      "trial": 0,
+      "types": {
+        "GENERATION": 1
+      },
+      "usage": {}
+    },
+    {
+      "arm": "react",
+      "expected_requests": 1,
+      "observation_count": 1,
+      "run_id": "lhq-0b56a13ba72328b2887711462ba48d62",
+      "session_id": "lhq-tb21-pilot-20261119-v23-lhq-0b56a13ba72328b2887711462ba48d62",
+      "status": "matched",
+      "task_id": "fix-git",
+      "trace_count": 1,
+      "trace_ids": [
+        "2c2726c776892b3efd958d05e8357b97"
+      ],
+      "trial": 1,
+      "types": {
+        "GENERATION": 1
+      },
+      "usage": {}
+    }
+  ],
+  "status": "complete"
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "benchmark": "terminal-bench-2.1",
+  "revision": "12b7565679ce5006230b820666353673a133db93",
+  "tasks": [
+    {
+      "id": "fix-git",
+      "cohort": "version-control"
+    },
+    {
+      "id": "large-scale-text-editing",
+      "cohort": "long-output"
+    },
+    {
+      "id": "custom-memory-heap-crash",
+      "cohort": "debugging"
+    }
+  ]
+}

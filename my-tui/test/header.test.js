@@ -9,8 +9,8 @@ test("HeaderComponent renders app logo, version, and keybinding hints", () => {
   assert.ok(lines.length >= 3, "Header must render at least 3 lines");
   const text = lines.join("\n");
   assert.ok(
-    text.includes("my-agent-harness"),
-    "Header must include app logo 'my-agent-harness'",
+    text.includes("LongArc"),
+    "Header must include app logo 'LongArc'",
   );
   assert.ok(text.includes("v0.1.0"), "Header must include version 'v0.1.0'");
   assert.ok(text.includes("Esc"), "Header must include 'Esc' keybinding hint");
@@ -31,6 +31,6 @@ test("HeaderComponent uses default version if not provided", () => {
   const lines = header.render(80);
   assert.ok(lines.length >= 3, "Header must render at least 3 lines");
   const text = lines.join("\n");
-  assert.ok(text.includes("my-agent-harness"));
-  assert.ok(text.includes("v0.1.0"));
+  assert.ok(text.includes("LongArc"));
+  assert.ok(text.includes("v0.2.0"));
 });

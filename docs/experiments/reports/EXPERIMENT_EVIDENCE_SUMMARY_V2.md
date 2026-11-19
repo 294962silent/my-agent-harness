@@ -8,7 +8,7 @@ evidence_result: mixed_positive_negative
 paid_requests_started_by_this_summary: 0
 ---
 
-# my-agent-harness 实验证据汇总 V2
+# LongArc 实验证据汇总 V2
 
 本文把仓库内分散的真实运行、离线消融、公开任务 pilot、负结果与失败边界整理成一份可扫描、可追踪的证据账本。它不替代原始报告或冻结结果；数字冲突时，以对应运行目录中的 manifest、ledger、summary 和终态记录为准。
 

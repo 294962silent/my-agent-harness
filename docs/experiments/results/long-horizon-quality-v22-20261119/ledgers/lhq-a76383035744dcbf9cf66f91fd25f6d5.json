@@ -1,0 +1,147 @@
+{
+  "limit_micro_usd": 30000000,
+  "pricing": {
+    "input_per_million": "0.30",
+    "output_per_million": "1.20"
+  },
+  "max_requests": 16,
+  "time_cap": 600,
+  "runs": {
+    "lhq-a76383035744dcbf9cf66f91fd25f6d5": {
+      "started_at": 1795087430.9332187,
+      "blocked": false,
+      "limits": {
+        "max_requests": 64,
+        "time_cap": 900.0
+      },
+      "campaign_id": "lhq-tb21-pilot-20261119-v22-lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "trial_started": true
+    }
+  },
+  "requests": [
+    {
+      "request_id": "4a09a8f74f60425abe1c92e3f622fbfc",
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 5823,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 6663,
+      "usage": {
+        "prompt_tokens": 257,
+        "completion_tokens": 463,
+        "total_tokens": 720
+      },
+      "cost_micro_usd": 633,
+      "created_at": 1795087430.9332333,
+      "finished_at": 1795087440.406889
+    },
+    {
+      "request_id": "59228858521a410189f3e6c2e2dd6aa6",
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 8592,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 7493,
+      "usage": {
+        "prompt_tokens": 924,
+        "completion_tokens": 107,
+        "total_tokens": 1031
+      },
+      "cost_micro_usd": 406,
+      "created_at": 1795087440.4899235,
+      "finished_at": 1795087444.0521874
+    },
+    {
+      "request_id": "9893c6175b2f450989062f459bb2dbf2",
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 11371,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 8327,
+      "usage": {
+        "prompt_tokens": 635,
+        "completion_tokens": 126,
+        "total_tokens": 1657,
+        "cache_read_tokens": 896
+      },
+      "cost_micro_usd": 611,
+      "created_at": 1795087445.5764723,
+      "finished_at": 1795087448.9284868
+    },
+    {
+      "request_id": "51a0dbd6946e4d28bf2ed1e4069e173d",
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 15071,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 9437,
+      "usage": {
+        "prompt_tokens": 994,
+        "completion_tokens": 169,
+        "total_tokens": 2571,
+        "cache_read_tokens": 1408
+      },
+      "cost_micro_usd": 924,
+      "created_at": 1795087450.646878,
+      "finished_at": 1795087454.1019678
+    },
+    {
+      "request_id": "5a4c8976f28e4fb3a0bc2a3b4ddc57a4",
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 17444,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 10149,
+      "usage": {
+        "prompt_tokens": 1748,
+        "completion_tokens": 858,
+        "total_tokens": 3630,
+        "cache_read_tokens": 1024
+      },
+      "cost_micro_usd": 1862,
+      "created_at": 1795087456.003697,
+      "finished_at": 1795087467.3992105
+    },
+    {
+      "request_id": "056ce8e2f9214be78a7c2d61350235d7",
+      "run_id": "lhq-a76383035744dcbf9cf66f91fd25f6d5",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 20089,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 10942,
+      "usage": {
+        "prompt_tokens": 1979,
+        "completion_tokens": 448,
+        "total_tokens": 3707,
+        "cache_read_tokens": 1280
+      },
+      "cost_micro_usd": 1516,
+      "created_at": 1795087469.0855455,
+      "finished_at": 1795089023.1513479
+    }
+  ],
+  "campaigns": {
+    "lhq-tb21-pilot-20261119-v22-lhq-a76383035744dcbf9cf66f91fd25f6d5": {
+      "spend_ceiling_micro_usd": 1000000,
+      "blocked": false
+    }
+  }
+}

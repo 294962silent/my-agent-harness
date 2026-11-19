@@ -1,0 +1,368 @@
+{
+  "limit_micro_usd": 30000000,
+  "pricing": {
+    "input_per_million": "0.30",
+    "output_per_million": "1.20"
+  },
+  "max_requests": 16,
+  "time_cap": 600,
+  "runs": {
+    "lhq-b0729b71d0690bef3e4d680142843322": {
+      "started_at": 1795086482.303847,
+      "blocked": false,
+      "limits": {
+        "max_requests": 64,
+        "time_cap": 900.0
+      },
+      "campaign_id": "lhq-tb21-pilot-20261119-v22-lhq-b0729b71d0690bef3e4d680142843322",
+      "trial_started": true
+    }
+  },
+  "requests": [
+    {
+      "request_id": "f51274f119b3487db38b0638eec88a3c",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 7370,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 7127,
+      "usage": {
+        "prompt_tokens": 662,
+        "completion_tokens": 109,
+        "total_tokens": 771
+      },
+      "cost_micro_usd": 330,
+      "created_at": 1795086482.3038714,
+      "finished_at": 1795086487.821151
+    },
+    {
+      "request_id": "05313635875c49c083716b1d78876dc6",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 10150,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 7961,
+      "usage": {
+        "prompt_tokens": 629,
+        "completion_tokens": 179,
+        "total_tokens": 1448,
+        "cache_read_tokens": 640
+      },
+      "cost_micro_usd": 596,
+      "created_at": 1795086489.224027,
+      "finished_at": 1795086492.797604
+    },
+    {
+      "request_id": "a04d1d12f8d6470da28f96478594462b",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 14294,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 9204,
+      "usage": {
+        "prompt_tokens": 1157,
+        "completion_tokens": 285,
+        "total_tokens": 2594,
+        "cache_read_tokens": 1152
+      },
+      "cost_micro_usd": 1035,
+      "created_at": 1795086494.346127,
+      "finished_at": 1795086500.677324
+    },
+    {
+      "request_id": "5917b1f8948542aab721ba154017c215",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 18277,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 10399,
+      "usage": {
+        "prompt_tokens": 2664,
+        "completion_tokens": 439,
+        "total_tokens": 3871,
+        "cache_read_tokens": 768
+      },
+      "cost_micro_usd": 1557,
+      "created_at": 1795086502.5160797,
+      "finished_at": 1795086511.8378441
+    },
+    {
+      "request_id": "fef554d2a3f042249150c395feb212a4",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 25371,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 12527,
+      "usage": {
+        "prompt_tokens": 4031,
+        "completion_tokens": 298,
+        "total_tokens": 5353,
+        "cache_read_tokens": 1024
+      },
+      "cost_micro_usd": 1875,
+      "created_at": 1795086513.5970871,
+      "finished_at": 1795086520.7890508
+    },
+    {
+      "request_id": "834a97ede375428e97b3bf24fde6549c",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 27506,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 13167,
+      "usage": {
+        "prompt_tokens": 3639,
+        "completion_tokens": 601,
+        "total_tokens": 5648,
+        "cache_read_tokens": 1408
+      },
+      "cost_micro_usd": 2236,
+      "created_at": 1795086521.4826713,
+      "finished_at": 1795086533.2819817
+    },
+    {
+      "request_id": "95bc232373de4029b5e942d0f780cea9",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 25613,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 12600,
+      "usage": {
+        "prompt_tokens": 2287,
+        "completion_tokens": 120,
+        "total_tokens": 4199,
+        "cache_read_tokens": 1792
+      },
+      "cost_micro_usd": 1368,
+      "created_at": 1795086535.4263005,
+      "finished_at": 1795086539.561192
+    },
+    {
+      "request_id": "83ee57a40fe84beb98a2447f74512a49",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 32517,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 14671,
+      "usage": {
+        "prompt_tokens": 1723,
+        "completion_tokens": 616,
+        "total_tokens": 6307,
+        "cache_read_tokens": 3968
+      },
+      "cost_micro_usd": 2447,
+      "created_at": 1795086540.4064002,
+      "finished_at": 1795086551.7693315
+    },
+    {
+      "request_id": "59211293184843be9e769a1ffc77029c",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 33091,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 14843,
+      "usage": {
+        "prompt_tokens": 2115,
+        "completion_tokens": 224,
+        "total_tokens": 5795,
+        "cache_read_tokens": 3456
+      },
+      "cost_micro_usd": 1941,
+      "created_at": 1795086553.5473895,
+      "finished_at": 1795086560.5866797
+    },
+    {
+      "request_id": "d707933497d744b2910425c88e94e063",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 34610,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 15299,
+      "usage": {
+        "prompt_tokens": 250,
+        "completion_tokens": 49,
+        "total_tokens": 5803,
+        "cache_read_tokens": 5504
+      },
+      "cost_micro_usd": 1785,
+      "created_at": 1795086562.3291614,
+      "finished_at": 1795086564.7587018
+    },
+    {
+      "request_id": "a3b8b845d8084f37a6634f104464c450",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 36329,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 15814,
+      "usage": {
+        "prompt_tokens": 612,
+        "completion_tokens": 192,
+        "total_tokens": 6180,
+        "cache_read_tokens": 5376
+      },
+      "cost_micro_usd": 2027,
+      "created_at": 1795086566.567129,
+      "finished_at": 1795086571.6301076
+    },
+    {
+      "request_id": "6f5aea934bab4326bbb7eadc5215a660",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 39129,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 16654,
+      "usage": {
+        "prompt_tokens": 1035,
+        "completion_tokens": 569,
+        "total_tokens": 7108,
+        "cache_read_tokens": 5504
+      },
+      "cost_micro_usd": 2645,
+      "created_at": 1795086572.9976637,
+      "finished_at": 1795086582.1616645
+    },
+    {
+      "request_id": "b922b944e08741cbb9cbaa3b2010d3c0",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 40382,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 17030,
+      "usage": {
+        "prompt_tokens": 1012,
+        "completion_tokens": 241,
+        "total_tokens": 6885,
+        "cache_read_tokens": 5632
+      },
+      "cost_micro_usd": 2283,
+      "created_at": 1795086584.3560736,
+      "finished_at": 1795086589.1753001
+    },
+    {
+      "request_id": "b1bde9db84554b90b922f3815bd3d1fa",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 42114,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 17550,
+      "usage": {
+        "prompt_tokens": 356,
+        "completion_tokens": 115,
+        "total_tokens": 6999,
+        "cache_read_tokens": 6528
+      },
+      "cost_micro_usd": 2204,
+      "created_at": 1795086591.3506029,
+      "finished_at": 1795086594.38143
+    },
+    {
+      "request_id": "5d24dca251fb45dcbc24cf7c20e88abc",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 43440,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 17948,
+      "usage": {
+        "prompt_tokens": 623,
+        "completion_tokens": 81,
+        "total_tokens": 7104,
+        "cache_read_tokens": 6400
+      },
+      "cost_micro_usd": 2205,
+      "created_at": 1795086596.641458,
+      "finished_at": 1795086599.5954156
+    },
+    {
+      "request_id": "70e4a4643d3547b38ecdb8efd7c50e0d",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 45032,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 18425,
+      "usage": {
+        "prompt_tokens": 607,
+        "completion_tokens": 210,
+        "total_tokens": 7473,
+        "cache_read_tokens": 6656
+      },
+      "cost_micro_usd": 2431,
+      "created_at": 1795086601.9775357,
+      "finished_at": 1795086606.7044528
+    },
+    {
+      "request_id": "4e320f3b4e0e4a47a37f7214baaf1e36",
+      "run_id": "lhq-b0729b71d0690bef3e4d680142843322",
+      "model": "deepseek-v4.1-flash",
+      "provider": "openai",
+      "purpose": "experiment_final",
+      "status": "ok",
+      "input_token_bound": 46960,
+      "max_output_tokens": 4096,
+      "held_micro_usd": 19004,
+      "usage": {
+        "prompt_tokens": 377,
+        "completion_tokens": 611,
+        "total_tokens": 8156,
+        "cache_read_tokens": 7168
+      },
+      "cost_micro_usd": 2997,
+      "created_at": 1795086609.0967915,
+      "finished_at": 1795086620.1476343
+    }
+  ],
+  "campaigns": {
+    "lhq-tb21-pilot-20261119-v22-lhq-b0729b71d0690bef3e4d680142843322": {
+      "spend_ceiling_micro_usd": 1000000,
+      "blocked": false
+    }
+  }
+}

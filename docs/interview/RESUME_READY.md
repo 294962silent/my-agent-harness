@@ -10,7 +10,7 @@
 
 ## 项目条目：可直接选用的三条能力描述
 
-**项目：my-agent-harness｜代码实验 Agent 工程验证**
+**项目：LongArc｜长程代码任务 Agent 运行时**
 
 技术：Python、异步调用、JSONL journal、Docker、Mem0、Langfuse；Dream-RSI 受控参数搜索。
 
@@ -18,7 +18,7 @@
 
 - 构建固定数据上的代码实验流程：Agent 仅通过受限文件工具修改训练脚本，在无网络、只读根目录及资源限制的 Docker 环境生成预测，由宿主校验预测并重算 RMSE，降低候选程序自报分数造成的误判；有 8 项 Docker 边界验证证据。
 - 通过追加式 journal 记录请求预留、真实用量结算、评估与 round checkpoint；真实模型完成两轮、新进程恢复和一次独立 final，累计预算保持连续，未知调用或未完成 round 阻断重放，final 不回流选优与经验；最终保留 baseline，未声称质量提升。
-- 接入 Mem0 本地 CPU 经验检索入口、Langfuse 本地 SDK 观测与 Dream-RSI 受控策略参数，固定经验和策略来源并保留 baseline；核心提交 `160118f` 已推送 origin，[PR #2 协作中](https://github.com/294962silent/my-agent-harness/pull/2)，附本地回归、Docker 边界及 wheel 验证材料。
+- 接入 Mem0 本地 CPU 经验检索入口、Langfuse 本地 SDK 观测与 Dream-RSI 受控策略参数，固定经验和策略来源并保留 baseline；核心提交 `160118f` 已推送 origin，[PR #2 协作中](https://github.com/294962silent/LongArc/pull/2)，附本地回归、Docker 边界及 wheel 验证材料。
 
 以上描述系统能力与工程价值，未声称个人独立完成、生产部署、云端观测已上传或质量提升。只有确认自己的具体工作后，才将对应条目改为第一人称主动动词。
 
