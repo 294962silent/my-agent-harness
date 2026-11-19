@@ -1355,3 +1355,29 @@ MMR 与 top8 的 answer 数相同，但 session recall/MRR 提高、evidence-tur
 - **GitHub**：仓库由 `294962silent/my-agent-harness` 更名为 `294962silent/LongArc`，GitHub 保留旧 URL 跳转；本地 `origin` 已切换到新 URL。
 - **本批验证**：品牌相关 Python 定向测试 **65 passed**；TUI 隔离运行 **97 passed / 1 credential-dependent e2e skipped / 0 failed**；Ruff 与 `git diff --check` 通过；Wheel 包含 `longarc`、`longarc-runtime`、`longarc-dream` 和 TUI assets；从仓库外目录执行全局 `longarc --help` exit 0。
 - **命名规范**：见 [NAMING.md](../NAMING.md)。历史实验日志、run ID 和归档结果保留产生时的名称，以便证据可追溯。
+
+### E-LONGHORIZON-QUALITY-V20：2026-11-19 / 18-trial 完成态与描述性结果封存
+
+- **完成度**：`lhq-tb21-pilot-20261119-v20` 的 18 个 slot 均进入终态；其中 8 个获得官方评分，3 个 reward=1，其余 10 个为执行或 verifier 终态错误。
+- **分臂**：React 9 slots / 7 scored / 2 success / 307 requests；MEA 9 slots / 1 scored / 1 success / 494 requests。
+- **分任务**：fix-git 为 React 2/3、MEA 1/3；custom-memory 为 React 0/3、MEA 无官方评分；large-scale 为 React 无成功、MEA 无官方评分。
+- **用量**：801 requests，prompt 1,005,601，completion 788,835，cache-read 4,578,688，cache-write 0，cache hit **81.9923%**；客户端固定价估算 `$2.622209`，3 个 slot 的 usage 不完整。
+- **结论边界**：两臂没有共同有效的配对任务结果，不能比较 React 与 MEA 的质量，也不能从小样本成功数推导长程能力。v20 仅作为完成度、失败分布、请求量和缓存行为的描述性证据。
+- **报告**：[v20 REPORT](results/long-horizon-quality-v20-20261119/REPORT.md)；[summary](results/long-horizon-quality-v20-20261119/summary.json)。
+
+### E-LONGHORIZON-QUALITY-V21：2026-11-19 / 新凭据部分 campaign 与外部中断
+
+- **完成度**：`lhq-tb21-pilot-20261119-v21` 在 10/18 slots 后外部中断；9 个 slot 完成、1 个 started 后中断，`large-scale-text-editing` 未启动。
+- **观察结果**：fix-git React 为 3/3 reward=1；fix-git MEA 为 2/3 reward=1；custom-memory MEA 为 1 个官方 reward=0、2 个 orchestration error；custom-memory React 仅启动并在 37 requests 后中断。
+- **provider 状态**：新 OpenCode Go 凭据正常，401 requests 全部 usage 已知，provider error=0，没有再次出现 HTTP 429。
+- **用量**：prompt 554,258，completion 400,477，cache-read 1,935,744，cache-write 0，cache hit **77.7407%**；客户端固定价估算 `$1.227758`。
+- **根因**：主要实验内阻塞是 Auditor 两次 bounded repair 后仍输出自然语言而非 JSON。该失败发生在 MEA 编排层，不是 Harbor、Docker、Langfuse 或供应商额度问题。
+- **不可续跑**：LongArc 品牌改动和后续源码修复改变了冻结 source hashes；v21 不得复用 run ID。中断 slot 为 `lhq-cc81dd11fb02379ee7a6a7455a56fa0d`。
+- **报告**：[v21 REPORT](results/long-horizon-quality-v21-20261119/REPORT.md)；[summary](results/long-horizon-quality-v21-20261119/summary.json)。
+
+### E-LONGHORIZON-AUDITOR-PROJECTION：2026-11-19 / 最终 JSON 投影与 fail-closed 回退
+
+- **修复**：Auditor 使用新 Session 执行只读检查后，保留有界的最新工具 transcript；自然语言解析失败时额外调用一次无工具 JSON 投影，要求只根据 transcript 生成精确 schema。若投影仍失败或预算不足，则本地生成 `status=blocked` 的合法报告，不再抛出 `OrchestrationError`。
+- **预算**：Auditor 为下一次 Manager 和最终 JSON 投影各预留 1 个 request；投影计 `mea_auditor_rN_projection` 并进入同一 ledger、Langfuse 与 usage 账本。
+- **安全边界**：投影无权调用工具；证据不足必须返回 blocked；fallback 不声称 complete，也不把自然语言输出转写为已验证事实。
+- **验证**：WSL/Harbor 定向组合 **66 passed / 15 skipped**，Ruff 通过。测试覆盖最新工具证据保留、超预算旧内容裁剪、JSON-only 投影和可解析 blocked fallback。
