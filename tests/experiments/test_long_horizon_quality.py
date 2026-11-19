@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -37,6 +38,49 @@ def test_quality_pilot_requires_unique_campaign_identity(monkeypatch) -> None:
     monkeypatch.setenv("LHQ_CAMPAIGN_ID", "pilot-explicit")
     assert harbor_pilot._resolve_campaign_id(None) == "pilot-explicit"
     assert harbor_pilot._resolve_campaign_id("pilot-cli") == "pilot-cli"
+
+
+def test_runtime_bootstrap_bundle_is_content_addressed(tmp_path: Path) -> None:
+    payload = b"uv==0.9.5\n"
+    (tmp_path / "uv").write_bytes(payload)
+    entry = {
+        "path": "uv",
+        "kind": "file",
+        "bytes": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "executable": False,
+    }
+    tree_payload = json.dumps(
+        [entry],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    manifest = {
+        "schema_version": 1,
+        "name": "terminal-bench-verifier-network-bootstrap-v3",
+        "apt_mirror": "http://mirror.invalid/ubuntu",
+        "apt_proxy": "http://127.0.0.1:1",
+        "uv_version": "0.9.5",
+        "python_version": "3.13.9",
+        "pytest_version": "8.4.1",
+        "pytest_ctrf_version": "0.3.5",
+        "provider_request_timeout_seconds": 90,
+        "files": [entry],
+        "tree_sha256": hashlib.sha256(tree_payload).hexdigest(),
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    selected, digest, files = harbor_pilot._bootstrap_bundle(manifest_path)
+
+    assert selected["provider_request_timeout_seconds"] == 90
+    assert digest == hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    assert files == {"uv": entry["sha256"]}
+
+    (tmp_path / "uv").write_bytes(b"changed\n")
+    with pytest.raises(harbor_pilot.PilotError, match="file changed"):
+        harbor_pilot._bootstrap_bundle(manifest_path)
 
 
 def test_finished_resume_state_is_enriched_before_journal_write(

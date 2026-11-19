@@ -63,6 +63,7 @@ MAX_ROUNDS = 3
 CONTEXT_BUDGET = 32000
 OUTPUT_TOKENS = 4096
 SHELL_TIMEOUT = 120
+PROVIDER_TIMEOUT_SECONDS = 90
 
 
 class PilotError(RuntimeError):
@@ -115,6 +116,82 @@ def _source_hashes() -> dict[str, str]:
         path.relative_to(REPO).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
         for path in sorted(paths)
     }
+
+
+def _bootstrap_bundle(manifest_path: str | Path) -> tuple[dict, str, dict[str, str]]:
+    path = Path(manifest_path).resolve()
+    if not path.is_file():
+        raise PilotError("runtime bootstrap manifest is missing")
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise PilotError("runtime bootstrap manifest is invalid") from exc
+    if (
+        not isinstance(value, dict)
+        or value.get("schema_version") != 1
+        or value.get("name") != "terminal-bench-verifier-network-bootstrap-v3"
+        or value.get("provider_request_timeout_seconds") != PROVIDER_TIMEOUT_SECONDS
+        or not isinstance(value.get("files"), list)
+    ):
+        raise PilotError("runtime bootstrap manifest is unsupported")
+    root = path.parent
+    expected: dict[str, dict] = {}
+    for item in value["files"]:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            raise PilotError("runtime bootstrap file entry is invalid")
+        relative = item["path"]
+        candidate = (root / relative).resolve()
+        if candidate == root or root not in candidate.parents:
+            raise PilotError("runtime bootstrap path escapes its bundle")
+        expected[relative] = item
+    actual_paths = {
+        item.relative_to(root).as_posix()
+        for item in root.rglob("*")
+        if item.name != "manifest.json" and (item.is_file() or item.is_symlink())
+    }
+    if actual_paths != set(expected):
+        raise PilotError("runtime bootstrap file inventory changed")
+    actual: dict[str, str] = {}
+    for relative, item in sorted(expected.items()):
+        candidate = root / relative
+        if item.get("kind") == "symlink":
+            target = candidate.readlink().as_posix()
+            if target != item.get("target"):
+                raise PilotError(f"runtime bootstrap symlink changed: {relative}")
+            actual[relative] = target
+        elif item.get("kind") == "file":
+            payload = candidate.read_bytes()
+            digest = hashlib.sha256(payload).hexdigest()
+            if digest != item.get("sha256") or len(payload) != item.get("bytes"):
+                raise PilotError(f"runtime bootstrap file changed: {relative}")
+            if bool(candidate.stat().st_mode & 0o111) != bool(item.get("executable")):
+                raise PilotError(f"runtime bootstrap mode changed: {relative}")
+            actual[relative] = digest
+        else:
+            raise PilotError("runtime bootstrap entry kind is invalid")
+    payload = json.dumps(
+        [expected[relative] for relative in sorted(expected)],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    if hashlib.sha256(payload).hexdigest() != value.get("tree_sha256"):
+        raise PilotError("runtime bootstrap tree hash changed")
+    selected = {
+        key: value[key]
+        for key in (
+            "name",
+            "apt_mirror",
+            "apt_proxy",
+            "uv_version",
+            "python_version",
+            "pytest_version",
+            "pytest_ctrf_version",
+            "provider_request_timeout_seconds",
+            "tree_sha256",
+        )
+    }
+    return selected, live.sha_file(path), actual
 
 
 def _official_hashes(task_ids: list[str]) -> dict[str, str]:
@@ -205,6 +282,7 @@ def freeze(
     campaign_id: str | None = None,
     trials: int = DEFAULT_TRIALS,
     seed: int = PILOT_SEED,
+    bootstrap_manifest: str | Path | None = None,
 ) -> dict:
     campaign_id = _resolve_campaign_id(campaign_id)
     output = Path(output).resolve()
@@ -214,6 +292,10 @@ def freeze(
     if not ledger_root.is_absolute():
         raise PilotError("slot ledger root must be absolute")
     ledger_root.mkdir(parents=True, exist_ok=True)
+    bootstrap_path = bootstrap_manifest or os.environ.get("LHQ_BOOTSTRAP_MANIFEST")
+    if not bootstrap_path:
+        raise PilotError("runtime bootstrap manifest is required")
+    bootstrap, bootstrap_sha, bootstrap_files = _bootstrap_bundle(bootstrap_path)
     plan = freeze_campaign(
         task_manifest=task_manifest,
         output=output,
@@ -291,6 +373,13 @@ def freeze(
             "model": LIVE_MODEL,
             "endpoint": LIVE_BASE_URL,
             "runtime_proxy": RUNTIME_PROXY,
+            "runtime_bootstrap": {
+                **bootstrap,
+                "manifest_path": str(Path(bootstrap_path).resolve()),
+                "manifest_sha256": bootstrap_sha,
+                "files": bootstrap_files,
+            },
+            "provider_timeout_seconds": PROVIDER_TIMEOUT_SECONDS,
             "tasks_root": str(TASKS_ROOT),
             "manifest": str(MANIFEST),
             "oracle_map": str(ORACLE_MAP),
@@ -342,6 +431,17 @@ def _validate_current(plan: dict) -> list[tuple[dict, BudgetLedger, dict]]:
     task_ids = [item["id"] for item in plan["tasks"]]
     if _source_hashes() != plan["source_hashes"]:
         raise PilotError("runtime source changed after freeze")
+    frozen_bootstrap = plan.get("runtime_bootstrap") or {}
+    bootstrap, bootstrap_sha, bootstrap_files = _bootstrap_bundle(
+        frozen_bootstrap.get("manifest_path", "")
+    )
+    if (
+        bootstrap_sha != frozen_bootstrap.get("manifest_sha256")
+        or bootstrap_files != frozen_bootstrap.get("files")
+        or bootstrap["tree_sha256"] != frozen_bootstrap.get("tree_sha256")
+        or plan.get("provider_timeout_seconds") != PROVIDER_TIMEOUT_SECONDS
+    ):
+        raise PilotError("runtime bootstrap changed after freeze")
     if _official_hashes(task_ids) != plan["official_hashes"]:
         raise PilotError("official Terminal-Bench tasks changed after freeze")
     for path, expected in plan["input_hashes"].items():
@@ -413,6 +513,7 @@ def preflight(output: str | Path = DEFAULT_OUTPUT) -> dict:
         "ledger_requests": sum(len(book["requests"]) for _slot, _ledger, book in ledgers),
         "ledger_shards": len(ledgers),
         "model_requests_started": 0,
+        "runtime_bootstrap": plan["runtime_bootstrap"],
         "tasks": [item["id"] for item in plan["tasks"]],
         "slots": len(plan["slots"]),
     }
@@ -443,6 +544,7 @@ def job_config(plan: dict, slot: dict, directory: Path) -> dict:
         "observation_public_key_env": plan["langfuse"]["public_key_env"],
         "observation_secret_key_env": plan["langfuse"]["secret_key_env"],
         "observation_close_timeout": plan["langfuse"]["close_timeout"],
+        "provider_timeout": plan["provider_timeout_seconds"],
         **slot["limits"],
     }
     return {

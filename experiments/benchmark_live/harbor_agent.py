@@ -498,7 +498,7 @@ class BudgetedHarborAgent(BaseAgent):
                  observation_close_timeout=15,
                  campaign_id=None, run_id=None, max_requests=16, max_seconds=600,
                  context_budget=32000, output_tokens=4096, shell_timeout=60,
-                 spend_ceiling_usd=None, **kwargs):
+                 spend_ceiling_usd=None, provider_timeout=90, **kwargs):
         super().__init__(logs_dir=Path(logs_dir), **kwargs)
         if artifact_projection not in ("on", "off"):
             raise ValueError("artifact_projection must be on/off")
@@ -514,6 +514,10 @@ class BudgetedHarborAgent(BaseAgent):
             raise ValueError("required observation needs observation_mode=langfuse")
         if observation_mode == "langfuse" and campaign_id is None:
             raise ValueError("langfuse observation requires a frozen campaign_id")
+        if (type(provider_timeout) not in (int, float)
+                or not math.isfinite(provider_timeout)
+                or not 0 < provider_timeout <= 300):
+            raise ValueError("provider_timeout must be in 0..300 seconds")
         if (type(observation_close_timeout) not in (int, float)
                 or not math.isfinite(observation_close_timeout)
                 or not 0 < observation_close_timeout <= 60):
@@ -557,6 +561,7 @@ class BudgetedHarborAgent(BaseAgent):
         self.observation_public_key_env = observation_public_key_env
         self.observation_secret_key_env = observation_secret_key_env
         self.observation_close_timeout = observation_close_timeout
+        self.provider_timeout = provider_timeout
         default_arm = {
             ("baseline", "off"): "baseline",
             ("layered", "on"): "enhanced",
@@ -609,7 +614,10 @@ class BudgetedHarborAgent(BaseAgent):
         schema_entries: list[dict] = []
 
         try:
-            raw = create_live_llm(max_output_tokens=self.output_tokens, timeout=120)
+            raw = create_live_llm(
+                max_output_tokens=self.output_tokens,
+                timeout=self.provider_timeout,
+            )
             guarded = GuardedLLM(raw, self.ledger, run_id)
             if self.observation_mode == "langfuse":
                 owner = ExperimentLLMOwner.from_environment(
