@@ -47,8 +47,62 @@ def _reject_constant(value: str) -> None:
     raise SchemaError(f"non-finite JSON number is forbidden: {value}")
 
 
+def _decode_json(source: str) -> Any:
+    return json.loads(
+        source,
+        object_pairs_hook=_reject_duplicates,
+        parse_constant=_reject_constant,
+    )
+
+
+def _matching_object_end(text: str, start: int) -> int | None:
+    depth = 0
+    quoted = False
+    escaped = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if quoted:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                quoted = False
+            continue
+        if char == '"':
+            quoted = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+    return None
+
+
+def _embedded_json_objects(text: str) -> list[tuple[int, int, dict[str, Any]]]:
+    found: list[tuple[int, int, dict[str, Any]]] = []
+    cursor = 0
+    while True:
+        start = text.find("{", cursor)
+        if start < 0:
+            return found
+        end = _matching_object_end(text, start)
+        if end is None:
+            cursor = start + 1
+            continue
+        try:
+            value = _decode_json(text[start:end])
+        except (json.JSONDecodeError, TypeError, ValueError):
+            cursor = start + 1
+            continue
+        if isinstance(value, dict):
+            found.append((start, end, value))
+        cursor = end
+
+
 def parse_json_object(text: str) -> dict[str, Any]:
-    """Parse plain JSON or exactly one fenced JSON object."""
+    """Parse exactly one plain, fenced, or prose-embedded JSON object."""
 
     if not isinstance(text, str):
         raise SchemaError("role output must be text")
@@ -60,19 +114,24 @@ def parse_json_object(text: str) -> dict[str, Any]:
         fences = list(_JSON_FENCE_RE.finditer(stripped))
         if len(fences) > 1:
             raise SchemaError("ambiguous JSON code blocks")
+        if not fences and "```" in stripped:
+            raise SchemaError("only fenced json code blocks are supported")
         source = fences[0].group("body") if fences else stripped
     if not source:
         raise SchemaError("empty JSON output")
     try:
-        value = json.loads(
-            source,
-            object_pairs_hook=_reject_duplicates,
-            parse_constant=_reject_constant,
-        )
+        value = _decode_json(source)
     except SchemaError:
         raise
     except (json.JSONDecodeError, TypeError, ValueError) as exc:
-        raise SchemaError(f"invalid JSON output: {exc}") from exc
+        if fences:
+            raise SchemaError(f"invalid JSON output: {exc}") from exc
+        candidates = _embedded_json_objects(stripped)
+        if len(candidates) > 1:
+            raise SchemaError("ambiguous JSON objects")
+        if not candidates:
+            raise SchemaError(f"invalid JSON output: {exc}") from exc
+        value = candidates[0][2]
     if not isinstance(value, dict):
         raise SchemaError("role output must be a JSON object")
     return value

@@ -26,6 +26,11 @@ from my_agent_core.retry import AutoRetryPolicy
 from my_agent_core.session import Session
 from my_agent_core.tools import tool
 from my_coding_agent.tools.artifact import make_artifact_tools
+from my_coding_agent.longhorizon.schema import (
+    SchemaError,
+    parse_audit_report,
+    parse_manager_decision,
+)
 from my_agent_llm import Message, TurnOutcome
 from my_agent_llm.observation import observation_context
 
@@ -51,6 +56,7 @@ _AUDIT_FIRST_COMMANDS = frozenset(
 )
 _MEA_EXECUTOR_RESERVED_REQUESTS = 24
 _MEA_AUDITOR_MAX_REQUESTS = 20
+_MEA_EXECUTOR_ROUND_CAPS = {1: 16, 2: 32, 3: 12, 4: 8}
 
 
 def _message_text(message) -> str:
@@ -155,6 +161,23 @@ def _safe_auditor_command(command: object) -> tuple[bool, str]:
     return True, text
 
 
+def _executor_turn_budget(
+    *,
+    available: int,
+    round_index: int,
+    max_rounds: int,
+) -> int:
+    if round_index < 1 or round_index > max_rounds:
+        raise ValueError("executor round is outside the frozen MEA limit")
+    remaining_rounds = max_rounds - round_index + 1
+    reserve = min(
+        _MEA_EXECUTOR_RESERVED_REQUESTS,
+        2 * (remaining_rounds - 1) + 6,
+    )
+    cap = _MEA_EXECUTOR_ROUND_CAPS.get(round_index, 8)
+    return min(cap, available - reserve)
+
+
 def _append_jsonl(path: Path, value: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as stream:
@@ -186,6 +209,214 @@ def _safe_exception(exc: BaseException) -> dict:
         "message": _bounded(message, 1000),
         "traceback": _bounded(trace, 8000),
     }
+
+
+async def _request_manager_json(
+    *,
+    llm,
+    request: RoleRequest,
+    remaining_timeout,
+    role_log: Path,
+) -> str:
+    base_messages = [
+        Message(role=message.role, content=message.content)
+        for message in request.messages
+    ]
+    messages = base_messages
+    last_failure = "manager response invalid"
+    for attempt in (1, 2):
+        with observation_context(purpose=request.purpose):
+            response = await asyncio.wait_for(
+                llm.achat(
+                    messages,
+                    tools=[],
+                    response_format={"type": "json_object"},
+                ),
+                timeout=max(1.0, remaining_timeout()),
+            )
+        tool_calls = getattr(response, "tool_calls", None)
+        if tool_calls:
+            raise RuntimeError("manager returned tool calls")
+        outcome = getattr(response, "outcome", None)
+        finish_reason = getattr(response, "finish_reason", None)
+        content = getattr(response, "content", None)
+        _append_jsonl(
+            role_log,
+            {
+                "purpose": request.purpose,
+                "attempt": attempt,
+                "messages": [
+                    {"role": message.role, "content": message.content}
+                    for message in messages
+                ],
+                "output": content,
+                "outcome": (
+                    outcome.value if isinstance(outcome, TurnOutcome) else outcome
+                ),
+                "finish_reason": finish_reason,
+            },
+        )
+        if (
+            outcome is not None
+            and outcome not in (TurnOutcome.COMPLETED, TurnOutcome.LENGTH)
+        ):
+            raise RuntimeError("manager response did not complete")
+        if isinstance(content, str) and content.strip():
+            try:
+                parse_manager_decision(content)
+            except SchemaError as exc:
+                last_failure = str(exc)
+            else:
+                return content
+        else:
+            last_failure = "manager response content is empty"
+        if attempt == 1:
+            state_index = len(base_messages) - 1
+            messages = list(base_messages)
+            messages[state_index] = Message(
+                role="user",
+                content=(
+                    base_messages[state_index].content
+                    + "\n\nCorrection: your previous response was unusable. "
+                    "Return one compact JSON object with the exact required keys "
+                    "and no prose, Markdown, or repeated evidence."
+                ),
+            )
+    raise RuntimeError(f"manager response invalid after bounded repair: {last_failure}")
+
+
+def _render_audit_transcript(messages, *, limit: int = 24_000) -> str:
+    """Render the newest bounded audit evidence without truncating the tail."""
+    entries: list[str] = []
+    for message in messages:
+        text = _message_text(message).strip()
+        metadata = getattr(message, "metadata", None) or {}
+        tool_calls = metadata.get("tool_calls") if isinstance(metadata, dict) else None
+        tool_call_id = metadata.get("tool_call_id") if isinstance(metadata, dict) else None
+        if not text and not tool_calls:
+            continue
+        header = f"[{getattr(message, 'role', 'unknown')}]"
+        if tool_call_id:
+            header += f" tool_call_id={tool_call_id}"
+        body = _bounded(text, 3_000)
+        if tool_calls:
+            calls = _bounded(
+                json.dumps(tool_calls, ensure_ascii=False, default=str),
+                1_000,
+            )
+            body = f"{body}\ntool_calls={calls}".strip()
+        entries.append(f"{header}\n{body}")
+
+    selected: list[str] = []
+    remaining = max(1, limit)
+    for entry in reversed(entries):
+        separator = 2 if selected else 0
+        if len(entry) + separator > remaining:
+            continue
+        selected.append(entry)
+        remaining -= len(entry) + separator
+        if remaining <= 0:
+            break
+    selected.reverse()
+    return "\n\n".join(selected)
+
+
+def _fallback_audit_report(*, validation_error: str) -> str:
+    """Return a conservative parseable blocked report after projection failure."""
+    return json.dumps(
+        {
+            "status": "blocked",
+            "summary": (
+                "The Auditor collected evidence but did not produce a valid "
+                "JSON report within the bounded repair budget; no completion "
+                "claim is made."
+            ),
+            "evidence": ["bounded Auditor transcript captured"],
+            "verified_facts": [],
+            "remaining": [
+                "Fresh independent audit required: "
+                + _bounded(validation_error, 500)
+            ],
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+
+
+async def _request_auditor_projection(
+    *,
+    llm,
+    request: RoleRequest,
+    transcript: str,
+    last_output: str | None,
+    validation_error: str,
+    remaining_timeout,
+    role_log: Path,
+) -> str:
+    """Project collected audit evidence into the exact JSON contract."""
+    system = request.messages[0].content
+    original = request.messages[-1].content
+    messages = [
+        Message(role="system", content=system),
+        Message(
+            role="user",
+            content=(
+                "Original audit request:\n"
+                + original
+                + "\n\nBounded Auditor transcript (tool calls and results):\n"
+                + transcript
+                + "\n\nLast Auditor output:\n"
+                + _bounded(last_output or "", 4_000)
+                + "\n\nValidation failure:\n"
+                + _bounded(validation_error, 1_000)
+                + "\n\nReturn exactly one JSON object with status, summary, "
+                "evidence, verified_facts, and remaining. Do not call tools. "
+                "Use only evidence present in the transcript. If the evidence "
+                "is insufficient, use status=blocked. status=complete requires "
+                "remaining=[]. Return compact JSON only."
+            ),
+        ),
+    ]
+    purpose = f"{request.purpose}_projection"
+    with observation_context(purpose=purpose):
+        response = await asyncio.wait_for(
+            llm.achat(
+                messages,
+                tools=[],
+                response_format={"type": "json_object"},
+                max_tokens=2_048,
+            ),
+            timeout=max(1.0, remaining_timeout()),
+        )
+    tool_calls = getattr(response, "tool_calls", None)
+    outcome = getattr(response, "outcome", None)
+    finish_reason = getattr(response, "finish_reason", None)
+    content = getattr(response, "content", None)
+    _append_jsonl(
+        role_log,
+        {
+            "purpose": purpose,
+            "attempt": 3,
+            "mode": "transcript_json_projection",
+            "output": content,
+            "outcome": (
+                outcome.value if isinstance(outcome, TurnOutcome) else outcome
+            ),
+            "finish_reason": finish_reason,
+            "validation_error": validation_error,
+        },
+    )
+    if tool_calls:
+        raise RuntimeError("Auditor JSON projection returned tool calls")
+    if (
+        outcome is not None
+        and outcome not in (TurnOutcome.COMPLETED, TurnOutcome.LENGTH)
+    ):
+        raise RuntimeError("Auditor JSON projection did not complete")
+    if not isinstance(content, str) or not content.strip():
+        raise RuntimeError("Auditor JSON projection returned empty content")
+    parse_audit_report(content)
+    return content
 
 
 class ObservedLLM:
@@ -310,8 +541,14 @@ class BudgetedHarborAgent(BaseAgent):
             self.ledger.register_run(self.run_id, max_requests=max_requests, time_cap=max_seconds)
         self.max_requests, self.max_seconds = max_requests, max_seconds
         self.context_budget, self.output_tokens, self.shell_timeout = context_budget, output_tokens, shell_timeout
-        self.arm = artifact_projection
         self.compaction_mode = compaction_mode
+        self.compaction_policy = CompactionPolicy(
+            mode=compaction_mode,
+            recent_tool_groups=1,
+            micro_min_chars=256,
+            output_reserve=self.output_tokens,
+        )
+        self.arm = artifact_projection
         self.orchestration_mode = orchestration_mode
         self.max_rounds = max_rounds
         self.observation_mode = observation_mode
@@ -502,7 +739,7 @@ class BudgetedHarborAgent(BaseAgent):
                     artifact_store=store
                     if include_artifacts and self.arm == "on"
                     else None,
-                    compaction_policy=CompactionPolicy(mode=self.compaction_mode),
+                    compaction_policy=self.compaction_policy,
                     memory_dir=False,
                     task_store=False,
                     skill_dirs=[],
@@ -546,48 +783,28 @@ class BudgetedHarborAgent(BaseAgent):
                 )
                 status = terminal.get("stop_reason") or "missing_terminal_event"
             else:
+                max_rounds = self.max_rounds
+
                 class Callbacks:
                     async def manager(self, request: RoleRequest) -> str:
-                        messages = [
-                            Message(role=message.role, content=message.content)
-                            for message in request.messages
-                        ]
-                        with observation_context(purpose=request.purpose):
-                            response = await asyncio.wait_for(
-                                llm.achat(messages, tools=[]),
-                                timeout=max(1.0, remaining_seconds()),
-                            )
-                        tool_calls = getattr(response, "tool_calls", None)
-                        if tool_calls:
-                            raise RuntimeError("manager returned tool calls")
-                        outcome = getattr(response, "outcome", None)
-                        if outcome is not None and outcome is not TurnOutcome.COMPLETED:
-                            raise RuntimeError("manager response did not complete")
-                        content = getattr(response, "content", None)
-                        if not isinstance(content, str) or not content.strip():
-                            raise RuntimeError("manager response content is empty")
-                        _append_jsonl(
-                            role_log,
-                            {
-                                "purpose": request.purpose,
-                                "messages": [
-                                    {
-                                        "role": message.role,
-                                        "content": message.content,
-                                    }
-                                    for message in request.messages
-                                ],
-                                "output": content,
-                            },
+                        return await _request_manager_json(
+                            llm=llm,
+                            request=request,
+                            remaining_timeout=lambda: max(1.0, remaining_seconds()),
+                            role_log=role_log,
                         )
-                        return content
 
                     async def executor(self, request: RoleRequest) -> str:
                         system, user = request.messages
                         available = remaining_requests()
-                        executor_turns = min(
-                            48,
-                            available - _MEA_EXECUTOR_RESERVED_REQUESTS,
+                        suffix = request.purpose.rsplit("_r", 1)[-1]
+                        round_index = (
+                            int(suffix) if suffix.isdigit() else max_rounds
+                        )
+                        executor_turns = _executor_turn_budget(
+                            available=available,
+                            round_index=round_index,
+                            max_rounds=max_rounds,
                         )
                         if executor_turns < 1:
                             raise RuntimeError(
@@ -622,37 +839,162 @@ class BudgetedHarborAgent(BaseAgent):
                     async def auditor(self, request: RoleRequest) -> str:
                         system, user = request.messages
                         available = remaining_requests()
-                        auditor_turns = min(
+                        auditor_budget = min(
                             _MEA_AUDITOR_MAX_REQUESTS,
-                            available - 1,
+                            available - 2,
                         )
-                        if auditor_turns < 1:
-                            raise RuntimeError("auditor has no request budget")
-                        local = build_agent(
-                            system_prompt=system.content,
-                            tools=[audit_shell],
-                            session_name=request.purpose + ".jsonl",
-                            schema_role="auditor",
-                            include_artifacts=False,
-                            max_turns=auditor_turns,
-                        )
-                        try:
-                            output, role_terminal = await _run_agent_and_capture(
-                                local,
-                                user.content,
-                                max(1.0, remaining_seconds()),
+                        if auditor_budget < 1:
+                            fallback = _fallback_audit_report(
+                                validation_error="auditor has no request budget"
                             )
-                        finally:
-                            await local.aclose()
+                            _append_jsonl(
+                                role_log,
+                                {
+                                    "purpose": request.purpose,
+                                    "attempt": 3,
+                                    "mode": "local_blocked_fallback",
+                                    "output": fallback,
+                                    "validation_error": "auditor has no request budget",
+                                },
+                            )
+                            return fallback
+                        turns_per_attempt = max(1, auditor_budget // 2)
+                        last_failure = "auditor response invalid"
+                        last_output = None
+                        best_transcript = ""
+                        for attempt in (1, 2):
+                            current_available = remaining_requests()
+                            auditor_turns = min(
+                                turns_per_attempt,
+                                current_available - 2,
+                            )
+                            if auditor_turns < 1:
+                                break
+                            prompt = user.content
+                            if attempt == 2:
+                                prompt = (
+                                    prompt
+                                    + "\n\nCorrection: your previous Auditor output "
+                                    + "failed validation: "
+                                    + last_failure
+                                    + ". Re-run only the necessary read-only checks "
+                                    + "and return one compact JSON object. For "
+                                    + "status=complete, remaining must be []; put "
+                                    + "nonblocking observations in summary."
+                                )
+                            local = build_agent(
+                                system_prompt=system.content,
+                                tools=[audit_shell],
+                                session_name=(
+                                    f"{request.purpose}_attempt{attempt}.jsonl"
+                                ),
+                                schema_role="auditor",
+                                include_artifacts=False,
+                                max_turns=auditor_turns,
+                            )
+                            run_failure = None
+                            cancelled_error = None
+                            try:
+                                try:
+                                    output, role_terminal = await _run_agent_and_capture(
+                                        local,
+                                        prompt,
+                                        max(1.0, remaining_seconds()),
+                                    )
+                                except asyncio.CancelledError as exc:
+                                    cancelled_error = exc
+                                    output = None
+                                    role_terminal = None
+                                except Exception as exc:
+                                    run_failure = f"{type(exc).__name__}: {exc}"
+                                    output = None
+                                    role_terminal = None
+                            finally:
+                                try:
+                                    transcript = _render_audit_transcript(
+                                        local.session.get_full_history_messages()
+                                    )
+                                    if len(transcript) >= len(best_transcript):
+                                        best_transcript = transcript
+                                except Exception:
+                                    pass
+                                finally:
+                                    await local.aclose()
+                            if cancelled_error is not None:
+                                raise cancelled_error
+                            if output is not None:
+                                last_output = output
+                            if run_failure is not None:
+                                last_failure = run_failure
+                                _append_jsonl(
+                                    role_log,
+                                    {
+                                        "purpose": request.purpose,
+                                        "attempt": attempt,
+                                        "output": output,
+                                        "terminal": role_terminal,
+                                        "validation_error": last_failure,
+                                    },
+                                )
+                                if attempt == 2:
+                                    break
+                                continue
+                            try:
+                                parse_audit_report(output)
+                            except SchemaError as exc:
+                                last_failure = str(exc)
+                                valid = False
+                            else:
+                                valid = True
+                            _append_jsonl(
+                                role_log,
+                                {
+                                    "purpose": request.purpose,
+                                    "attempt": attempt,
+                                    "output": output,
+                                    "terminal": role_terminal,
+                                    "validation_error": (
+                                        None if valid else last_failure
+                                    ),
+                                },
+                            )
+                            if valid:
+                                return output
+                        if remaining_requests() >= 2:
+                            try:
+                                projected = await _request_auditor_projection(
+                                    llm=llm,
+                                    request=request,
+                                    transcript=best_transcript,
+                                    last_output=last_output,
+                                    validation_error=last_failure,
+                                    remaining_timeout=lambda: max(
+                                        1.0, remaining_seconds()
+                                    ),
+                                    role_log=role_log,
+                                )
+                            except BudgetStop:
+                                raise
+                            except Exception as exc:
+                                last_failure = (
+                                    f"{type(exc).__name__}: {exc}"
+                                )
+                            else:
+                                return projected
+                        fallback = _fallback_audit_report(
+                            validation_error=last_failure
+                        )
                         _append_jsonl(
                             role_log,
                             {
                                 "purpose": request.purpose,
-                                "output": output,
-                                "terminal": role_terminal,
+                                "attempt": 3,
+                                "mode": "local_blocked_fallback",
+                                "output": fallback,
+                                "validation_error": last_failure,
                             },
                         )
-                        return output
+                        return fallback
 
                 outcome = await run_mea(
                     task=instruction,
@@ -770,9 +1112,11 @@ class BudgetedHarborAgent(BaseAgent):
                 "output_tokens": self.output_tokens,
                 "shell_timeout": self.shell_timeout,
                 "compaction_mode": self.compaction_mode,
+                "compaction_profile": self.compaction_policy.capability_profile(),
                 "orchestration_mode": self.orchestration_mode,
                 "max_rounds": self.max_rounds,
                 "mea_executor_reserved_requests": _MEA_EXECUTOR_RESERVED_REQUESTS,
+                "mea_executor_round_caps": _MEA_EXECUTOR_ROUND_CAPS,
                 "mea_auditor_max_requests": _MEA_AUDITOR_MAX_REQUESTS,
                 "observation_mode": self.observation_mode,
                 "observation_required": self.observation_required,

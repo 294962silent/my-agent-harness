@@ -329,14 +329,31 @@ class GuardedLLM:
     def _reserve(self, messages, tools, kwargs):
         if kwargs.get("model") not in (None, self.model):
             raise BudgetStop("model override differs from budgeted model")
-        if set(kwargs) - {"model", "max_tokens", "temperature", "top_p", "stop"}:
+        if kwargs.get("response_format") not in (
+            None,
+            {"type": "json_object"},
+        ):
+            raise BudgetStop("unsupported response format")
+        if set(kwargs) - {
+            "model",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "response_format",
+        }:
             raise BudgetStop("unsupported request overrides outside budget accounting")
         if any(not isinstance(m.content, str) for m in messages):
             raise BudgetStop("live budget guard supports text-only official tasks")
         bound = (
             len(
                 json.dumps(
-                    {"messages": [m.model_dump() for m in messages], "tools": tools, "model": self.model},
+                    {
+                        "messages": [m.model_dump() for m in messages],
+                        "tools": tools,
+                        "model": self.model,
+                        "response_format": kwargs.get("response_format"),
+                    },
                     ensure_ascii=False,
                 ).encode("utf-8")
             )

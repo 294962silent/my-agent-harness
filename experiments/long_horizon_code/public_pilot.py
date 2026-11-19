@@ -472,6 +472,7 @@ def proxy_reachable(proxy: str, timeout: float = 3) -> bool:
 
 
 def proxy_env(proxy: str) -> dict[str, str]:
+    no_proxy = "github.com,release-assets.githubusercontent.com"
     return {
         "HTTPS_PROXY": proxy,
         "https_proxy": proxy,
@@ -479,8 +480,8 @@ def proxy_env(proxy: str) -> dict[str, str]:
         "http_proxy": "",
         "ALL_PROXY": "",
         "all_proxy": "",
-        "NO_PROXY": "",
-        "no_proxy": "",
+        "NO_PROXY": no_proxy,
+        "no_proxy": no_proxy,
     }
 
 
@@ -697,10 +698,10 @@ def docker_transport_probe(image: str, proxy: str, *, timeout: float = 90) -> di
     parsed = urlsplit(proxy)
     proxy_address = f"{parsed.hostname}:{parsed.port or 80}"
     code = """
-timeout 30 openssl s_client -proxy "$1" -connect github.com:443 -servername github.com -brief </dev/null >/tmp/github-tls 2>&1
+timeout 30 openssl s_client -connect github.com:443 -servername github.com -brief </dev/null >/tmp/github-tls 2>&1
 github=$?
 if grep -q 'Verification: OK' /tmp/github-tls; then github=0; else github=1; fi
-timeout 30 openssl s_client -proxy "$1" -connect release-assets.githubusercontent.com:443 -servername release-assets.githubusercontent.com -brief </dev/null >/tmp/release-tls 2>&1
+timeout 30 openssl s_client -connect release-assets.githubusercontent.com:443 -servername release-assets.githubusercontent.com -brief </dev/null >/tmp/release-tls 2>&1
 release=$?
 if grep -q 'Verification: OK' /tmp/release-tls; then release=0; else release=1; fi
 printf '{"github_tls":%s,"release_assets_tls":%s}\n' "$github" "$release"
@@ -711,7 +712,8 @@ test "$github" -eq 0 && test "$release" -eq 0
         "-e", f"HTTPS_PROXY={proxy}", "-e", f"https_proxy={proxy}",
         "-e", "HTTP_PROXY=", "-e", "http_proxy=",
         "-e", "ALL_PROXY=", "-e", "all_proxy=",
-        "-e", "NO_PROXY=", "-e", "no_proxy=",
+        "-e", "NO_PROXY=github.com,release-assets.githubusercontent.com",
+        "-e", "no_proxy=github.com,release-assets.githubusercontent.com",
         image, "-c", code, "probe", proxy_address,
     ]
     result = subprocess.run(command, text=True, capture_output=True, timeout=timeout, check=False)

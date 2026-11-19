@@ -95,7 +95,7 @@ def _write_json(path: str | Path, value: object) -> None:
 
 
 def _source_hashes() -> dict[str, str]:
-    paths = [
+    paths = {
         REPO / "experiments/benchmark_live/budget.py",
         REPO / "experiments/benchmark_live/harbor_agent.py",
         REPO / "experiments/benchmark_live/tasks.py",
@@ -104,10 +104,16 @@ def _source_hashes() -> dict[str, str]:
         REPO / "experiments/long_horizon_quality/harbor_pilot.py",
         REPO / "experiments/long_horizon_quality/orchestrator.py",
         REPO / "experiments/long_horizon_quality/protocol.py",
-    ]
+    }
+    for root in (
+        REPO / "src/my_agent_core",
+        REPO / "src/my_agent_llm",
+        REPO / "src/my_coding_agent/longhorizon",
+    ):
+        paths.update(root.rglob("*.py"))
     return {
         path.relative_to(REPO).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in paths
+        for path in sorted(paths)
     }
 
 
@@ -711,12 +717,13 @@ def run(
 def _outcome_rows(plan: dict, journal: dict) -> list[dict]:
     rows = []
     for slot in plan["slots"]:
+        task_id = slot["task"] if "task" in slot else slot["task_id"]
         state = journal.get(slot["run_id"])
         usage = _usage(_ledger_for_slot(slot), slot["run_id"])
         if state is None:
             rows.append(
                 {
-                    "task_id": slot["task"],
+                    "task_id": task_id,
                     "arm": slot["arm"],
                     "trial": slot["trial"],
                     "run_id": slot["run_id"],
@@ -727,7 +734,7 @@ def _outcome_rows(plan: dict, journal: dict) -> list[dict]:
             continue
         rows.append(
             {
-                "task_id": slot["task"],
+                "task_id": task_id,
                 "arm": slot["arm"],
                 "trial": slot["trial"],
                 "run_id": slot["run_id"],
@@ -736,7 +743,11 @@ def _outcome_rows(plan: dict, journal: dict) -> list[dict]:
                     "scored"
                     if state.get("status") == "finished"
                     and state.get("category") == "scored"
-                    else state.get("status")
+                    else (
+                        state.get("category") or state.get("status")
+                        if state.get("status") == "finished"
+                        else state.get("status")
+                    )
                 ),
                 **(state.get("usage") or usage),
             }

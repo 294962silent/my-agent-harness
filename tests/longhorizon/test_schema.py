@@ -82,6 +82,31 @@ def test_parse_manager_decision_accepts_one_fenced_json_with_prose(
     assert decision.subtask == "update answer.py"
 
 
+def test_parse_audit_report_accepts_one_bare_json_with_prose() -> None:
+    payload = {
+        "status": "complete",
+        "summary": "verified",
+        "evidence": ['git status => "clean"', "nested syntax: {}"],
+        "verified_facts": ["the tree is clean"],
+        "remaining": [],
+    }
+    text = "I have enough verified evidence. Final audit JSON:\n\n" + json.dumps(payload)
+
+    report = parse_audit_report(text)
+
+    assert report.status == "complete"
+    assert report.evidence == ('git status => "clean"', "nested syntax: {}")
+    assert report.remaining == ()
+
+
+def test_parse_manager_decision_rejects_multiple_bare_json_objects() -> None:
+    first = json.dumps({"next": "done", "reason": "first"})
+    second = json.dumps({"next": "done", "reason": "second"})
+
+    with pytest.raises(SchemaError, match="ambiguous JSON objects"):
+        parse_manager_decision(f"First: {first}\nSecond: {second}")
+
+
 def test_parse_manager_decision_rejects_multiple_json_fences_as_ambiguous() -> None:
     first = '```json\n{"next":"done","reason":"first"}\n```'
     second = '```json\n{"next":"done","reason":"second"}\n```'
@@ -171,7 +196,6 @@ def test_noncomplete_audit_allows_nonempty_remaining(status: str) -> None:
         '{"next":"execute","reason":"x","subtask":"s","acceptance_criteria":["a"],"related_rounds":[0]}',
         '{"next":"execute","reason":"x","subtask":"s","acceptance_criteria":["a"],"next":"done"}',
         '```text\n{"next":"done","reason":"x"}\n```',
-        'prefix {"next":"done","reason":"x"} suffix',
     ],
 )
 def test_parse_manager_decision_rejects_non_strict_output(text: str) -> None:

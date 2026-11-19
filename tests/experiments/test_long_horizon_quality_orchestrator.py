@@ -88,6 +88,11 @@ def test_mea_uses_append_only_manager_history_and_fresh_roles() -> None:
         "user",
     )
     assert second[:3] == first + (second[2],)
+    manager_state = json.loads(
+        second[-1].content.split("Append-only current state:\n", 1)[1]
+    )
+    assert "evidence" not in manager_state["last_audit"]
+    assert manager_state["evidence_omitted"] is True
     assert callbacks.executor_requests[0].messages[0].content == EXECUTOR_SYSTEM_PROMPT
     assert callbacks.auditor_requests[0].messages[0].content == AUDITOR_SYSTEM_PROMPT
     assert outcome.role_prompt_hashes["manager"] != outcome.role_prompt_hashes["auditor"]

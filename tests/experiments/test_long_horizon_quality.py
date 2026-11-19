@@ -77,6 +77,32 @@ def test_finished_resume_state_is_enriched_before_journal_write(
     }
 
 
+def test_outcome_rows_preserve_finished_error_category(monkeypatch) -> None:
+    slot = {
+        "task_id": "fix-git",
+        "arm": "mea",
+        "trial": 0,
+        "run_id": "run-1",
+    }
+    plan = {"slots": [slot]}
+    journal = {
+        "run-1": {
+            "status": "finished",
+            "category": "execution_or_verifier_error",
+        }
+    }
+    monkeypatch.setattr(harbor_pilot, "_ledger_for_slot", lambda _slot: object())
+    monkeypatch.setattr(
+        harbor_pilot,
+        "_usage",
+        lambda _ledger, _run_id: {"requests": 1},
+    )
+
+    row = harbor_pilot._outcome_rows(plan, journal)[0]
+
+    assert row["status"] == "execution_or_verifier_error"
+
+
 def _manifest(path: Path, count: int) -> Path:
     data = {
         "schema_version": 1,

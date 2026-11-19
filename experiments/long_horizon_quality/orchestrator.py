@@ -76,6 +76,9 @@ Return exactly one JSON object with:
 next=execute requires a bounded subtask and nonempty acceptance_criteria.
 next=done requires a prior clean complete audit and no remaining work.
 Never claim an action that no Executor or Auditor verified.
+Return compact JSON only. Do not restate evidence or use Markdown. Keep reason
+under 80 words, subtask under 600 characters, and at most six acceptance
+criteria.
 """
 
 EXECUTOR_SYSTEM_PROMPT = """\
@@ -94,6 +97,7 @@ approved read-only checks. Return exactly one JSON object with:
 {"status":"complete|incomplete|blocked","summary":"...",
  "evidence":["..."],"verified_facts":["..."],"remaining":["..."]}
 status=complete requires remaining=[] and direct evidence for each fact.
+For status=complete, put nonblocking observations in summary, never in remaining.
 Never modify the workspace and never accept a claim without checking it.
 Run relevant allowlisted checks directly. Do not spend turns probing the
 allowlist or inventing shell pipelines; if a command is denied, choose a
@@ -115,10 +119,29 @@ def _state_prompt(
     verified_facts: tuple[str, ...],
     last_audit: dict[str, Any] | None,
 ) -> str:
+    def bounded(value: object, limit: int) -> str:
+        text = str(value)
+        return text if len(text) <= limit else text[: limit - 14] + "...[truncated]"
+
+    audit_view = None
+    if last_audit is not None:
+        audit_view = {
+            "status": last_audit.get("status"),
+            "summary": bounded(last_audit.get("summary", ""), 1200),
+            "verified_facts": [
+                bounded(item, 400)
+                for item in list(last_audit.get("verified_facts", []))[:12]
+            ],
+            "remaining": [
+                bounded(item, 400)
+                for item in list(last_audit.get("remaining", []))[:8]
+            ],
+        }
     state = {
         "round": round_index,
-        "verified_facts": list(verified_facts),
-        "last_audit": last_audit,
+        "verified_facts": [bounded(item, 400) for item in verified_facts[-20:]],
+        "last_audit": audit_view,
+        "evidence_omitted": last_audit is not None,
     }
     return (
         "Original task:\n"

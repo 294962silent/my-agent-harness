@@ -8,9 +8,10 @@ import pytest
 pytest.importorskip("harbor")
 
 from experiments.benchmark_live import harbor_agent as adapter
+from experiments.long_horizon_quality.orchestrator import RoleRequest
 from harbor.models.agent.context import AgentContext
 from harbor.models.task.task import Task
-from my_agent_llm import Config, LLM, Response, TurnOutcome
+from my_agent_llm import Config, LLM, Message, Response, TurnOutcome
 
 
 def test_auditor_command_allowlist_accepts_read_only_git_and_rejects_mutation():
@@ -34,6 +35,206 @@ def test_auditor_command_allowlist_accepts_read_only_git_and_rejects_mutation():
     ):
         allowed, _detail = adapter._safe_auditor_command(command)
         assert allowed is False
+
+
+def test_executor_budget_shrinks_reserve_for_terminal_round():
+    assert adapter._executor_turn_budget(
+        available=63,
+        round_index=1,
+        max_rounds=3,
+    ) == 16
+    assert adapter._executor_turn_budget(
+        available=42,
+        round_index=2,
+        max_rounds=3,
+    ) == 32
+    assert adapter._executor_turn_budget(
+        available=15,
+        round_index=3,
+        max_rounds=3,
+    ) == 9
+    with pytest.raises(ValueError, match="outside"):
+        adapter._executor_turn_budget(
+            available=15,
+            round_index=4,
+            max_rounds=3,
+        )
+
+
+@pytest.mark.anyio
+async def test_manager_repairs_one_invalid_json_response(tmp_path):
+    valid = json.dumps(
+        {
+            "next": "done",
+            "reason": "verified",
+            "subtask": "",
+            "acceptance_criteria": [],
+            "question": "",
+            "related_rounds": [1],
+        }
+    )
+
+    class Provider:
+        def __init__(self):
+            self.calls = []
+            self.responses = [
+                Response(
+                    model="fake",
+                    content="",
+                    usage={"prompt_tokens": 10, "completion_tokens": 4096},
+                    outcome=TurnOutcome.LENGTH,
+                    finish_reason="length",
+                ),
+                Response(
+                    model="fake",
+                    content=valid,
+                    usage={"prompt_tokens": 10, "completion_tokens": 20},
+                    outcome=TurnOutcome.COMPLETED,
+                    finish_reason="stop",
+                ),
+            ]
+
+        async def achat(self, messages, **kwargs):
+            self.calls.append((messages, kwargs))
+            return self.responses.pop(0)
+
+    provider = Provider()
+    request = RoleRequest(
+        purpose="mea_manager_r2",
+        messages=(
+            Message(role="system", content="manager system"),
+            Message(role="user", content="current state"),
+        ),
+    )
+    role_log = tmp_path / "quality_roles.jsonl"
+
+    output = await adapter._request_manager_json(
+        llm=provider,
+        request=request,
+        remaining_timeout=lambda: 30,
+        role_log=role_log,
+    )
+
+    assert output == valid
+    assert len(provider.calls) == 2
+    assert all(
+        kwargs["response_format"] == {"type": "json_object"}
+        for _messages, kwargs in provider.calls
+    )
+    assert "Correction:" in provider.calls[1][0][-1].content
+    rows = [
+        json.loads(line)
+        for line in role_log.read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    assert [row["attempt"] for row in rows] == [1, 2]
+    assert rows[0]["outcome"] == "length"
+    assert rows[1]["outcome"] == "completed"
+
+
+def test_audit_transcript_keeps_latest_tool_evidence_and_is_bounded():
+    rendered = adapter._render_audit_transcript(
+        [
+            Message(role="user", content="old-context " * 3_000),
+            Message(
+                role="assistant",
+                content="",
+                metadata={
+                    "tool_calls": [
+                        {
+                            "id": "call-1",
+                            "type": "function",
+                            "function": {
+                                "name": "audit_shell",
+                                "arguments": '{"command":"git status"}',
+                            },
+                        }
+                    ]
+                },
+            ),
+            Message(
+                role="tool",
+                content="working tree clean",
+                metadata={"tool_call_id": "call-1"},
+            ),
+        ],
+        limit=600,
+    )
+
+    assert len(rendered) <= 600
+    assert "audit_shell" in rendered
+    assert "tool_call_id=call-1" in rendered
+    assert "working tree clean" in rendered
+    assert "old-context" not in rendered
+
+
+def test_fallback_auditor_report_is_parseable_and_fail_closed():
+    report = adapter._fallback_audit_report(
+        validation_error="invalid JSON output"
+    )
+    parsed = adapter.parse_audit_report(report)
+
+    assert parsed.status == "blocked"
+    assert parsed.verified_facts == ()
+    assert parsed.remaining
+
+
+@pytest.mark.anyio
+async def test_auditor_projection_uses_transcript_in_json_mode(tmp_path):
+    projected = json.dumps(
+        {
+            "status": "complete",
+            "summary": "verified from transcript",
+            "evidence": ["git status returned clean"],
+            "verified_facts": ["working tree clean"],
+            "remaining": [],
+        }
+    )
+
+    class Provider:
+        def __init__(self):
+            self.calls = []
+
+        async def achat(self, messages, **kwargs):
+            self.calls.append((messages, kwargs))
+            return Response(
+                model="fake",
+                content=projected,
+                usage={"prompt_tokens": 100, "completion_tokens": 40},
+                outcome=TurnOutcome.COMPLETED,
+                finish_reason="stop",
+            )
+
+    provider = Provider()
+    request = RoleRequest(
+        purpose="mea_auditor_r2",
+        messages=(
+            Message(role="system", content="auditor system"),
+            Message(role="user", content="original audit request"),
+        ),
+    )
+    role_log = tmp_path / "quality_roles.jsonl"
+
+    output = await adapter._request_auditor_projection(
+        llm=provider,
+        request=request,
+        transcript="[tool] tool_call_id=call-1\nworking tree clean",
+        last_output="The residual line is unchanged.",
+        validation_error="invalid JSON",
+        remaining_timeout=lambda: 30,
+        role_log=role_log,
+    )
+
+    assert output == projected
+    assert len(provider.calls) == 1
+    messages, kwargs = provider.calls[0]
+    assert kwargs["tools"] == []
+    assert kwargs["response_format"] == {"type": "json_object"}
+    assert "working tree clean" in messages[-1].content
+    assert "Return exactly one JSON object" in messages[-1].content
+    row = json.loads(role_log.read_text(encoding="utf-8").splitlines()[-1])
+    assert row["mode"] == "transcript_json_projection"
+    assert row["attempt"] == 3
 
 
 @pytest.mark.anyio
@@ -294,6 +495,8 @@ async def test_adapter_runs_mea_with_fixed_roles_and_read_only_auditor(
     assert context.metadata["status"] == "complete"
     assert context.metadata["orchestration_mode"] == "mea"
     assert context.metadata["mea"]["rounds"] == 2
+    assert context.metadata["limits"]["compaction_profile"]["micro_min_chars"] == 256
+    assert context.metadata["limits"]["compaction_profile"]["recent_tool_groups"] == 1
     assert set(context.metadata["role_prompt_hashes"]) == {
         "manager",
         "executor",
