@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "my-eval"
 version = "0.1.0"
-description = "Harbor evaluation adapter and test runner for my-agent-harness"
+description = "Harbor evaluation adapter and test runner for LongArc"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

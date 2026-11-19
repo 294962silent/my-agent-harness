@@ -1,13 +1,13 @@
 # 工程发布、全平台分发与全局 CLI 规范 (`distribution`)
 
 - **定位**：工程分发体系、跨平台 CLI 绑定与多渠道安装打包规范 (`package.json`, `pyproject.toml`, `my-tui/bin/`)
-- **核心能力**：全局 CLI（`my-agent-harness` 与 `my-agent` 双命令绑定）、npm workspaces 与 `npm link` 原生支持、Python 单一工程统一内核、跨平台分发路径
+- **核心能力**：`longarc` 主命令、npm workspaces 与 `npm link` 原生支持、Python 单一工程统一内核、跨平台分发路径
 
 ---
 
 ## 一、双引擎统一分发拓扑 (Dual-Engine Architecture)
 
-`my-agent-harness` 采用了 **“Python 统一业务内核 + TypeScript 独立交互前端”** 的高效融合架构：
+LongArc 采用了 **“Python 统一业务内核 + TypeScript 独立交互前端”** 的融合架构：
 
 ```text
 根目录 (Tau 式单一 Python 项目与 npm monorepo)
@@ -27,9 +27,11 @@
 
 ```json
 {
-  "name": "my-pi-agent",
+  "name": "longarc",
   "version": "0.2.0",
   "bin": {
+    "longarc": "my-tui/bin/my-agent.js",
+    "longarc-runtime": "my-tui/bin/my-agent.js",
     "my-pi-agent": "my-tui/bin/my-agent.js",
     "my-agent": "my-tui/bin/my-agent.js"
   },
@@ -47,7 +49,7 @@
 npm link
 ```
 
-即可将 `my-agent-harness` 与 `my-agent` 注册至全局 PATH，允许开发者在操作系统的任意工作区目录中秒级唤起体验。
+即可将 `longarc` 注册至全局 PATH，允许开发者在任意工作区直接启动 LongArc。
 
 ### 2. 双向自愈启动桥接 (Bi-directional Bootstrap)
 
@@ -61,7 +63,7 @@ npm link
    - 系统全局 `python` 或 `python3`；
    - 若未探测到就绪环境，以醒目的终端输出引导开发者执行 `uv sync`。
 2. **从 Python 端启动 (`src/my_coding_agent/cli.py`)**：
-   `pyproject.toml` 注册了 `[project.scripts] my-pi-agent = "my_coding_agent.cli:main"`。当通过 Python 生态唤起时：
+   `pyproject.toml` 注册了 `[project.scripts] longarc = "my_coding_agent.cli:main"`。当通过 Python 生态唤起时：
    - 自动探查操作系统 `node` 运行时；
    - 借助 `find_tui_entry()` 在开发树、包内嵌目录或 `sys.prefix/share` 寻址 `my-agent.js`；
    - 自动透传当前环境的 `--python-executable sys.executable`，无缝拉起前端交互界面。
@@ -70,23 +72,23 @@ npm link
 
 ## 三、命令行参数与启动选项 (CLI Flags)
 
-全局 CLI 支持参数对齐日常研发工作流（`my-agent [options] [prompt]`）：
+全局 CLI 支持参数对齐日常研发工作流（`longarc [options] [prompt]`）：
 
 ```bash
 # 在指定工作区启动
-my-agent-harness -w /path/to/project
+longarc -w /path/to/project
 
 # 续接当前项目最近一次历史会话
-my-agent-harness -c
+longarc -c
 
 # 启动并直接为当前新会话命名
-my-agent-harness -n "优化数据库连接池"
+longarc -n "优化数据库连接池"
 
 # 显式指定模型与思考预算启动
-my-agent-harness -m deepseek-chat --thinking high
+longarc -m deepseek-chat --thinking high
 
 # 启动并直接提交首轮提示词
-my-agent-harness "请帮我检查当前项目的未提交代码"
+longarc "请帮我检查当前项目的未提交代码"
 ```
 
 | 参数选项 | 简写 | 描述 | 默认值 |
@@ -109,8 +111,8 @@ my-agent-harness "请帮我检查当前项目的未提交代码"
 ## 四、多渠道发布与分发路线 (Distribution Matrix)
 
 1. **npm 官方 Registry**：
-   - 依赖项内聚，用户直接通过 `npx my-pi-agent` 或 `npm install -g my-pi-agent` 全局安装；
+   - 用户通过 `npm link` 或发布后的 `npm install -g longarc` 安装；
 2. **PyPI / uvx 工具链**：
-   - 支持通过 `uv tool install my-pi-agent` 安装，由 uv 自动管理自闭环的 Python 运行时环境；
+   - 支持通过 `uv tool install longarc` 安装，由 uv 自动管理自闭环的 Python 运行时环境；
 3. **便携式单二进制构想 (Portable Standalone)**：
    - 采用 PyInstaller 或 embedded Python 将后端与 Node.js 单执行文件打包，实现零依赖双击即用。

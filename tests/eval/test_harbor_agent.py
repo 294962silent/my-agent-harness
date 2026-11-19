@@ -1,13 +1,14 @@
 # pyright: reportMissingImports=false
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from my_eval.agent import MyAgentHarness
+from my_eval.agent import LongArc, MyAgentHarness
 
 
 def test_mypi_metadata():
-    agent = MyAgentHarness()
-    assert agent.name() == "my-agent-harness"
+    agent = LongArc()
+    assert agent.name() == "longarc"
     assert agent.version() == "0.2.0"
+    assert MyAgentHarness is LongArc
 
 
 @pytest.mark.anyio

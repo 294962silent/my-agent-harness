@@ -134,7 +134,7 @@ export class LoginSelectorComponent extends Container {
         new Text(
           theme.fg(
             "muted",
-            "Credentials will be securely saved to ~/.my-agent-harness/auth.json",
+            "Credentials will be securely saved to the LongArc credential store",
           ),
           0,
           0,
@@ -174,7 +174,7 @@ export class LoginSelectorComponent extends Container {
           new Text(
             theme.fg(
               "accent",
-              "  1. ~/.my-agent-harness/auth.json (推荐：当前 Agent 专属凭据路径)\n  2. ~/.pi/agent/auth.json    (Pi 官方扩展认证凭据路径)",
+              "  1. ~/.longarc/auth.json (推荐：LongArc 凭据路径；自动兼容旧目录)\n  2. ~/.pi/agent/auth.json (Pi 官方扩展认证凭据路径)",
             ),
             0,
             0,
@@ -217,7 +217,7 @@ export class LoginSelectorComponent extends Container {
           new Text(
             theme.fg(
               "muted",
-              `Paste your key below and press Enter (saved to ~/.my-agent-harness/auth.json):`,
+              `Paste your key below and press Enter (saved to the LongArc credential store):`,
             ),
             0,
             0,

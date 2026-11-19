@@ -15,7 +15,7 @@
 
 ## 固定比较对象
 
-- 本机 [my-agent-harness](https://github.com/294962silent/my-agent-harness)。
+- 本机 [LongArc](https://github.com/294962silent/LongArc)。
 - 用户指定的 [Pi：earendil-works/pi](https://github.com/earendil-works/pi)。
 - 用户指定的 [oh-my-pi：can1357/oh-my-pi](https://github.com/can1357/oh-my-pi)。
 - [Hermes Agent：NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)。

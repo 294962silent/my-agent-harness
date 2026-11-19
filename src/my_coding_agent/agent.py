@@ -69,6 +69,7 @@ class CodingAgent:
         _home = Path.home()
         global_agents = None
         for _cand in (
+            _home / ".longarc" / "AGENTS.md",
             _home / ".my-agent-harness" / "AGENTS.md",
             _home / ".my-pi-agent" / "AGENTS.md",  # 兼容旧目录
             _home / ".agents" / "AGENTS.md",
@@ -92,11 +93,11 @@ class CodingAgent:
             resolve_model_context_window(getattr(getattr(llm, "config", None), "model", None) or ""),
         )
         if "memory_dir" not in kw:
-            proj_mem = self.workspace / ".my-agent-harness" / "memory"
-            if proj_mem.is_dir():
-                kw["memory_dir"] = proj_mem
+            paths = AgentPaths()
+            project_memory = paths.project_agent_dir(self.workspace) / "memory"
+            if project_memory.is_dir():
+                kw["memory_dir"] = project_memory
             else:
-                paths = AgentPaths()
                 paths.memory_dir.mkdir(parents=True, exist_ok=True)
                 kw["memory_dir"] = paths.memory_dir
 

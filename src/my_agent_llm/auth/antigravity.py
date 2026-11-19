@@ -41,10 +41,10 @@ class AntigravityAuthResolver:
         workspace: Path | None = None,
     ) -> None:
         home = Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or "~").expanduser()
-        self.workspace_auth_path = (Path(workspace).resolve() / ".my-agent-harness" / "auth.json") if workspace else None
+        self.workspace_auth_path = (Path(workspace).resolve() / ".longarc" / "auth.json") if workspace else None
         if pi_auth_path is not None:
             self.pi_auth_path = Path(pi_auth_path).resolve()
-        elif "MY_AGENT_HOME" not in os.environ:
+        elif "LONGARC_HOME" not in os.environ and "MY_AGENT_HOME" not in os.environ:
             default_pi_auth = home / ".pi" / "agent" / "auth.json"
             self.pi_auth_path = default_pi_auth if default_pi_auth.exists() else None
         else:
@@ -53,7 +53,16 @@ class AntigravityAuthResolver:
         if credentials_path is not None:
             self.credentials_path = Path(credentials_path).resolve()
         else:
-            self.credentials_path = home / ".my-agent-harness" / "credentials.json"
+            explicit = os.environ.get("LONGARC_HOME") or os.environ.get("MY_AGENT_HOME")
+            if explicit:
+                credentials_home = Path(explicit).expanduser()
+            elif (home / ".longarc").exists():
+                credentials_home = home / ".longarc"
+            elif (home / ".my-agent-harness").exists():
+                credentials_home = home / ".my-agent-harness"
+            else:
+                credentials_home = home / ".longarc"
+            self.credentials_path = credentials_home / "credentials.json"
 
     def resolve_credentials(self) -> AntigravityCredentials | None:
         """从工作区/项目凭据或环境变量动态获取凭据，零硬编码，隔离外部环境。"""

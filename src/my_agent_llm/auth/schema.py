@@ -87,7 +87,7 @@ Credential = Annotated[
 
 
 class AuthStore(BaseModel):
-    """全局统一凭证存储实体（映射 ~/.my-agent-harness/auth.json）。"""
+    """全局统一凭证存储实体（映射 LongArc auth.json）。"""
 
     version: int = 1
     active_profiles: dict[str, str] = Field(default_factory=dict)

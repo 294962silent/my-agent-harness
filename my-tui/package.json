@@ -1,9 +1,10 @@
 {
-  "name": "my-tui",
+  "name": "longarc-tui",
   "version": "0.2.0",
-  "description": "High-fidelity Pi-TUI terminal presentation layer for my-agent-harness",
+  "description": "LongArc Pi-TUI terminal presentation layer",
   "type": "module",
   "bin": {
+    "longarc-tui": "./bin/my-agent.js",
     "my-agent": "./bin/my-agent.js",
     "my-agent-tui": "./bin/my-agent.js"
   },

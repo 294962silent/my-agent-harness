@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "my-pi-agent"
+name = "longarc"
 version = "0.2.0"
-description = "Minimalist Pi-style coding-agent framework and CLI with Pi-TUI"
+description = "LongArc: a recoverable and observable coding-agent runtime for long-horizon tasks"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -21,6 +21,8 @@ dependencies = [
 ]
 
 [project.scripts]
+longarc = "my_coding_agent.cli:main"
+longarc-runtime = "my_coding_agent.cli:main"
 my-pi-agent = "my_coding_agent.cli:main"
 
 [dependency-groups]

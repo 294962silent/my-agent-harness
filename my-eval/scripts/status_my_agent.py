@@ -1,4 +1,4 @@
-"""Real-time live status dashboard for self-developed My-Agent-Harness on Terminal-Bench 2.1."""
+"""Real-time live status dashboard for self-developed LongArc on Terminal-Bench 2.1."""
 
 import json
 import subprocess
@@ -31,7 +31,7 @@ def get_85_tasks() -> list[str]:
 
 def main() -> None:
     print("=" * 80)
-    print("🏆 自研 My-Agent-Harness @ Terminal-Bench 2.1 (85 赛题) 实时看板")
+    print("🏆 自研 LongArc @ Terminal-Bench 2.1 (85 赛题) 实时看板")
     print("=" * 80)
 
     tasks_85 = get_85_tasks()
@@ -111,7 +111,7 @@ def main() -> None:
         print(f"   {i:02d}. {badge:<22} {tname:<32} {extra}")
 
     print("\n" + "=" * 80)
-    print(f"💡 对标原厂 Pi 官方基准: 72 胜 / 80.90% | 当前 My-Agent-Harness 满分通过: {len(passed)} 道")
+    print(f"💡 对标原厂 Pi 官方基准: 72 胜 / 80.90% | 当前 LongArc 满分通过: {len(passed)} 道")
     print("=" * 80)
 
 
