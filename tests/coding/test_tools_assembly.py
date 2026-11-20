@@ -1,4 +1,4 @@
-"""tools 装配测试：验证 build_coding_tools 返回 7 个核心工具（read/write/edit/bash/grep/find/ls）。"""
+"""tools 装配测试：验证 build_coding_tools 返回 7 个核心工具和 2 个只读产物工具。"""
 
 from pathlib import Path
 
@@ -22,25 +22,25 @@ from my_coding_agent import (
 from my_coding_agent.tools import build_coding_tools as tools_build_coding_tools
 
 
-def test_build_coding_tools_returns_seven_tools(tmp_path: Path):
-    """build_coding_tools 返回恰好 7 个工具，名称为 read/write/edit/bash/grep/find/ls。"""
+def test_build_coding_tools_returns_nine_tools(tmp_path: Path):
+    """build_coding_tools 固定装配核心工具和只读产物回读工具。"""
     queue = FileMutationQueue()
     tools = build_coding_tools(tmp_path, mutation_queue=queue)
     names = {t.name for t in tools}
-    assert names == {"read", "write", "edit", "bash", "grep", "find", "ls"}
+    assert names == {"read", "write", "edit", "bash", "grep", "find", "ls", "artifact_read", "artifact_search"}
 
 
 def test_build_coding_tools_from_tools_package(tmp_path: Path):
     """从 my_coding_agent.tools 直接导入的 build_coding_tools 与顶层等价。"""
     tools = tools_build_coding_tools(tmp_path)
     names = {t.name for t in tools}
-    assert names == {"read", "write", "edit", "bash", "grep", "find", "ls"}
+    assert names == {"read", "write", "edit", "bash", "grep", "find", "ls", "artifact_read", "artifact_search"}
 
 
 def test_build_coding_tools_accepts_str_workspace(tmp_path: Path):
     """build_coding_tools 接受 str 类型的 workspace 参数。"""
     tools = build_coding_tools(str(tmp_path))
-    assert len(tools) == 7
+    assert len(tools) == 9
 
 
 def test_build_coding_tools_parallel_safe_flags(tmp_path: Path):

@@ -25,13 +25,20 @@ export interface AssistantMessageState {
   metadata?: Record<string, unknown>;
 }
 
-export interface AgentStartSessionEvent {
+export interface ExecutionIdentity {
+  session_id?: string | null;
+  generation?: number | null;
+  execution_id?: string | null;
+  accepted_seq?: number;
+}
+
+export interface AgentStartSessionEvent extends ExecutionIdentity {
   type: "agent_start";
   systemPrompt: string;
   userInput: string;
 }
 
-export interface TurnStartSessionEvent {
+export interface TurnStartSessionEvent extends ExecutionIdentity {
   type: "turn_start";
   iteration: number;
 }
@@ -42,40 +49,42 @@ interface UsageStatsPassThrough {
   contextWindow?: number;
 }
 
-export interface TurnEndSessionEvent extends UsageStatsPassThrough {
+export interface TurnEndSessionEvent
+  extends UsageStatsPassThrough, ExecutionIdentity {
   type: "turn_end";
 }
 
-export interface MessageStartSessionEvent {
+export interface MessageStartSessionEvent extends ExecutionIdentity {
   type: "message_start";
   message: AssistantMessageState | Record<string, unknown>;
 }
 
-export interface MessageUpdateSessionEvent {
+export interface MessageUpdateSessionEvent extends ExecutionIdentity {
   type: "message_update";
   message: AssistantMessageState;
 }
 
-export interface MessageEndSessionEvent extends UsageStatsPassThrough {
+export interface MessageEndSessionEvent
+  extends UsageStatsPassThrough, ExecutionIdentity {
   type: "message_end";
   message: AssistantMessageState | Record<string, unknown>;
 }
 
-export interface ToolExecutionStartSessionEvent {
+export interface ToolExecutionStartSessionEvent extends ExecutionIdentity {
   type: "tool_execution_start";
   toolCallId: string;
   toolName: string;
   args: Record<string, unknown>;
 }
 
-export interface ToolExecutionUpdateSessionEvent {
+export interface ToolExecutionUpdateSessionEvent extends ExecutionIdentity {
   type: "tool_execution_update";
   toolCallId: string;
   toolName: string;
   partialResult: unknown;
 }
 
-export interface ToolExecutionEndSessionEvent {
+export interface ToolExecutionEndSessionEvent extends ExecutionIdentity {
   type: "tool_execution_end";
   toolCallId: string;
   toolName: string;
@@ -83,7 +92,8 @@ export interface ToolExecutionEndSessionEvent {
   isError: boolean;
 }
 
-export interface AgentEndSessionEvent extends UsageStatsPassThrough {
+export interface AgentEndSessionEvent
+  extends UsageStatsPassThrough, ExecutionIdentity {
   type: "agent_end";
   iterations: number;
   stopReason: string;
@@ -92,13 +102,19 @@ export interface AgentEndSessionEvent extends UsageStatsPassThrough {
   final_text?: string;
 }
 
-export interface ContextCompactedSessionEvent {
+export interface ContextCompactedSessionEvent extends ExecutionIdentity {
   type: "context_compacted";
   tokensBefore?: number;
   tokensAfter?: number;
+  summarizedCount?: number;
+  layersApplied?: string[];
+  layerMetrics?: Record<string, unknown>;
+  cacheEpoch?: number;
+  budgetExceeded?: boolean;
+  projectionOnly?: boolean;
 }
 
-export interface AutoRetryStartSessionEvent {
+export interface AutoRetryStartSessionEvent extends ExecutionIdentity {
   type: "auto_retry_start";
   attempt: number;
   maxAttempts: number;
@@ -106,7 +122,7 @@ export interface AutoRetryStartSessionEvent {
   errorMessage: string;
 }
 
-export interface AutoRetryEndSessionEvent {
+export interface AutoRetryEndSessionEvent extends ExecutionIdentity {
   type: "auto_retry_end";
   success: boolean;
   attempt: number;
@@ -140,6 +156,25 @@ function extractUsageStats(event: Record<string, unknown>): UsageStatsPassThroug
         : undefined,
     contextWindow: typeof rawWindow === "number" ? rawWindow : undefined,
   };
+}
+
+function extractExecutionIdentity(
+  event: Record<string, unknown>,
+): ExecutionIdentity {
+  const identity: ExecutionIdentity = {};
+  if (event.session_id !== undefined) {
+    identity.session_id = event.session_id as string | null;
+  }
+  if (event.generation !== undefined) {
+    identity.generation = event.generation as number | null;
+  }
+  if (event.execution_id !== undefined) {
+    identity.execution_id = event.execution_id as string | null;
+  }
+  if (event.accepted_seq !== undefined) {
+    identity.accepted_seq = event.accepted_seq as number;
+  }
+  return identity;
 }
 
 export class EventTranslator {
@@ -182,6 +217,7 @@ export class EventTranslator {
           type: "agent_start",
           systemPrompt: String(event.system_prompt ?? event.systemPrompt ?? ""),
           userInput: String(event.user_input ?? event.userInput ?? ""),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -189,6 +225,7 @@ export class EventTranslator {
         return {
           type: "turn_start",
           iteration: Number(event.iteration ?? 1),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -196,6 +233,7 @@ export class EventTranslator {
         return {
           type: "turn_end",
           ...extractUsageStats(event),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -210,11 +248,13 @@ export class EventTranslator {
           return {
             type: "message_start",
             message: this.cloneMessage(this.currentAssistantMessage),
+            ...extractExecutionIdentity(event),
           };
         }
         return {
           type: "message_start",
           message: rawMsg ?? { role, content: [] },
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -253,6 +293,7 @@ export class EventTranslator {
         return {
           type: "message_update",
           message: this.cloneMessage(this.currentAssistantMessage),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -263,6 +304,7 @@ export class EventTranslator {
             type: "message_end",
             message: rawMsg,
             ...extractUsageStats(event),
+            ...extractExecutionIdentity(event),
           };
         }
         const rawMeta = (rawMsg?.metadata ?? event.metadata) as
@@ -315,6 +357,7 @@ export class EventTranslator {
             type: "message_end",
             message: completedMessage,
             ...extractUsageStats(event),
+            ...extractExecutionIdentity(event),
           };
         }
         const rawAssistant = rawMsg as AssistantMessageState | undefined;
@@ -332,6 +375,7 @@ export class EventTranslator {
           type: "message_end",
           message: fallbackMsg,
           ...extractUsageStats(event),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -356,6 +400,7 @@ export class EventTranslator {
           toolCallId,
           toolName,
           args,
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -365,6 +410,7 @@ export class EventTranslator {
           toolCallId: String(event.toolCallId ?? event.tool_call_id ?? ""),
           toolName: String(event.toolName ?? event.tool_name ?? ""),
           partialResult: event.partialResult ?? event.partial_result,
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -375,6 +421,7 @@ export class EventTranslator {
           toolName: String(event.toolName ?? event.tool_name ?? ""),
           result: event.result,
           isError: Boolean(event.isError ?? event.is_error ?? false),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -392,6 +439,7 @@ export class EventTranslator {
           finalText,
           final_text: finalText,
           ...extractUsageStats(event),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -408,10 +456,53 @@ export class EventTranslator {
             : typeof event.tokens_after === "number"
               ? event.tokens_after
               : undefined;
+        const summarizedCount =
+          typeof event.summarizedCount === "number"
+            ? event.summarizedCount
+            : typeof event.summarized_count === "number"
+              ? event.summarized_count
+              : undefined;
+        const layersApplied = Array.isArray(event.layersApplied)
+          ? event.layersApplied.map(String)
+          : Array.isArray(event.layers_applied)
+            ? event.layers_applied.map(String)
+            : undefined;
+        const rawLayerMetrics =
+          event.layerMetrics && typeof event.layerMetrics === "object"
+            ? event.layerMetrics
+            : event.layer_metrics && typeof event.layer_metrics === "object"
+              ? event.layer_metrics
+              : undefined;
+        const layerMetrics =
+          rawLayerMetrics && !Array.isArray(rawLayerMetrics)
+            ? (rawLayerMetrics as Record<string, unknown>)
+            : undefined;
         return {
           type: "context_compacted",
           tokensBefore,
           tokensAfter,
+          summarizedCount,
+          layersApplied,
+          layerMetrics,
+          cacheEpoch:
+            typeof event.cacheEpoch === "number"
+              ? event.cacheEpoch
+              : typeof event.cache_epoch === "number"
+                ? event.cache_epoch
+                : undefined,
+          budgetExceeded:
+            typeof event.budgetExceeded === "boolean"
+              ? event.budgetExceeded
+              : typeof event.budget_exceeded === "boolean"
+                ? event.budget_exceeded
+                : undefined,
+          projectionOnly:
+            typeof event.projectionOnly === "boolean"
+              ? event.projectionOnly
+              : typeof event.projection_only === "boolean"
+                ? event.projection_only
+                : undefined,
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -422,6 +513,7 @@ export class EventTranslator {
           maxAttempts: Number(event.maxAttempts ?? event.max_attempts ?? 3),
           delayMs: Number(event.delayMs ?? event.delay_ms ?? 2000),
           errorMessage: String(event.errorMessage ?? event.error_message ?? ""),
+          ...extractExecutionIdentity(event),
         };
       }
 
@@ -434,6 +526,7 @@ export class EventTranslator {
             event.finalError || event.final_error
               ? String(event.finalError || event.final_error)
               : undefined,
+          ...extractExecutionIdentity(event),
         };
       }
 

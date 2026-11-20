@@ -25,6 +25,30 @@ existing `ArtifactStore`.
 - No real model or benchmark run is required for unit acceptance.
 - Preserve all unrelated dirty-worktree files.
 
+## Execution Outcome
+
+Implemented on 2026-11-20 in the current worktree.
+
+- `CompressionConfig.five_layers_enabled` defaults to `False` for direct
+  `ContextManager` compatibility; `CodingAgent` product wiring explicitly sets
+  it to `True`.
+- Projection plans persist as metadata-only `CompactionEntry` snapshots. They
+  never move `current_id`, update `compaction_floor`, or participate in summary
+  lookup / Session folding.
+- Snip reserves the newest eligible middle group for Context Collapse. Without
+  this reserve, Snip made Collapse unreachable for normal complete history.
+- Cache epochs invalidate on model/branch/resume/summary replacement and
+  provider-reported cache miss. DeepSeek `prompt_cache_miss_tokens` is retained
+  in normalized usage.
+- `ContextCompacted` now carries defaulted layer metrics and cache diagnostics;
+  low-level projection events use `projection_only=True`.
+- Legacy direct `ContextManager` behavior remains Auto-Compact-only and the
+  original context/boundary suites continue to pass.
+
+Detailed implementation and validation evidence:
+`docs/core/05-context-compaction.md` and
+`docs/experiments/HARNESS_EXPERIMENT_LOG.md`.
+
 ## Phase Index
 
 - `PHASE-02.md`: configuration, identities, Layer 1
@@ -71,12 +95,12 @@ class ProjectionItem:
 def project_messages(messages: list[Message]) -> list[ProjectionItem]: ...
 ```
 
-- [ ] Write tests for duplicate-safe IDs and invalid config rejection.
-- [ ] Run tests and verify they fail because the module does not exist.
-- [ ] Implement validation and stable IDs using role, canonical content,
+- [x] Write tests for duplicate-safe IDs and invalid config rejection.
+- [x] Run tests and verify they fail because the module does not exist.
+- [x] Implement validation and stable IDs using role, canonical content,
   metadata digest, and duplicate ordinal.
-- [ ] Wire `CompactionSettings` into every RPC `CodingAgent` construction.
-- [ ] Run targeted tests and Ruff.
+- [x] Wire `CompactionSettings` into every RPC `CodingAgent` construction.
+- [x] Run targeted tests and Ruff.
 
 ### Task 2: Tool Result Budget
 
@@ -99,14 +123,14 @@ def apply_tool_result_budget(
 ) -> tuple[list[Message], dict[str, Any]]: ...
 ```
 
-- [ ] Write a failing test showing a large single result is externalized.
-- [ ] Write a failing test showing the same-turn aggregate budget externalizes
+- [x] Write a failing test showing a large single result is externalized.
+- [x] Write a failing test showing the same-turn aggregate budget externalizes
   largest results deterministically.
-- [ ] Verify preview head/tail, stable artifact IDs, and tool pairing.
-- [ ] Implement per-result and per-group budgeting.
-- [ ] Preserve the legacy `results_dir` behavior when no artifact store exists.
-- [ ] Add request-projection reason `layer1:tool_budget`.
-- [ ] Run context and artifact tests.
+- [x] Verify preview head/tail, stable artifact IDs, and tool pairing.
+- [x] Implement per-result and per-group budgeting.
+- [x] Preserve the legacy `results_dir` behavior when no artifact store exists.
+- [x] Add request-projection reason `layer1:tool_budget`.
+- [x] Run context and artifact tests.
 
 ### Task 3: Snip and projection-plan persistence
 
@@ -133,14 +157,14 @@ def select_snip_ids(
 def apply_snip(items: list[ProjectionItem], ids: set[str]) -> list[Message]: ...
 ```
 
-- [ ] Write failing tests for complete-group deletion and protected tail.
-- [ ] Write failing tests proving Snip never splits call/result pairs.
-- [ ] Add projection-only CompactionEntry metadata persistence.
-- [ ] Ignore projection-only entries in summary lookup and session folding.
-- [ ] Persist and validate source branch, canonical hash, selected IDs, and
+- [x] Write failing tests for complete-group deletion and protected tail.
+- [x] Write failing tests proving Snip never splits call/result pairs.
+- [x] Add projection-only CompactionEntry metadata persistence.
+- [x] Ignore projection-only entries in summary lookup and session folding.
+- [x] Persist and validate source branch, canonical hash, selected IDs, and
   recent-tail key.
-- [ ] Add request-projection reason `layer2:snip`.
-- [ ] Run targeted context/session tests.
+- [x] Add request-projection reason `layer2:snip`.
+- [x] Run targeted context/session tests.
 
 ### Task 4: Microcompact and cache invalidation
 
@@ -167,13 +191,13 @@ def apply_microcompact(
 def invalidate_cache_epoch(self, reason: str) -> None: ...
 ```
 
-- [ ] Write failing tests for no-op with a valid cache epoch.
-- [ ] Write failing tests for body replacement with preserved tool structure.
-- [ ] Wire invalidation for model switch, branch/resume, summary replacement,
+- [x] Write failing tests for no-op with a valid cache epoch.
+- [x] Write failing tests for body replacement with preserved tool structure.
+- [x] Wire invalidation for model switch, branch/resume, summary replacement,
   and provider-reported cache miss.
-- [ ] Freeze selected tool IDs in the active projection plan.
-- [ ] Add request-projection reason `layer3:microcompact`.
-- [ ] Run context, Agent, and projection tests.
+- [x] Freeze selected tool IDs in the active projection plan.
+- [x] Add request-projection reason `layer3:microcompact`.
+- [x] Run context, Agent, and projection tests.
 
 ### Task 5: Context Collapse
 
@@ -202,13 +226,13 @@ async def _collapse_middle(
 ) -> tuple[list[Message], dict[str, Any]]: ...
 ```
 
-- [ ] Write failing tests that protected head and recent tail remain unchanged.
-- [ ] Write a failing test that only the selected middle range reaches the
+- [x] Write failing tests that protected head and recent tail remain unchanged.
+- [x] Write a failing test that only the selected middle range reaches the
   summarizer.
-- [ ] Implement collapse prompt and local summary projection.
-- [ ] Persist source IDs and summary; reject stale branch/resume plans.
-- [ ] Ensure empty/failed summaries skip to Auto-Compact.
-- [ ] Run context boundary tests.
+- [x] Implement collapse prompt and local summary projection.
+- [x] Persist source IDs and summary; reject stale branch/resume plans.
+- [x] Ensure empty/failed summaries skip to Auto-Compact.
+- [x] Run context boundary tests.
 
 ### Task 6: Auto-Compact integration and final verification
 
@@ -222,17 +246,17 @@ async def _collapse_middle(
 - Test: `tests/core/test_context_boundary.py`
 - Test: `tests/coding/test_settings.py`
 
-- [ ] Write failing pipeline-order tests for all five layers.
-- [ ] Integrate Auto-Compact as the final fallback.
-- [ ] Extend `ContextCompacted` with defaulted layer/status metadata.
-- [ ] Mark `budget_exceeded` when all layers run out.
-- [ ] Verify idempotence and append-only prefix after a frozen plan.
-- [ ] Verify `enabled=false`, `reserve_tokens`, and recent-tail settings through
+- [x] Write failing pipeline-order tests for all five layers.
+- [x] Integrate Auto-Compact as the final fallback.
+- [x] Extend `ContextCompacted` with defaulted layer/status metadata.
+- [x] Mark `budget_exceeded` when all layers run out.
+- [x] Verify idempotence and append-only prefix after a frozen plan.
+- [x] Verify `enabled=false`, `reserve_tokens`, and recent-tail settings through
   RPC construction.
-- [ ] Run:
+- [x] Run:
   ```powershell
   .\.venv\Scripts\python.exe -m pytest tests/core tests/coding/test_settings.py tests/llm/test_request_projection.py tests/llm/test_openai_provider.py tests/llm/test_anthropic_provider.py -q -o addopts= --import-mode=importlib
   .\.venv\Scripts\ruff.exe check src tests
   git diff --check
   ```
-- [ ] Update docs with exact implemented behavior and verified counts.
+- [x] Update docs with exact implemented behavior and verified counts.

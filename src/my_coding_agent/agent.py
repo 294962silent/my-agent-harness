@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from my_agent_core import Agent  # pyright: ignore[reportMissingImports]
+from my_agent_core.context_compression import CompressionConfig
 from my_agent_core.events import Event  # pyright: ignore[reportMissingImports]
 from my_agent_core.hooks import HookResult, ToolCallHook, UserInputHook  # pyright: ignore[reportMissingImports]
 from my_agent_core.session import Session  # pyright: ignore[reportMissingImports]
@@ -22,6 +23,7 @@ from my_coding_agent.mutation_queue import FileMutationQueue
 from my_coding_agent.paths import AgentPaths
 from my_coding_agent.permissions import PermissionGate
 from my_coding_agent.prompt import build_default_coding_prompt
+from my_coding_agent.settings import CompactionSettings
 from my_coding_agent.tools import build_coding_tools
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,7 @@ class CodingAgent:
         extra_tools: list[Tool] | tuple[Tool, ...] = (),
         permission_gate: PermissionGate | None = None,
         auto_load_mcp: bool = True,
+        compaction_settings: CompactionSettings | None = None,
         **kw,
     ):
         self.workspace = Path(workspace).resolve()
@@ -57,10 +60,15 @@ class CodingAgent:
             session = Session(path=Path(session), cwd=str(self.workspace))
 
         # 1. 预先装配 7 大编码专属工具并与额外工具合并
+        # 稳定产物库：工作区归属 + 内容寻址；工具清单在构造时固定注册。
+        from my_agent_core.artifacts import ArtifactStore
+
+        self.artifact_store = ArtifactStore(self.workspace)
         coding_tools = build_coding_tools(
             self.workspace,
             mutation_queue=self.mutation_queue,
             background_runner=lambda: getattr(self.agent, "background_runner", None),
+            artifact_store=self.artifact_store,
         )
         all_tools = [*extra_tools, *coding_tools]
 
@@ -87,10 +95,26 @@ class CodingAgent:
         )
 
         # 3. 构造框架通用 Agent（压缩预算默认 = 当前模型窗口，阀值 = 80%×窗口）
+        compaction = compaction_settings or CompactionSettings()
+        compression = CompressionConfig(
+            enabled=compaction.enabled,
+            five_layers_enabled=True,
+            reserve_tokens=compaction.reserve_tokens,
+            keep_recent_tokens=compaction.keep_recent_tokens,
+            tool_result_max_chars=compaction.tool_result_max_chars,
+            tool_round_max_chars=compaction.tool_round_max_chars,
+            context_trigger_ratio=compaction.context_trigger_ratio,
+            microcompact_min_chars=compaction.microcompact_min_chars,
+        )
+        context_window = resolve_model_context_window(
+            getattr(getattr(llm, "config", None), "model", None) or ""
+        )
         kw.setdefault(
             "context_budget",
-            resolve_model_context_window(getattr(getattr(llm, "config", None), "model", None) or ""),
+            max(1, context_window - compaction.reserve_tokens),
         )
+        kw.setdefault("keep_recent_tokens", compaction.keep_recent_tokens)
+        kw.setdefault("compression_config", compression)
         if "memory_dir" not in kw:
             proj_mem = self.workspace / ".my-agent-harness" / "memory"
             if proj_mem.is_dir():
@@ -105,6 +129,7 @@ class CodingAgent:
             session=session,
             tools=all_tools,
             system_prompt=effective_prompt,
+            artifact_store=self.artifact_store,
             **kw,
         )
 
@@ -250,8 +275,14 @@ class CodingAgent:
         except Exception as exc:
             logger.warning("加载工作区 .mcp.json 失败: %s", exc)
 
+    async def aclose(self) -> None:
+        """Close optional memory work and MCP resources."""
+        await self.agent.aclose()
+        await self.close_mcp()
+
     async def close_mcp(self) -> None:
         """异步关闭并回收已挂载的 MCP 连接与子进程资源。"""
+        await self.agent._memory_distiller.stop()
         if self._mcp_manager is not None:
             await self._mcp_manager.close_all()
             self._mcp_manager = None
@@ -276,7 +307,7 @@ class CodingAgent:
         exc_tb: Any,
     ) -> None:
         """异步上下文管理器出口：优雅回收 MCP 资源。"""
-        await self.close_mcp()
+        await self.aclose()
 
     async def compact(self, instructions: str | None = None):
         """手动触发智能上下文压缩。"""
@@ -331,4 +362,5 @@ class CodingAgent:
                 self.agent._current_signal.cancel()
             self.agent.message_queue.clear()
             if self._loop is not None and self._loop.is_running():
+                self._loop.call_soon_threadsafe(self.agent._memory_distiller.cancel)
                 self._loop.call_soon_threadsafe(lambda: asyncio.create_task(self.agent.background_runner.cancel_all()))

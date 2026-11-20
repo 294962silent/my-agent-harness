@@ -180,6 +180,11 @@ def serialize_event(event: Event, stats: dict[str, Any] | None = None) -> dict[s
             "tokensBefore": event.tokens_before,
             "tokensAfter": event.tokens_after,
             "summarizedCount": event.summarized_count,
+            "layersApplied": list(event.layers_applied),
+            "layerMetrics": event.layer_metrics,
+            "cacheEpoch": event.cache_epoch,
+            "budgetExceeded": event.budget_exceeded,
+            "projectionOnly": event.projection_only,
         }
     elif isinstance(event, ToolsChanged):
         return {

@@ -105,15 +105,22 @@ Layer state is persisted append-only in a `CompactionEntry` metadata object:
 
 ```json
 {
-  "context_projection": {
+  "entry_kind": "request_projection",
+  "projection_only": true,
+  "provenance_version": 1,
+  "source_path_id": "<current-entry>",
+  "branch_id": "<current-entry>",
+  "canonical_source_hash": "...",
+  "projection_plan": {
     "version": 1,
-    "projection_only": true,
-    "canonical_hash": "...",
-    "cache_epoch": "...",
+    "source_count": 42,
+    "source_hash": "...",
     "snip_ids": [],
-    "microcompact_tool_ids": [],
+    "microcompact_projection_ids": [],
     "collapse": {},
-    "protected_tail_key": "..."
+    "layers": [],
+    "cache_epoch": 1,
+    "budget_exceeded": true
   }
 }
 ```
@@ -163,6 +170,11 @@ tool group. Once emitted, the same result must produce byte-identical previews.
 Run after Layer 1 only when the request remains above the configured trigger.
 Select the oldest safe complete conversation groups until the request falls
 below the trigger or no more safe groups remain.
+
+The production orchestrator reserves the newest eligible middle group for
+Context Collapse. The pure selector defaults to no reserve; this explicit
+separation keeps the low-level API general while ensuring the five-layer
+product pipeline does not make Layer 4 unreachable.
 
 ### Safety rules
 

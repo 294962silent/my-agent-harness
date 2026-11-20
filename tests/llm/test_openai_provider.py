@@ -285,6 +285,26 @@ def test_stream_requests_include_usage_and_extracts_tail_usage():
     assert chunks[-1].response.usage == chunks[-1].usage
 
 
+def test_extract_usage_preserves_deepseek_cache_miss_count():
+    response = SimpleNamespace(
+        usage=SimpleNamespace(
+            prompt_tokens=100,
+            completion_tokens=5,
+            total_tokens=105,
+            prompt_cache_hit_tokens=30,
+            prompt_cache_miss_tokens=70,
+        )
+    )
+
+    assert OpenAIProvider._extract_usage(response) == {
+        "prompt_tokens": 70,
+        "completion_tokens": 5,
+        "total_tokens": 105,
+        "cache_read_tokens": 30,
+        "cache_miss_tokens": 70,
+    }
+
+
 def test_stream_explicit_stream_options_are_respected():
     """调用方显式传 stream_options 时不覆盖。"""
     p = _provider([_FakeSyncStream([_text_chunk("ok", "stop")])])

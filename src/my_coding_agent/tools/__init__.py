@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from my_agent_core.artifacts import ArtifactStore
 from my_agent_core.tools import Tool  # pyright: ignore[reportMissingImports]
 
 if TYPE_CHECKING:
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
 from my_coding_agent.mutation_queue import FileMutationQueue
 from my_coding_agent.tools.base import PathEscapeError, is_binary_file, resolve_path
 from my_coding_agent.tools.bash import make_bash_tool
+from my_coding_agent.tools.artifact import make_artifact_tools
 from my_coding_agent.tools.edit import EditBlock, make_edit_tool
 from my_coding_agent.tools.find import make_find_tool
 from my_coding_agent.tools.grep import make_grep_tool
@@ -25,19 +27,22 @@ def build_coding_tools(
     workspace: str | Path,
     mutation_queue: FileMutationQueue | None = None,
     background_runner: "BackgroundRunner | None" = None,
+    artifact_store: ArtifactStore | None = None,
 ) -> list[Tool]:
-    """返回 7 个核心文件工具（read/write/edit/bash/grep/find/ls），各绑定 workspace。"""
+    """返回 7 个核心文件工具 + 2 个只读 artifact 工具，全部绑定 workspace。"""
     workspace_path = Path(workspace).resolve()
     queue = mutation_queue or FileMutationQueue()
-    return [
+    tools = [
         make_read_tool(workspace_path),
         make_write_tool(workspace_path, mutation_queue=queue),
         make_edit_tool(workspace_path, mutation_queue=queue),
-        make_bash_tool(workspace_path, background_runner=background_runner),
+        make_bash_tool(workspace_path, background_runner=background_runner, preserve_full_output=artifact_store is not None),
         make_grep_tool(workspace_path),
         make_find_tool(workspace_path),
         make_ls_tool(workspace_path),
     ]
+    tools.extend(make_artifact_tools(artifact_store, workspace_path))
+    return tools
 
 
 __all__ = [
@@ -53,4 +58,5 @@ __all__ = [
     "make_grep_tool",
     "make_find_tool",
     "make_ls_tool",
+    "make_artifact_tools",
 ]

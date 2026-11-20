@@ -9,6 +9,7 @@ import os
 import signal
 import subprocess
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -19,6 +20,10 @@ if TYPE_CHECKING:
     from my_agent_core.message_queue import (  # pyright: ignore[reportMissingImports]
         MessageQueue,
     )
+
+
+Owner = tuple[str, int]
+CompletionCallback = Callable[[str, Owner | None], None]
 
 
 @dataclass
@@ -33,6 +38,8 @@ class BackgroundJob:
     process: asyncio.subprocess.Process | None = None
     task: asyncio.Task[None] | None = None
     started_at: float = field(default_factory=time.time)
+    _owner: Owner | None = None
+    _completion_callback: CompletionCallback | None = None
 
 
 def _kill_process_tree(proc: asyncio.subprocess.Process | None) -> None:
@@ -58,7 +65,19 @@ class BackgroundRunner:
         self.message_queue = message_queue
         self.jobs: dict[str, BackgroundJob] = {}
         self._counter = 0
+        self._capture_owner: Callable[[], Owner | None] | None = None
+        self._on_complete: CompletionCallback | None = None
         atexit.register(self._sync_cleanup)
+
+    def set_delivery_hooks(
+        self,
+        *,
+        capture_owner: Callable[[], Owner | None] | None,
+        on_complete: CompletionCallback | None,
+    ) -> None:
+        """设置新任务启动时冻结 owner 与完成投递回调的 hooks。"""
+        self._capture_owner = capture_owner
+        self._on_complete = on_complete
 
     def _sync_cleanup(self) -> None:
         """进程退出时强制清理所有存活的子进程树，杜绝孤儿进程。"""
@@ -68,9 +87,18 @@ class BackgroundRunner:
 
     async def run_process(self, command: str, cwd: Path | str, description: str = "") -> str:
         """异步启动操作系统后台子进程，立即返回 job_id。"""
+        capture_owner = self._capture_owner
+        on_complete = self._on_complete
+        owner = capture_owner() if capture_owner is not None else None
         self._counter += 1
         job_id = f"bg_{self._counter:06x}"
-        job = BackgroundJob(id=job_id, description=description or command, status="running")
+        job = BackgroundJob(
+            id=job_id,
+            description=description or command,
+            status="running",
+            _owner=owner,
+            _completion_callback=on_complete,
+        )
         self.jobs[job_id] = job
 
         async def _worker() -> None:
@@ -111,14 +139,21 @@ class BackgroundRunner:
                 f"{job.result}\n"
                 f"</task_notification>"
             )
-            self.message_queue.add_followup(notification)
+            if job._completion_callback is None:
+                self.message_queue.add_followup(notification)
+            else:
+                job._completion_callback(notification, job._owner)
 
         job.task = asyncio.create_task(_worker())
         return job_id
 
-    async def cancel_all(self) -> None:
-        """取消所有正在运行的后台子进程并递归杀死进程树。"""
-        for job in self.jobs.values():
+    async def cancel_all(self, job_ids: Sequence[str] | None = None) -> None:
+        """取消指定的运行中任务；省略快照时保持原有 cancel-all 行为。"""
+        ids = tuple(self.jobs) if job_ids is None else tuple(job_ids)
+        for job_id in ids:
+            job = self.jobs.get(job_id)
+            if job is None:
+                continue
             if job.status == "running":
                 job.status = "cancelled"
                 _kill_process_tree(job.process)

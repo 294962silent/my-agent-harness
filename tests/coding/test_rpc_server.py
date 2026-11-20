@@ -384,7 +384,9 @@ async def test_model_switch_updates_context_budget(tmp_path: Path, monkeypatch):
     assert init_resp["result"]["status"] == "ok"
     assert server.agent is not None
     ctx = server.agent.context_manager
-    assert ctx.budget == 128_000  # 注入的 FakeLLM 无 config.model → 未知模型回落
+    # 注入的 FakeLLM 无 config.model → 未知模型回落；预算仍为输出预留 reserve。
+    assert ctx.budget == 128_000 - 16_384
+    assert ctx.budget_threshold == (128_000 - 16_384) * 4 // 5
 
     switch_resp = await server.handle_request(
         {
@@ -396,8 +398,8 @@ async def test_model_switch_updates_context_budget(tmp_path: Path, monkeypatch):
     )
     assert switch_resp["result"]["status"] == "ok"
     # 同一个 ContextManager 对象被就地更新（非重建）
-    assert ctx.budget == 64_000  # deepseek-chat → 64K 窗口
-    assert ctx.budget_threshold == 64_000 * 4 // 5
+    assert ctx.budget == 64_000 - 16_384  # deepseek-chat → 64K 窗口减 reserve
+    assert ctx.budget_threshold == min(ctx.budget * 4 // 5, ctx.budget - 16_384)
 
 
 class UsageFakeLLM(FakeLLM):

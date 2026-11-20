@@ -199,7 +199,7 @@ async def test_coding_agent_permission_gate(tmp_path: Path):
 
 
 async def test_context_budget_follows_model_window(tmp_path: Path):
-    """压缩预算 = 当前模型窗口（阀值 = 80%）：不再硬编码 100k。"""
+    """压缩预算 = 当前模型窗口减输出 reserve；阈值再受 80% 水位约束。"""
     from my_agent_llm import Config
 
     fake_llm = FakeCodingLLM(
@@ -209,8 +209,8 @@ async def test_context_budget_follows_model_window(tmp_path: Path):
     agent = CodingAgent(workspace=tmp_path, llm=fake_llm, session=session)
 
     ctx = agent.agent.context_manager
-    assert ctx.budget == 1_048_576
-    assert ctx.budget_threshold == 1_048_576 * 4 // 5
+    assert ctx.budget == 1_048_576 - 16_384
+    assert ctx.budget_threshold == (1_048_576 - 16_384) * 4 // 5
 
 
 async def test_context_budget_explicit_override_wins(tmp_path: Path):

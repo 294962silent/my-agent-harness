@@ -166,8 +166,13 @@ class ModelRpcMixin:
 
         self.agent.model = model_name
         self.agent.llm = new_llm
-        # 压缩预算跟随模型窗口（阀值 = 80%×窗口）
-        self.agent.context_manager.set_budget(resolve_model_context_window(model_name))
+        self.agent.context_manager.invalidate_cache("model_changed")
+        # 压缩预算跟随模型可用窗口，并为下一次输出预留 reserve_tokens。
+        context_window = resolve_model_context_window(model_name)
+        reserve_tokens = self.settings.compaction.reserve_tokens if self.settings else 16_384
+        self.agent.context_manager.set_budget(
+            max(1, context_window - reserve_tokens)
+        )
 
         # 向 Session 追加 ModelChangeEntry
         entry = ModelChangeEntry(
