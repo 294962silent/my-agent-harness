@@ -603,6 +603,13 @@ npm test
 
 全仓 Ruff 仍会命中原有 `tests/experiments/test_context_cache.py` 的未使用导入、模块中部 import 和 `l` 变量名告警；本批变更文件 Ruff 独立通过。该既有测试文件不在本批功能改动内，未顺手改写。
 
+#### 提交与 CI
+
+- 源码提交：`bb4d0abfa623cd3ad6a3ea6756b25459768a6655`
+- PR：[#7 feat(context): add five-layer request compression](https://github.com/294962silent/LongArc/pull/7)
+- CI run：[44712768463](https://github.com/294962silent/LongArc/actions/runs/44712768463)，最终结论 `success`
+- 四个 job 全部成功：Ubuntu Python 3.11、Ubuntu Python 3.13、Windows Python 3.11、Windows Python 3.13。每个 job 完成 Ruff、TUI build/test、Python pytest、wheel build 与 TUI 资源检查。
+
 #### 简历可写 / 不可写
 
 - 可写：实现五层确定性请求投影、分支绑定快照、显式 cache epoch、恢复校验和可观测事件。

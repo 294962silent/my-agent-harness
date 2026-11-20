@@ -24,7 +24,8 @@ Auto-Compact 已作为第五层和最终兜底；诊断事件、Python RPC 序�
 | 2 | 干净 staged tree 全量 Python 回归 | 1019 passed, 1 deselected in 52.68s |
 | 3 | staged tree Ruff | All checks passed |
 | 4 | staged tree `npm test` | 96 pass, 2 skipped, 0 failed |
-| 4 | `git diff --check` | 通过 |
+| 5 | `git diff --check` | 通过 |
+| 6 | GitHub Actions CI | 4/4 jobs success |
 
 ## 遗留问题 / 坑
 
