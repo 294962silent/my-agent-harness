@@ -617,3 +617,55 @@ npm test
 - 不可写：五层压缩提高了真实模型准确率。
 - 不可写：已验证服务端 KV cache 命中率提升。
 - 不可写：项目与 Claude Code 内部实现完全一致。
+
+
+### E-SANDBOX-SCHED：2026-11-21 / 100-job 有界沙盒调度
+
+- 目标：在有限内存下接收 100 个长任务，限制活跃 asyncio Task、沙盒、内存、队列和租户并发，并避免模型等待占满工具线程。
+- 实现：新增 `src/my_agent_core/sandbox_scheduler.py`，提供全局准入、租户轮转、Session 单 owner、sandbox/memory 全程配额、CPU/process/thread 阶段配额、timeout、cancel、fencing token 和资源统计。
+- 待机行为：无论队列中有多少 Job，只有已取得完整容量的 Job 才创建 Task；全部 Job 完成后 dispatcher 退出。
+- 公平性：按租户轮转，单租户达到 active 上限后让出；同租户队首 Session 忙碌时，可以调度该租户后面的其他 Session。
+- 阶段资源：Runner 只在 `execution.lease(...)` 包围的工具/命令阶段占用 CPU、子进程和线程槽。模型请求等待期间只占 active/sandbox/memory。
+
+#### 100-job 实测
+
+测试配置：`max_active_jobs=8`、`max_pending_jobs=128`、`max_sandboxes=8`、`max_memory_mb=8`、5 个租户。每个 Job 声明 1 MB 逻辑内存。
+
+| 指标 | 实测 |
+| --- | ---: |
+| 接收 Job | 100 |
+| 运行中 | 8 |
+| 排队 | 92 |
+| `sandbox-job:*` asyncio Task | 8 |
+| 逻辑内存峰值 | 8 MB |
+| 完成 | 100 |
+| 结束后的 active / pending / sandbox / memory | 0 / 0 / 0 / 0 |
+
+另运行可复现的 8-active、每 Job 1 MiB payload 堆实验：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\stress_sandbox_scheduler.py --jobs 100 --active 8 --tenants 5 --payload-mb 1
+```
+
+结果：`active=8`、`pending=92`、`sandbox_tasks=8`、活跃 payload `8,388,608` bytes、
+`tracemalloc` 当前/峰值约 `8.53 MiB / 8.53 MiB`，完成 100，结束后 active/pending/memory 均为 0。
+这是 Python 追踪堆，不是 Docker RSS。
+
+#### 验证
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/core/test_sandbox_scheduler.py tests/core/test_run_coordinator.py tests/core/test_run_coordinator_maintenance.py tests/core/test_run_limits.py tests/core/test_execution_budget_guard.py tests/coding/test_rpc_scheduler.py tests/coding/test_rpc_scheduler_maintenance.py -q -o addopts= --import-mode=importlib
+```
+
+结果：**84 passed**。调度器与相关新文件 Ruff 通过。完整 core/coding/llm/eval 回归为
+**1182 passed, 1 deselected**；排除项仍是既有 Windows Shell pipefail 环境差异。
+
+从 Git index 导出的干净 staged tree 再运行同一套件为
+**1022 passed, 1 deselected in 51.71s**；`ruff check src tests scripts` 为
+**All checks passed**。
+
+#### 边界
+
+- 当前租约注册表是单进程内存实现，不能单独证明多 worker 互斥。
+- `memory_mb` 是准入与资源账本；Runner 必须把 `execution.memory_limit_mb` 传给 Docker/cgroup，才会限制真实容器内存。
+- 100-job 压测使用假 Runner，不启动 100 个真实容器，也不证明 Docker 网络、镜像层缓存或模型 API 容量。

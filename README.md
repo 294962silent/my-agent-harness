@@ -52,6 +52,8 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 
 **上下文压缩采用五层请求投影。** 完整 Session 始终是事实来源；模型视图依次经过 Tool Result Budget、Snip、Microcompact、Context Collapse，最后才用 Auto-Compact。前四层的计划以 projection-only 快照保存，绑定分支与 canonical 前缀哈希，可恢复但不会移动会话指针或压缩 Floor。真实 API 的 6 轮小样本中命中率为 53.5%，滑动窗口为 17.9% 且从第 4 轮起归零；这只能说明该小样本下的前缀差异，不能外推为五层管线的通用收益。
 
+**并发沙盒使用有界全局调度。** 排队 Job 不创建 asyncio Task；只有取得全局、租户、Session、沙盒和逻辑内存容量后才运行。CPU、子进程和线程槽位在工具阶段动态申请，模型等待不占工具线程。100-job 压测中 8 个活跃、92 个排队，运行态 sandbox Task 始终不超过 8。
+
 **会话用 JSONL 追加落盘。** 崩溃时最多丢最后一行——实测单个 JSON 文件损坏后 0 条可恢复，JSONL 可恢复 9/10。
 
 **工具错误统一转成结果。** 不向上抛异常，让模型看到错误并自行修正；中断时自动补齐缺失的工具结果，避免孤儿调用触发 API 400。

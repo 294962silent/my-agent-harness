@@ -50,6 +50,19 @@ from my_agent_core.retry import (  # pyright: ignore[reportMissingImports]
     AutoRetryPolicy,
     is_retryable_error,
 )
+from my_agent_core.sandbox_scheduler import (
+    InMemoryLeaseRegistry,
+    SandboxAdmissionRejected,
+    SandboxExecution,
+    SandboxJobResources,
+    SandboxJobTimeout,
+    SandboxLease,
+    SandboxResourceLimitError,
+    SandboxScheduler,
+    SandboxSchedulerLimits,
+    SandboxSchedulerStats,
+    SandboxTicket,
+)
 from my_agent_core.session import Session, SessionStore, SessionTree
 from my_agent_core.subagent_tasks import (  # pyright: ignore[reportMissingImports]
     SubagentTask,
@@ -128,4 +141,15 @@ __all__ = [
     "CancellationToken",
     "clean_provider_context",
     "run_agent_loop",
+    "InMemoryLeaseRegistry",
+    "SandboxAdmissionRejected",
+    "SandboxExecution",
+    "SandboxJobResources",
+    "SandboxJobTimeout",
+    "SandboxLease",
+    "SandboxResourceLimitError",
+    "SandboxScheduler",
+    "SandboxSchedulerLimits",
+    "SandboxSchedulerStats",
+    "SandboxTicket",
 ]
