@@ -54,6 +54,8 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 
 **并发沙盒使用有界全局调度。** 排队 Job 不创建 asyncio Task；只有取得全局、租户、Session、沙盒和逻辑内存容量后才运行。CPU、子进程和线程槽位在工具阶段动态申请，模型等待不占工具线程。100-job 压测中 8 个活跃、92 个排队，运行态 sandbox Task 始终不超过 8。
 
+**多 worker 模式使用 SQLite 控制面。** Job、owner、heartbeat、TTL lease、fencing token、全局 active/sandbox/memory、RPM/TPM 和租户配额通过 `BEGIN IMMEDIATE` 原子更新；失联任务的 lease 到期后自动重排。Docker executor 将配额映射为 `--memory`、`--memory-swap`、`--cpus`、`--pids-limit`，并对 hang 执行 stop、remove 和存在性确认。
+
 **会话用 JSONL 追加落盘。** 崩溃时最多丢最后一行——实测单个 JSON 文件损坏后 0 条可恢复，JSONL 可恢复 9/10。
 
 **工具错误统一转成结果。** 不向上抛异常，让模型看到错误并自行修正；中断时自动补齐缺失的工具结果，避免孤儿调用触发 API 400。

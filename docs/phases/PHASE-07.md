@@ -33,7 +33,7 @@
 .\.venv\Scripts\python.exe scripts\stress_sandbox_scheduler.py --jobs 100 --active 8 --tenants 5 --payload-mb 1
 ```
 
-实际：8 active、92 pending、8 sandbox Task、Python traced heap 峰值约 8.53 MiB。
+实际：8 active、92 pending、8 sandbox Task、Python traced heap 峰值约 8.13 MiB。
 
 ## 明确不做
 

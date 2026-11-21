@@ -166,7 +166,7 @@ class SandboxSchedulerStats:
     peak_thread_slots: int
 
 
-class _ResourcePool:
+class ExecutionResourcePool:
     def __init__(
         self,
         *,
@@ -256,7 +256,7 @@ class SandboxExecution:
         session_id: str,
         lease: SandboxLease,
         resources: SandboxJobResources,
-        resource_pool: _ResourcePool,
+        resource_pool: ExecutionResourcePool,
         cancelled: asyncio.Event,
     ) -> None:
         self.job_id = job_id
@@ -406,7 +406,7 @@ class SandboxScheduler:
         self._limits = limits or SandboxSchedulerLimits()
         self._leases = lease_registry or InMemoryLeaseRegistry()
         self._clock = clock
-        self._resource_pool = _ResourcePool(
+        self._resource_pool = ExecutionResourcePool(
             cpu_limit=self._limits.max_cpu_slots,
             process_limit=self._limits.max_process_slots,
             thread_limit=self._limits.max_thread_slots,
@@ -880,6 +880,7 @@ class SandboxScheduler:
 
 
 __all__ = [
+    "ExecutionResourcePool",
     "InMemoryLeaseRegistry",
     "SandboxAdmissionRejected",
     "SandboxExecution",

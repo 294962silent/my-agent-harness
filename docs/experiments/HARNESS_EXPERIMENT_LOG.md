@@ -648,7 +648,7 @@ npm test
 ```
 
 结果：`active=8`、`pending=92`、`sandbox_tasks=8`、活跃 payload `8,388,608` bytes、
-`tracemalloc` 当前/峰值约 `8.53 MiB / 8.53 MiB`，完成 100，结束后 active/pending/memory 均为 0。
+`tracemalloc` 当前/峰值约 `8.13 MiB / 8.13 MiB`，完成 100，结束后 active/pending/memory 均为 0。
 这是 Python 追踪堆，不是 Docker RSS。
 
 #### 验证
@@ -676,3 +676,61 @@ npm test
 - 当前租约注册表是单进程内存实现，不能单独证明多 worker 互斥。
 - `memory_mb` 是准入与资源账本；Runner 必须把 `execution.memory_limit_mb` 传给 Docker/cgroup，才会限制真实容器内存。
 - 100-job 压测使用假 Runner，不启动 100 个真实容器，也不证明 Docker 网络、镜像层缓存或模型 API 容量。
+
+
+### E-DURABLE-SCHED：2026-11-21 / SQLite 多 worker 控制面与 Docker 限额
+
+- 目标：解决单进程 scheduler 无法共享容量、无法恢复排队任务、无法处理 worker 崩溃和真实 CGroup 限额的问题。
+- 新增 `durable_scheduler.py`：SQLite WAL + `BEGIN IMMEDIATE` 原子 claim；jobs、tenant_state、workers、rate_buckets、meta 表；idempotency、lease TTL、heartbeat、单调 fencing、指数退避重试、全局 active/sandbox/memory 和 RPM/TPM。
+- 新增 `docker_executor.py`：`docker create/start/wait/logs/stop/rm/ps` 生命周期；`--memory`、`--memory-swap`、`--cpus`、`--pids-limit`、`--network none`、只读 root、`cap-drop ALL` 和 `no-new-privileges`。
+- 新增 `stress_durable_scheduler.py`：多个独立 SQLite scheduler 连接、多个 worker 循环和 100-job 压测。
+
+#### 故障与并发验证
+
+| 场景 | 结果 |
+| --- | --- |
+| 20 个并发 SQLite claim，全局 active=2 | 仅 2 个唯一 Job 获得 lease |
+| 同一 Session 两个 Job | 第二个只能等第一个完成 |
+| worker 停止 heartbeat 后 lease 过期 | Job 重排，attempt 增加 |
+| 旧 worker 使用过期 fencing token finish | 拒绝 |
+| 新 worker claim 同一 Job | 获得更大 fencing token |
+| tenant/global RPM 与 TPM | 任一超额即拒绝，整分钟窗口原子更新 |
+| Runner 返回 429/retryable | Job 回到 queued，按 retry-after 延后 |
+| active Job 收到 cancel | heartbeat 检出后取消 Runner |
+| Docker registry 429 | create 指数退避重试 |
+| docker start hang | stop、rm、ps verify |
+| rm 后容器仍存在 | `DockerCleanupError` fail-closed |
+
+#### 多 worker 100-job 实测
+
+```powershell
+.\.venv\Scripts\python.exe scripts\stress_durable_scheduler.py --jobs 100 --workers 8 --active 8 --tenants 5 --payload-mb 1 --run-seconds 0.2
+```
+
+结果：100 succeeded，queued/active/failed 均为 0；峰值 8 个并发 worker；8 MiB 活跃
+payload；Python traced heap 峰值约 8.15 MiB；结束后 sandbox/memory 资源为 0。
+
+#### 验证
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/core/test_durable_scheduler.py tests/core/test_docker_executor.py -q -o addopts= --import-mode=importlib
+```
+
+结果：**14 passed**。
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/core tests/coding tests/llm tests/eval -q -o addopts= --import-mode=importlib -k "not test_bash_pipefail_propagates_error"
+```
+
+结果：**1196 passed, 1 deselected in 51.51s**。调度器/持久层/Docker executor
+相关 Ruff 为 **All checks passed**。
+
+从 Git index 导出的干净 staged tree 为
+**1036 passed, 1 deselected in 49.90s**；`ruff check src tests scripts` 通过。
+
+#### 边界
+
+- SQLite 控制面面向单主机/可靠本地共享文件，不是跨数据中心分布式调度。
+- 当前 worker 使用轮询 claim，没有 broker 推送。
+- 真实 Docker 压测未执行；Docker executor 通过可注入命令 Runner 验证了参数、429、hang 和清理确认。
+- Scheduler 的 RPM/TPM 是调用前预算，Provider 最终 usage 仍需回填。

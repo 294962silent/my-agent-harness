@@ -151,5 +151,8 @@ async with execution.lease(process_slots=1, thread_slots=1):
 ```
 
 本机结果：100 Job、8 active、92 pending、8 个 sandbox Task、活跃 payload 8 MiB，
-`tracemalloc` 峰值约 8.53 MiB；全部结束后 active/pending/逻辑内存归零。该数字是当前
+`tracemalloc` 峰值约 8.13 MiB（8,526,715 bytes）；全部结束后 active/pending/逻辑内存归零。该数字是当前
 Python 进程追踪堆，不是 Docker 容器 RSS。
+
+需要多 worker、SQLite 持久队列、跨进程 lease/heartbeat、全局 RPM/TPM 与 Docker
+CGroup 执行时，见 [14-durable-multiworker-scheduler.md](14-durable-multiworker-scheduler.md)。
