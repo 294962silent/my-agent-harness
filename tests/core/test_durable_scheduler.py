@@ -108,6 +108,20 @@ def test_submit_is_idempotent_bounded_and_rejects_key_reuse(tmp_path: Path) -> N
     assert scheduler.job_by_idempotency_key("one").job_id == first.job_id
 
 
+def test_get_jobs_preserves_request_order_and_missing_values(
+    tmp_path: Path,
+) -> None:
+    scheduler = DurableSandboxScheduler(tmp_path / "batch.sqlite", _limits())
+    first = scheduler.submit(_request("one"))
+    second = scheduler.submit(_request("two"))
+
+    records = scheduler.get_jobs(["missing", second.job_id, first.job_id])
+
+    assert records[0] is None
+    assert records[1] is not None and records[1].job_id == second.job_id
+    assert records[2] is not None and records[2].job_id == first.job_id
+
+
 def test_global_claims_round_robin_and_share_capacity(tmp_path: Path) -> None:
     clock = FakeClock()
     db = tmp_path / "shared.sqlite"

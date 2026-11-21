@@ -90,6 +90,33 @@ harbor run \
 
 ---
 
+## Durable Harbor 运行模式
+
+`my_eval.durable_harbor` 把 Harbor Trial 放到 SQLite 持久化队列后面。每个 worker
+领取一个 job 后执行一个真实的 Harbor Trial；`LongArcHarborEnvironment` 再把容器的
+create / exec / copy / stop 生命周期交给 `DockerSandboxExecutor`，并保留 Harbor
+Agent、工具和 verifier 的正式接口。
+
+```bash
+python -m my_eval.durable_harbor \
+  --db /path/to/jobs.sqlite \
+  --jobs-dir /path/to/jobs \
+  --env-file /path/to/live.env \
+  --model deepseek/deepseek-v4.1-flash \
+  --task-root /path/to/tasks \
+  --concurrency 8 \
+  --memory-mb 512 \
+  --timeout-seconds 420
+```
+
+2026-11-21 本机真实运行使用 100 个独立合成 Harbor task、真实
+`deepseek-v4.1-flash`、Docker 工具调用和 verifier：100/100 succeeded、100/100
+reward=1，8 个调度槽的峰值逻辑内存为 4096 MiB，完成后无残留 managed 容器。该结果
+只证明运行时与恢复链贯通，不代表 Terminal-Bench 或 SWE benchmark 质量。完整记录见
+[`docs/experiments/reports/2026-11-21-durable-harbor-live-stress.md`](../docs/experiments/reports/2026-11-21-durable-harbor-live-stress.md)。
+
+---
+
 ## 单元测试与验证
 
 套件包含 18 个针对沙箱工具桥接、CRLF 规范化、指标汇总与 CLI 预检的离线单元测试：

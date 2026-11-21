@@ -5,12 +5,14 @@
 ## 1. 实验范围与当前状态
 
 - 实验开始：2026-11-11。
-- 最近复核：2026-11-12（北京时间；上下文交付见 E-GIT-CONTEXT，长期记忆改造见后续批次；缓存性能实验保持取消）。
+- 最近复核：2026-11-21（北京时间；真实 Harbor 接入见 E-HARBOR-LIVE，缓存性能结论边界保持不变）。
 - 项目基线：`a04e940`。
 - 本地工作分支：`codex/scheduler-reliability`；独立 GitHub 交付分支：`codex/context-memory-reliability`。
 - 目标：补强事件 / Hook / ReAct–Steering–Follow-up 双层循环的调度可靠性，再增加投递追踪与执行上限。
 - 事件、Hook、Steering / Follow-up 和双层 Loop 在基线已经存在。本批补强它们的运行边界，不把已有能力重新包装成新增功能。
-- 当前交付状态：**上下文 `7531dadd`、记忆 `c7cd65e` 已推送，PR #1 的四组跨平台 CI 通过；调度未完成项仍留在本地工作区**。PR 尚未合并，原调度范围不因本批交付而自动完成；最新检查结果见 PR。
+- 当前交付状态：上下文、记忆、五层压缩、SQLite 调度、Docker executor 和真实 Harbor 主链位于
+  `codex/scheduler-reliability` 与 PR #7；最新代码证据以当前 PR head 和 CI 为准，历史 PR #1
+  记录只说明当时交付。
 - L20 工作区副本：已将 E10 时的工作区快照传至 `/data/llma/my-agent` 并完成逐文件校验；后续本地变更不自动同步。未安装服务器依赖，未据此宣称服务已启动或服务器测试通过。
 - 本批范围：进程内单执行器、唤醒与归属、运行期输入身份和撤回、轮次 / 时长预算。Redis、多进程恢复、模型请求 redirect、任意同步代码强制抢占均不在本批。
 
@@ -30,6 +32,7 @@
 | 长期记忆：脱敏、全文、删除、检索门控 | 本地存储与真实 Agent 装配经假 LLM 回归；跨平台 CI 通过 | 正则漏报 / 误报、旧备份未清洗、无跨进程锁 |
 | 长期记忆：空闲与压缩前抽取 | 默认关闭；启用后有取消、超时、Session/分支身份与 evidence 校验 | 当前进程任务、有界采样、旧未标注历史不自动抽取 |
 | 四个调度演示、GitHub PR | 上下文 / 记忆 PR #1 已创建并通过四组 CI；调度演示未完成 | 调度最终集成、演示及其独立交付 |
+| 真实 Harbor 持久化主链 | SQLite worker 已接 Harbor Trial、MyAgentHarness、LongArc Docker environment 和 verifier；100 个合成任务 100/100 reward=1 | Compose/allowlist/Windows/GPU provider 不在该适配器范围；不宣称 benchmark 提升 |
 
 ## 2. 为什么改：旧版本边界与本轮中间实现的回归
 
@@ -741,3 +744,113 @@ payload；Python traced heap 峰值约 8.15 MiB；结束后 sandbox/memory 资�
 - 当前 worker 使用轮询 claim，没有 broker 推送。
 - 真实 Docker 压测未执行；Docker executor 通过可注入命令 Runner 验证了参数、429、hang 和清理确认。
 - Scheduler 的 RPM/TPM 是调用前预算，Provider 最终 usage 仍需回填。
+
+
+### E-HARBOR-LIVE：2026-11-21 / 持久化调度接入真实 Harbor Trial
+
+- 目标：让 SQLite worker 领取的真实任务进入 Harbor Trial，由
+  `MyAgentHarness` 执行模型与工具，再由 LongArc Docker environment 管理容器并运行 verifier。
+- 新增 `my-eval/src/my_eval/durable_harbor.py`：
+  `DurableHarborRunner` 每个 job 启动一个真实 Harbor CLI Trial；使用 job ID 和 fencing token
+  隔离输出目录；解析 `result.json`、reward、token 和异常；持久化结果；支持容器探针。
+- 新增 `my-eval/src/my_eval/harbor_environment.py`：
+  Harbor `BaseEnvironment` 适配器，将 create/start/exec/copy/stop 生命周期交给
+  `DockerSandboxExecutor`。资源上限继续来自 Scheduler 和 Harbor override。
+- 扩展 `docker_executor.py`：
+  新增长生命周期容器原语、`docker exec`、`docker cp`、image build、可配置 writable root，
+  并修正 Docker `--mount` 的可写语义。
+- 新增 `DurableSandboxScheduler.get_jobs()`，每轮用一个 SQLite connection 读取批量快照，
+  避免 100 个顺序连接放大 9p 文件系统压力。
+
+#### 真实执行链
+
+```text
+SQLite queue / lease / fencing
+  -> DurableSandboxWorker
+  -> Harbor CLI / Trial
+  -> MyAgentHarness
+  -> LongArcHarborEnvironment
+  -> DockerSandboxExecutor
+  -> Docker tool execution
+  -> Harbor verifier
+```
+
+#### Live smoke
+
+- 单题真实运行：reward 1.0，输入 2,280、输出 300、缓存读 4,736 tokens。
+- Agent session 证明实际进入了 Docker 工具链：首次创建 `/app/answer.txt` 时发现目录不存在，
+  随后读取 `/app`、执行 `mkdir -p /app`、写入文件并用 `od -c` 验证。
+- 结束查询 `longarc.job` label，无残留容器。
+
+#### 8 并发 canary
+
+- 8/8 succeeded，8/8 reward=1.0。
+- 输入 7,576、输出 968、缓存读 21,888 tokens。
+- 单 job 约 68.7–91.9 秒，包含 Harbor 启动、容器启动、真实模型、工具执行和 verifier。
+
+#### 100 合成 Harbor 任务压测
+
+| 指标 | 结果 |
+| --- | ---: |
+| 独立 Job | 100 |
+| succeeded / failed / timeout / cancelled | 100 / 0 / 0 / 0 |
+| Harbor passed / trials | 100 / 100 |
+| reward.txt = 1 | 100 |
+| 首次 attempt 成功 | 100 |
+| Agent session | 100 |
+| Agent tool calls | 166 |
+| 输入 / 输出 / 缓存读 tokens | 56,228 / 14,155 / 318,208 |
+| 缓存读占 prompt-like token | 84.98% |
+| 单 job duration median / p95 | 103.39 s / 122.43 s |
+| Scheduler peak active / sandbox / memory | 8 / 8 / 4,096 MiB |
+| Docker running-container 探针峰值 | 4 |
+| 完成后 managed containers | 0 |
+
+Docker 容器峰值来自 274 次 `docker ps` 采样。Scheduler 与真实容器峰值的口径不同：
+前者是控制面 active，后者是采样时同时存活的容器。不能把两者混写成“8 个容器已验证”。
+
+#### 故障与恢复
+
+- 首轮 smoke 的 OpenCode token 被发到 `api.deepseek.com`，返回 401；配置 OpenCode base URL 后恢复。
+- 一轮 Docker `--mount` 使用非法字段 `rw`；改为 Docker 规范的可写默认和 `readonly` 标记。
+- stress task 缺少 `environment/` 时被 Harbor 识别为 dataset；补齐标准目录后恢复。
+- verifier 未写 reward、Windows CRLF 破坏 shebang，分别作为明确失败保留并修正。
+- 100-job 在第 64 个后遇到 WSL 重启；同一数据库和 idempotency key 恢复。
+- 第 72 个后 SQLite 在 Windows `E:` 9p 挂载报 `disk I/O error`；checkpoint 到 WSL ext4 后续跑。
+- 最终 100 个 job 均使用同一 run ID 和 idempotency namespace，已完成任务未重新执行。
+
+#### 验证
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\core tests\coding tests\llm tests\eval -q -o addopts= --import-mode=importlib -k "not test_bash_pipefail_propagates_error"
+```
+
+结果：**1202 passed, 1 deselected in 49.91s**。
+
+新增和修改文件 Ruff 通过。需要记录：仓库其他未纳入本任务的未提交
+`tests/experiments/test_context_cache.py` 仍有既有 Ruff 问题，因此没有把全目录 Ruff
+结果伪装成通过。
+
+从 Git index 导出的干净 staged tree 上：
+
+- `ruff check src tests scripts my-eval/src tests/eval`：通过；
+- core/coding/llm/eval 回归：**1041 passed, 2 deselected**；
+- 排除项为既有 Windows Shell pipefail 环境差异，以及 staged tree 不含构建产物
+  `my-tui/dist/app.js` 导致的 CLI 帮助测试。
+
+#### 证据
+
+- [详细报告](reports/2026-11-21-durable-harbor-live-stress.md)
+- [脱敏结果 JSON](results/2026-11-21-durable-harbor-stress100.json)
+- 原始运行摘要：`.git/codex-delivery/harbor-live/stress100-v1-summary.json`
+- SQLite 导出：`.git/codex-delivery/harbor-live/stress100-v1-final.sqlite`
+- 100 个 Harbor 产物：`.git/codex-delivery/harbor-live/stress100-v1-jobs`
+
+#### 边界
+
+- 这是合成压力任务，不是 Terminal-Bench、SWE-bench 或长时编码能力分数。
+- 全通过只证明任务/verifier/调度链贯通；任务本身非常简单。
+- 自定义 Harbor environment 面向 Linux 单容器；Compose、allowlist、Windows、GPU
+  任务仍应使用 Harbor 原生 provider。
+- 缓存读比例是 Provider usage 的派生值，不等于完整 KV-cache 命中率。
+- SQLite 面向单主机；任务恢复不等于任意外部副作用 exactly-once。

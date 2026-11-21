@@ -222,3 +222,70 @@ async def test_docker_cancellation_cleans_container() -> None:
     assert any("stop" in argv for argv in calls)
     assert any("rm" in argv for argv in calls)
     assert any("ps" in argv for argv in calls)
+
+
+@pytest.mark.anyio
+async def test_long_lived_container_primitives_keep_resource_limits(
+    tmp_path: Path,
+) -> None:
+    calls: list[tuple[str, ...]] = []
+
+    class Runner:
+        async def __call__(self, argv, *, timeout):
+            del timeout
+            calls.append(argv)
+            if "create" in argv:
+                return CommandResult(argv, 0, stdout="abcdef123450\n")
+            if "exec" in argv:
+                return CommandResult(argv, 7, stdout="out\n", stderr="err\n")
+            if "cp" in argv:
+                return CommandResult(argv, 0)
+            if "start" in argv:
+                return CommandResult(argv, 0)
+            raise AssertionError(argv)
+
+    executor = DockerSandboxExecutor(command_runner=Runner())
+    spec = DockerRunSpec(
+        image="ubuntu:22.04",
+        command=("tail", "-f", "/dev/null"),
+        read_only_root=False,
+        network="bridge",
+        user="0:0",
+    )
+    container_id = await executor.create_container(
+        FakeExecution(),
+        spec,
+        container_name="longarc-primitive",
+    )
+    await executor.start_container(container_id)
+    executed = await executor.exec_container(
+        container_id,
+        ("sh", "-lc", "printf ok"),
+        cwd="/app",
+        environment={"MODE": "test"},
+        user="root",
+    )
+    source = tmp_path / "tree"
+    source.mkdir()
+    copied = await executor.copy_to_container(
+        container_id,
+        source,
+        "/app",
+        contents_only=True,
+    )
+
+    create = next(argv for argv in calls if "create" in argv)
+    assert ("--network", "bridge") == create[
+        create.index("--network") : create.index("--network") + 2
+    ]
+    assert "--read-only" not in create
+    exec_call = next(argv for argv in calls if "exec" in argv)
+    assert ("-w", "/app") == exec_call[
+        exec_call.index("-w") : exec_call.index("-w") + 2
+    ]
+    assert ("-e", "MODE=test") == exec_call[
+        exec_call.index("-e") : exec_call.index("-e") + 2
+    ]
+    assert any(arg.endswith("/.") for arg in copied.argv)
+    assert executed.returncode == 7
+    assert executed.stdout == "out\n"

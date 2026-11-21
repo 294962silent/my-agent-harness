@@ -54,7 +54,7 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 
 **并发沙盒使用有界全局调度。** 排队 Job 不创建 asyncio Task；只有取得全局、租户、Session、沙盒和逻辑内存容量后才运行。CPU、子进程和线程槽位在工具阶段动态申请，模型等待不占工具线程。100-job 压测中 8 个活跃、92 个排队，运行态 sandbox Task 始终不超过 8。
 
-**多 worker 模式使用 SQLite 控制面。** Job、owner、heartbeat、TTL lease、fencing token、全局 active/sandbox/memory、RPM/TPM 和租户配额通过 `BEGIN IMMEDIATE` 原子更新；失联任务的 lease 到期后自动重排。Docker executor 将配额映射为 `--memory`、`--memory-swap`、`--cpus`、`--pids-limit`，并对 hang 执行 stop、remove 和存在性确认。
+**多 worker 模式使用 SQLite 控制面。** Job、owner、heartbeat、TTL lease、fencing token、全局 active/sandbox/memory、RPM/TPM 和租户配额通过 `BEGIN IMMEDIATE` 原子更新；失联任务的 lease 到期后自动重排。真实 Harbor 主链由 `DurableSandboxWorker → Harbor Trial → MyAgentHarness → LongArcHarborEnvironment → DockerSandboxExecutor → verifier` 组成，容器配额映射为 `--memory`、`--memory-swap`、`--cpus`、`--pids-limit`，hang 后执行 stop、remove 和存在性确认。100 个合成 Harbor 任务使用 8 个调度槽实跑，100/100 verifier reward=1，峰值逻辑内存 4096 MiB，结束后残留 managed 容器为 0；这是编排压力结果，不是 Terminal-Bench 分数。详见 [实验报告](docs/experiments/reports/2026-11-21-durable-harbor-live-stress.md)。
 
 **会话用 JSONL 追加落盘。** 崩溃时最多丢最后一行——实测单个 JSON 文件损坏后 0 条可恢复，JSONL 可恢复 9/10。
 

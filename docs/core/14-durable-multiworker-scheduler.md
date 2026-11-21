@@ -174,3 +174,14 @@ create -> start -> wait -> logs -> stop -> rm -f -> ps verify
 - Provider 的实际 token usage 仍需回填校准，RPM/TPM 预留不是最终账单。
 - Docker 测试使用可注入命令 Runner，没有在本机启动 100 个真实容器。
 - 容器物理内存由 Docker/cgroup 执行；唯一可靠证据是 Docker 配置和宿主监控，不是 scheduler 的 `memory_mb` 字段。
+
+## 真实 Harbor 接线
+
+`my_eval.durable_harbor` 已把 SQLite worker 接到官方 Harbor Trial。每个 job 运行一个
+Harbor Trial；自定义 `LongArcHarborEnvironment` 通过 `DockerSandboxExecutor`
+管理 Linux 单容器生命周期，Agent 工具和 verifier 仍走 Harbor 的正式接口。
+
+100 个合成任务的本机实验为 100/100 reward=1，调度峰值 8 active、8 sandbox、4096 MiB；
+真实 Docker 容器采样峰值为 4，完成后 managed 容器为 0。两组峰值口径不同，不能混写。
+该实验验证调度、隔离与恢复链，不是 Terminal-Bench 分数。详见
+[真实 Harbor 压测报告](../experiments/reports/2026-11-21-durable-harbor-live-stress.md)。

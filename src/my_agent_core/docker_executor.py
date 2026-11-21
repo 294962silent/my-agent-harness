@@ -23,6 +23,7 @@ class DockerRunSpec:
     command: tuple[str, ...]
     cpus: float = 1.0
     pids_limit: int = 64
+    read_only_root: bool = True
     network: str = "none"
     user: str = "65534:65534"
     workdir: str = "/workspace"
@@ -46,6 +47,8 @@ class DockerRunSpec:
             raise ValueError("cpus must be a finite positive number")
         if type(self.pids_limit) is not int or self.pids_limit <= 0:
             raise ValueError("pids_limit must be a positive integer")
+        if type(self.read_only_root) is not bool:
+            raise ValueError("read_only_root must be a boolean")
         if self.network != "none" and not re.fullmatch(
             r"[A-Za-z0-9_.-]+",
             self.network,
@@ -207,6 +210,176 @@ class DockerSandboxExecutor:
             raise TypeError("sleeper must be callable")
         self._sleep = sleeper
 
+    async def create_container(
+        self,
+        execution: SandboxExecutionHandle,
+        spec: DockerRunSpec,
+        *,
+        container_name: str | None = None,
+    ) -> str:
+        """Create one long-lived container without waiting for it to exit.
+
+        Harbor needs the same container for agent tools and verifier commands.
+        This primitive keeps resource-limit construction in this executor while
+        ``run`` remains the convenience path for one-shot containers.
+        """
+        resolved_name = container_name or self._container_name(execution)
+        create_argv = self.build_create_argv(
+            execution,
+            spec,
+            container_name=resolved_name,
+        )
+        created = await self._create_with_retry(create_argv)
+        if created.returncode != 0:
+            raise RuntimeError(
+                "docker create failed: "
+                f"{created.stderr.strip() or created.stdout.strip()}"
+            )
+        container_id = self._validate_container_id(created.stdout.strip())
+        if not container_id:
+            raise RuntimeError("docker create returned no container ID")
+        return container_id
+
+    async def start_container(self, container_id: str) -> CommandResult:
+        container_id = self._validate_container_id(container_id)
+        result = await self._run_docker(
+            ("start", container_id),
+            operation="start",
+        )
+        if result.returncode != 0:
+            raise RuntimeError("docker start failed: " + result.stderr.strip())
+        return result
+
+    async def wait_container(self, container_id: str) -> int:
+        container_id = self._validate_container_id(container_id)
+        waited = await self._run_docker(
+            ("wait", container_id),
+            operation="wait",
+        )
+        if waited.returncode != 0:
+            raise RuntimeError("docker wait failed: " + waited.stderr.strip())
+        try:
+            return int(waited.stdout.strip() or 0)
+        except ValueError as exc:
+            raise RuntimeError("docker wait returned a non-integer exit code") from exc
+
+    async def container_logs(self, container_id: str) -> CommandResult:
+        container_id = self._validate_container_id(container_id)
+        return await self._run_docker(
+            ("logs", container_id),
+            operation="logs",
+        )
+
+    async def exec_container(
+        self,
+        container_id: str,
+        command: tuple[str, ...],
+        *,
+        cwd: str | None = None,
+        environment: dict[str, str] | None = None,
+        user: str | None = None,
+        timeout: float | None = None,
+    ) -> CommandResult:
+        """Execute a command in a live container with the executor's timeout."""
+        container_id = self._validate_container_id(container_id)
+        if not command or any(not isinstance(arg, str) for arg in command):
+            raise ValueError("command must be a non-empty tuple of strings")
+        args: list[str] = ["exec"]
+        if cwd:
+            args.extend(("-w", cwd))
+        if user:
+            args.extend(("-u", user))
+        for key, value in sorted((environment or {}).items()):
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+                raise ValueError(f"invalid environment key: {key!r}")
+            args.extend(("-e", f"{key}={value}"))
+        args.append(container_id)
+        args.extend(command)
+        resolved_timeout = (
+            self.operation_timeout if timeout is None else self._positive("timeout", timeout)
+        )
+        try:
+            return await self.command_runner(
+                (self.docker_binary, *args),
+                timeout=resolved_timeout,
+            )
+        except asyncio.TimeoutError as exc:
+            raise DockerOperationTimeout("exec", resolved_timeout) from exc
+
+    async def copy_to_container(
+        self,
+        container_id: str,
+        source: Path,
+        target: str,
+        *,
+        contents_only: bool = False,
+    ) -> CommandResult:
+        container_id = self._validate_container_id(container_id)
+        if not target.startswith("/"):
+            raise ValueError("container target must be absolute")
+        source_text = str(source.resolve())
+        if contents_only:
+            if not source.is_dir():
+                raise ValueError("contents_only requires a directory source")
+            source_text = source_text.rstrip("/") + "/."
+        return await self._run_docker(
+            ("cp", source_text, f"{container_id}:{target}"),
+            operation="copy",
+        )
+
+    async def copy_from_container(
+        self,
+        container_id: str,
+        source: str,
+        target: Path,
+    ) -> CommandResult:
+        container_id = self._validate_container_id(container_id)
+        if not source.startswith("/"):
+            raise ValueError("container source must be absolute")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        return await self._run_docker(
+            ("cp", f"{container_id}:{source}", str(target.resolve())),
+            operation="copy",
+        )
+
+    async def build_image(
+        self,
+        *,
+        tag: str,
+        context: Path,
+        dockerfile: Path | None = None,
+        build_args: dict[str, str] | None = None,
+        timeout: float | None = None,
+    ) -> CommandResult:
+        if not re.fullmatch(r"[A-Za-z0-9_.:/@-]+", tag):
+            raise ValueError("invalid image tag")
+        if not context.is_dir():
+            raise ValueError("build context must be a directory")
+        args: list[str] = ["build", "--tag", tag]
+        if dockerfile is not None:
+            args.extend(("--file", str(dockerfile.resolve())))
+        for key, value in sorted((build_args or {}).items()):
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+                raise ValueError(f"invalid build argument key: {key!r}")
+            args.extend(("--build-arg", f"{key}={value}"))
+        args.append(str(context.resolve()))
+        resolved_timeout = (
+            self.operation_timeout if timeout is None else self._positive("timeout", timeout)
+        )
+        try:
+            result = await self.command_runner(
+                (self.docker_binary, *args),
+                timeout=resolved_timeout,
+            )
+        except asyncio.TimeoutError as exc:
+            raise DockerOperationTimeout("build", resolved_timeout) from exc
+        if result.returncode != 0:
+            raise RuntimeError(
+                "docker build failed: "
+                f"{result.stderr.strip() or result.stdout.strip()}"
+            )
+        return result
+
     async def run(
         self,
         execution: SandboxExecutionHandle,
@@ -303,7 +476,6 @@ class DockerSandboxExecutor:
             str(spec.pids_limit),
             "--network",
             spec.network,
-            "--read-only",
             "--cap-drop",
             "ALL",
             "--security-opt",
@@ -313,17 +485,17 @@ class DockerSandboxExecutor:
             "--workdir",
             spec.workdir,
         ]
+        if spec.read_only_root:
+            args.append("--read-only")
         for key, value in sorted(spec.environment.items()):
             args.extend(("--env", f"{key}={value}"))
         for mount in spec.mounts:
-            mode = "ro" if mount.read_only else "rw"
-            args.extend(
-                (
-                    "--mount",
-                    f"type=bind,src={mount.source.resolve()},"
-                    f"dst={mount.target},{mode}",
-                )
+            mount_spec = (
+                f"type=bind,src={mount.source.resolve()},dst={mount.target}"
             )
+            if mount.read_only:
+                mount_spec += ",readonly"
+            args.extend(("--mount", mount_spec))
         for key, value in sorted(spec.labels.items()):
             args.extend(("--label", f"{key}={value}"))
         args.extend(("--", spec.image))

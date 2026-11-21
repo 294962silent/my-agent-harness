@@ -9,7 +9,7 @@ tokens, global resources, retry/recovery, and minute-level RPM/TPM quotas.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 import hashlib
@@ -790,6 +790,24 @@ class DurableSandboxScheduler:
                 (_identity("job_id", job_id),),
             ).fetchone()
             return None if row is None else self._row_to_job(row)
+
+    def get_jobs(
+        self,
+        job_ids: Sequence[str],
+    ) -> list[DurableJobRecord | None]:
+        """Read many job snapshots through one SQLite connection."""
+        requested = [_identity("job_id", job_id) for job_id in job_ids]
+        unique = list(dict.fromkeys(requested))
+        if not unique:
+            return []
+        placeholders = ",".join("?" for _ in unique)
+        with self._read_connection() as conn:
+            rows = conn.execute(
+                f"SELECT * FROM jobs WHERE job_id IN ({placeholders})",
+                unique,
+            ).fetchall()
+        by_id = {row["job_id"]: self._row_to_job(row) for row in rows}
+        return [by_id.get(job_id) for job_id in requested]
 
     def job_by_idempotency_key(
         self,
