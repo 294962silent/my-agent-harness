@@ -570,7 +570,8 @@ async def test_bridge_restore_and_write(tmp_path):
     from my_agent_core.context import ContextManager, ContextSessionBridge
 
     session = Session(path=tmp_path / ".my_agent_core" / "sessions" / "s.jsonl")
-    session.add_message("user", "q1")
+    for _ in range(20):
+        session.add_message("user", "x" * 300)
     bridge = ContextSessionBridge(session)
     assert bridge.results_dir() == tmp_path / ".my_agent_core" / "tool-results"
 

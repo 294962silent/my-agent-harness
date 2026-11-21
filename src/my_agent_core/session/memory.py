@@ -29,6 +29,9 @@ def _apply_compaction(
     entry: CompactionEntry,
 ) -> list[tuple[str, Message]]:
     """将 replaces_entry_ids 范围内的消息条目折叠为一条 UserMessage 摘要。"""
+    metadata = entry.metadata or {}
+    if metadata.get("entry_kind") == "request_projection" or metadata.get("projection_only") is True:
+        return items
     summary_text = entry.summary
     prefix = "Previous conversation summary:\n"
     if summary_text.startswith(prefix):

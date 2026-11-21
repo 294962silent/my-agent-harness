@@ -30,14 +30,14 @@ def _store(tmpdir: str) -> MemoryStore:
 def test_facts_are_markdown_files_with_frontmatter() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         store = _store(tmpdir)
-        store.remember("wifi_password", "9876", valid_from="2023-06-01", importance=0.8)
+        store.remember("wifi_name", "9876", valid_from="2023-06-01", importance=0.8)
 
-        path = Path(tmpdir) / "facts" / "user" / "wifi_password.md"
+        path = Path(tmpdir) / "facts" / "user" / "wifi_name.md"
         assert path.exists(), "事实应落成 Markdown 文件"
         text = path.read_text(encoding="utf-8")
 
         assert text.startswith("---")
-        assert 'key: "wifi_password"' in text
+        assert 'key: "wifi_name"' in text
         assert 'value: "9876"' in text
         assert 'valid_from: "2023-06-01"' in text
         assert "valid_to: null" in text
@@ -47,10 +47,10 @@ def test_facts_are_markdown_files_with_frontmatter() -> None:
 def test_supersede_records_history_in_markdown() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         store = _store(tmpdir)
-        store.remember("wifi_password", "1234", valid_from="2023-01-01")
-        store.remember("wifi_password", "9876", valid_from="2023-06-01")
+        store.remember("wifi_name", "1234", valid_from="2023-01-01")
+        store.remember("wifi_name", "9876", valid_from="2023-06-01")
 
-        text = (Path(tmpdir) / "facts" / "user" / "wifi_password.md").read_text(encoding="utf-8")
+        text = (Path(tmpdir) / "facts" / "user" / "wifi_name.md").read_text(encoding="utf-8")
         assert 'value: "9876"' in text
         assert "history:" in text
         assert 'value: "1234"' in text
@@ -115,13 +115,22 @@ class DistillLLM:
 
 
 @pytest.mark.anyio
-async def test_autodistill_writes_facts_on_session_boundary() -> None:
+async def test_autodistill_writes_facts_after_idle_drain() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         workspace = Path(tmpdir)
         mem_dir = workspace / ".my_agent_core" / "memory"
         mem_dir.mkdir(parents=True, exist_ok=True)
 
-        payload = '```json\n[{"key": "city", "value": "Nanjing"}, {"key": "editor", "value": "neovim"}]\n```'
+        payload = (
+            "```json\n"
+            + json.dumps(
+                [
+                    {"key": "city", "value": "Nanjing", "evidence": "my city is Nanjing"},
+                    {"key": "editor", "value": "neovim", "evidence": "I use neovim"},
+                ]
+            )
+            + "\n```"
+        )
         llm = DistillLLM(payload)
         agent = Agent(
             llm=llm,
@@ -129,16 +138,22 @@ async def test_autodistill_writes_facts_on_session_boundary() -> None:
             session=Session(path=workspace / "s.jsonl"),
             memory_dir=mem_dir,
             memory_autodistill=True,
+            memory_idle_seconds=0,
         )
         # 主对话用 stream，蒸馏用 achat
         agent.llm.achat_stream = DistillLLM("ok").achat_stream  # type: ignore[method-assign]
-        for question in ("hello", "my city is Nanjing", "I use neovim", "thanks"):
-            await agent.run(question)
-
-        keys = {f.key: f.value for f in agent.memory_store._facts if f.active}
-        assert keys.get("city") == "Nanjing"
-        assert keys.get("editor") == "neovim"
-        assert (mem_dir / "facts" / "user" / "city.md").exists()
+        try:
+            assert await agent.run("my city is Nanjing. I use neovim.") == "ok"
+            # The response returns before optional background extraction completes.
+            assert not agent.memory_store._facts
+            await agent.wait_memory_idle()
+            assert llm.calls >= 1
+            keys = {f.key: f.value for f in agent.memory_store._facts if f.active}
+            assert keys.get("city") == "Nanjing"
+            assert keys.get("editor") == "neovim"
+            assert (mem_dir / "facts" / "user" / "city.md").exists()
+        finally:
+            await agent.aclose()
 
 
 @pytest.mark.anyio
@@ -155,9 +170,13 @@ async def test_autodistill_failure_is_silent() -> None:
             session=Session(path=workspace / "s.jsonl"),
             memory_dir=mem_dir,
             memory_autodistill=True,
+            memory_idle_seconds=0,
         )
         agent.llm.achat_stream = DistillLLM("ok").achat_stream  # type: ignore[method-assign]
-        for question in ("one", "two", "three", "four"):
-            await agent.run(question)  # 不应抛异常
-
-        assert not agent.memory_store._facts, "抽取失败时不应写入任何事实"
+        try:
+            assert await agent.run("I prefer neovim for editing source code") == "ok"
+            await agent.wait_memory_idle()
+            assert llm.calls >= 1  # The failure path actually ran.
+            assert not agent.memory_store._facts
+        finally:
+            await agent.aclose()

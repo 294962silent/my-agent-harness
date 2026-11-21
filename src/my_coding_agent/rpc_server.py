@@ -358,6 +358,7 @@ class RpcServer(SessionRpcMixin, ModelRpcMixin, SystemRpcMixin):
             session=target_session,
             permission_gate=gate,
             skill_dirs=skill_dirs,
+            compaction_settings=settings.compaction,
         )
 
         if initial_name := params.get("name"):

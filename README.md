@@ -54,7 +54,11 @@ my-tui (Node.js / Pi-TUI)  ⇄ [stdio JSON-RPC 2.0] ⇄  my_coding_agent → my_
 
 **工具并发按批门控。** 一个批次里只要有一个工具未声明 `is_parallel_safe`，整批串行。宁可慢，也不让「写后读」读到旧值——实测全并发快 3 倍，但 4 个读工具会全部读到写入前的数据。
 
-**上下文压缩优先 Append-Only。** 未超 80% 预算前只追加、不改历史，保持前缀稳定。真实 API 实测（glm-5.3-flash，6 轮）：命中率 53.5%，滑动窗口只有 17.9% 且从第 4 轮起归零。缓存最小块为 1088 token，短对话做 cache 优化没有意义。
+**上下文压缩采用五层请求投影。** 完整 Session 始终是事实来源；模型视图依次经过 Tool Result Budget、Snip、Microcompact、Context Collapse，最后才用 Auto-Compact。前四层的计划以 projection-only 快照保存，绑定分支与 canonical 前缀哈希，可恢复但不会移动会话指针或压缩 Floor。真实 API 的 6 轮小样本中命中率为 53.5%，滑动窗口为 17.9% 且从第 4 轮起归零；这只能说明该小样本下的前缀差异，不能外推为五层管线的通用收益。
+
+**并发沙盒使用有界全局调度。** 排队 Job 不创建 asyncio Task；只有取得全局、租户、Session、沙盒和逻辑内存容量后才运行。CPU、子进程和线程槽位在工具阶段动态申请，模型等待不占工具线程。100-job 压测中 8 个活跃、92 个排队，运行态 sandbox Task 始终不超过 8。
+
+**多 worker 模式使用 SQLite 控制面。** Job、owner、heartbeat、TTL lease、fencing token、全局 active/sandbox/memory、RPM/TPM 和租户配额通过 `BEGIN IMMEDIATE` 原子更新；失联任务的 lease 到期后自动重排。真实 Harbor 主链由 `DurableSandboxWorker → Harbor Trial → MyAgentHarness → LongArcHarborEnvironment → DockerSandboxExecutor → verifier` 组成，容器配额映射为 `--memory`、`--memory-swap`、`--cpus`、`--pids-limit`，hang 后执行 stop、remove 和存在性确认。100 个合成 Harbor 任务使用 8 个调度槽实跑，100/100 verifier reward=1，峰值逻辑内存 4096 MiB，结束后残留 managed 容器为 0；这是编排压力结果，不是 Terminal-Bench 分数。详见 [实验报告](docs/experiments/reports/2026-11-21-durable-harbor-live-stress.md)。
 
 **会话用 JSONL 追加落盘。** 崩溃时最多丢最后一行——实测单个 JSON 文件损坏后 0 条可恢复，JSONL 可恢复 9/10。
 

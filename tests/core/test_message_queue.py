@@ -82,3 +82,39 @@ def test_clear_and_peek():
     assert len(cleared) == 1
     assert len(q) == 0
     assert q.peek() is None
+
+
+def test_execution_owner_limits_consumers_to_current_or_legacy_input():
+    q = MessageQueue(steering_mode="all", followup_mode="all")
+    legacy = q.add_steering("legacy")
+    current = q.add_followup("current", session_id="session", generation=2)
+    future = q.add_steering("future", session_id="session", generation=3)
+    foreign = q.add_followup("foreign", session_id="other", generation=2)
+
+    q.set_execution_owner(session_id="session", generation=2)
+
+    assert q.has_steering() is True
+    assert q.has_followup() is True
+    assert q.get_steering_messages() == [legacy]
+    assert q.get_followup_messages() == [current]
+    assert q.has_steering() is False
+    assert q.has_followup() is False
+    assert q.pop_next() is None
+    assert q.queue == [future, foreign]
+
+    q.clear_execution_owner(session_id="session", generation=3)
+    assert q.pop_next() is None
+    q.clear_execution_owner(session_id="session", generation=2)
+    assert q.pop_next() is future
+    assert q.pop_next() is foreign
+
+
+def test_discard_stale_preserves_future_reservation():
+    q = MessageQueue()
+    legacy = q.add_steering("legacy")
+    older = q.add_followup("older", session_id="session", generation=1)
+    foreign = q.add_steering("foreign", session_id="other", generation=3)
+    future = q.add_followup("future", session_id="session", generation=3)
+
+    assert q.discard_stale(session_id="session", generation=2) == [older, foreign]
+    assert q.queue == [legacy, future]

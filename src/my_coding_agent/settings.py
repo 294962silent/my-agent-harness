@@ -26,6 +26,10 @@ class CompactionSettings(BaseModel):
     enabled: bool = True
     reserve_tokens: int = Field(default=16384, alias="reserveTokens")
     keep_recent_tokens: int = Field(default=20000, alias="keepRecentTokens")
+    tool_result_max_chars: int = Field(default=6000, alias="toolResultMaxChars")
+    tool_round_max_chars: int = Field(default=24000, alias="toolRoundMaxChars")
+    context_trigger_ratio: float = Field(default=0.8, alias="contextTriggerRatio")
+    microcompact_min_chars: int = Field(default=200, alias="microcompactMinChars")
 
     model_config = ConfigDict(populate_by_name=True)
 

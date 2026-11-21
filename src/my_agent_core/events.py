@@ -143,6 +143,11 @@ class ContextCompacted(Event):
     tokens_before: int
     tokens_after: int
     summarized_count: int
+    layers_applied: tuple[str, ...] = ()
+    layer_metrics: dict[str, object] = field(default_factory=dict)
+    cache_epoch: int = 0
+    budget_exceeded: bool = False
+    projection_only: bool = False
 
 
 @dataclass(frozen=True)

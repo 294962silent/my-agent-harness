@@ -1,0 +1,82 @@
+{
+  "experiment": "durable-harbor-live-stress100",
+  "date": "2026-11-21",
+  "scope": "synthetic Harbor task set; not Terminal-Bench",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "harbor_version": "0.24.0",
+  "tasks": 100,
+  "unique_jobs": 100,
+  "task_resources": {
+    "cpus": 1,
+    "memory_mb": 512
+  },
+  "scheduler": {
+    "max_active_jobs": 8,
+    "max_sandboxes": 8,
+    "max_memory_mb": 4096,
+    "workers": 8
+  },
+  "results": {
+    "succeeded": 100,
+    "failed": 0,
+    "timed_out": 0,
+    "cancelled": 0,
+    "reward_sum": 100.0,
+    "harbor_trials_passed": 100,
+    "reward_files_with_one": 100,
+    "agent_sessions": 100,
+    "agent_tool_calls": 166,
+    "sessions_with_tool_calls": 100,
+    "attempts": {
+      "1": 100
+    }
+  },
+  "usage": {
+    "input_tokens": 56228,
+    "output_tokens": 14155,
+    "cache_read_tokens": 318208,
+    "cache_read_share_of_prompt_tokens": 0.8498
+  },
+  "duration_seconds": {
+    "min": 63.91,
+    "median": 103.3915,
+    "p95": 122.433,
+    "max": 131.716
+  },
+  "peak_observed": {
+    "scheduler_active_jobs": 8,
+    "scheduler_sandboxes": 8,
+    "scheduler_memory_mb": 4096,
+    "docker_containers_sampled": 4,
+    "container_probe_samples": 274
+  },
+  "cleanup": {
+    "running_managed_containers": 0,
+    "all_managed_containers": 0,
+    "active_sandboxes_after_finish": 0,
+    "used_memory_mb_after_finish": 0
+  },
+  "recovery_incidents": [
+    {
+      "after_successes": 64,
+      "failure": "WSL restarted while SQLite used the Windows E: 9p mount",
+      "action": "resumed the same database and idempotency keys"
+    },
+    {
+      "after_successes": 72,
+      "failure": "SQLite disk I/O error on the E: 9p mount",
+      "action": "checkpointed a consistent backup, moved the live database to WSL ext4, and resumed the remaining jobs"
+    }
+  ],
+  "claims": [
+    "The run exercised the real Harbor Trial, MyAgentHarness, Docker-backed tool execution, and verifier path.",
+    "The SQLite scheduler recovered completed jobs by idempotency key and did not re-run them.",
+    "All 100 synthetic tasks passed their verifier and left no managed Docker containers."
+  ],
+  "non_claims": [
+    "This is not a Terminal-Bench or SWE benchmark score.",
+    "The scheduler active peak is 8; the independently sampled Docker running-container peak was 4 because container lifetimes were shorter than the sampling interval.",
+    "The experiment does not prove cross-host distributed scheduling or exactly-once external side effects.",
+    "Provider-reported cache-read share is not a full KV-cache hit-rate measurement."
+  ]
+}

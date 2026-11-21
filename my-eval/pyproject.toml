@@ -14,6 +14,7 @@ dependencies = [
 
 [project.scripts]
 my-eval = "my_eval.cli:main"
+longarc-harbor = "my_eval.durable_harbor:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/my_eval"]

@@ -231,10 +231,21 @@ test("EventTranslator translates context_compacted events", () => {
     type: "context_compacted",
     tokensBefore: 5000,
     tokensAfter: 2000,
+    summarizedCount: 0,
+    layersApplied: ["layer2:snip", "layer4:collapse"],
+    layerMetrics: { "layer2:snip": { removed_messages: 4 } },
+    cacheEpoch: 3,
+    budgetExceeded: false,
+    projectionOnly: true,
   });
   assert.equal(ev.type, "context_compacted");
   assert.equal(ev.tokensBefore, 5000);
   assert.equal(ev.tokensAfter, 2000);
+  assert.deepEqual(ev.layersApplied, ["layer2:snip", "layer4:collapse"]);
+  assert.deepEqual(ev.layerMetrics, { "layer2:snip": { removed_messages: 4 } });
+  assert.equal(ev.cacheEpoch, 3);
+  assert.equal(ev.budgetExceeded, false);
+  assert.equal(ev.projectionOnly, true);
 });
 
 test("EventTranslator returns null for invalid inputs", () => {
@@ -297,4 +308,44 @@ test("EventTranslator translates auto_retry_start and auto_retry_end events", ()
   assert.equal(endEv.type, "auto_retry_end");
   assert.equal(endEv.success, true);
   assert.equal(endEv.attempt, 1);
+});
+
+test("EventTranslator preserves execution identity on mapped facts", () => {
+  const translator = new EventTranslator();
+  const identity = {
+    session_id: "session-7",
+    generation: 4,
+    execution_id: "execution-9",
+    accepted_seq: 12,
+  };
+
+  const toolStart = translator.translate({
+    type: "tool_execution_start",
+    toolCallId: "call-1",
+    toolName: "read",
+    args: { path: "README.md" },
+    ...identity,
+  });
+  assert.deepEqual(
+    {
+      session_id: toolStart.session_id,
+      generation: toolStart.generation,
+      execution_id: toolStart.execution_id,
+      accepted_seq: toolStart.accepted_seq,
+    },
+    identity,
+  );
+
+  const agentEnd = translator.translate({
+    type: "agent_end",
+    iterations: 2,
+    stop_reason: "completed",
+    ...identity,
+    generation: 5,
+  });
+  assert.equal(agentEnd.session_id, identity.session_id);
+  assert.equal(agentEnd.generation, 5);
+  assert.equal(agentEnd.execution_id, identity.execution_id);
+  assert.equal(agentEnd.accepted_seq, identity.accepted_seq);
+  assert.equal(agentEnd.stopReason, "completed");
 });

@@ -6,6 +6,7 @@ import json
 import pytest
 
 from my_agent_core.events import (
+    ContextCompacted,
     MessageEnd,
     MessageStart,
     MessageUpdate,
@@ -87,3 +88,25 @@ def test_serialize_auto_retry_events() -> None:
     assert end_payload["success"] is True
     assert end_payload["attempt"] == 1
     assert end_payload["finalError"] == ""
+
+
+def test_serialize_context_compacted_diagnostics() -> None:
+    payload = serialize_event(
+        ContextCompacted(
+            tokens_before=1000,
+            tokens_after=400,
+            summarized_count=0,
+            layers_applied=("layer2:snip", "layer4:collapse"),
+            layer_metrics={"layer2:snip": {"removed_messages": 4}},
+            cache_epoch=7,
+            budget_exceeded=False,
+            projection_only=True,
+        )
+    )
+
+    assert payload["type"] == "context_compacted"
+    assert payload["layersApplied"] == ["layer2:snip", "layer4:collapse"]
+    assert payload["layerMetrics"] == {"layer2:snip": {"removed_messages": 4}}
+    assert payload["cacheEpoch"] == 7
+    assert payload["budgetExceeded"] is False
+    assert payload["projectionOnly"] is True
