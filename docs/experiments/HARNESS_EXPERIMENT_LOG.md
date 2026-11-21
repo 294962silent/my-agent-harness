@@ -728,6 +728,13 @@ payload；Python traced heap 峰值约 8.15 MiB；结束后 sandbox/memory 资�
 从 Git index 导出的干净 staged tree 为
 **1036 passed, 1 deselected in 49.90s**；`ruff check src tests scripts` 通过。
 
+#### 提交与 CI
+
+- 提交：`72138a31b7f01eaa123ed1ec6c3f28e01a5fa167`
+- PR：[#7 durable multi-worker sandbox scheduling](https://github.com/294962silent/LongArc/pull/7)
+- CI：[44857971540](https://github.com/294962silent/LongArc/actions/runs/44857971540)
+- Ubuntu/Windows × Python 3.11/3.13 四个 job 全部成功。
+
 #### 边界
 
 - SQLite 控制面面向单主机/可靠本地共享文件，不是跨数据中心分布式调度。

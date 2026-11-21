@@ -24,6 +24,7 @@
 | 3 | traced heap | about 8.15 MiB while 8 active |
 | 4 | 干净 staged tree 回归 | 1036 passed, 1 deselected |
 | 5 | Ruff | passed |
+| 6 | GitHub Actions CI | 4/4 jobs success |
 
 ## 遗留问题 / 坑
 
