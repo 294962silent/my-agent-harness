@@ -846,6 +846,13 @@ Docker 容器峰值来自 274 次 `docker ps` 采样。Scheduler 与真实容器
 - SQLite 导出：`.git/codex-delivery/harbor-live/stress100-v1-final.sqlite`
 - 100 个 Harbor 产物：`.git/codex-delivery/harbor-live/stress100-v1-jobs`
 
+#### 提交与 CI
+
+- 提交：`42f6a8b20830724d68681f28bd85242878d1c3df`
+- PR：[#7 durable Harbor execution](https://github.com/294962silent/LongArc/pull/7)
+- CI：[44869808053](https://github.com/294962silent/LongArc/actions/runs/44869808053)
+- Ubuntu/Windows × Python 3.11/3.13 四个 job 全部成功。
+
 #### 边界
 
 - 这是合成压力任务，不是 Terminal-Bench、SWE-bench 或长时编码能力分数。
