@@ -22,6 +22,7 @@
 | 3 | 干净 staged tree 全量回归 | 1022 passed, 1 deselected |
 | 4 | 100-job stress | 8 active, 92 pending, 8 Task, traced peak 8.53 MiB |
 | 5 | staged tree Ruff | All checks passed |
+| 6 | GitHub Actions CI | 4/4 jobs success |
 
 ## 遗留问题 / 坑
 

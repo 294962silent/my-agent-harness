@@ -664,6 +664,13 @@ npm test
 **1022 passed, 1 deselected in 51.71s**；`ruff check src tests scripts` 为
 **All checks passed**。
 
+#### 提交与 CI
+
+- 提交：`05847092abb216cc57ba1bfc7f8d8cfb06e2cc03`
+- PR：[#7 context compression and bounded sandbox scheduling](https://github.com/294962silent/LongArc/pull/7)
+- CI：[44854857190](https://github.com/294962silent/LongArc/actions/runs/44854857190)
+- Ubuntu/Windows × Python 3.11/3.13 四个 job 全部成功。
+
 #### 边界
 
 - 当前租约注册表是单进程内存实现，不能单独证明多 worker 互斥。
