@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+import subprocess
+import sys
+import time
 
 import pytest
 
@@ -195,6 +198,83 @@ def test_expired_worker_lease_is_requeued_and_stale_fence_is_rejected(
     final = scheduler.get_job(job.job_id)
     assert final.state == "succeeded"
     assert final.result == "fresh"
+
+
+def test_child_process_crash_is_recovered_after_lease_expiry(
+    tmp_path: Path,
+) -> None:
+    db = tmp_path / "process-crash.sqlite"
+    scheduler = DurableSandboxScheduler(
+        db,
+        _limits(
+            max_active_jobs=1,
+            max_sandboxes=1,
+            lease_ttl_seconds=0.1,
+            retry_base_seconds=0.01,
+        ),
+    )
+    job = scheduler.submit(
+        DurableJobRequest(
+            tenant_id="A",
+            session_id="process-crash",
+            idempotency_key="process-crash",
+            payload={"task": "process-crash"},
+            resources=SandboxJobResources(memory_mb=1),
+            max_attempts=2,
+        )
+    )
+    source_root = Path(__file__).resolve().parents[2] / "src"
+    child_code = """
+import sys
+sys.path.insert(0, sys.argv[2])
+from my_agent_core.durable_scheduler import DurableSandboxScheduler, DurableSchedulerLimits
+limits = DurableSchedulerLimits(
+    max_active_jobs=1,
+    max_pending_jobs=16,
+    max_active_per_tenant=1,
+    max_pending_per_tenant=8,
+    max_sandboxes=1,
+    max_memory_mb=16,
+    max_cpu_slots=2,
+    max_process_slots=2,
+    max_thread_slots=4,
+    global_rpm=100,
+    global_tpm=10_000,
+    tenant_rpm=100,
+    tenant_tpm=10_000,
+    lease_ttl_seconds=0.1,
+    retry_base_seconds=0.01,
+    retry_max_seconds=0.1,
+)
+claim = DurableSandboxScheduler(sys.argv[1], limits).claim("child-worker")
+if claim is None:
+    raise SystemExit(2)
+print(claim.fencing_token)
+"""
+    child = subprocess.run(
+        [sys.executable, "-c", child_code, str(db), str(source_root)],
+        cwd=Path(__file__).resolve().parents[2],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert child.returncode == 0
+    child_token = int(child.stdout.strip())
+
+    time.sleep(0.12)
+    assert scheduler.recover_expired() == 1
+    time.sleep(0.02)
+    recovered = scheduler.claim("parent-worker")
+    assert recovered is not None
+    assert recovered.job_id == job.job_id
+    assert recovered.attempt == 2
+    assert recovered.fencing_token > child_token
+    assert scheduler.finish(
+        recovered,
+        "succeeded",
+        result={"recovered": True},
+    )
 
 
 def test_global_and_tenant_rpm_tpm_are_atomic(tmp_path: Path) -> None:

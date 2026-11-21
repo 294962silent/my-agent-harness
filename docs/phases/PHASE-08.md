@@ -19,7 +19,7 @@
 .\.venv\Scripts\python.exe -m pytest tests/core/test_durable_scheduler.py tests/core/test_docker_executor.py -q -o addopts= --import-mode=importlib
 ```
 
-实际：14 passed。
+实际：15 passed。
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\stress_durable_scheduler.py --jobs 100 --workers 8 --active 8 --tenants 5 --payload-mb 1 --run-seconds 0.2

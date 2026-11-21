@@ -691,7 +691,7 @@ npm test
 | --- | --- |
 | 20 个并发 SQLite claim，全局 active=2 | 仅 2 个唯一 Job 获得 lease |
 | 同一 Session 两个 Job | 第二个只能等第一个完成 |
-| worker 停止 heartbeat 后 lease 过期 | Job 重排，attempt 增加 |
+| worker 停止 heartbeat 或独立子进程直接退出 | Job 重排，attempt 增加 |
 | 旧 worker 使用过期 fencing token finish | 拒绝 |
 | 新 worker claim 同一 Job | 获得更大 fencing token |
 | tenant/global RPM 与 TPM | 任一超额即拒绝，整分钟窗口原子更新 |
@@ -716,17 +716,17 @@ payload；Python traced heap 峰值约 8.15 MiB；结束后 sandbox/memory 资�
 .\.venv\Scripts\python.exe -m pytest tests/core/test_durable_scheduler.py tests/core/test_docker_executor.py -q -o addopts= --import-mode=importlib
 ```
 
-结果：**14 passed**。
+结果：**15 passed**。
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests/core tests/coding tests/llm tests/eval -q -o addopts= --import-mode=importlib -k "not test_bash_pipefail_propagates_error"
 ```
 
-结果：**1196 passed, 1 deselected in 51.51s**。调度器/持久层/Docker executor
+结果：**1197 passed, 1 deselected in 51.69s**。调度器/持久层/Docker executor
 相关 Ruff 为 **All checks passed**。
 
 从 Git index 导出的干净 staged tree 为
-**1036 passed, 1 deselected in 49.90s**；`ruff check src tests scripts` 通过。
+**1037 passed, 1 deselected in 52.91s**；`ruff check src tests scripts` 通过。
 
 #### 提交与 CI
 

@@ -19,10 +19,10 @@
 
 | # | 命令 | 实际结果 |
 | --- | --- | --- |
-| 1 | durable + Docker tests | 14 passed |
+| 1 | durable + Docker tests | 15 passed |
 | 2 | 8-worker / 100-job stress | 100 succeeded, peak active 8 |
 | 3 | traced heap | about 8.15 MiB while 8 active |
-| 4 | 干净 staged tree 回归 | 1036 passed, 1 deselected |
+| 4 | 干净 staged tree 回归 | 1037 passed, 1 deselected |
 | 5 | Ruff | passed |
 | 6 | GitHub Actions CI | 4/4 jobs success |
 

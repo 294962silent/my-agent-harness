@@ -138,6 +138,7 @@ create -> start -> wait -> logs -> stop -> rm -f -> ps verify
 ## 已验证故障
 
 - 两个 scheduler 连接同一 SQLite 文件，20 个并发 claim 时全局 active 严格不超过 2；
+- 独立子进程领取 Job 后直接退出，parent worker 在 lease 过期后成功接管并取得新 fence；
 - 同一 Session 永远只有一个 active job；
 - 旧 worker lease 过期后，新 worker 获得新 fencing token，旧 worker finish 被拒绝；
 - 全局与租户 RPM/TPM 原子扣减；
@@ -147,8 +148,8 @@ create -> start -> wait -> logs -> stop -> rm -f -> ps verify
 - Docker 操作 hang 后执行 stop/rm/verify；
 - 容器删除后仍可查询到时 fail-closed。
 
-工作区 core/coding/llm/eval 回归为 `1196 passed, 1 deselected`；从 Git index
-导出的干净 staged tree 为 `1036 passed, 1 deselected in 49.90s`。`ruff check src tests scripts`
+工作区 core/coding/llm/eval 回归为 `1197 passed, 1 deselected`；从 Git index
+导出的干净 staged tree 为 `1037 passed, 1 deselected in 52.91s`。`ruff check src tests scripts`
 通过。
 
 ## 100-job 多 worker 压测
@@ -163,7 +164,7 @@ create -> start -> wait -> logs -> stop -> rm -f -> ps verify
 - failed / queued / active 均为 0；
 - 峰值 8 个并发 worker；
 - 8 MiB 活跃 payload；
-- Python traced heap 峰值约 8.15 MiB（8,546,153 bytes）；
+- Python traced heap 峰值约 8.15 MiB（8,546,024 bytes）；
 - 最终 sandbox / memory 配额为 0。
 
 ## 边界
